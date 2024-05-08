@@ -1,0 +1,85 @@
+# Terraform Provider testing workflow.
+name: Tests
+
+# This GitHub action runs your tests for each pull request and push.
+# Optionally, you can turn it on using a schedule for regular testing.
+on:
+    pull_request:
+        paths-ignore:
+            - 'README.md'
+    push:
+        paths-ignore:
+            - 'README.md'
+
+# Testing only needs permissions to read the repository contents.
+permissions:
+    contents: read
+
+jobs:
+    # Ensure project builds before running testing matrix
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - run: go mod download
+            - run: go build -v .
+            - name: Run linters
+              uses: golangci/golangci-lint-action@v5
+              with:
+                  version: latest
+
+    generate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - run: go get github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+            - run: go generate ./...
+            - name: git diff
+              run: |
+                  git diff --compact-summary --exit-code || \
+                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+
+    # Run acceptance tests in a matrix with Terraform CLI versions
+    test:
+        name: Terraform Provider Acceptance Tests
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                # list whatever Terraform versions here you would like to support
+                terraform:
+                    - '1.0.*'
+                    - '1.1.*'
+                    - '1.2.*'
+                    - '1.3.*'
+                    - '1.4.*'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ matrix.terraform }}
+                  terraform_wrapper: false
+            - run: go mod download
+            - env:
+                  NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
+                  NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
+                  NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
+                  TF_ACC: '1'
+              run: go test -v -cover ./internal/provider/
+              timeout-minutes: 10
