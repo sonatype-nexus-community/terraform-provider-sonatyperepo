@@ -18,8 +18,10 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -44,9 +46,10 @@ type SonatypeRepoProvider struct {
 
 // SonatypeRepoProviderModel describes the provider data model.
 type SonatypeRepoProviderModel struct {
-	Url      types.String `tfsdk:"url"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	Url         types.String `tfsdk:"url"`
+	Username    types.String `tfsdk:"username"`
+	Password    types.String `tfsdk:"password"`
+	ApiBasePath types.String `tfsdk:"api_base_path"`
 }
 
 func (p *SonatypeRepoProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -70,6 +73,10 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 				Required:            true,
 				Sensitive:           true,
 			},
+			"api_base_path": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Base Path at which the API is present - defaults to /service/rest. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
+			},
 		},
 	}
 }
@@ -88,6 +95,7 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	nxrmUrl := os.Getenv("NXRM_SERVER_URL")
 	username := os.Getenv("NXRM_SERVER_USERNAME")
 	password := os.Getenv("NXRM_SERVER_PASSWORD")
+	apiBasePath := "/service/rest"
 
 	if !config.Url.IsNull() && len(config.Url.ValueString()) > 0 {
 		nxrmUrl = config.Url.ValueString()
@@ -99,6 +107,10 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 
 	if !config.Password.IsNull() && len(config.Password.ValueString()) > 0 {
 		password = config.Password.ValueString()
+	}
+
+	if !config.ApiBasePath.IsNull() && len(config.ApiBasePath.ValueString()) > 0 {
+		apiBasePath = config.ApiBasePath.ValueString()
 	}
 
 	// Validate Provider Configuration
@@ -143,7 +155,7 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
 	configuration.Servers = []sonatyperepo.ServerConfiguration{
 		{
-			URL:         nxrmUrl,
+			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
 			Description: "Sonatype Nexus Repository Server",
 		},
 	}
@@ -164,7 +176,9 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 }
 
 func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		BlobStoresDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {
