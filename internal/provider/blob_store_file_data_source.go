@@ -19,6 +19,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -86,6 +87,9 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 					},
 				},
 			},
+			"last_updated": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 	}
 }
@@ -136,6 +140,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	// Set state
+	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

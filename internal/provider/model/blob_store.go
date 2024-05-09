@@ -40,7 +40,8 @@ type BlobStoresModel struct {
 }
 
 type BlobStoreFileModel struct {
-	Name      types.String        `tfsdk:"name"`
-	Path      types.String        `tfsdk:"path"`
-	SoftQuota *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	Name        types.String        `tfsdk:"name"`
+	Path        types.String        `tfsdk:"path"`
+	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	LastUpdated types.String        `tfsdk:"last_updated"`
 }

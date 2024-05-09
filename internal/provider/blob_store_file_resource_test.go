@@ -17,32 +17,40 @@
 package provider
 
 import (
-	"regexp"
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoreFileDataSource(t *testing.T) {
+func TestAccBlobStoreFileResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Create and Read testing
 			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
-					name = "default"
-				}`,
+				Config: testAccBlobStoreFileResource(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "soft_quota.%"),
+					// Verify
+					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "name", fmt.Sprintf("test-%s", randomString)),
+					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "path", fmt.Sprintf("path-%s", randomString)),
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_file.bsf", "last_updated"),
 				),
 			},
-			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
-					name = "this-will-not-exist"
-				}`,
-				ExpectError: regexp.MustCompile("Error: Unable to Read Blob Stores"),
-			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func testAccBlobStoreFileResource(randomString string) string {
+	return fmt.Sprintf(providerConfig+`
+resource "sonatyperepo_blob_store_file" "bsf" {
+  name = "test-%s"
+  path = "path-%s"
+}
+`, randomString, randomString)
 }
