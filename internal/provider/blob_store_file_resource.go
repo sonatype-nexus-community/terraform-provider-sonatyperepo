@@ -306,5 +306,4 @@ func (r *blobStoreFileResource) Delete(ctx context.Context, req resource.DeleteR
 			fmt.Sprintf("Unexpected Response Code whilst deleting Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
-	return
 }
