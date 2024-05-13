@@ -30,3 +30,36 @@ type RepositoryModel struct {
 type RepositoriesModel struct {
 	Repositories []RepositoryModel `tfsdk:"repositories"`
 }
+
+type RepositoryMavenModel struct {
+	Name        types.String                 `tfsdk:"name"`
+	Format      types.String                 `tfsdk:"format"`
+	Type        types.String                 `tfsdk:"type"`
+	Url         types.String                 `tfsdk:"url"`
+	Online      types.Bool                   `tfsdk:"online"`
+	Storage     repositoryStorageModel       `tfsdk:"storage"`
+	Cleanup     *RepositoryCleanupModel      `tfsdk:"cleanup"`
+	Maven       repositoryMavenSpecificModel `tfsdk:"maven"`
+	Component   *RepositoryComponentModel    `tfsdk:"component"`
+	LastUpdated types.String                 `tfsdk:"last_updated"`
+}
+
+type repositoryStorageModel struct {
+	BlobStoreName               types.String `tfsdk:"blob_store_name"`
+	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+	WritePolicy                 types.String `tfsdk:"write_policy"`
+}
+
+type RepositoryCleanupModel struct {
+	PolicyNames []types.String `tfsdk:"policy_names"`
+}
+
+type RepositoryComponentModel struct {
+	ProprietaryComponents types.Bool `tfsdk:"proprietary_components"`
+}
+
+type repositoryMavenSpecificModel struct {
+	VersionPolicy      types.String `tfsdk:"version_policy"`
+	LayoutPolicy       types.String `tfsdk:"layout_policy"`
+	ContentDisposition types.String `tfsdk:"content_disposition"`
+}

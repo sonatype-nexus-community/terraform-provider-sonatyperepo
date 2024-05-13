@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoreFileResource(t *testing.T) {
+func TestAccRepositoryMavenHostedResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -33,12 +33,12 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: getTestAccBlobStoreFileResourceConfig(randomString),
+				Config: getRepositoryMavenHostedResourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "name", fmt.Sprintf("test-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "path", fmt.Sprintf("path-%s", randomString)),
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_file.bsf", "last_updated"),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "online", "true"),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "storage.blob_store_name", "default"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -46,11 +46,21 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 	})
 }
 
-func getTestAccBlobStoreFileResourceConfig(randomString string) string {
+func getRepositoryMavenHostedResourceConfig(randomString string) string {
 	return fmt.Sprintf(providerConfig+`
-resource "sonatyperepo_blob_store_file" "bsf" {
-  name = "test-%s"
-  path = "path-%s"
+resource "sonatyperepo_repository_maven_hosted" "repo" {
+  name = "maven-hosted-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
+  }
+  maven = {
+	content_disposition = "ATTACHMENT"
+	layout_policy = "STRICT"
+	version_policy = "RELEASE"
+  }
 }
-`, randomString, randomString)
+`, randomString)
 }

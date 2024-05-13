@@ -93,7 +93,7 @@ func (d *repositoriesDataSource) Read(ctx context.Context, req datasource.ReadRe
 		d.auth,
 	)
 
-	repositories, httpResponse, err := d.client.RepositoryManagementAPI.GetRepositories1(ctx).Execute()
+	repositories, httpResponse, err := d.client.RepositoryManagementAPI.GetAllRepositories(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Repositories",
