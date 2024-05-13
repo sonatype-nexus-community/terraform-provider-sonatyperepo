@@ -26,7 +26,7 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
 )
 
-// Common Delete Repository implementation
+// Common Delete Repository implementation.
 func DeleteRepository(client *sonatyperepo.APIClient, ctx *context.Context, repositoryName string, resp *resource.DeleteResponse) {
 	// Delete API Call
 	apiDeleteRequest := client.RepositoryManagementAPI.DeleteRepository(*ctx, repositoryName)
