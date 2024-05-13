@@ -27,9 +27,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-
-	// "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -73,19 +72,19 @@ func (r *repositoryMavenHostedResource) Schema(_ context.Context, _ resource.Sch
 				},
 			},
 			"format": schema.StringAttribute{
-				Description: "Format of this Repository - will always be 'maven2'",
+				Description: fmt.Sprintf("Format of this Repository - will always be '%s'", REPOSITORY_FORMAT_MAVEN),
 				Optional:    true,
 				Computed:    true,
-				// Default:     stringdefault.StaticString("maven2"),
+				Default:     stringdefault.StaticString(REPOSITORY_FORMAT_MAVEN),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of this Repository - will always be 'hosted'",
+				Description: fmt.Sprintf("Type of this Repository - will always be '%s'", REPOSITORY_TYPE_HOSTED),
 				Optional:    true,
 				Computed:    true,
-				// Default:     stringdefault.StaticString("hosted"),
+				Default:     stringdefault.StaticString(REPOSITORY_TYPE_HOSTED),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -175,14 +174,6 @@ func (r *repositoryMavenHostedResource) Schema(_ context.Context, _ resource.Sch
 						Default:     booldefault.StaticBool(false),
 					},
 				},
-				// Default: objectdefault.StaticValue(types.ObjectValueMust(
-				// 	map[string]attr.Type{
-				// 		"proprietary_components": types.BoolType,
-				// 	},
-				// 	map[string]attr.Value{
-				// 		"proprietary_components": types.BoolValue(false),
-				// 	},
-				// )),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -271,6 +262,13 @@ func (r *repositoryMavenHostedResource) Create(ctx context.Context, req resource
 		)
 	}
 
+	// Crank in some defaults that whilst send in request, do not appear in response
+	if plan.Format.IsNull() {
+		plan.Format = types.StringValue(REPOSITORY_FORMAT_MAVEN)
+	}
+	if plan.Type.IsNull() {
+		plan.Type = types.StringValue(REPOSITORY_TYPE_HOSTED)
+	}
 	if plan.Component == nil {
 		plan.Component = &model.RepositoryComponentModel{
 			ProprietaryComponents: types.BoolValue(false),

@@ -25,3 +25,15 @@ func NewTrue() *bool {
 	b := true
 	return &b
 }
+
+// Repository Types
+const (
+	REPOSITORY_TYPE_HOSTED string = "hosted"
+	REPOSITORY_TYPE_PROXY  string = "proxy"
+	REPOSITORY_TYPE_GROUP  string = "group"
+)
+
+// Repository Formats
+const (
+	REPOSITORY_FORMAT_MAVEN string = "maven2"
+)

@@ -37,8 +37,12 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "format", REPOSITORY_FORMAT_MAVEN),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "type", REPOSITORY_TYPE_HOSTED),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "online", "true"),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr("sonatyperepo_repository_maven_hosted.repo", "cleanup"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
