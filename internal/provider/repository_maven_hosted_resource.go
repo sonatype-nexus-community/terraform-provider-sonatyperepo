@@ -191,7 +191,7 @@ func (r *repositoryMavenHostedResource) Schema(_ context.Context, _ resource.Sch
 // Create creates the resource and sets the initial Terraform state.
 func (r *repositoryMavenHostedResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan model.RepositoryMavenModel
+	var plan model.RepositoryMavenHostedModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
 
@@ -286,7 +286,7 @@ func (r *repositoryMavenHostedResource) Create(ctx context.Context, req resource
 // Read refreshes the Terraform state with the latest data.
 func (r *repositoryMavenHostedResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	var state model.RepositoryMavenModel
+	var state model.RepositoryMavenHostedModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -360,8 +360,8 @@ func (r *repositoryMavenHostedResource) Read(ctx context.Context, req resource.R
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan & state
-	var plan model.RepositoryMavenModel
-	var state model.RepositoryMavenModel
+	var plan model.RepositoryMavenHostedModel
+	var state model.RepositoryMavenHostedModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -454,7 +454,7 @@ func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *repositoryMavenHostedResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state model.RepositoryMavenModel
+	var state model.RepositoryMavenHostedModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

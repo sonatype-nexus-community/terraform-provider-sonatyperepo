@@ -31,7 +31,7 @@ type RepositoriesModel struct {
 	Repositories []RepositoryModel `tfsdk:"repositories"`
 }
 
-type RepositoryMavenModel struct {
+type RepositoryMavenHostedModel struct {
 	Name        types.String                 `tfsdk:"name"`
 	Format      types.String                 `tfsdk:"format"`
 	Type        types.String                 `tfsdk:"type"`
@@ -44,11 +44,33 @@ type RepositoryMavenModel struct {
 	LastUpdated types.String                 `tfsdk:"last_updated"`
 }
 
+type RepositoryMavenProxyModel struct {
+	Name          types.String                 `tfsdk:"name"`
+	Format        types.String                 `tfsdk:"format"`
+	Type          types.String                 `tfsdk:"type"`
+	Url           types.String                 `tfsdk:"url"`
+	Online        types.Bool                   `tfsdk:"online"`
+	Storage       repositoryStorageModel       `tfsdk:"storage"`
+	Cleanup       *RepositoryCleanupModel      `tfsdk:"cleanup"`
+	Proxy         repositoryProxyModel         `tfsdk:"proxy"`
+	NegativeCache repositoryNegativeCacheModel `tfsdk:"negative_cache"`
+	HttpClient    repositoryHttpClientModel    `tfsdk:"http_client"`
+	RoutingRule   types.String                 `tfsdk:"routing_rule"`
+	Replication   *RepositoryReplicationModel  `tfsdk:"replication"`
+	Maven         repositoryMavenSpecificModel `tfsdk:"maven"`
+	LastUpdated   types.String                 `tfsdk:"last_updated"`
+}
+
 type repositoryStorageModel struct {
 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
 	WritePolicy                 types.String `tfsdk:"write_policy"`
 }
+
+// type repositoryStorageModel struct {
+// 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
+// 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+// }
 
 type RepositoryCleanupModel struct {
 	PolicyNames []types.String `tfsdk:"policy_names"`
@@ -62,4 +84,45 @@ type repositoryMavenSpecificModel struct {
 	VersionPolicy      types.String `tfsdk:"version_policy"`
 	LayoutPolicy       types.String `tfsdk:"layout_policy"`
 	ContentDisposition types.String `tfsdk:"content_disposition"`
+}
+
+type repositoryProxyModel struct {
+	RemoteUrl      types.String `tfsdk:"remote_url"`
+	ContentMaxAge  types.Int64  `tfsdk:"content_max_age"`
+	MetadataMaxAge types.Int64  `tfsdk:"metadata_max_age"`
+}
+
+type repositoryNegativeCacheModel struct {
+	Enabled    types.Bool  `tfsdk:"enabled"`
+	TimeToLive types.Int64 `tfsdk:"time_to_live"`
+}
+
+type repositoryHttpClientModel struct {
+	Blocked        types.Bool                               `tfsdk:"blocked"`
+	AutoBlock      types.Bool                               `tfsdk:"auto_block"`
+	Connection     *RepositoryHttpClientConnectionModel     `tfsdk:"connection"`
+	Authentication *RepositoryHttpClientAuthenticationModel `tfsdk:"authentication"`
+}
+
+type RepositoryHttpClientConnectionModel struct {
+	Retries                 types.Int64  `tfsdk:"retries"`
+	UserAgentSuffix         types.String `tfsdk:"user_agent_suffix"`
+	Timeout                 types.Int64  `tfsdk:"timeout"`
+	EnableCircularRedirects types.Bool   `tfsdk:"enable_circular_redirects"`
+	EnableCookies           types.Bool   `tfsdk:"enable_cookies"`
+	UseTrustStore           types.Bool   `tfsdk:"use_trust_store"`
+}
+
+type RepositoryHttpClientAuthenticationModel struct {
+	Type       types.String `tfsdk:"type"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	NtlmHost   types.String `tfsdk:"ntlm_host"`
+	NtlmDomain types.String `tfsdk:"ntlm_domain"`
+	Preemptive types.Bool   `tfsdk:"preemptive"`
+}
+
+type RepositoryReplicationModel struct {
+	PreemptivePullEnabled types.Bool   `tfsdk:"preemptive_pull_enabled"`
+	AssetPathRegex        types.String `tfsdk:"asset_path_regex"`
 }

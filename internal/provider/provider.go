@@ -162,12 +162,14 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 
 	client := sonatyperepo.NewAPIClient(configuration)
 	resp.DataSourceData = SonatypeDataSourceData{
-		client: client,
-		auth:   sonatyperepo.BasicAuth{UserName: username, Password: password},
+		client:  client,
+		auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
+		baseUrl: strings.TrimRight(nxrmUrl, "/"),
 	}
 	resp.ResourceData = SonatypeDataSourceData{
-		client: client,
-		auth:   sonatyperepo.BasicAuth{UserName: username, Password: password},
+		client:  client,
+		auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
+		baseUrl: strings.TrimRight(nxrmUrl, "/"),
 	}
 }
 
@@ -175,6 +177,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 	return []func() resource.Resource{
 		NewBlobStoreFileResource,
 		NewRepositoryMavenHostedResource,
+		NewRepositoryMavenProxyResource,
 	}
 }
 

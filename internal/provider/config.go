@@ -19,6 +19,7 @@ package provider
 import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
 
 type SonatypeDataSourceData struct {
-	client *sonatyperepo.APIClient
-	auth   sonatyperepo.BasicAuth
+	client  *sonatyperepo.APIClient
+	auth    sonatyperepo.BasicAuth
+	baseUrl string
 }
