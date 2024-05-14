@@ -22,6 +22,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"terraform-provider-sonatyperepo/internal/provider/blob_store"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/repository"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -161,31 +164,31 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	client := sonatyperepo.NewAPIClient(configuration)
-	resp.DataSourceData = SonatypeDataSourceData{
-		client:  client,
-		auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
-		baseUrl: strings.TrimRight(nxrmUrl, "/"),
+	resp.DataSourceData = common.SonatypeDataSourceData{
+		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
+		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
+		Client:  client,
 	}
-	resp.ResourceData = SonatypeDataSourceData{
-		client:  client,
-		auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
-		baseUrl: strings.TrimRight(nxrmUrl, "/"),
+	resp.ResourceData = common.SonatypeDataSourceData{
+		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
+		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
+		Client:  client,
 	}
 }
 
 func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewBlobStoreFileResource,
-		NewRepositoryMavenHostedResource,
-		NewRepositoryMavenProxyResource,
+		blob_store.NewBlobStoreFileResource,
+		repository.NewRepositoryMavenHostedResource,
+		repository.NewRepositoryMavenProxyResource,
 	}
 }
 
 func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		BlobStoresDataSource,
-		BlobStoreFileDataSource,
-		RepositoriesDataSource,
+		blob_store.BlobStoresDataSource,
+		blob_store.BlobStoreFileDataSource,
+		repository.RepositoriesDataSource,
 	}
 }
 

@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package provider
+package repository_test
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoresDataSource(t *testing.T) {
+func TestAccRepositoriesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: providerConfig + `data "sonatyperepo_blob_stores" "blob_stores" {
+				Config: utils.ProviderConfig + `data "sonatyperepo_repositories" "repos" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.#"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_repositories.repos", "repositories.#"),
 				),
 			},
 		},

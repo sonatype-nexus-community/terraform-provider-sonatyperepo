@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package blob_store
 
 import (
 	"context"
@@ -28,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
@@ -35,7 +36,7 @@ import (
 
 // blobStoreFileResource is the resource implementation.
 type blobStoreFileResource struct {
-	baseResource
+	common.BaseResource
 }
 
 // NewBlobStoreFileResource is a helper function to simplify the provider implementation.
@@ -102,7 +103,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	request_payload := sonatyperepo.FileBlobStoreApiCreateRequest{
@@ -116,7 +117,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 
-	create_request := r.client.BlobStoreAPI.CreateFileBlobStore(ctx).Body(request_payload)
+	create_request := r.Client.BlobStoreAPI.CreateFileBlobStore(ctx).Body(request_payload)
 	api_response, err := create_request.Execute()
 
 	// Handle Error
@@ -160,11 +161,11 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Read API Call
-	blobStoreApiResponse, httpResponse, err := r.client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
+	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -217,7 +218,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Update API Call
@@ -230,7 +231,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 			Type:  plan.SoftQuota.Type.ValueStringPointer(),
 		}
 	}
-	apiUpdateRequest := r.client.BlobStoreAPI.UpdateFileBlobStore(ctx, state.Name.ValueString()).Body(request_payload)
+	apiUpdateRequest := r.Client.BlobStoreAPI.UpdateFileBlobStore(ctx, state.Name.ValueString()).Body(request_payload)
 
 	// Call API
 	httpResponse, err := apiUpdateRequest.Execute()
@@ -276,11 +277,11 @@ func (r *blobStoreFileResource) Delete(ctx context.Context, req resource.DeleteR
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Delete API Call
-	apiDeleteRequest := r.client.BlobStoreAPI.DeleteBlobStore(ctx, state.Name.ValueString())
+	apiDeleteRequest := r.Client.BlobStoreAPI.DeleteBlobStore(ctx, state.Name.ValueString())
 
 	// Call API
 	httpResponse, err := apiDeleteRequest.Execute()

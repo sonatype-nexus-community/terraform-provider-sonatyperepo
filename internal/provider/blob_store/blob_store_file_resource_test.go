@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package provider
+package blob_store_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -29,7 +30,7 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -47,7 +48,7 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 }
 
 func getTestAccBlobStoreFileResourceConfig(randomString string) string {
-	return fmt.Sprintf(providerConfig+`
+	return fmt.Sprintf(utils.ProviderConfig+`
 resource "sonatyperepo_blob_store_file" "bsf" {
   name = "test-%s"
   path = "path-%s"

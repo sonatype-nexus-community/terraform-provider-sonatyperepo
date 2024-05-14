@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package repository
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
@@ -43,7 +44,7 @@ func RepositoriesDataSource() datasource.DataSource {
 
 // repositoriesDataSource is the data source implementation.
 type repositoriesDataSource struct {
-	baseDataSource
+	common.BaseDataSource
 }
 
 // Metadata returns the data source type name.
@@ -90,10 +91,10 @@ func (d *repositoriesDataSource) Read(ctx context.Context, req datasource.ReadRe
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		d.auth,
+		d.Auth,
 	)
 
-	repositories, httpResponse, err := d.client.RepositoryManagementAPI.GetAllRepositories(ctx).Execute()
+	repositories, httpResponse, err := d.Client.RepositoryManagementAPI.GetAllRepositories(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Repositories",

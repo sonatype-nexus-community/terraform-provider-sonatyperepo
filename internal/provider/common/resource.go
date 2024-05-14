@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package common
 
 import (
 	"context"
@@ -27,49 +27,49 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &baseResource{}
-	_ resource.ResourceWithConfigure = &baseResource{}
+	_ resource.Resource              = &BaseResource{}
+	_ resource.ResourceWithConfigure = &BaseResource{}
 )
 
 // applicationResource is the resource implementation.
-type baseResource struct {
-	client  *sonatyperepo.APIClient
-	auth    sonatyperepo.BasicAuth
-	baseUrl string
+type BaseResource struct {
+	Auth    sonatyperepo.BasicAuth
+	BaseUrl string
+	Client  *sonatyperepo.APIClient
 }
 
 // Create implements resource.Resource.
-func (*baseResource) Create(context.Context, resource.CreateRequest, *resource.CreateResponse) {
+func (*BaseResource) Create(context.Context, resource.CreateRequest, *resource.CreateResponse) {
 	panic("unimplemented")
 }
 
 // Delete implements resource.Resource.
-func (*baseResource) Delete(context.Context, resource.DeleteRequest, *resource.DeleteResponse) {
+func (*BaseResource) Delete(context.Context, resource.DeleteRequest, *resource.DeleteResponse) {
 	panic("unimplemented")
 }
 
 // Read implements resource.Resource.
-func (*baseResource) Read(context.Context, resource.ReadRequest, *resource.ReadResponse) {
+func (*BaseResource) Read(context.Context, resource.ReadRequest, *resource.ReadResponse) {
 	panic("unimplemented")
 }
 
 // Schema implements resource.Resource.
-func (*baseResource) Schema(context.Context, resource.SchemaRequest, *resource.SchemaResponse) {
+func (*BaseResource) Schema(context.Context, resource.SchemaRequest, *resource.SchemaResponse) {
 	panic("unimplemented")
 }
 
 // Update implements resource.Resource.
-func (*baseResource) Update(context.Context, resource.UpdateRequest, *resource.UpdateResponse) {
+func (*BaseResource) Update(context.Context, resource.UpdateRequest, *resource.UpdateResponse) {
 	panic("unimplemented")
 }
 
 // Metadata implements resource.Resource.
-func (*baseResource) Metadata(context.Context, resource.MetadataRequest, *resource.MetadataResponse) {
+func (*BaseResource) Metadata(context.Context, resource.MetadataRequest, *resource.MetadataResponse) {
 	panic("unimplemented")
 }
 
 // Configure implements resource.ResourceWithConfigure.
-func (r *baseResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -84,7 +84,7 @@ func (r *baseResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 
-	r.client = config.client
-	r.auth = config.auth
-	r.baseUrl = config.baseUrl
+	r.Auth = config.Auth
+	r.BaseUrl = config.BaseUrl
+	r.Client = config.Client
 }

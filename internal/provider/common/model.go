@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
-package provider
+package common
 
-func NewFalse() *bool {
-	b := false
-	return &b
+import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+
+type SonatypeDataSourceData struct {
+	Auth    sonatyperepo.BasicAuth
+	BaseUrl string
+	Client  *sonatyperepo.APIClient
 }
-
-func NewTrue() *bool {
-	b := true
-	return &b
-}
-
-// Repository Types.
-const (
-	REPOSITORY_TYPE_HOSTED string = "hosted"
-	REPOSITORY_TYPE_PROXY  string = "proxy"
-	REPOSITORY_TYPE_GROUP  string = "group"
-)
-
-// Repository Formats.
-const (
-	REPOSITORY_FORMAT_MAVEN string = "maven2"
-)

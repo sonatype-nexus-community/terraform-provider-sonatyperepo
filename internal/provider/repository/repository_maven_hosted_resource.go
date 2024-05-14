@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package repository
 
 import (
 	"context"
@@ -34,6 +34,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
@@ -41,7 +42,7 @@ import (
 
 // repositoryMavenHostedResource is the resource implementation.
 type repositoryMavenHostedResource struct {
-	baseResource
+	common.BaseResource
 }
 
 // NewRepositoryMavenResource is a helper function to simplify the provider implementation.
@@ -204,7 +205,7 @@ func (r *repositoryMavenHostedResource) Create(ctx context.Context, req resource
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	requestPayload := sonatyperepo.MavenHostedRepositoryApiRequest{
@@ -245,7 +246,7 @@ func (r *repositoryMavenHostedResource) Create(ctx context.Context, req resource
 		}
 	}
 
-	createRequest := r.client.RepositoryManagementAPI.CreateMavenHostedRepository(ctx).Body(requestPayload)
+	createRequest := r.Client.RepositoryManagementAPI.CreateMavenHostedRepository(ctx).Body(requestPayload)
 	httpResponse, err := createRequest.Execute()
 
 	// Handle Error
@@ -298,11 +299,11 @@ func (r *repositoryMavenHostedResource) Read(ctx context.Context, req resource.R
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Read API Call
-	repositoryApiResponse, httpResponse, err := r.client.RepositoryManagementAPI.GetMavenHostedRepository(ctx, state.Name.ValueString()).Execute()
+	repositoryApiResponse, httpResponse, err := r.Client.RepositoryManagementAPI.GetMavenHostedRepository(ctx, state.Name.ValueString()).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -377,7 +378,7 @@ func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Update API Call
@@ -414,7 +415,7 @@ func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource
 			ProprietaryComponents: plan.Component.ProprietaryComponents.ValueBoolPointer(),
 		}
 	}
-	apiUpdateRequest := r.client.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, state.Name.ValueString()).Body(requestPayload)
+	apiUpdateRequest := r.Client.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, state.Name.ValueString()).Body(requestPayload)
 
 	// Call API
 	httpResponse, err := apiUpdateRequest.Execute()
@@ -465,8 +466,8 @@ func (r *repositoryMavenHostedResource) Delete(ctx context.Context, req resource
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
-	DeleteRepository(r.client, &ctx, state.Name.ValueString(), resp)
+	DeleteRepository(r.Client, &ctx, state.Name.ValueString(), resp)
 }

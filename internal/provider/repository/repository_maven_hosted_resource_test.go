@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package provider
+package repository_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/repository"
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -29,7 +31,7 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -37,8 +39,8 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "format", REPOSITORY_FORMAT_MAVEN),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "type", REPOSITORY_TYPE_HOSTED),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "format", repository.REPOSITORY_FORMAT_MAVEN),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "type", repository.REPOSITORY_TYPE_HOSTED),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "online", "true"),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "storage.blob_store_name", "default"),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "component.proprietary_components", "false"),
@@ -51,7 +53,7 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 }
 
 func getRepositoryMavenHostedResourceConfig(randomString string) string {
-	return fmt.Sprintf(providerConfig+`
+	return fmt.Sprintf(utils.ProviderConfig+`
 resource "sonatyperepo_repository_maven_hosted" "repo" {
   name = "maven-hosted-repo-%s"
   online = true

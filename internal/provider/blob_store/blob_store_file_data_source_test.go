@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package provider
+package blob_store_test
 
 import (
 	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,11 +26,11 @@ import (
 
 func TestAccBlobStoreFileDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
+				Config: utils.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
 					name = "default"
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -38,7 +39,7 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 				),
 			},
 			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
+				Config: utils.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
 					name = "this-will-not-exist"
 				}`,
 				ExpectError: regexp.MustCompile("Error: Unable to Read Blob Stores"),

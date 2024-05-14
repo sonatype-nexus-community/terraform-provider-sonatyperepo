@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package repository
 
 import (
 	"context"

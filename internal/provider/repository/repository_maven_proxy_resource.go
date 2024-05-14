@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package repository
 
 import (
 	"context"
@@ -36,6 +36,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
@@ -43,7 +44,7 @@ import (
 
 // repositoryMavenProxyResource is the resource implementation.
 type repositoryMavenProxyResource struct {
-	baseResource
+	common.BaseResource
 }
 
 // NewRepositoryMavenProxyResource is a helper function to simplify the provider implementation.
@@ -368,11 +369,11 @@ func (r *repositoryMavenProxyResource) Create(ctx context.Context, req resource.
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	requestPayload := makeApiRequest(&plan)
-	createRequest := r.client.RepositoryManagementAPI.CreateMavenProxyRepository(ctx).Body(requestPayload)
+	createRequest := r.Client.RepositoryManagementAPI.CreateMavenProxyRepository(ctx).Body(requestPayload)
 	httpResponse, err := createRequest.Execute()
 
 	// Handle Error
@@ -400,7 +401,7 @@ func (r *repositoryMavenProxyResource) Create(ctx context.Context, req resource.
 		plan.Storage.WritePolicy = types.StringValue("ALLOW")
 	}
 	// E.g. http://localhost:8081/repository/maven-proxy-repo-test - this is not included in response to CREATE
-	plan.Url = types.StringValue(fmt.Sprintf("%s/repository/%s", r.baseUrl, plan.Name.ValueString()))
+	plan.Url = types.StringValue(fmt.Sprintf("%s/repository/%s", r.BaseUrl, plan.Name.ValueString()))
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, plan)
@@ -425,11 +426,11 @@ func (r *repositoryMavenProxyResource) Read(ctx context.Context, req resource.Re
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Read API Call
-	repositoryApiResponse, httpResponse, err := r.client.RepositoryManagementAPI.GetMavenProxyRepository(ctx, state.Name.ValueString()).Execute()
+	repositoryApiResponse, httpResponse, err := r.Client.RepositoryManagementAPI.GetMavenProxyRepository(ctx, state.Name.ValueString()).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -557,12 +558,12 @@ func (r *repositoryMavenProxyResource) Update(ctx context.Context, req resource.
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
 	// Update API Call
 	requestPayload := makeApiRequest(&plan)
-	apiUpdateRequest := r.client.RepositoryManagementAPI.UpdateMavenProxyRepository(ctx, state.Name.ValueString()).Body(requestPayload)
+	apiUpdateRequest := r.Client.RepositoryManagementAPI.UpdateMavenProxyRepository(ctx, state.Name.ValueString()).Body(requestPayload)
 
 	// Call API
 	httpResponse, err := apiUpdateRequest.Execute()
@@ -613,10 +614,10 @@ func (r *repositoryMavenProxyResource) Delete(ctx context.Context, req resource.
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		r.auth,
+		r.Auth,
 	)
 
-	DeleteRepository(r.client, &ctx, state.Name.ValueString(), resp)
+	DeleteRepository(r.Client, &ctx, state.Name.ValueString(), resp)
 }
 
 func makeApiRequest(plan *model.RepositoryMavenProxyModel) sonatyperepo.MavenProxyRepositoryApiRequest {

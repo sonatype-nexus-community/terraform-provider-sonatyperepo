@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package blob_store
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
@@ -43,7 +44,7 @@ func BlobStoresDataSource() datasource.DataSource {
 
 // blobStoresDataSource is the data source implementation.
 type blobStoresDataSource struct {
-	baseDataSource
+	common.BaseDataSource
 }
 
 // Metadata returns the data source type name.
@@ -112,10 +113,10 @@ func (d *blobStoresDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
-		d.auth,
+		d.Auth,
 	)
 
-	blobStores, _, err := d.client.BlobStoreAPI.ListBlobStores(ctx).Execute()
+	blobStores, _, err := d.Client.BlobStoreAPI.ListBlobStores(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Blob Stores",

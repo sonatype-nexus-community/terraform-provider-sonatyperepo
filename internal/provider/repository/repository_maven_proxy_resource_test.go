@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package repository_test
 
 import (
 	"fmt"
@@ -22,6 +22,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"terraform-provider-sonatyperepo/internal/provider/repository"
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
 func TestAccRepositoryMavenProxyResource(t *testing.T) {
@@ -29,7 +32,7 @@ func TestAccRepositoryMavenProxyResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -37,8 +40,8 @@ func TestAccRepositoryMavenProxyResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "format", REPOSITORY_FORMAT_MAVEN),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "type", REPOSITORY_TYPE_PROXY),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "format", repository.REPOSITORY_FORMAT_MAVEN),
+					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "type", repository.REPOSITORY_TYPE_PROXY),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "online", "true"),
 					resource.TestCheckResourceAttrSet("sonatyperepo_repository_maven_proxy.repo", "url"),
 					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "storage.blob_store_name", "default"),
@@ -61,7 +64,7 @@ func TestAccRepositoryMavenProxyResource(t *testing.T) {
 }
 
 func getRepositoryMavenProxyResourceConfig(randomString string) string {
-	return fmt.Sprintf(providerConfig+`
+	return fmt.Sprintf(utils.ProviderConfig+`
 resource "sonatyperepo_repository_maven_proxy" "repo" {
   name = "maven-proxy-repo-%s"
   online = true

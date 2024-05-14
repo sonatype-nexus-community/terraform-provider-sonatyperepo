@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package provider
+package common
 
 import (
 	"context"
@@ -27,18 +27,18 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ datasource.DataSource              = &baseDataSource{}
-	_ datasource.DataSourceWithConfigure = &baseDataSource{}
+	_ datasource.DataSource              = &BaseDataSource{}
+	_ datasource.DataSourceWithConfigure = &BaseDataSource{}
 )
 
-// applicationsDataSource is the data source implementation.
-type baseDataSource struct {
-	client *sonatyperepo.APIClient
-	auth   sonatyperepo.BasicAuth
+// BaseDataSource is the data source implementation.
+type BaseDataSource struct {
+	Auth   sonatyperepo.BasicAuth
+	Client *sonatyperepo.APIClient
 }
 
 // Configure implements datasource.DataSourceWithConfigure.
-func (d *baseDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *BaseDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -53,21 +53,21 @@ func (d *baseDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 		return
 	}
 
-	d.client = config.client
-	d.auth = config.auth
+	d.Auth = config.Auth
+	d.Client = config.Client
 }
 
 // Metadata implements datasource.DataSource.
-func (*baseDataSource) Metadata(context.Context, datasource.MetadataRequest, *datasource.MetadataResponse) {
+func (*BaseDataSource) Metadata(context.Context, datasource.MetadataRequest, *datasource.MetadataResponse) {
 	panic("unimplemented")
 }
 
 // Read implements datasource.DataSource.
-func (*baseDataSource) Read(context.Context, datasource.ReadRequest, *datasource.ReadResponse) {
+func (*BaseDataSource) Read(context.Context, datasource.ReadRequest, *datasource.ReadResponse) {
 	panic("unimplemented")
 }
 
 // Schema implements datasource.DataSource.
-func (*baseDataSource) Schema(context.Context, datasource.SchemaRequest, *datasource.SchemaResponse) {
+func (*BaseDataSource) Schema(context.Context, datasource.SchemaRequest, *datasource.SchemaResponse) {
 	panic("unimplemented")
 }
