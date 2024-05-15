@@ -251,7 +251,7 @@ func (r *repositoryMavenProxyResource) Schema(_ context.Context, _ resource.Sche
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
-								Description: "Authentication type",
+								Description: "Authentication type - either 'username' or 'ntlm'",
 								Required:    false,
 								Optional:    true,
 								Validators: []validator.String{
@@ -268,6 +268,9 @@ func (r *repositoryMavenProxyResource) Schema(_ context.Context, _ resource.Sche
 								Required:    false,
 								Optional:    true,
 								Sensitive:   true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"ntlm_host": schema.StringAttribute{
 								Description: "NTLM Host",
@@ -402,6 +405,9 @@ func (r *repositoryMavenProxyResource) Create(ctx context.Context, req resource.
 	}
 	// E.g. http://localhost:8081/repository/maven-proxy-repo-test - this is not included in response to CREATE
 	plan.Url = types.StringValue(fmt.Sprintf("%s/repository/%s", r.BaseUrl, plan.Name.ValueString()))
+	if plan.HttpClient.Connection.EnableCircularRedirects.IsNull() {
+		plan.HttpClient.Connection.EnableCircularRedirects = types.BoolValue(false)
+	}
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, plan)
@@ -498,15 +504,14 @@ func (r *repositoryMavenProxyResource) Read(ctx context.Context, req resource.Re
 			}
 		}
 		if repositoryApiResponse.HttpClient.Authentication != nil {
-			state.HttpClient.Authentication = &model.RepositoryHttpClientAuthenticationModel{}
+			if state.HttpClient.Authentication == nil {
+				state.HttpClient.Authentication = &model.RepositoryHttpClientAuthenticationModel{}
+			}
 			if repositoryApiResponse.HttpClient.Authentication.Type != nil {
 				state.HttpClient.Authentication.Type = types.StringValue(*repositoryApiResponse.HttpClient.Authentication.Type)
 			}
 			if repositoryApiResponse.HttpClient.Authentication.Username != nil {
 				state.HttpClient.Authentication.Username = types.StringValue(*repositoryApiResponse.HttpClient.Authentication.Username)
-			}
-			if repositoryApiResponse.HttpClient.Authentication.Password != nil {
-				state.HttpClient.Authentication.Password = types.StringValue(*repositoryApiResponse.HttpClient.Authentication.Password)
 			}
 			if repositoryApiResponse.HttpClient.Authentication.NtlmHost != nil {
 				state.HttpClient.Authentication.NtlmHost = types.StringValue(*repositoryApiResponse.HttpClient.Authentication.NtlmHost)
@@ -514,7 +519,9 @@ func (r *repositoryMavenProxyResource) Read(ctx context.Context, req resource.Re
 			if repositoryApiResponse.HttpClient.Authentication.NtlmDomain != nil {
 				state.HttpClient.Authentication.NtlmDomain = types.StringValue(*repositoryApiResponse.HttpClient.Authentication.NtlmDomain)
 			}
-			// state.HttpClient.Authentication.Preemptive ?
+			if repositoryApiResponse.HttpClient.Authentication.Preemptive != nil {
+				state.HttpClient.Authentication.Preemptive = types.BoolValue(*repositoryApiResponse.HttpClient.Authentication.Preemptive)
+			}
 		}
 		if repositoryApiResponse.RoutingRuleName != nil {
 			state.RoutingRule = types.StringValue(*repositoryApiResponse.RoutingRuleName)

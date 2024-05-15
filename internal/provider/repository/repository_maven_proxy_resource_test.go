@@ -30,6 +30,7 @@ import (
 func TestAccRepositoryMavenProxyResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := "sonatyperepo_repository_maven_proxy.repo"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
@@ -39,23 +40,29 @@ func TestAccRepositoryMavenProxyResource(t *testing.T) {
 				Config: getRepositoryMavenProxyResourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "format", repository.REPOSITORY_FORMAT_MAVEN),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "type", repository.REPOSITORY_TYPE_PROXY),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "online", "true"),
-					resource.TestCheckResourceAttrSet("sonatyperepo_repository_maven_proxy.repo", "url"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "proxy.remote_url", "https://repo1.maven.org/maven2/"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.connection.enable_cookies", "false"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.connection.use_trust_store", "false"),
-					resource.TestCheckNoResourceAttr("sonatyperepo_repository_maven_proxy.repo", "http_client.connection.authentication"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "format", repository.REPOSITORY_FORMAT_MAVEN),
+					resource.TestCheckResourceAttr(resourceName, "type", repository.REPOSITORY_TYPE_PROXY),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, "url"),
+					resource.TestCheckResourceAttr(resourceName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceName, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
+					resource.TestCheckResourceAttr(resourceName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceName, "http_client.authentication.type", "username"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -84,6 +91,19 @@ resource "sonatyperepo_repository_maven_proxy" "repo" {
   http_client = {
     blocked = false
     auto_block = true
+	connection = {
+		enable_cookies = true
+		retries = 9
+		timeout = 999
+		use_trust_store = true
+		user_agent_suffix = "terraform"
+	}
+	authentication = {
+		username = "user"
+		password = "pass"
+		preemptive = true
+		type = "username"
+	}
   }
   maven = {
 	content_disposition = "ATTACHMENT"

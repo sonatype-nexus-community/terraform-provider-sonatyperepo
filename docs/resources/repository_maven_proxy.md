@@ -60,7 +60,7 @@ Optional:
 - `ntlm_host` (String) NTLM Host
 - `password` (String, Sensitive) Password
 - `preemptive` (Boolean) Whether to use pre-emptive authentication. Use with caution. Defaults to false.
-- `type` (String) Authentication type
+- `type` (String) Authentication type - either 'username' or 'ntlm'
 - `username` (String) Username
 
 
