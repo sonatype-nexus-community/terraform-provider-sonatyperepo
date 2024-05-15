@@ -389,6 +389,8 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.8 h1:2wmBuz+nB
 github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.8/go.mod h1:sQz+IiYQCEc7ueSMYZDp1jtumtb+j005ca09CR/yhRA=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.9 h1:J0tpxP3yvRnKRzym0enVLbEKKrC0ZmQoSHlYZGiTIkk=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.9/go.mod h1:sQz+IiYQCEc7ueSMYZDp1jtumtb+j005ca09CR/yhRA=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.10 h1:vcVAce0QtTP0MZbRzqS2K4Iz35txljL6GqAXoqlEUEw=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go v0.0.10/go.mod h1:sQz+IiYQCEc7ueSMYZDp1jtumtb+j005ca09CR/yhRA=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=

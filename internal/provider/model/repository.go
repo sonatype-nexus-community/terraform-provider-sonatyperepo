@@ -31,46 +31,57 @@ type RepositoriesModel struct {
 	Repositories []RepositoryModel `tfsdk:"repositories"`
 }
 
+type RepositoryMavenGroupModel struct {
+	Name        types.String               `tfsdk:"name"`
+	Format      types.String               `tfsdk:"format"`
+	Type        types.String               `tfsdk:"type"`
+	Url         types.String               `tfsdk:"url"`
+	Online      types.Bool                 `tfsdk:"online"`
+	Storage     repositoryStorageModeGroup `tfsdk:"storage"`
+	Group       RepositoryGroupModel       `tfsdk:"group"`
+	LastUpdated types.String               `tfsdk:"last_updated"`
+}
+
 type RepositoryMavenHostedModel struct {
-	Name        types.String                 `tfsdk:"name"`
-	Format      types.String                 `tfsdk:"format"`
-	Type        types.String                 `tfsdk:"type"`
-	Url         types.String                 `tfsdk:"url"`
-	Online      types.Bool                   `tfsdk:"online"`
-	Storage     repositoryStorageModel       `tfsdk:"storage"`
-	Cleanup     *RepositoryCleanupModel      `tfsdk:"cleanup"`
-	Maven       repositoryMavenSpecificModel `tfsdk:"maven"`
-	Component   *RepositoryComponentModel    `tfsdk:"component"`
-	LastUpdated types.String                 `tfsdk:"last_updated"`
+	Name        types.String                   `tfsdk:"name"`
+	Format      types.String                   `tfsdk:"format"`
+	Type        types.String                   `tfsdk:"type"`
+	Url         types.String                   `tfsdk:"url"`
+	Online      types.Bool                     `tfsdk:"online"`
+	Storage     repositoryStorageModelNonGroup `tfsdk:"storage"`
+	Cleanup     *RepositoryCleanupModel        `tfsdk:"cleanup"`
+	Maven       repositoryMavenSpecificModel   `tfsdk:"maven"`
+	Component   *RepositoryComponentModel      `tfsdk:"component"`
+	LastUpdated types.String                   `tfsdk:"last_updated"`
 }
 
 type RepositoryMavenProxyModel struct {
-	Name          types.String                 `tfsdk:"name"`
-	Format        types.String                 `tfsdk:"format"`
-	Type          types.String                 `tfsdk:"type"`
-	Url           types.String                 `tfsdk:"url"`
-	Online        types.Bool                   `tfsdk:"online"`
-	Storage       repositoryStorageModel       `tfsdk:"storage"`
-	Cleanup       *RepositoryCleanupModel      `tfsdk:"cleanup"`
-	Proxy         repositoryProxyModel         `tfsdk:"proxy"`
-	NegativeCache repositoryNegativeCacheModel `tfsdk:"negative_cache"`
-	HttpClient    repositoryHttpClientModel    `tfsdk:"http_client"`
-	RoutingRule   types.String                 `tfsdk:"routing_rule"`
-	Replication   *RepositoryReplicationModel  `tfsdk:"replication"`
-	Maven         repositoryMavenSpecificModel `tfsdk:"maven"`
-	LastUpdated   types.String                 `tfsdk:"last_updated"`
+	Name          types.String                   `tfsdk:"name"`
+	Format        types.String                   `tfsdk:"format"`
+	Type          types.String                   `tfsdk:"type"`
+	Url           types.String                   `tfsdk:"url"`
+	Online        types.Bool                     `tfsdk:"online"`
+	Storage       repositoryStorageModelNonGroup `tfsdk:"storage"`
+	Cleanup       *RepositoryCleanupModel        `tfsdk:"cleanup"`
+	Proxy         repositoryProxyModel           `tfsdk:"proxy"`
+	NegativeCache repositoryNegativeCacheModel   `tfsdk:"negative_cache"`
+	HttpClient    repositoryHttpClientModel      `tfsdk:"http_client"`
+	RoutingRule   types.String                   `tfsdk:"routing_rule"`
+	Replication   *RepositoryReplicationModel    `tfsdk:"replication"`
+	Maven         repositoryMavenSpecificModel   `tfsdk:"maven"`
+	LastUpdated   types.String                   `tfsdk:"last_updated"`
 }
 
-type repositoryStorageModel struct {
+type repositoryStorageModelNonGroup struct {
 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
 	WritePolicy                 types.String `tfsdk:"write_policy"`
 }
 
-// type repositoryStorageModel struct {
-// 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
-// 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
-// }
+type repositoryStorageModeGroup struct {
+	BlobStoreName               types.String `tfsdk:"blob_store_name"`
+	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+}
 
 type RepositoryCleanupModel struct {
 	PolicyNames []types.String `tfsdk:"policy_names"`
@@ -125,4 +136,8 @@ type RepositoryHttpClientAuthenticationModel struct {
 type RepositoryReplicationModel struct {
 	PreemptivePullEnabled types.Bool   `tfsdk:"preemptive_pull_enabled"`
 	AssetPathRegex        types.String `tfsdk:"asset_path_regex"`
+}
+
+type RepositoryGroupModel struct {
+	MemberNames []types.String `tfsdk:"member_names"`
 }
