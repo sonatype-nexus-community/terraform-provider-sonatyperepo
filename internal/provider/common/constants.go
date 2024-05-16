@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package provider
+package common
 
-import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+func NewFalse() *bool {
+	b := false
+	return &b
+}
 
-type SonatypeDataSourceData struct {
-	client *sonatyperepo.APIClient
-	auth   sonatyperepo.BasicAuth
+func NewTrue() *bool {
+	b := true
+	return &b
 }

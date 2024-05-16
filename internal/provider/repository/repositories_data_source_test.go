@@ -14,34 +14,26 @@
  * limitations under the License.
  */
 
-package provider
+package repository_test
 
 import (
-	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoreFileDataSource(t *testing.T) {
+func TestAccRepositoriesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
-					name = "default"
+				Config: utils.ProviderConfig + `data "sonatyperepo_repositories" "repos" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "soft_quota.%"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_repositories.repos", "repositories.#"),
 				),
-			},
-			{
-				Config: providerConfig + `data "sonatyperepo_blob_store_file" "b" {
-					name = "this-will-not-exist"
-				}`,
-				ExpectError: regexp.MustCompile("Error: Unable to Read Blob Stores"),
 			},
 		},
 	})
