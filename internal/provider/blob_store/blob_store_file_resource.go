@@ -281,30 +281,5 @@ func (r *blobStoreFileResource) Delete(ctx context.Context, req resource.DeleteR
 	)
 
 	// Delete API Call
-	apiDeleteRequest := r.Client.BlobStoreAPI.DeleteBlobStore(ctx, state.Name.ValueString())
-
-	// Call API
-	httpResponse, err := apiDeleteRequest.Execute()
-
-	// Handle Error(s)
-	if err != nil {
-		if httpResponse.StatusCode == 404 {
-			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Blob Store File to delete did not exist",
-				fmt.Sprintf("Unable to delete Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-			)
-		} else {
-			resp.Diagnostics.AddError(
-				"Error deleting Blob Store File",
-				fmt.Sprintf("Unable to delete Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-			)
-		}
-		return
-	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error deleting Blob Store File",
-			fmt.Sprintf("Unexpected Response Code whilst deleting Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-		)
-	}
+	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
 }

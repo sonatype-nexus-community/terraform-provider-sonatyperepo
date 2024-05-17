@@ -16,6 +16,10 @@
 
 package common
 
+const (
+	NXRM_PLACEHOLDER_PASSWORD = "#~NXRM~PLACEHOLDER~PASSWORD~#"
+)
+
 func NewFalse() *bool {
 	b := false
 	return &b
