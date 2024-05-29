@@ -20,11 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type BlobStoreSoftQuota struct {
-	Type  types.String `tfsdk:"type"`
-	Limit types.Int64  `tfsdk:"limit"`
-}
-
 type BlobStoreModel struct {
 	Name                  types.String       `tfsdk:"name"`
 	Type                  types.String       `tfsdk:"type"`
@@ -39,9 +34,63 @@ type BlobStoresModel struct {
 	BlobStores []BlobStoreModel `tfsdk:"blob_stores"`
 }
 
+type BlobStoreSoftQuota struct {
+	Type  types.String `tfsdk:"type"`
+	Limit types.Int64  `tfsdk:"limit"`
+}
+
 type BlobStoreFileModel struct {
 	Name        types.String        `tfsdk:"name"`
 	Path        types.String        `tfsdk:"path"`
 	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
 	LastUpdated types.String        `tfsdk:"last_updated"`
+}
+
+type BlobStoreGroupModel struct {
+	Name        types.String        `tfsdk:"name"`
+	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	Members     []types.String      `tfsdk:"members"`
+	FillPolicy  types.String        `tfsdk:"fill_policy"`
+	LastUpdated types.String        `tfsdk:"last_updated"`
+}
+
+type BlobStoreS3Model struct {
+	Name                types.String                         `tfsdk:"name"`
+	Type                types.String                         `tfsdk:"type"`
+	SoftQuota           *BlobStoreSoftQuota                  `tfsdk:"soft_quota"`
+	BucketConfiguration *BlobStoreS3BucketConfigurationModel `tfsdk:"bucket_configuration"`
+	LastUpdated         types.String                         `tfsdk:"last_updated"`
+}
+
+type BlobStoreS3BucketConfigurationModel struct {
+	Bucket                   BlobStoreS3BucketModel                    `tfsdk:"bucket"`
+	Encryption               *BlobStoreS3Encryption                    `tfsdk:"encryption"`
+	BucketSecurity           *BlobStoreS3BucketSecurityModel           `tfsdk:"bucket_security"`
+	AdvancedBucketConnection *BlobStoreS3AdvancedBucketConnectionModel `tfsdk:"advanced_bucket_connection"`
+}
+
+type BlobStoreS3BucketModel struct {
+	Region     types.String `tfsdk:"region"`
+	Name       types.String `tfsdk:"name"`
+	Prefix     types.String `tfsdk:"prefix"`
+	Expiration types.Int64  `tfsdk:"expiration"`
+}
+
+type BlobStoreS3Encryption struct {
+	EncryptionType types.String `tfsdk:"encryption_type"`
+	EncryptionKey  types.String `tfsdk:"encryption_key"`
+}
+
+type BlobStoreS3BucketSecurityModel struct {
+	AccessKeyId     types.String `tfsdk:"access_key_id"`
+	SecretAccessKey types.String `tfsdk:"secret_access_key"`
+	Role            types.String `tfsdk:"role"`
+	SessionToken    types.String `tfsdk:"session_token"`
+}
+
+type BlobStoreS3AdvancedBucketConnectionModel struct {
+	Endpoint              types.String `tfsdk:"endpoint"`
+	SignerType            types.String `tfsdk:"signer_type"`
+	ForcePathStyle        types.Bool   `tfsdk:"force_path_style"`
+	MaxConnectionPoolSize types.Int64  `tfsdk:"max_connection_pool_size"`
 }

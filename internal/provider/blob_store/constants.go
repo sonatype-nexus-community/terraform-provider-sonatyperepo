@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package common
+package blob_store
 
+// Blob Store Types.
 const (
-	NXRM_PLACEHOLDER_PASSWORD = "#~NXRM~PLACEHOLDER~PASSWORD~#"
+	BLOB_STORE_TYPE_FILE string = "file"
+	BLOB_STORE_TYPE_S3   string = "s3"
 )
-
-func NewFalse() *bool {
-	b := false
-	return &b
-}
-
-func NewTrue() *bool {
-	b := true
-	return &b
-}

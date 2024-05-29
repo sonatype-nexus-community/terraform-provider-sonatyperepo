@@ -179,6 +179,7 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		blob_store.NewBlobStoreFileResource,
+		blob_store.NewBlobStoreS3Resource,
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
@@ -189,6 +190,8 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 	return []func() datasource.DataSource{
 		blob_store.BlobStoresDataSource,
 		blob_store.BlobStoreFileDataSource,
+		blob_store.BlobStoreGroupDataSource,
+		blob_store.BlobStoreS3DataSource,
 		repository.RepositoriesDataSource,
 	}
 }
