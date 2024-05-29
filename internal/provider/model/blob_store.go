@@ -46,6 +46,14 @@ type BlobStoreFileModel struct {
 	LastUpdated types.String        `tfsdk:"last_updated"`
 }
 
+type BlobStoreGroupModel struct {
+	Name        types.String        `tfsdk:"name"`
+	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	Members     []types.String      `tfsdk:"members"`
+	FillPolicy  types.String        `tfsdk:"fill_policy"`
+	LastUpdated types.String        `tfsdk:"last_updated"`
+}
+
 type BlobStoreS3Model struct {
 	Name                types.String                         `tfsdk:"name"`
 	Type                types.String                         `tfsdk:"type"`

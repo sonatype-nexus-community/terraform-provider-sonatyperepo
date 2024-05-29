@@ -190,6 +190,7 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 	return []func() datasource.DataSource{
 		blob_store.BlobStoresDataSource,
 		blob_store.BlobStoreFileDataSource,
+		blob_store.BlobStoreGroupDataSource,
 		blob_store.BlobStoreS3DataSource,
 		repository.RepositoriesDataSource,
 	}
