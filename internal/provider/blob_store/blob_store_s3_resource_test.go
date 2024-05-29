@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TODO: Acceptance Tests do not have access to an environment that has appropriate AWS connectivity
+// TODO: Acceptance Tests do not have access to an environment that has appropriate AWS connectivity.
 func TestAccBlobStoreS3Resource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
