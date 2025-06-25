@@ -16,7 +16,7 @@
 
 package common
 
-import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
 type SonatypeDataSourceData struct {
 	Auth    sonatyperepo.BasicAuth

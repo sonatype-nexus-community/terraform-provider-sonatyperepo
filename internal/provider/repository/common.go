@@ -23,7 +23,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Common Delete Repository implementation.
