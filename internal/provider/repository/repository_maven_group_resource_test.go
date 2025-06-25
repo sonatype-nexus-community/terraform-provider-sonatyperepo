@@ -86,7 +86,7 @@ resource "sonatyperepo_repository_maven_group" "repo" {
 	strict_content_type_validation = true
   }
   group = {
-	member_names = ["maven-central"]
+	member_names = ["maven-proxy"]
   }
 }
 `, randomString)
