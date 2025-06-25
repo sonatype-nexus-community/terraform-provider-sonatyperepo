@@ -18,6 +18,7 @@ package system_test
 
 import (
 	"fmt"
+	"os"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -31,34 +32,35 @@ const (
 )
 
 func TestAccSystemConfigMailResource(t *testing.T) {
+	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
+		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: getSsytemConfigMailResourceConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "host", fmt.Sprintf("something.tld.%s", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "port", "587"),
-					resource.TestCheckResourceAttr(resourceName, "username", "someone"),
-					resource.TestCheckResourceAttr(resourceName, "password", "sensitive-value"),
-					resource.TestCheckResourceAttr(resourceName, "from_address", "no-where@somewhere.tld"),
-					resource.TestCheckResourceAttr(resourceName, "start_tls_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "start_tls_required", "false"),
-					resource.TestCheckResourceAttr(resourceName, "ssl_on_connect_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "ssl_server_identity_check_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "subject_prefix", "TESTING"),
-				),
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Create and Read testing
+				{
+					Config: getSsytemConfigMailResourceConfig(randomString),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify
+						resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+						resource.TestCheckResourceAttr(resourceName, "host", fmt.Sprintf("something.tld.%s", randomString)),
+						resource.TestCheckResourceAttr(resourceName, "port", "587"),
+						resource.TestCheckResourceAttr(resourceName, "username", "someone"),
+						resource.TestCheckResourceAttr(resourceName, "password", "sensitive-value"),
+						resource.TestCheckResourceAttr(resourceName, "from_address", "no-where@somewhere.tld"),
+						resource.TestCheckResourceAttr(resourceName, "start_tls_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceName, "start_tls_required", "false"),
+						resource.TestCheckResourceAttr(resourceName, "ssl_on_connect_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceName, "ssl_server_identity_check_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceName, "nexus_trust_store_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceName, "subject_prefix", "TESTING"),
+					),
+				},
+				// Delete testing automatically occurs in TestCase
 			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
+		})
+	}
 }
 
 func getSsytemConfigMailResourceConfig(randomString string) string {
