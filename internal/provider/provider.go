@@ -25,6 +25,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/blob_store"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/repository"
+	"terraform-provider-sonatyperepo/internal/provider/system"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -183,6 +184,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
+		system.NewSystemConfigMailResource,
 	}
 }
 

@@ -24,7 +24,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -48,13 +47,13 @@ func NewSystemConfigMailResource() resource.Resource {
 
 // Metadata returns the resource type name.
 func (r *systemConfigMailResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_repository_maven_hosted"
+	resp.TypeName = req.ProviderTypeName + "_system_config_mail"
 }
 
 // Schema defines the schema for the resource.
 func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Configure the System EmaiL Server",
+		Description: "Configure the System Email Server",
 		Attributes: map[string]schema.Attribute{
 			"enabled": schema.BoolAttribute{
 				Description: "Whether Email Server is enabled",
@@ -69,7 +68,6 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "SMTP Server Port",
 				Required:    true,
 				Optional:    false,
-				Default:     int64default.StaticInt64(25),
 			},
 			"username": schema.StringAttribute{
 				Description: "Username to use for authentication with SMTP Server",
@@ -91,23 +89,28 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 			},
 			"start_tls_enabled": schema.BoolAttribute{
 				Description: "Enable STARTTLS support for insecure connections",
-				Optional:    true,
+				Required:    true,
+				Optional:    false,
 			},
 			"start_tls_required": schema.BoolAttribute{
 				Description: "Require STARTTLS support",
-				Optional:    true,
+				Required:    true,
+				Optional:    false,
 			},
 			"ssl_on_connect_enabled": schema.BoolAttribute{
 				Description: "Enable SSL/TLS encryption upon connection",
-				Optional:    true,
+				Required:    true,
+				Optional:    false,
 			},
 			"ssl_server_identity_check_enabled": schema.BoolAttribute{
 				Description: "Enable server identity check",
-				Optional:    true,
+				Required:    true,
+				Optional:    false,
 			},
 			"nexus_trust_store_enabled": schema.BoolAttribute{
 				Description: "Use certificate connected to the Nexus Repository Truststore",
-				Optional:    true,
+				Required:    true,
+				Optional:    false,
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
@@ -152,20 +155,19 @@ func (r *systemConfigMailResource) Create(ctx context.Context, req resource.Crea
 		SslServerIdentityCheckEnabled: plan.SSLServerIdentityCheckEnabled.ValueBoolPointer(),
 		NexusTrustStoreEnabled:        plan.NexusTrustStoreEnabled.ValueBoolPointer(),
 	}
-	api_request := r.Client.EmailAPI.SetEmailConfiguration(ctx).Body(requestPayload)
-	api_response, err := api_request.Execute()
+	apiResponse, err := r.Client.EmailAPI.SetEmailConfiguration(ctx).Body(requestPayload).Execute()
 
 	// Handle Error
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error setting Mail Server configuration",
-			fmt.Sprintf("Error setting Mail Server configuration: %d: %s", api_response.StatusCode, api_response.Status),
+			fmt.Sprintf("Error setting Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
 		)
 		return
-	} else if api_response.StatusCode != http.StatusCreated && api_response.StatusCode != http.StatusOK {
+	} else if apiResponse.StatusCode != http.StatusNoContent {
 		resp.Diagnostics.AddError(
 			"Error setting Mail Server configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Mail Server configuration: %d: %s", api_response.StatusCode, api_response.Status),
+			fmt.Sprintf("Unexpected Response Code whilst setting Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
 		)
 	}
 
@@ -196,64 +198,61 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 	)
 
 	// Read API Call
-	api_response, http_response, err := r.Client.EmailAPI.GetEmailConfiguration(ctx).Execute()
+	apiResponse, httpResponse, err := r.Client.EmailAPI.GetEmailConfiguration(ctx).Execute()
 
 	if err != nil {
-		if http_response.StatusCode == 404 {
+		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
 				"System Email Configuration does not exist",
-				fmt.Sprintf("Unable to read System Email Configuration: %d: %s", http_response.StatusCode, http_response.Status),
+				fmt.Sprintf("Unable to read System Email Configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
 				"Error Reading System Email Configuration",
-				fmt.Sprintf("Unable to read System Email Configuration: %s: %s", http_response.Status, err),
+				fmt.Sprintf("Unable to read System Email Configuration: %s: %s", httpResponse.Status, err),
 			)
 		}
 		return
 	} else {
 		// Update State
 		state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-		state.Enabled = types.BoolPointerValue(api_response.Enabled)
-		if api_response.Host != nil {
-			state.Host = types.StringPointerValue(api_response.Host)
+		state.Enabled = types.BoolPointerValue(apiResponse.Enabled)
+		if apiResponse.Host != nil {
+			state.Host = types.StringPointerValue(apiResponse.Host)
 		} else {
 			state.Host = types.StringNull()
 		}
 
-		port := api_response.Port
+		port := apiResponse.Port
 		state.Port = types.Int64Value(int64(port))
 
-		if api_response.Username != nil {
-			state.Username = types.StringPointerValue(api_response.Username)
+		if apiResponse.Username != nil {
+			state.Username = types.StringPointerValue(apiResponse.Username)
+		}
 
-		// state.Name = types.StringValue(*api_response.Name)
-		// state.Format = types.StringValue(*api_response.Format)
-		// state.Type = types.StringValue(*api_response.Type)
-		// state.Url = types.StringValue(*api_response.Url)
-		// state.Online = types.BoolValue(api_response.Online)
-		// state.Storage.BlobStoreName = types.StringValue(api_response.Storage.BlobStoreName)
-		// state.Storage.StrictContentTypeValidation = types.BoolValue(api_response.Storage.StrictContentTypeValidation)
-		// state.Storage.WritePolicy = types.StringValue(api_response.Storage.WritePolicy)
-		// if api_response.Cleanup != nil {
-		// 	policies := make([]types.String, len(api_response.Cleanup.PolicyNames), 0)
-		// 	for i, p := range api_response.Cleanup.PolicyNames {
-		// 		policies[i] = types.StringValue(p)
-		// 	}
-		// 	state.Cleanup = &model.RepositoryCleanupModel{
-		// 		PolicyNames: policies,
-		// 	}
+		// Ignore Password
+
+		// if apiResponse.FromAddress != nil {
+		// 	state.FromAddress = types.StringPointerValue(apiResponse.FromAddress)
 		// }
-		// state.Maven.ContentDisposition = types.StringValue(*api_response.Maven.ContentDisposition)
-		// state.Maven.LayoutPolicy = types.StringValue(*api_response.Maven.LayoutPolicy)
-		// state.Maven.VersionPolicy = types.StringValue(*api_response.Maven.VersionPolicy)
-		// if api_response.Component != nil && api_response.Component.ProprietaryComponents != nil {
-		// 	state.Component = &model.RepositoryComponentModel{
-		// 		ProprietaryComponents: types.BoolValue(*api_response.Component.ProprietaryComponents),
-		// 	}
-		// } else {
-		// 	state.Component = nil
+		// if apiResponse.SubjectPrefix != nil {
+		// 	state.SubjectPrefix = types.StringPointerValue(apiResponse.SubjectPrefix)
+		// }
+		// if apiResponse.StartTlsEnabled != nil {
+		// 	state.StartTLSEnabled = types.BoolPointerValue(apiResponse.StartTlsEnabled)
+		// }
+		// if apiResponse.StartTlsRequired != nil {
+		// 	state.StartTLSRequired = types.BoolPointerValue(apiResponse.StartTlsRequired)
+		// }
+		// if apiResponse.SslOnConnectEnabled != nil {
+		// 	state.SSLOnConnectEnabled = types.BoolPointerValue(apiResponse.SslOnConnectEnabled)
+		// }
+		// if apiResponse.SslServerIdentityCheckEnabled != nil {
+		// 	state.SSLServerIdentityCheckEnabled = types.BoolPointerValue(apiResponse.SslServerIdentityCheckEnabled)
+		// }
+		// if apiResponse.NexusTrustStoreEnabled != nil {
+		// 	state.NexusTrustStoreEnabled = types.BoolPointerValue(apiResponse.NexusTrustStoreEnabled)
 		// }
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -286,75 +285,44 @@ func (r *systemConfigMailResource) Update(ctx context.Context, req resource.Upda
 		r.Auth,
 	)
 
-	// Update API Call
-	// requestPayload := sonatyperepo.MavenHostedRepositoryApiRequest{
-	// 	Name:   *plan.Name.ValueStringPointer(),
-	// 	Maven:  sonatyperepo.MavenAttributes{},
-	// 	Online: plan.Online.ValueBool(),
-	// 	Storage: sonatyperepo.HostedStorageAttributes{
-	// 		BlobStoreName:               plan.Storage.BlobStoreName.ValueString(),
-	// 		StrictContentTypeValidation: plan.Storage.StrictContentTypeValidation.ValueBool(),
-	// 		WritePolicy:                 plan.Storage.WritePolicy.ValueString(),
-	// 	},
-	// }
-	// if !plan.Maven.ContentDisposition.IsNull() {
-	// 	requestPayload.Maven.ContentDisposition = plan.Maven.ContentDisposition.ValueStringPointer()
-	// }
-	// if !plan.Maven.LayoutPolicy.IsNull() {
-	// 	requestPayload.Maven.LayoutPolicy = plan.Maven.LayoutPolicy.ValueStringPointer()
-	// }
-	// if !plan.Maven.VersionPolicy.IsNull() {
-	// 	requestPayload.Maven.VersionPolicy = plan.Maven.VersionPolicy.ValueStringPointer()
-	// }
-	// if len(plan.Cleanup.PolicyNames) > 0 {
-	// 	policies := make([]string, len(plan.Cleanup.PolicyNames), 0)
-	// 	for _, p := range plan.Cleanup.PolicyNames {
-	// 		policies = append(policies, p.ValueString())
-	// 	}
-	// 	requestPayload.Cleanup = &sonatyperepo.CleanupPolicyAttributes{
-	// 		PolicyNames: policies,
-	// 	}
-	// }
-	// if !plan.Component.ProprietaryComponents.IsNull() {
-	// 	requestPayload.Component = &sonatyperepo.ComponentAttributes{
-	// 		ProprietaryComponents: plan.Component.ProprietaryComponents.ValueBoolPointer(),
-	// 	}
-	// }
-	// apiUpdateRequest := r.Client.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, state.Name.ValueString()).Body(requestPayload)
+	// Call API to Update
+	requestPayload := sonatyperepo.ApiEmailConfiguration{
+		Enabled:                       plan.Enabled.ValueBoolPointer(),
+		Host:                          plan.Host.ValueStringPointer(),
+		Port:                          int32(*plan.Port.ValueInt64Pointer()),
+		Username:                      plan.Username.ValueStringPointer(),
+		Password:                      plan.Password.ValueStringPointer(),
+		FromAddress:                   plan.FromAddress.ValueStringPointer(),
+		SubjectPrefix:                 plan.SubjectPrefix.ValueStringPointer(),
+		StartTlsEnabled:               plan.StartTLSEnabled.ValueBoolPointer(),
+		StartTlsRequired:              plan.StartTLSRequired.ValueBoolPointer(),
+		SslOnConnectEnabled:           plan.SSLOnConnectEnabled.ValueBoolPointer(),
+		SslServerIdentityCheckEnabled: plan.SSLServerIdentityCheckEnabled.ValueBoolPointer(),
+		NexusTrustStoreEnabled:        plan.NexusTrustStoreEnabled.ValueBoolPointer(),
+	}
+	apiResponse, err := r.Client.EmailAPI.SetEmailConfiguration(ctx).Body(requestPayload).Execute()
 
-	// // Call API
-	// httpResponse, err := apiUpdateRequest.Execute()
+	// Handle Error
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error setting Mail Server configuration",
+			fmt.Sprintf("Error setting Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		)
+		return
+	} else if apiResponse.StatusCode != http.StatusNoContent {
+		resp.Diagnostics.AddError(
+			"Error setting Mail Server configuration",
+			fmt.Sprintf("Unexpected Response Code whilst setting Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		)
+	}
 
-	// // Handle Error(s)
-	// if err != nil {
-	// 	if httpResponse.StatusCode == 404 {
-	// 		resp.State.RemoveResource(ctx)
-	// 		resp.Diagnostics.AddWarning(
-	// 			"Maven Hosted Repository to update did not exist",
-	// 			fmt.Sprintf("Unable to update Maven Hosted Repository: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-	// 		)
-	// 	} else {
-	// 		resp.Diagnostics.AddError(
-	// 			"Error Updating Maven Hosted Repository",
-	// 			fmt.Sprintf("Unable to update Maven Hosted Repository: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-	// 		)
-	// 	}
-	// 	return
-	// } else if httpResponse.StatusCode == http.StatusNoContent {
-	// 	// Map response body to schema and populate Computed attribute values
-	// 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	diags := resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// 	// Set state to fully populated data
-	// 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// } else {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unknown Error Updating Maven Hosted Repository",
-	// 		fmt.Sprintf("Unable to update Maven Hosted Repository: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-	// 	)
-	// }
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
@@ -374,5 +342,19 @@ func (r *systemConfigMailResource) Delete(ctx context.Context, req resource.Dele
 		r.Auth,
 	)
 
-	DeleteRepository(r.Client, &ctx, state.Name.ValueString(), resp)
+	apiResponse, err := r.Client.EmailAPI.DeleteEmailConfiguration(ctx).Execute()
+
+	// Handle Error
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error removing SMTP Mail Server configuration",
+			fmt.Sprintf("Error removing SMTP Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		)
+		return
+	} else if apiResponse.StatusCode != http.StatusNoContent {
+		resp.Diagnostics.AddError(
+			"Error removing SMTP Mail Server configuration",
+			fmt.Sprintf("Unexpected Response Code whilst removing SMTP Mail Server configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		)
+	}
 }
