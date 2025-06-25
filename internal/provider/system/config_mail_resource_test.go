@@ -25,7 +25,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const resourceName = "sonatyperepo_system_config_mail.email"
+const (
+	resourceType = "sonatyperepo_system_config_mail"
+	resourceName = "sonatyperepo_system_config_mail.email"
+)
 
 func TestAccSystemConfigMailResource(t *testing.T) {
 
@@ -74,5 +77,5 @@ resource "%s" "email" {
   nexus_trust_store_enabled = false
   subject_prefix = "TESTING"
 }
-`, resourceName, randomString)
+`, resourceType, randomString)
 }
