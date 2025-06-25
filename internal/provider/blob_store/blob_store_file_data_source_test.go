@@ -35,7 +35,7 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "soft_quota.%"),
+					resource.TestCheckNoResourceAttr("data.sonatyperepo_blob_store_file.b", "soft_quota"),
 				),
 			},
 			{

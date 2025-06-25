@@ -70,10 +70,9 @@ type BlobStoreS3BucketConfigurationModel struct {
 }
 
 type BlobStoreS3BucketModel struct {
-	Region     types.String `tfsdk:"region"`
-	Name       types.String `tfsdk:"name"`
-	Prefix     types.String `tfsdk:"prefix"`
-	Expiration types.Int64  `tfsdk:"expiration"`
+	Region types.String `tfsdk:"region"`
+	Name   types.String `tfsdk:"name"`
+	Prefix types.String `tfsdk:"prefix"`
 }
 
 type BlobStoreS3Encryption struct {
