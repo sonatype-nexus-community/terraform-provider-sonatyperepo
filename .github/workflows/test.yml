@@ -44,12 +44,15 @@ jobs:
               with:
                   go-version-file: 'go.mod'
                   cache: true
-            - run: go get github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
-            - run: go generate ./...
-            - name: git diff
+            
+            - name: Generate Docs
+              run: go generate ./...
+              working-directory: tools
+
+            - name: Check fo Documentation Diffs
               run: |
                   git diff --compact-summary --exit-code || \
-                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in `tools` directory command and commit."; exit 1)
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test:
