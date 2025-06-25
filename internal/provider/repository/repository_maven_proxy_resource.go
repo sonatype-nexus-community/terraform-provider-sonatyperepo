@@ -24,10 +24,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -39,7 +41,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // repositoryMavenProxyResource is the resource implementation.
@@ -306,14 +308,31 @@ func (r *repositoryMavenProxyResource) Schema(_ context.Context, _ resource.Sche
 					"preemptive_pull_enabled": schema.BoolAttribute{
 						Description: "Whether pre-emptive pull is enabled",
 						Required:    true,
-						Optional:    false,
+						// Computed:    true,
+						Optional: false,
+						// Default:     booldefault.StaticBool(false),
 					},
 					"asset_path_regex": schema.StringAttribute{
 						Description: "Regular Expression of Asset Paths to pull pre-emptively pull",
 						Required:    false,
+						Computed:    true,
 						Optional:    true,
+						// Default:     stringdefault.StaticString(""),
 					},
 				},
+				Computed: true,
+				Default: objectdefault.StaticValue(
+					types.ObjectValueMust(
+						map[string]attr.Type{
+							"preemptive_pull_enabled": types.BoolType,
+							"asset_path_regex":        types.StringType,
+						},
+						map[string]attr.Value{
+							"preemptive_pull_enabled": types.BoolValue(false),
+							"asset_path_regex":        types.StringNull(),
+						},
+					),
+				),
 			},
 			"maven": schema.SingleNestedAttribute{
 				Description: "Maven specific configuration for this Repository",
@@ -407,6 +426,13 @@ func (r *repositoryMavenProxyResource) Create(ctx context.Context, req resource.
 	plan.Url = types.StringValue(fmt.Sprintf("%s/repository/%s", r.BaseUrl, plan.Name.ValueString()))
 	if plan.HttpClient.Connection.EnableCircularRedirects.IsNull() {
 		plan.HttpClient.Connection.EnableCircularRedirects = types.BoolValue(false)
+	}
+
+	if plan.Replication == nil {
+		plan.Replication = &model.RepositoryReplicationModel{}
+	}
+	if plan.Replication.PreemptivePullEnabled.IsNull() {
+		plan.Replication.PreemptivePullEnabled = types.BoolValue(false)
 	}
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))

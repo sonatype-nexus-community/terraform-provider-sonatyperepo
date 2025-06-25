@@ -1,3 +1,5 @@
+//go:build generate
+
 /*
  * Copyright (c) 2019-present Sonatype, Inc.
  *
@@ -14,12 +16,16 @@
  * limitations under the License.
  */
 
-package common
+package tools
 
-import sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+import (
+	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
+)
 
-type SonatypeDataSourceData struct {
-	Auth    sonatyperepo.BasicAuth
-	BaseUrl string
-	Client  *sonatyperepo.APIClient
-}
+// Format Terraform code for use in documentation.
+// If you do not have Terraform installed, you can remove the formatting command, but it is suggested
+// to ensure the documentation is formatted properly.
+//go:generate terraform fmt -recursive ../examples/
+
+// Generate documentation.
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir .. -provider-name sonatyperepo
