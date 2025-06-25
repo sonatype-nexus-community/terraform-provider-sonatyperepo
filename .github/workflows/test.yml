@@ -61,7 +61,7 @@ jobs:
                     (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in `tools` directory command and commit."; exit 1)
 
     # Run acceptance tests in a matrix with Terraform CLI versions
-    test:
+    test-parallel:
         name: Terraform Provider Acceptance Tests
         needs: build
         runs-on: ubuntu-latest
@@ -80,6 +80,9 @@ jobs:
                     - '1.6.*'
                     - '1.7.*'
                     - '1.8.*'
+                    - '1.9.*'
+                    - '1.10.*'
+                    - '1.11.*'
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-go@v5
@@ -96,5 +99,30 @@ jobs:
                   NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
                   NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
                   TF_ACC: '1'
+              run: go test -v -cover ./...
+              timeout-minutes: 10
+
+    test-single-hit:
+        name: Terraform Provider Acceptance Tests (Single Hit)
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: 1.12.*
+                  terraform_wrapper: false
+            - run: go mod download
+            - env:
+                  NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
+                  NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
+                  NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
+                  TF_ACC: '1'
+                  TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...
               timeout-minutes: 10
