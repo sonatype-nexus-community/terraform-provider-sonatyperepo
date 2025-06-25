@@ -29,7 +29,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go"
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -71,7 +71,7 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 			"soft_quota": schema.SingleNestedAttribute{
 				Description: "Soft Quota for this Blob Store",
 				Required:    false,
-				Optional:    false,
+				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{

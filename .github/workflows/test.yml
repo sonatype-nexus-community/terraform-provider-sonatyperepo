@@ -32,7 +32,7 @@ jobs:
             - run: go mod download
             - run: go build -v .
             - name: Run linters
-              uses: golangci/golangci-lint-action@v5
+              uses: golangci/golangci-lint-action@v8
               with:
                   version: latest
 
@@ -40,16 +40,25 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
+              
             - uses: actions/setup-go@v5
               with:
                   go-version-file: 'go.mod'
                   cache: true
-            - run: go get github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
-            - run: go generate ./...
-            - name: git diff
+
+            - uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: 1.4.5
+                terraform_wrapper: false
+            
+            - name: Generate Docs
+              run: go generate ./...
+              working-directory: tools
+
+            - name: Check fo Documentation Diffs
               run: |
                   git diff --compact-summary --exit-code || \
-                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in `tools` directory command and commit."; exit 1)
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test:
