@@ -263,7 +263,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	defer httpResponse.Body.Close()
+	// defer httpResponse.Body.Close()
 
 	state := model.BlobStoreS3Model{
 		Name: types.StringValue(data.Name.ValueString()),
