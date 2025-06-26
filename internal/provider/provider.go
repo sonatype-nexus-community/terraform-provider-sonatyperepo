@@ -27,6 +27,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/repository"
 	"terraform-provider-sonatyperepo/internal/provider/role"
 	"terraform-provider-sonatyperepo/internal/provider/system"
+	"terraform-provider-sonatyperepo/internal/provider/user"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -197,6 +198,7 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 		blob_store.BlobStoreS3DataSource,
 		repository.RepositoriesDataSource,
 		role.RolesDataSource,
+		user.UsersDataSource,
 	}
 }
 
