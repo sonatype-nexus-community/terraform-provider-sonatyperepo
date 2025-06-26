@@ -17,7 +17,9 @@
 package common
 
 const (
-	NXRM_PLACEHOLDER_PASSWORD = "#~NXRM~PLACEHOLDER~PASSWORD~#"
+	NXRM_DEFAULT_ANONYMOUS_USERNAME string = "anonymous"
+	NXRM_DEFAULT_REALM_NAME         string = "NexusAuthorizingRealm"
+	NXRM_PLACEHOLDER_PASSWORD       string = "#~NXRM~PLACEHOLDER~PASSWORD~#"
 )
 
 func NewFalse() *bool {
@@ -29,3 +31,5 @@ func NewTrue() *bool {
 	b := true
 	return &b
 }
+
+func StringPointer(s string) *string { return &s }

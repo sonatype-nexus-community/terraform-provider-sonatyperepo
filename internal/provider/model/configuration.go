@@ -20,6 +20,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type AnonymousAccessModel struct {
+	Enabled     types.Bool   `tfsdk:"enabled"`
+	RealmName   types.String `tfsdk:"realm_name"`
+	UserId      types.String `tfsdk:"user_id"`
+	LastUpdated types.String `tfsdk:"last_updated"`
+}
+
 type EmailConfigurationModel struct {
 	Enabled                       types.Bool   `tfsdk:"enabled"`
 	Host                          types.String `tfsdk:"host"`
