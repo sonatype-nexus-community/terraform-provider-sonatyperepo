@@ -1,0 +1,18 @@
+---
+layout: ""
+page_title: "Provider: Sonatype Nexus Repository"
+description: |-
+  The Sonatype Nexus Repository provider provides resources to interact with a Sonatype Nexus Repository installation.
+---
+
+# Sonatype Nexus Repository Provider
+
+The `sonatyperepo` provider is used to interact with resources supported by [Sonatype Nexus Repository](https://www.sonatype.com/products/sonatype-nexus-repository). 
+
+The provider needs to be configured with the proper credentials before it can be used.
+
+## Example Usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
