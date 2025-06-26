@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	resourceType = "sonatyperepo_system_anonymous_access"
-	resourceName = "sonatyperepo_system_anonymous_access.aa"
+	resourceTypeSysAnonymousAccess = "sonatyperepo_system_anonymous_access"
+	resourceNameSysAnonymousAccess = "sonatyperepo_system_anonymous_access.aa"
 )
 
 func TestAccSystemAnonymousAccessResource(t *testing.T) {
@@ -44,9 +44,9 @@ func TestAccSystemAnonymousAccessResource(t *testing.T) {
 					Config: getSystemAnonymousAccessResourceConfig(randomString),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify
-						resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceName, "realm_name", common.NXRM_DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceName, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.NXRM_DEFAULT_REALM_NAME),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
 					),
 				},
 				// Delete testing automatically occurs in TestCase
@@ -62,5 +62,5 @@ resource "%s" "aa" {
   realm_name = "%s"
   user_id = "anonymous-%s"
 }
-`, resourceType, common.NXRM_DEFAULT_REALM_NAME, randomString)
+`, resourceTypeSysAnonymousAccess, common.NXRM_DEFAULT_REALM_NAME, randomString)
 }

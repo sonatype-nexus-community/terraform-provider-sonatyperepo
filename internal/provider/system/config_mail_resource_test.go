@@ -27,8 +27,8 @@ import (
 )
 
 const (
-	resourceType = "sonatyperepo_system_config_mail"
-	resourceName = "sonatyperepo_system_config_mail.email"
+	resourceTypeConfigMail = "sonatyperepo_system_config_mail"
+	resourceNameConfigMail = "sonatyperepo_system_config_mail.email"
 )
 
 func TestAccSystemConfigMailResource(t *testing.T) {
@@ -40,21 +40,21 @@ func TestAccSystemConfigMailResource(t *testing.T) {
 			Steps: []resource.TestStep{
 				// Create and Read testing
 				{
-					Config: getSsytemConfigMailResourceConfig(randomString),
+					Config: getSytemConfigMailResourceConfig(randomString),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify
-						resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
-						resource.TestCheckResourceAttr(resourceName, "host", fmt.Sprintf("something.tld.%s", randomString)),
-						resource.TestCheckResourceAttr(resourceName, "port", "587"),
-						resource.TestCheckResourceAttr(resourceName, "username", "someone"),
-						resource.TestCheckResourceAttr(resourceName, "password", "sensitive-value"),
-						resource.TestCheckResourceAttr(resourceName, "from_address", "no-where@somewhere.tld"),
-						resource.TestCheckResourceAttr(resourceName, "start_tls_enabled", "false"),
-						resource.TestCheckResourceAttr(resourceName, "start_tls_required", "false"),
-						resource.TestCheckResourceAttr(resourceName, "ssl_on_connect_enabled", "false"),
-						resource.TestCheckResourceAttr(resourceName, "ssl_server_identity_check_enabled", "false"),
-						resource.TestCheckResourceAttr(resourceName, "nexus_trust_store_enabled", "false"),
-						resource.TestCheckResourceAttr(resourceName, "subject_prefix", "TESTING"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "enabled", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "host", fmt.Sprintf("something.tld.%s", randomString)),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "port", "587"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "username", "someone"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "password", "sensitive-value"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "from_address", "no-where@somewhere.tld"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "start_tls_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "start_tls_required", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "ssl_on_connect_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "ssl_server_identity_check_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "nexus_trust_store_enabled", "false"),
+						resource.TestCheckResourceAttr(resourceNameConfigMail, "subject_prefix", "TESTING"),
 					),
 				},
 				// Delete testing automatically occurs in TestCase
@@ -63,7 +63,7 @@ func TestAccSystemConfigMailResource(t *testing.T) {
 	}
 }
 
-func getSsytemConfigMailResourceConfig(randomString string) string {
+func getSytemConfigMailResourceConfig(randomString string) string {
 	return fmt.Sprintf(utils.ProviderConfig+`
 resource "%s" "email" {
   enabled = false
@@ -79,5 +79,5 @@ resource "%s" "email" {
   nexus_trust_store_enabled = false
   subject_prefix = "TESTING"
 }
-`, resourceType, randomString)
+`, resourceTypeConfigMail, randomString)
 }
