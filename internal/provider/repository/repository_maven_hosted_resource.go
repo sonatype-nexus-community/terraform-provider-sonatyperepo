@@ -401,7 +401,7 @@ func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource
 	if !plan.Maven.VersionPolicy.IsNull() {
 		requestPayload.Maven.VersionPolicy = plan.Maven.VersionPolicy.ValueStringPointer()
 	}
-	if len(plan.Cleanup.PolicyNames) > 0 {
+	if plan.Cleanup != nil && len(plan.Cleanup.PolicyNames) > 0 {
 		policies := make([]string, len(plan.Cleanup.PolicyNames), 0)
 		for _, p := range plan.Cleanup.PolicyNames {
 			policies = append(policies, p.ValueString())
@@ -437,7 +437,7 @@ func (r *repositoryMavenHostedResource) Update(ctx context.Context, req resource
 		return
 	} else if httpResponse.StatusCode == http.StatusNoContent {
 		// Map response body to schema and populate Computed attribute values
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+		// plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 		// Set state to fully populated data
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)

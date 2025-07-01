@@ -45,7 +45,7 @@ func TestAccSystemAnonymousAccessResource(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.NXRM_DEFAULT_REALM_NAME),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
 					),
 				},
@@ -62,5 +62,5 @@ resource "%s" "aa" {
   realm_name = "%s"
   user_id = "anonymous-%s"
 }
-`, resourceTypeSysAnonymousAccess, common.NXRM_DEFAULT_REALM_NAME, randomString)
+`, resourceTypeSysAnonymousAccess, common.DEFAULT_REALM_NAME, randomString)
 }

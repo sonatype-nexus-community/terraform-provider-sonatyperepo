@@ -268,8 +268,8 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 	// Update API Call
 	payload := sonatyperepo.AnonymousAccessSettingsXO{
 		Enabled:   common.NewFalse(),
-		RealmName: common.StringPointer(common.NXRM_DEFAULT_REALM_NAME),
-		UserId:    common.StringPointer(common.NXRM_DEFAULT_ANONYMOUS_USERNAME),
+		RealmName: common.StringPointer(common.DEFAULT_REALM_NAME),
+		UserId:    common.StringPointer(common.DEFAULT_ANONYMOUS_USERNAME),
 	}
 
 	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update2(ctx).Body(payload).Execute()
