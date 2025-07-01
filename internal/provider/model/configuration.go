@@ -102,7 +102,7 @@ func (model *LdapServerModel) FromApiModel(api *sonatyperepo.ReadLdapServerXo) {
 	model.ConnectionTimeout = types.Int32PointerValue(&api.ConnectionTimeoutSeconds)
 	model.ConnectionRetryDelay = types.Int32PointerValue(&api.ConnectionRetryDelaySeconds)
 	model.MaxConnectionAttempts = types.Int32PointerValue(&api.MaxIncidentsCount)
-	model.Order = types.Int32PointerValue(*&api.Order)
+	model.Order = types.Int32PointerValue(api.Order)
 	model.UserBaseDn = types.StringPointerValue(api.UserBaseDn)
 	model.UserSubtree = types.BoolPointerValue(api.UserSubtree)
 	model.UserObjectClass = types.StringPointerValue(api.UserObjectClass)
@@ -150,7 +150,7 @@ func (model *LdapServerModel) ToApiCreateModel() *sonatyperepo.CreateLdapServerX
 	if apiModel.AuthScheme == common.AUTH_SCHEME_DIGEST_MD5 || apiModel.AuthScheme == common.AUTH_SCHEME_CRAM_MD5 {
 		apiModel.AuthRealm = model.AuthRealm.ValueStringPointer()
 	}
-	if model.MapLdapGroupsAsRoles.ValueBool() == true {
+	if model.MapLdapGroupsAsRoles.ValueBool() {
 		apiModel.LdapGroupsAsRoles = common.NewTrue()
 		apiModel.GroupType = model.GroupType.ValueStringPointer()
 		if *apiModel.GroupType == common.LDAP_GROUP_MAPPING_DYNAMIC {
@@ -176,7 +176,6 @@ func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerX
 	temp, _ := json.Marshal(creatModel)
 	var updateModel sonatyperepo.UpdateLdapServerXo
 	_ = json.Unmarshal(temp, &updateModel)
-	temp, _ = json.Marshal(updateModel)
 	updateModel.Id = model.Id.ValueStringPointer()
 	return &updateModel
 }

@@ -18,6 +18,7 @@ package common
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -38,7 +39,10 @@ func HandleApiWarning(message string, err *error, httpResponse *http.Response, r
 }
 
 func getResponseBody(httpResponse *http.Response) []byte {
-	defer httpResponse.Body.Close()
 	body, _ := io.ReadAll(httpResponse.Body)
+	err := httpResponse.Body.Close()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	return body
 }
