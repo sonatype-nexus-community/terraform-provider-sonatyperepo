@@ -17,9 +17,17 @@
 package common
 
 const (
-	NXRM_DEFAULT_ANONYMOUS_USERNAME string = "anonymous"
-	NXRM_DEFAULT_REALM_NAME         string = "NexusAuthorizingRealm"
-	NXRM_PLACEHOLDER_PASSWORD       string = "#~NXRM~PLACEHOLDER~PASSWORD~#"
+	AUTH_SCHEME_NONE                  = "NONE"
+	AUTH_SCHEME_SIMPLE                = "SIMPLE"
+	AUTH_SCHEME_DIGEST_MD5            = "DIGEST_MD5"
+	AUTH_SCHEME_CRAM_MD5              = "CRAM_MD5"
+	DEFAULT_ANONYMOUS_USERNAME string = "anonymous"
+	DEFAULT_REALM_NAME         string = "NexusAuthorizingRealm"
+	LDAP_GROUP_MAPPING_DYNAMIC string = "DYNAMIC"
+	LDAP_GROUP_MAPPING_STATIC  string = "STATIC"
+	PLACEHOLDER_PASSWORD       string = "#~NXRM~PLACEHOLDER~PASSWORD~#"
+	PROTOCOL_LDAP                     = "LDAP"
+	PROTOCOL_LDAPS                    = "LDAPS"
 )
 
 func NewFalse() *bool {

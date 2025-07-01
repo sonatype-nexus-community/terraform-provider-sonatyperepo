@@ -17,7 +17,12 @@
 package model
 
 import (
+	"encoding/json"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 type AnonymousAccessModel struct {
@@ -41,4 +46,136 @@ type EmailConfigurationModel struct {
 	SSLServerIdentityCheckEnabled types.Bool   `tfsdk:"ssl_server_identity_check_enabled"`
 	NexusTrustStoreEnabled        types.Bool   `tfsdk:"nexus_trust_store_enabled"`
 	LastUpdated                   types.String `tfsdk:"last_updated"`
+}
+
+type LdapServerModel struct {
+	Id                     types.String `tfsdk:"id"`
+	Name                   types.String `tfsdk:"name"`
+	Protocol               types.String `tfsdk:"protocol"`
+	NexusTrustStoreEnabled types.Bool   `tfsdk:"nexus_trust_store_enabled"`
+	Hostname               types.String `tfsdk:"hostname"`
+	Port                   types.Int32  `tfsdk:"port"`
+	SearchBase             types.String `tfsdk:"search_base"`
+	AuthScheme             types.String `tfsdk:"auth_scheme"`
+	AuthUsername           types.String `tfsdk:"auth_username"`
+	AuthPassword           types.String `tfsdk:"auth_password"`
+	AuthRealm              types.String `tfsdk:"auth_realm"`
+	ConnectionTimeout      types.Int32  `tfsdk:"connection_timeout"`
+	ConnectionRetryDelay   types.Int32  `tfsdk:"connection_retry_delay"`
+	MaxConnectionAttempts  types.Int32  `tfsdk:"max_connection_attempts"`
+	Order                  types.Int32  `tfsdk:"order"`
+	// User Mapping
+	UserBaseDn            types.String `tfsdk:"user_base_dn"`
+	UserSubtree           types.Bool   `tfsdk:"user_subtree"`
+	UserObjectClass       types.String `tfsdk:"user_object_class"`
+	UserLdapFilter        types.String `tfsdk:"user_ldap_filter"`
+	UserIdAttribute       types.String `tfsdk:"user_id_attribute"`
+	UserRealNameAttribute types.String `tfsdk:"user_real_name_attribute"`
+	UserEmailAttribute    types.String `tfsdk:"user_email_name_attribute"`
+	UserPasswordAttribute types.String `tfsdk:"user_password_attribute"`
+	// Group Mapping
+	MapLdapGroupsAsRoles  types.Bool   `tfsdk:"map_ldap_groups_to_roles"`
+	UserMemberOfAttribute types.String `tfsdk:"user_member_of_attribute"`
+	GroupType             types.String `tfsdk:"group_type"`
+	GroupBaseDn           types.String `tfsdk:"group_base_dn"`
+	GroupSubtree          types.Bool   `tfsdk:"group_subtree"`
+	GroupObjectClass      types.String `tfsdk:"group_object_class"`
+	GroupIdAttribute      types.String `tfsdk:"group_id_attribute"`
+	GroupMemberAttribute  types.String `tfsdk:"group_member_attribute"`
+	GroupMemberFormat     types.String `tfsdk:"group_member_format"`
+	// Meta for Terraform
+	LastUpdated types.String `tfsdk:"last_updated"`
+}
+
+func (model *LdapServerModel) FromApiModel(api *sonatyperepo.ReadLdapServerXo) {
+	model.Id = types.StringPointerValue(api.Id)
+	model.Name = types.StringPointerValue(&api.Name)
+	model.Protocol = types.StringPointerValue(&api.Protocol)
+	model.NexusTrustStoreEnabled = types.BoolPointerValue(api.UseTrustStore)
+	model.Hostname = types.StringPointerValue(&api.Host)
+	model.Port = types.Int32PointerValue(&api.Port)
+	model.SearchBase = types.StringPointerValue(&api.SearchBase)
+	model.AuthScheme = types.StringPointerValue(&api.AuthScheme)
+	model.AuthUsername = types.StringPointerValue(api.AuthUsername)
+	// model.AuthPassword = types.StringPointerValue(api.???)
+	model.AuthRealm = types.StringPointerValue(api.AuthRealm)
+	model.ConnectionTimeout = types.Int32PointerValue(&api.ConnectionTimeoutSeconds)
+	model.ConnectionRetryDelay = types.Int32PointerValue(&api.ConnectionRetryDelaySeconds)
+	model.MaxConnectionAttempts = types.Int32PointerValue(&api.MaxIncidentsCount)
+	model.Order = types.Int32PointerValue(api.Order)
+	model.UserBaseDn = types.StringPointerValue(api.UserBaseDn)
+	model.UserSubtree = types.BoolPointerValue(api.UserSubtree)
+	model.UserObjectClass = types.StringPointerValue(api.UserObjectClass)
+	model.UserLdapFilter = types.StringPointerValue(api.UserLdapFilter)
+	model.UserIdAttribute = types.StringPointerValue(api.UserIdAttribute)
+	model.UserPasswordAttribute = types.StringPointerValue(api.UserPasswordAttribute)
+	model.MapLdapGroupsAsRoles = types.BoolPointerValue(api.LdapGroupsAsRoles)
+	model.GroupType = types.StringPointerValue(api.GroupType)
+	model.GroupBaseDn = types.StringPointerValue(api.GroupBaseDn)
+	model.GroupSubtree = types.BoolPointerValue(api.GroupSubtree)
+	model.GroupObjectClass = types.StringPointerValue(api.GroupObjectClass)
+	model.GroupIdAttribute = types.StringPointerValue(api.GroupIdAttribute)
+	model.GroupMemberAttribute = types.StringPointerValue(api.GroupMemberAttribute)
+	model.GroupMemberFormat = types.StringPointerValue(api.GroupMemberFormat)
+}
+
+func (model *LdapServerModel) ToApiCreateModel() *sonatyperepo.CreateLdapServerXo {
+	apiModel := sonatyperepo.CreateLdapServerXo{
+		Name:                        model.Name.ValueString(),
+		Protocol:                    model.Protocol.ValueString(),
+		Host:                        model.Hostname.ValueString(),
+		Port:                        model.Port.ValueInt32(),
+		SearchBase:                  model.SearchBase.ValueString(),
+		AuthScheme:                  model.AuthScheme.ValueString(),
+		ConnectionTimeoutSeconds:    model.ConnectionTimeout.ValueInt32(),
+		ConnectionRetryDelaySeconds: model.ConnectionRetryDelay.ValueInt32(),
+		MaxIncidentsCount:           model.MaxConnectionAttempts.ValueInt32(),
+		UserBaseDn:                  model.UserBaseDn.ValueStringPointer(),
+		UserSubtree:                 model.UserSubtree.ValueBoolPointer(),
+		UserObjectClass:             model.UserObjectClass.ValueStringPointer(),
+		UserLdapFilter:              model.UserLdapFilter.ValueStringPointer(),
+		UserIdAttribute:             model.UserIdAttribute.ValueStringPointer(),
+		UserRealNameAttribute:       model.UserRealNameAttribute.ValueStringPointer(),
+		UserEmailAddressAttribute:   model.UserEmailAttribute.ValueStringPointer(),
+		UserPasswordAttribute:       model.UserPasswordAttribute.ValueStringPointer(),
+		LdapGroupsAsRoles:           model.MapLdapGroupsAsRoles.ValueBoolPointer(),
+	}
+	if apiModel.Protocol == common.PROTOCOL_LDAPS {
+		apiModel.UseTrustStore = model.NexusTrustStoreEnabled.ValueBoolPointer()
+	}
+	if apiModel.AuthScheme != common.AUTH_SCHEME_NONE {
+		apiModel.AuthUsername = model.AuthUsername.ValueStringPointer()
+		apiModel.AuthPassword = *model.AuthPassword.ValueStringPointer()
+	}
+	if apiModel.AuthScheme == common.AUTH_SCHEME_DIGEST_MD5 || apiModel.AuthScheme == common.AUTH_SCHEME_CRAM_MD5 {
+		apiModel.AuthRealm = model.AuthRealm.ValueStringPointer()
+	}
+	if model.MapLdapGroupsAsRoles.ValueBool() {
+		apiModel.LdapGroupsAsRoles = common.NewTrue()
+		apiModel.GroupType = model.GroupType.ValueStringPointer()
+		if *apiModel.GroupType == common.LDAP_GROUP_MAPPING_DYNAMIC {
+			apiModel.GroupMemberAttribute = model.GroupMemberAttribute.ValueStringPointer()
+		}
+		if *apiModel.GroupType == common.LDAP_GROUP_MAPPING_STATIC {
+			apiModel.GroupBaseDn = model.GroupBaseDn.ValueStringPointer()
+			apiModel.GroupSubtree = model.GroupSubtree.ValueBoolPointer()
+			apiModel.GroupObjectClass = model.GroupObjectClass.ValueStringPointer()
+			apiModel.GroupIdAttribute = model.GroupIdAttribute.ValueStringPointer()
+			apiModel.GroupMemberAttribute = model.GroupMemberAttribute.ValueStringPointer()
+			apiModel.GroupMemberFormat = model.GroupMemberFormat.ValueStringPointer()
+		}
+	} else {
+		apiModel.LdapGroupsAsRoles = common.NewFalse()
+	}
+
+	return &apiModel
+}
+
+func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerXo {
+	creatModel := model.ToApiCreateModel()
+	temp, _ := json.Marshal(creatModel)
+	var updateModel sonatyperepo.UpdateLdapServerXo
+	_ = json.Unmarshal(temp, &updateModel)
+	updateModel.Id = model.Id.ValueStringPointer()
+	return &updateModel
 }
