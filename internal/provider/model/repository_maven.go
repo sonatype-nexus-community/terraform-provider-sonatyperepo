@@ -20,17 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type RepositoryModel struct {
-	Name   types.String `tfsdk:"name"`
-	Format types.String `tfsdk:"format"`
-	Type   types.String `tfsdk:"type"`
-	Url    types.String `tfsdk:"url"`
-}
-
-type RepositoriesModel struct {
-	Repositories []RepositoryModel `tfsdk:"repositories"`
-}
-
 type RepositoryMavenGroupModel struct {
 	Name        types.String               `tfsdk:"name"`
 	Format      types.String               `tfsdk:"format"`

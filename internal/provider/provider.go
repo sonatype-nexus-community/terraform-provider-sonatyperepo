@@ -186,6 +186,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
+		repository.NewRepositoryNpmHostedResource,
 		system.NewAnonymousAccessSystemResource,
 		system.NewSystemConfigLdapResource,
 		system.NewSystemConfigMailResource,

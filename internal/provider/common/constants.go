@@ -28,6 +28,7 @@ const (
 	PLACEHOLDER_PASSWORD       string = "#~NXRM~PLACEHOLDER~PASSWORD~#"
 	PROTOCOL_LDAP                     = "LDAP"
 	PROTOCOL_LDAPS                    = "LDAPS"
+	REPO_FORMAT_NPM            string = "NPM"
 )
 
 func NewFalse() *bool {
