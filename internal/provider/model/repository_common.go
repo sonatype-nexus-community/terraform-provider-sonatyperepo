@@ -23,54 +23,76 @@ import (
 )
 
 type RepositoryModel struct {
-	Name        types.String `tfsdk:"name"`
-	Format      types.String `tfsdk:"format"`
-	Type        types.String `tfsdk:"type"`
-	Url         types.String `tfsdk:"url"`
-	LastUpdated types.String `tfsdk:"last_updated"`
+	Name   types.String `tfsdk:"name"`
+	Format types.String `tfsdk:"format"`
+	Type   types.String `tfsdk:"type"`
+	Url    types.String `tfsdk:"url"`
+	// LastUpdated types.String `tfsdk:"last_updated"`
 }
 
 type RepositoriesModel struct {
 	Repositories []RepositoryModel `tfsdk:"repositories"`
 }
 
-type RepositoryHostedModel struct {
+type BasicRepositoryModel struct {
 	Name        types.String                   `tfsdk:"name"`
 	Online      types.Bool                     `tfsdk:"online"`
 	Storage     repositoryStorageModelNonGroup `tfsdk:"storage"`
 	Url         types.String                   `tfsdk:"url"`
 	Cleanup     *RepositoryCleanupModel        `tfsdk:"cleanup"`
-	Component   *RepositoryComponentModel      `tfsdk:"component"`
 	LastUpdated types.String                   `tfsdk:"last_updated"`
 }
 
-func (m *RepositoryHostedModel) mapSimpleApiHostedRepository(api sonatyperepo.SimpleApiHostedRepository) {
-	m.Name = types.StringPointerValue(api.Name)
-	// m.Format = types.StringValue(*api.Format)
-	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+type repositoryStorageModelNonGroup struct {
+	BlobStoreName               types.String `tfsdk:"blob_store_name"`
+	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+	WritePolicy                 types.String `tfsdk:"write_policy"`
+}
 
-	// Cleanup
-	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = &RepositoryCleanupModel{
-			PolicyNames: make([]types.String, 0),
-		}
-		for _, p := range api.Cleanup.GetPolicyNames() {
-			m.Cleanup.PolicyNames = append(m.Cleanup.PolicyNames, types.StringValue(p))
+type RepositoryCleanupModel struct {
+	PolicyNames []types.String `tfsdk:"policy_names"`
+}
+
+func NewRepositoryCleanupModel() *RepositoryCleanupModel {
+	return &RepositoryCleanupModel{
+		PolicyNames: make([]types.String, 0),
+	}
+}
+
+func mapCleanupFromApi(api *sonatyperepo.CleanupPolicyAttributes, m *RepositoryCleanupModel) {
+	for _, p := range api.GetPolicyNames() {
+		m.PolicyNames = append(m.PolicyNames, types.StringValue(p))
+	}
+}
+
+func mapCleanupToApi(m *RepositoryCleanupModel, api *sonatyperepo.CleanupPolicyAttributes) {
+	if m != nil {
+		for _, p := range m.PolicyNames {
+			api.PolicyNames = append(api.PolicyNames, p.ValueString())
 		}
 	}
+}
 
-	// Component
-	if api.Component != nil {
-		m.Component = &RepositoryComponentModel{
-			ProprietaryComponents: types.BoolValue(*api.Component.ProprietaryComponents),
-		}
-	}
+func mapStorageNonGroupFromApi(api *sonatyperepo.StorageAttributes, m *repositoryStorageModelNonGroup) {
+	m.BlobStoreName = types.StringValue(api.BlobStoreName)
+	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
+	m.WritePolicy = types.StringPointerValue(api.WritePolicy)
+}
 
-	// Storage
-	m.Storage = repositoryStorageModelNonGroup{
-		BlobStoreName:               types.StringValue(api.Storage.BlobStoreName),
-		StrictContentTypeValidation: types.BoolValue(api.Storage.StrictContentTypeValidation),
-		WritePolicy:                 types.StringValue(api.Storage.WritePolicy),
-	}
+func mapStorageNonGroupToApi(m *repositoryStorageModelNonGroup, api *sonatyperepo.StorageAttributes) {
+	api.BlobStoreName = m.BlobStoreName.ValueString()
+	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
+	api.WritePolicy = m.WritePolicy.ValueStringPointer()
+}
+
+func mapHostedStorageAttributesFromApi(api *sonatyperepo.HostedStorageAttributes, m *repositoryStorageModelNonGroup) {
+	m.BlobStoreName = types.StringValue(api.BlobStoreName)
+	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
+	m.WritePolicy = types.StringValue(api.WritePolicy)
+}
+
+func mapHostedStorageAttributesToApi(m repositoryStorageModelNonGroup, api *sonatyperepo.HostedStorageAttributes) {
+	api.BlobStoreName = m.BlobStoreName.ValueString()
+	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
+	api.WritePolicy = m.WritePolicy.ValueString()
 }

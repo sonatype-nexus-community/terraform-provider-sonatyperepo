@@ -19,16 +19,22 @@ package model
 import (
 	"testing"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModelNpmFromApi(t *testing.T) {
+func TestModelRepositoryNpmHostedToApiCreateModelEmpty(t *testing.T) {
 	m := &RepositoryNpmHostedModel{}
+	m.Name = types.StringValue(TEST_HOSTED_REPO_NAME)
 
-	m.FromApiModel(sonatyperepo.NpmHostedRepositoryApiRequest{
-		Name: "test-name",
-	})
+	// Map to API Model
+	apiModel := m.ToApiCreateModel()
 
-	assert.Equal(t, "test-name", m.Name.ValueString())
+	assert.Equal(t, TEST_HOSTED_REPO_NAME, apiModel.Name)
+	assert.False(t, apiModel.Online)
+	assert.Equal(t, "", apiModel.Storage.BlobStoreName)
+	assert.False(t, apiModel.Storage.StrictContentTypeValidation)
+	assert.Equal(t, "", apiModel.Storage.WritePolicy)
+	assert.Equal(t, len(apiModel.Cleanup.GetPolicyNames()), 0)
+	assert.False(t, *apiModel.Component.ProprietaryComponents)
 }

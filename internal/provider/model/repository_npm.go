@@ -19,9 +19,12 @@ package model
 import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+// NPM Hosted
 type RepositoryNpmHostedModel struct {
 	RepositoryHostedModel
 }
@@ -32,13 +35,9 @@ func (m *RepositoryNpmHostedModel) FromApiModel(api sonatyperepo.SimpleApiHosted
 
 func (m *RepositoryNpmHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
 	apiModel := sonatyperepo.NpmHostedRepositoryApiRequest{
-		Name:   m.Name.ValueString(),
-		Online: m.Online.ValueBool(),
-		Storage: sonatyperepo.HostedStorageAttributes{
-			BlobStoreName:               m.Storage.BlobStoreName.ValueString(),
-			StrictContentTypeValidation: m.Storage.StrictContentTypeValidation.ValueBool(),
-			WritePolicy:                 m.Storage.WritePolicy.ValueString(),
-		},
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.HostedStorageAttributes{},
 		Component: &sonatyperepo.ComponentAttributes{
 			ProprietaryComponents: common.NewFalse(),
 		},
@@ -46,20 +45,104 @@ func (m *RepositoryNpmHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepo
 			PolicyNames: make([]string, 0),
 		},
 	}
+	mapHostedStorageAttributesToApi(m.Storage, &apiModel.Storage)
+	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	m.Component.MapToApi(apiModel.Component)
+	return apiModel
+}
 
-	if m.Component != nil {
-		apiModel.Component.ProprietaryComponents = m.Component.ProprietaryComponents.ValueBoolPointer()
+func (m *RepositoryNpmHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
+
+// NPM Proxy Specific Attributes
+// ----------------------------------------
+type npmSpecificProxyModel struct {
+	RemoveQuarrantined types.Bool `tfsdk:"remove_quarrantined"`
+}
+
+func (m *npmSpecificProxyModel) MapFromApi(api *sonatyperepo.NpmAttributes) {
+	m.RemoveQuarrantined = types.BoolValue(api.RemoveQuarantined)
+}
+
+func (m *npmSpecificProxyModel) MapToApi(api *sonatyperepo.NpmAttributes) {
+	api.RemoveQuarantined = m.RemoveQuarrantined.ValueBool()
+}
+
+type RepositoryNpmProxyModel struct {
+	RepositoryProxyModel
+	Npm *npmSpecificProxyModel `tfsdk:"npm"`
+}
+
+func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
 	}
 
+	// Storage
+	m.Storage = repositoryStorageModelNonGroup{}
+	mapStorageNonGroupFromApi(&api.Storage, &m.Storage)
+
+	// Proxy Specific
+	m.Proxy.MapFromApi(&api.Proxy)
+	m.NegativeCache.MapFromApi(&api.NegativeCache)
+	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
+	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
+	if api.Replication != nil {
+		m.Replication.MapFromApi(api.Replication)
+	}
+
+	// NPM Specific
+	m.Npm.MapFromApi(api.Npm)
+}
+
+func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
+	apiModel := sonatyperepo.NpmProxyRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+	}
+	mapStorageNonGroupToApi(&m.Storage, &apiModel.Storage)
+
 	if m.Cleanup != nil {
-		for _, p := range m.Cleanup.PolicyNames {
-			apiModel.Cleanup.PolicyNames = append(apiModel.Cleanup.PolicyNames, p.ValueString())
-		}
+		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	}
+
+	// Proxy Specific
+	apiModel.Proxy = sonatyperepo.ProxyAttributes{}
+	m.Proxy.MapToApi(&apiModel.Proxy)
+
+	apiModel.NegativeCache = sonatyperepo.NegativeCacheAttributes{}
+	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
+
+	apiModel.HttpClient = sonatyperepo.HttpClientAttributes{}
+	m.HttpClient.MapToApiHttpClientAttributes(&apiModel.HttpClient)
+
+	if m.Replication != nil {
+		apiModel.Replication = &sonatyperepo.ReplicationAttributes{}
+		m.Replication.MapToApi(apiModel.Replication)
+	}
+
+	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
+
+	// NPM Specific
+	if m.Npm != nil {
+		apiModel.Npm = &sonatyperepo.NpmAttributes{}
+		m.Npm.MapToApi(apiModel.Npm)
 	}
 
 	return apiModel
 }
 
-func (m *RepositoryNpmHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
+func (m *RepositoryNpmProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }

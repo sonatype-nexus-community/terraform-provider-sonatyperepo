@@ -21,10 +21,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
@@ -51,25 +49,40 @@ func (rt RepositoryType) String() string {
 	return "unknown"
 }
 
+// BaseRepositoryFormat that all formats build from
+// --------------------------------------------
+type BaseRepositoryFormat struct{}
+
+func (f *BaseRepositoryFormat) DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Call API to Delete
+	return apiClient.RepositoryManagementAPI.DeleteRepository(ctx, repositoryName).Execute()
+}
+
+func (f *BaseRepositoryFormat) GetApiCreateSuccessResposneCodes() []int {
+	return []int{http.StatusCreated}
+}
+
+// RepositoryFormat that all Repository Formats must implement
+// --------------------------------------------
 type RepositoryFormat interface {
 	DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
-	DoDeleteRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
+	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	GetApiCreateSuccessResposneCodes() []int
 	GetFormatSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName(req resource.MetadataRequest) string
+	GetResourceName(repoType RepositoryType) string
 	GetKey() string
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 }
 
-var RepositoryFormats map[string]RepositoryFormat = map[string]RepositoryFormat{
-	common.REPO_FORMAT_NPM: &NpmRepositoryFormat{},
-}
+// var RepositoryFormats map[string]RepositoryFormat = map[string]RepositoryFormat{
+// 	common.REPO_FORMAT_NPM: &NpmRepositoryFormat{},
+// }
 
-func getResourceName(req resource.MetadataRequest, format string) string {
-	return fmt.Sprintf("%s_repository_%s_hosted", req.ProviderTypeName, strings.ToLower(format))
+func getResourceName(format string, repoType RepositoryType) string {
+	return fmt.Sprintf("repository_%s_%s", strings.ToLower(format), repoType.String())
 }

@@ -18,13 +18,13 @@ package format
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,9 +32,33 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type NpmRepositoryFormat struct{}
+type NpmRepositoryFormat struct {
+	BaseRepositoryFormat
+}
 
-func (f *NpmRepositoryFormat) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+type NpmRepositoryFormatHosted struct {
+	NpmRepositoryFormat
+}
+
+type NpmRepositoryFormatProxy struct {
+	NpmRepositoryFormat
+}
+
+// --------------------------------------------
+// Generic NPM Format Functions
+// --------------------------------------------
+func (f *NpmRepositoryFormat) GetKey() string {
+	return common.REPO_FORMAT_NPM
+}
+
+func (f *NpmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
+	return getResourceName(f.GetKey(), repoType)
+}
+
+// --------------------------------------------
+// Hosted NPM Format Functions
+// --------------------------------------------
+func (f *NpmRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryNpmHostedModel)
 
@@ -42,15 +66,7 @@ func (f *NpmRepositoryFormat) DoCreateRequest(plan any, apiClient *sonatyperepo.
 	return apiClient.RepositoryManagementAPI.CreateNpmHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormat) DoDeleteRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-	// Cast to correct State Model Type
-	stateModel := (state).(model.RepositoryNpmHostedModel)
-
-	// Call API to Create
-	return apiClient.RepositoryManagementAPI.DeleteRepository(ctx, stateModel.Name.ValueString()).Execute()
-}
-
-func (f *NpmRepositoryFormat) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *NpmRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryNpmHostedModel)
 
@@ -59,7 +75,7 @@ func (f *NpmRepositoryFormat) DoReadRequest(state any, apiClient *sonatyperepo.A
 	return *apiResponse, httpResponse, err
 }
 
-func (f *NpmRepositoryFormat) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *NpmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryNpmHostedModel)
 
@@ -70,50 +86,109 @@ func (f *NpmRepositoryFormat) DoUpdateRequest(plan any, state any, apiClient *so
 	return apiClient.RepositoryManagementAPI.UpdateNpmHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormat) GetApiCreateSuccessResposneCodes() []int {
-	return []int{http.StatusCreated}
+func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	additionalAttributes := getCommonHostedSchemaAttributes()
+	// maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+	return additionalAttributes
 }
 
-func (f *NpmRepositoryFormat) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		// "format": schema.StringAttribute{
-		// 	Description: fmt.Sprintf("Format of this Repository - will always be '%s'", f.GetKey()),
-		// 	Optional:    true,
-		// 	Computed:    true,
-		// 	Default:     stringdefault.StaticString(f.GetKey()),
-		// 	PlanModifiers: []planmodifier.String{
-		// 		stringplanmodifier.UseStateForUnknown(),
-		// 	},
-		// },
-	}
-}
-
-func (f *NpmRepositoryFormat) GetKey() string {
-	return common.REPO_FORMAT_NPM
-}
-
-func (f *NpmRepositoryFormat) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNpmHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NpmRepositoryFormat) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNpmHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
 
-func (f *NpmRepositoryFormat) GetResourceName(req resource.MetadataRequest) string {
-	return getResourceName(req, f.GetKey())
-}
-
-func (f *NpmRepositoryFormat) UpdatePlanForState(plan any) any {
+func (f *NpmRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 	var planModel = (plan).(model.RepositoryNpmHostedModel)
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return planModel
 }
 
-func (f *NpmRepositoryFormat) UpdateStateFromApi(state any, api any) any {
+func (f *NpmRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.RepositoryNpmHostedModel)
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
+}
+
+// --------------------------------------------
+// Hosted NPM Format Functions
+// --------------------------------------------
+func (f *NpmRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryNpmProxyModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateNpmProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
+
+func (f *NpmRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryNpmProxyModel)
+
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
+
+func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryNpmProxyModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryNpmProxyModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getNpmSchemaAttributes())
+	return additionalAttributes
+}
+
+func (f *NpmRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryNpmProxyModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *NpmRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryNpmProxyModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *NpmRepositoryFormatProxy) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryNpmProxyModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryNpmProxyModel)
+	stateModel.FromApiModel((api).(sonatyperepo.NpmProxyApiRepository))
+	return stateModel
+}
+
+// --------------------------------------------
+// Common Functions
+// --------------------------------------------
+func getNpmSchemaAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"npm": schema.SingleNestedAttribute{
+			Description: "NPM specific configuration for this Repository",
+			Required:    false,
+			Optional:    true,
+			Attributes: map[string]schema.Attribute{
+				"remove_quarrantined": schema.BoolAttribute{
+					Description: "Remove Quarantined Versions",
+					Required:    true,
+					Optional:    false,
+				},
+			},
+		},
+	}
 }

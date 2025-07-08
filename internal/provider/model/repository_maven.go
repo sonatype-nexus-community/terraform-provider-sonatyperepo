@@ -17,8 +17,155 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
+
+type repositoryMavenSpecificModel struct {
+	VersionPolicy      types.String `tfsdk:"version_policy"`
+	LayoutPolicy       types.String `tfsdk:"layout_policy"`
+	ContentDisposition types.String `tfsdk:"content_disposition"`
+}
+
+// Hosted Maven
+type RepositoryMavenHostedModel struct {
+	RepositoryHostedModel
+	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
+}
+
+func (m *RepositoryMavenHostedModel) FromApiModel(api sonatyperepo.MavenHostedApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
+
+	// Storage
+	m.Storage = repositoryStorageModelNonGroup{}
+	mapHostedStorageAttributesFromApi(&api.Storage, &m.Storage)
+
+	// Maven Specific
+	m.Maven = repositoryMavenSpecificModel{}
+	m.Maven.mapFromApi(&api.Maven)
+}
+
+func (m *RepositoryMavenHostedModel) ToApiCreateModel() sonatyperepo.MavenHostedRepositoryApiRequest {
+	apiModel := sonatyperepo.MavenHostedRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.HostedStorageAttributes{},
+		Component: &sonatyperepo.ComponentAttributes{
+			ProprietaryComponents: common.NewFalse(),
+		},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+	}
+	mapHostedStorageAttributesToApi(m.Storage, &apiModel.Storage)
+	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	m.Component.MapToApi(apiModel.Component)
+
+	// Maven Specific
+	m.Maven.mapToApi(&apiModel.Maven)
+
+	return apiModel
+}
+
+func (m *RepositoryMavenHostedModel) ToApiUpdateModel() sonatyperepo.MavenHostedRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
+
+// Proxy Maven
+type RepositoryMavenProxyModel struct {
+	RepositoryProxyModel
+	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
+}
+
+func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
+
+	// Storage
+	m.Storage = repositoryStorageModelNonGroup{}
+	mapStorageNonGroupFromApi(&api.Storage, &m.Storage)
+
+	// Proxy Specific
+	m.Proxy.MapFromApi(&api.Proxy)
+	m.NegativeCache.MapFromApi(&api.NegativeCache)
+	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
+	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
+	if api.Replication != nil {
+		m.Replication.MapFromApi(api.Replication)
+	}
+
+	// Maven Specific
+	m.Maven.mapFromApi(&api.Maven)
+}
+
+func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
+	apiModel := sonatyperepo.MavenProxyRepositoryApiRequest{
+		Name:   m.Name.ValueString(),
+		Online: m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{
+			BlobStoreName:               m.Storage.BlobStoreName.ValueString(),
+			StrictContentTypeValidation: m.Storage.StrictContentTypeValidation.ValueBool(),
+			WritePolicy:                 m.Storage.WritePolicy.ValueStringPointer(),
+		},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+	}
+
+	if m.Cleanup != nil {
+		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	}
+
+	// Proxy
+	apiModel.HttpClient = sonatyperepo.HttpClientAttributesWithPreemptiveAuth{}
+	m.HttpClient.MapToApiHttpClientAttributesWithPreemptiveAuth(&apiModel.HttpClient)
+	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
+	m.Proxy.MapToApi(&apiModel.Proxy)
+	if m.Replication != nil {
+		apiModel.Replication = &sonatyperepo.ReplicationAttributes{}
+		m.Replication.MapToApi(apiModel.Replication)
+	}
+
+	// Maven
+	m.Maven.mapToApi(&apiModel.Maven)
+
+	return apiModel
+}
+
+func (m *RepositoryMavenProxyModel) ToApiUpdateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
+
+func (m *repositoryMavenSpecificModel) mapFromApi(api *sonatyperepo.MavenAttributes) {
+	m.ContentDisposition = types.StringPointerValue(api.ContentDisposition)
+	m.LayoutPolicy = types.StringPointerValue(api.LayoutPolicy)
+	m.VersionPolicy = types.StringPointerValue(api.VersionPolicy)
+}
+
+func (m *repositoryMavenSpecificModel) mapToApi(api *sonatyperepo.MavenAttributes) {
+	api.ContentDisposition = m.ContentDisposition.ValueStringPointer()
+	api.LayoutPolicy = m.LayoutPolicy.ValueStringPointer()
+	api.VersionPolicy = m.VersionPolicy.ValueStringPointer()
+}
+
+// ---- OLD BELOW
 
 type RepositoryMavenGroupModel struct {
 	Name        types.String               `tfsdk:"name"`
@@ -31,100 +178,9 @@ type RepositoryMavenGroupModel struct {
 	LastUpdated types.String               `tfsdk:"last_updated"`
 }
 
-type RepositoryMavenHostedModel struct {
-	Name        types.String                   `tfsdk:"name"`
-	Format      types.String                   `tfsdk:"format"`
-	Type        types.String                   `tfsdk:"type"`
-	Url         types.String                   `tfsdk:"url"`
-	Online      types.Bool                     `tfsdk:"online"`
-	Storage     repositoryStorageModelNonGroup `tfsdk:"storage"`
-	Cleanup     *RepositoryCleanupModel        `tfsdk:"cleanup"`
-	Maven       repositoryMavenSpecificModel   `tfsdk:"maven"`
-	Component   *RepositoryComponentModel      `tfsdk:"component"`
-	LastUpdated types.String                   `tfsdk:"last_updated"`
-}
-
-type RepositoryMavenProxyModel struct {
-	Name          types.String                   `tfsdk:"name"`
-	Format        types.String                   `tfsdk:"format"`
-	Type          types.String                   `tfsdk:"type"`
-	Url           types.String                   `tfsdk:"url"`
-	Online        types.Bool                     `tfsdk:"online"`
-	Storage       repositoryStorageModelNonGroup `tfsdk:"storage"`
-	Cleanup       *RepositoryCleanupModel        `tfsdk:"cleanup"`
-	Proxy         repositoryProxyModel           `tfsdk:"proxy"`
-	NegativeCache repositoryNegativeCacheModel   `tfsdk:"negative_cache"`
-	HttpClient    repositoryHttpClientModel      `tfsdk:"http_client"`
-	RoutingRule   types.String                   `tfsdk:"routing_rule"`
-	Replication   *RepositoryReplicationModel    `tfsdk:"replication"`
-	Maven         repositoryMavenSpecificModel   `tfsdk:"maven"`
-	LastUpdated   types.String                   `tfsdk:"last_updated"`
-}
-
-type repositoryStorageModelNonGroup struct {
-	BlobStoreName               types.String `tfsdk:"blob_store_name"`
-	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
-	WritePolicy                 types.String `tfsdk:"write_policy"`
-}
-
 type repositoryStorageModeGroup struct {
 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
-}
-
-type RepositoryCleanupModel struct {
-	PolicyNames []types.String `tfsdk:"policy_names"`
-}
-
-type RepositoryComponentModel struct {
-	ProprietaryComponents types.Bool `tfsdk:"proprietary_components"`
-}
-
-type repositoryMavenSpecificModel struct {
-	VersionPolicy      types.String `tfsdk:"version_policy"`
-	LayoutPolicy       types.String `tfsdk:"layout_policy"`
-	ContentDisposition types.String `tfsdk:"content_disposition"`
-}
-
-type repositoryProxyModel struct {
-	RemoteUrl      types.String `tfsdk:"remote_url"`
-	ContentMaxAge  types.Int64  `tfsdk:"content_max_age"`
-	MetadataMaxAge types.Int64  `tfsdk:"metadata_max_age"`
-}
-
-type repositoryNegativeCacheModel struct {
-	Enabled    types.Bool  `tfsdk:"enabled"`
-	TimeToLive types.Int64 `tfsdk:"time_to_live"`
-}
-
-type repositoryHttpClientModel struct {
-	Blocked        types.Bool                               `tfsdk:"blocked"`
-	AutoBlock      types.Bool                               `tfsdk:"auto_block"`
-	Connection     *RepositoryHttpClientConnectionModel     `tfsdk:"connection"`
-	Authentication *RepositoryHttpClientAuthenticationModel `tfsdk:"authentication"`
-}
-
-type RepositoryHttpClientConnectionModel struct {
-	Retries                 types.Int64  `tfsdk:"retries"`
-	UserAgentSuffix         types.String `tfsdk:"user_agent_suffix"`
-	Timeout                 types.Int64  `tfsdk:"timeout"`
-	EnableCircularRedirects types.Bool   `tfsdk:"enable_circular_redirects"`
-	EnableCookies           types.Bool   `tfsdk:"enable_cookies"`
-	UseTrustStore           types.Bool   `tfsdk:"use_trust_store"`
-}
-
-type RepositoryHttpClientAuthenticationModel struct {
-	Type       types.String `tfsdk:"type"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
-	NtlmHost   types.String `tfsdk:"ntlm_host"`
-	NtlmDomain types.String `tfsdk:"ntlm_domain"`
-	Preemptive types.Bool   `tfsdk:"preemptive"`
-}
-
-type RepositoryReplicationModel struct {
-	PreemptivePullEnabled types.Bool   `tfsdk:"preemptive_pull_enabled"`
-	AssetPathRegex        types.String `tfsdk:"asset_path_regex"`
 }
 
 type RepositoryGroupModel struct {

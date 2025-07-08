@@ -17,23 +17,278 @@
 package repository
 
 import (
+	"context"
 	"fmt"
+	"maps"
+	"net/http"
+	"reflect"
+	"slices"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
-func getHostedStandardSchema(format string) schema.Schema {
+// Generic to all Repository Resources
+type repositoryResource struct {
+	common.BaseResource
+	RepositoryFormat format.RepositoryFormat
+	RepositoryType   format.RepositoryType
+}
+
+// Metadata returns the resource type name.
+func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.RepositoryFormat.GetResourceName(r.RepositoryType))
+}
+
+// Set Schema for this Resource
+func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	schema := getHostedStandardSchema(r.RepositoryFormat.GetKey(), r.RepositoryType)
+	maps.Copy(schema.Attributes, r.RepositoryFormat.GetFormatSchemaAttributes())
+	resp.Schema = schema
+}
+
+func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	// Retrieve values from plan
+	plan, diags := r.RepositoryFormat.GetPlanAsModel(ctx, req.Plan)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting Plan data has errors: %v", resp.Diagnostics.Errors()))
+		return
+	}
+
+	// Request Context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Make API requet
+	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Client, ctx)
+
+	// Handle Errors
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+			fmt.Sprintf("Error response: %s", httpResponse.Status),
+		)
+		return
+	}
+	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResposneCodes(), httpResponse.StatusCode) {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+			fmt.Sprintf("Error response: %s", httpResponse.Status),
+		)
+	}
+
+	// Call Read API as that contains more complete information for mapping to State
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
+
+	// Handle any errors
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+			)
+		}
+		return
+	}
+
+	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
+	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// Retrieve values from state
+	stateModel, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+
+	// Handle any errors
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
+		return
+	}
+
+	// Set API Context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Make API Request
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(stateModel, r.Client, ctx)
+
+	// Handle any errors
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+			)
+		}
+		return
+	}
+
+	// Update State from Response
+	r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateModel)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Retrieve values from plan
+	planModel, diags := r.RepositoryFormat.GetPlanAsModel(ctx, req.Plan)
+	resp.Diagnostics.Append(diags...)
+
+	// Retrieve values from state
+	stateModel, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+
+	// Request Context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Make API requet
+	httpResponse, err := r.RepositoryFormat.DoUpdateRequest(planModel, stateModel, r.Client, ctx)
+
+	// Handle any errors
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+			)
+		}
+		return
+	}
+
+	// Call Read API as that contains more complete information for mapping to State
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(planModel, r.Client, ctx)
+
+	// Handle any errors
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+			)
+		}
+		return
+	}
+
+	stateModel = r.RepositoryFormat.UpdateStateFromApi(planModel, apiResponse)
+	// stateModel = (r.RepositoryFormat.UpdatePlanForState(stateModel)).(model.RepositoryNpmHostedModel)
+	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	state, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+
+	// Handle any errors
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		return
+	}
+
+	// Request Context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Make API request
+	repoNameStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Name").Interface()
+	repositoryName, ok := repoNameStructField.(basetypes.StringValue)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Failed to determine Repository Name to delete from State",
+			fmt.Sprintf("Error response: %s", repoNameStructField),
+		)
+		return
+	}
+	httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName.ValueString(), r.Client, ctx)
+
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				fmt.Sprintf("%s %s Repository did not exist to delete", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
+				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error deleting %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryFormat),
+				fmt.Sprintf("Error response: %s", httpResponse.Status),
+			)
+		}
+		return
+	}
+	if httpResponse.StatusCode != http.StatusNoContent {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Unexpected response when deleting %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryFormat),
+			fmt.Sprintf("Error response: %s", httpResponse.Status),
+		)
+	}
+}
+
+func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
 	return schema.Schema{
-		Description: fmt.Sprintf("Manage Hosted %s Repositories", format),
+		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "Name of the Repository",
@@ -70,7 +325,11 @@ func getHostedStandardSchema(format string) schema.Schema {
 						Required:    true,
 						Optional:    false,
 						Validators: []validator.String{
-							stringvalidator.OneOf("ALLOW", "ALLOW_ONCE", "DENY"),
+							stringvalidator.OneOf(
+								common.WRITE_POLICY_ALLOW,
+								common.WRITE_POLICY_ALLOW_ONCE,
+								common.WRITE_POLICY_DENY,
+							),
 						},
 					},
 				},
@@ -86,31 +345,6 @@ func getHostedStandardSchema(format string) schema.Schema {
 						Required:    false,
 						Optional:    true,
 					},
-				},
-			},
-			"component": schema.SingleNestedAttribute{
-				Description: "Component configuration for this Repository",
-				Required:    false,
-				Optional:    true,
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"proprietary_components": schema.BoolAttribute{
-						Description: "Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Firewall)",
-						Optional:    true,
-						Computed:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-				},
-				Default: objectdefault.StaticValue(types.ObjectValueMust(
-					map[string]attr.Type{
-						"proprietary_components": types.BoolType,
-					},
-					map[string]attr.Value{
-						"proprietary_components": types.BoolValue(false),
-					},
-				)),
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
