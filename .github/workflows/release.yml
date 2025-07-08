@@ -21,6 +21,8 @@ jobs:
         name: Sonatype Scan
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v4
+              
             - name: Sonatype Lifecycle Evaluation
               id: evaluate
               uses: sonatype/actions/evaluate@v1
