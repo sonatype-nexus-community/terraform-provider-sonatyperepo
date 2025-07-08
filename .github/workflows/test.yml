@@ -13,6 +13,9 @@ on:
         paths-ignore:
             - 'README.md'
 
+env:
+    LC_APPLICATION_ID: terraform-provider-sonatyperepo
+
 # Testing only needs permissions to read the repository contents.
 permissions:
     contents: read
