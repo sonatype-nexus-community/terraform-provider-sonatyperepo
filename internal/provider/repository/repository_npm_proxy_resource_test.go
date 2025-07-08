@@ -126,7 +126,7 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 // }
 
 func getRepositoryNpmProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig string = ""
+	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
 	replication = {

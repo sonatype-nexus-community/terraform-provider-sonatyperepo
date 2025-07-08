@@ -40,6 +40,13 @@ import (
 	"golang.org/x/text/language"
 )
 
+const (
+	REPOSITORY_ERROR_RESPONSE_PREFIX           = "Error response: "
+	REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL  = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s"
+	REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s - %s"
+	REPOSITORY_ERROR_DID_NOT_EXIST             = "%s %s Repository did not exist to %s"
+)
+
 // Generic to all Repository Resources
 type repositoryResource struct {
 	common.BaseResource
@@ -83,14 +90,14 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
-			fmt.Sprintf("Error response: %s", httpResponse.Status),
+			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 		)
 		return
 	}
 	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResposneCodes(), httpResponse.StatusCode) {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
-			fmt.Sprintf("Error response: %s", httpResponse.Status),
+			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 		)
 	}
 
@@ -102,13 +109,13 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
-				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 			)
 		}
 		return
@@ -148,13 +155,13 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
-				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 			)
 		}
 		return
@@ -192,13 +199,13 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
-				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 			)
 		}
 		return
@@ -212,13 +219,13 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
-				fmt.Sprintf("%s %s Repository did not exist to read", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error reading %s %s Repository", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error response: %s - %s", httpResponse.Status, err),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 			)
 		}
 		return
@@ -257,7 +264,7 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Failed to determine Repository Name to delete from State",
-			fmt.Sprintf("Error response: %s", repoNameStructField),
+			fmt.Sprintf("%s %s", REPOSITORY_ERROR_RESPONSE_PREFIX, repoNameStructField),
 		)
 		return
 	}
@@ -267,13 +274,13 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
-				fmt.Sprintf("%s %s Repository did not exist to delete", r.RepositoryType.String(), r.RepositoryFormat.GetKey()),
-				fmt.Sprintf("Error Response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error deleting %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryFormat),
-				fmt.Sprintf("Error response: %s", httpResponse.Status),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
+				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 			)
 		}
 		return

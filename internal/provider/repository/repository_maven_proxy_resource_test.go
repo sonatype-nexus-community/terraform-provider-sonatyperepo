@@ -127,7 +127,7 @@ func TestAccRepositoryMavenProxyResourceNoReplication(t *testing.T) {
 // }
 
 func getRepositoryMavenProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig string = ""
+	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
 	replication = {
