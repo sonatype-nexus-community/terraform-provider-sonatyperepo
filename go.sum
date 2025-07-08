@@ -352,6 +352,12 @@ github.com/skeema/knownhosts v1.3.1 h1:X2osQ+RAjK76shCbvhHHHVl3ZlgDm8apHEHFqRjnB
 github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQNxPwTcfiY=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.6 h1:Mz2GT21dJmjvWBHonuEFZh7K1AkqYZq00TFFKIvT2Tg=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.6/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.7 h1:p7bIqPmIYPfsTEuT9ecg6F+5LW7oaqNRJgY+ne0QBMI=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.7/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.8 h1:uTNSHgpWsSyXevD5l4R8GG6oOS6OgtgLlmvMuttqgwE=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.8/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.9 h1:n5EjR0yRbU8CsZyI6PGeYMMd5IXmybUHPc0eknV/N8M=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.9/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=

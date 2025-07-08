@@ -28,49 +28,48 @@ import (
 )
 
 const (
-	resourceNameMavenProxy = "sonatyperepo_repository_maven_proxy.repo"
-	resourceTypeMavenProxy = "sonatyperepo_repository_maven_proxy"
+	resourceNameNpmProxy = "sonatyperepo_repository_npm_proxy.repo"
+	resourceTypeNpmProxy = "sonatyperepo_repository_npm_proxy"
 )
 
-func TestAccRepositoryMavenProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	// resourceName := "sonatyperepo_repository_maven_proxy.repo"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: getRepositoryMavenProxyResourceConfig(randomString, false),
+				Config: getRepositoryNpmProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameMavenProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.write_policy", common.WRITE_POLICY_ALLOW),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceNameMavenProxy, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceNameMavenProxy, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameNpmProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.write_policy", common.WRITE_POLICY_ALLOW),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.remote_url", "https://registry.npmjs.org"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.metadata_max_age", "1400"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceNameNpmProxy, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceNameNpmProxy, "replication.asset_path_regex"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -126,7 +125,7 @@ func TestAccRepositoryMavenProxyResourceNoReplication(t *testing.T) {
 // 	})
 // }
 
-func getRepositoryMavenProxyResourceConfig(randomString string, includeReplication bool) string {
+func getRepositoryNpmProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
@@ -138,7 +137,7 @@ func getRepositoryMavenProxyResourceConfig(randomString string, includeReplicati
 	}
 	return fmt.Sprintf(utils.ProviderConfig+`
 resource "%s" "repo" {
-  name = "maven-proxy-repo-%s"
+  name = "npm-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -146,9 +145,9 @@ resource "%s" "repo" {
 	write_policy = "ALLOW"
   }
   proxy = {
-    remote_url = "https://repo1.maven.org/maven2/"
-    content_max_age = 1441
-    metadata_max_age = 1440
+    remote_url = "https://registry.npmjs.org"
+    content_max_age = 1442
+    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -171,12 +170,10 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  maven = {
-	content_disposition = "ATTACHMENT"
-	layout_policy = "STRICT"
-	version_policy = "RELEASE"
+  npm = {
+	remove_quarrantined = true
   }
   %s
 }
-`, resourceTypeMavenProxy, randomString, replicationConfig)
+`, resourceTypeNpmProxy, randomString, replicationConfig)
 }

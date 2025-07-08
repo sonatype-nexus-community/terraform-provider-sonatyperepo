@@ -18,12 +18,17 @@ package repository_test
 
 import (
 	"fmt"
-	"terraform-provider-sonatyperepo/internal/provider/repository"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+const (
+	resourceNameMavenHosted = "sonatyperepo_repository_maven_hosted.repo"
+	resourceTypeMavenHosted = "sonatyperepo_repository_maven_hosted"
 )
 
 func TestAccRepositoryMavenHostedResource(t *testing.T) {
@@ -38,13 +43,17 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 				Config: getRepositoryMavenHostedResourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "format", repository.REPOSITORY_FORMAT_MAVEN),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "type", repository.REPOSITORY_TYPE_HOSTED),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "online", "true"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr("sonatyperepo_repository_maven_hosted.repo", "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr("sonatyperepo_repository_maven_hosted.repo", "cleanup"),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameMavenHosted, "url"),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceNameMavenHosted, "cleanup"),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceNameMavenHosted, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -54,7 +63,7 @@ func TestAccRepositoryMavenHostedResource(t *testing.T) {
 
 func getRepositoryMavenHostedResourceConfig(randomString string) string {
 	return fmt.Sprintf(utils.ProviderConfig+`
-resource "sonatyperepo_repository_maven_hosted" "repo" {
+resource "%s" "repo" {
   name = "maven-hosted-repo-%s"
   online = true
   storage = {
@@ -68,5 +77,5 @@ resource "sonatyperepo_repository_maven_hosted" "repo" {
 	version_policy = "RELEASE"
   }
 }
-`, randomString)
+`, resourceTypeMavenHosted, randomString)
 }
