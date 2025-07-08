@@ -126,7 +126,10 @@ jobs:
 
     test-single-hit:
         name: Terraform Provider Acceptance Tests (Single Hit)
-        needs: build
+        needs: 
+            - build
+            - sonatype
+            - generate
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
