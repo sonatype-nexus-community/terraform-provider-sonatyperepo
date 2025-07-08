@@ -13,8 +13,28 @@ on:
 permissions:
     contents: write
 
+env:
+    LC_APPLICATION_ID: terraform-provider-sonatyperepo
+
 jobs:
+    sonatype:
+        name: Sonatype Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Sonatype Lifecycle Evaluation
+              id: evaluate
+              uses: sonatype/actions/evaluate@v1
+              with:
+                    iq-server-url: ${{ vars.SONATYPE_PLATFORM_URL }}
+                    username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
+                    password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
+                    application-id: ${{ env.LC_APPLICATION_ID }}
+                    scan-targets: '.'
+                    stage: release
+
     goreleaser:
+        name: Run Goreleaser
+        needs: sonatype
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3

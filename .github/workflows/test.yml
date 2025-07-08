@@ -35,8 +35,24 @@ jobs:
               uses: golangci/golangci-lint-action@v8
               with:
                   version: latest
+            
+    sonatype:
+        name: Sonatype Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Sonatype Lifecycle Evaluation
+              id: evaluate
+              uses: sonatype/actions/evaluate@v1
+              with:
+                    iq-server-url: ${{ vars.SONATYPE_PLATFORM_URL }}
+                    username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
+                    password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
+                    application-id: ${{ env.LC_APPLICATION_ID }}
+                    scan-targets: '.'
+                    stage: build
 
     generate:
+        name: Ensure Docs are Generated
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -63,7 +79,10 @@ jobs:
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
         name: Terraform Provider Acceptance Tests
-        needs: build
+        needs: 
+            - build
+            - sonatype
+            - generate
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
