@@ -41,7 +41,7 @@ jobs:
                     password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
                     application-id: ${{ env.LC_APPLICATION_ID }}
                     scan-targets: 'go.list'
-                    stage: build
+                    stage: release
 
     goreleaser:
         name: Run Goreleaser
