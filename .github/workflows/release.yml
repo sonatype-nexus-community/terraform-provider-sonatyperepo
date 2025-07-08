@@ -23,6 +23,15 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               
+            - uses: actions/setup-go@v5
+              with:
+                go-version-file: 'go.mod'
+                cache: true
+              
+            - name: Generate go.list
+              run:
+                    go list -f '{{define "M"}}{{.Path}} {{.Version}}{{end}}{{with .Module}}{{if not .Main}}{{if .Replace}}{{template "M" .Replace}}{{else}}{{template "M" .}}{{end}}{{end}}{{end}}' -compiled -deps| sort -u > go.list
+              
             - name: Sonatype Lifecycle Evaluation
               id: evaluate
               uses: sonatype/actions/evaluate@v1
@@ -31,8 +40,8 @@ jobs:
                     username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
                     password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
                     application-id: ${{ env.LC_APPLICATION_ID }}
-                    scan-targets: '.'
-                    stage: release
+                    scan-targets: 'go.list'
+                    stage: build
 
     goreleaser:
         name: Run Goreleaser
