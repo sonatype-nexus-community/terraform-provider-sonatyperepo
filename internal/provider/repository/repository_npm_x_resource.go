@@ -37,3 +37,11 @@ func NewRepositoryNpmProxyResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
+
+// NewRepositoryNpmGroupResource is a helper function to simplify the provider implementation.
+func NewRepositoryNpmGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.NpmRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

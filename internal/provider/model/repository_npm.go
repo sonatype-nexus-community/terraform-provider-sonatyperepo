@@ -25,6 +25,7 @@ import (
 )
 
 // NPM Hosted
+// ----------------------------------------
 type RepositoryNpmHostedModel struct {
 	RepositoryHostedModel
 }
@@ -55,7 +56,7 @@ func (m *RepositoryNpmHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepo
 	return m.ToApiCreateModel()
 }
 
-// NPM Proxy Specific Attributes
+// NPM Proxy
 // ----------------------------------------
 type npmSpecificProxyModel struct {
 	RemoveQuarrantined types.Bool `tfsdk:"remove_quarrantined"`
@@ -143,5 +144,34 @@ func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyReposi
 }
 
 func (m *RepositoryNpmProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
+
+// NPM Group
+// ----------------------------------------
+type RepositoryNpmGroupModel struct {
+	RepositoryGroupDeployModel
+}
+
+func (m *RepositoryNpmGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupDeployRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+	m.Storage.MapFromApi(&api.Storage)
+	m.Group.MapFromApi(&api.Group)
+}
+
+func (m *RepositoryNpmGroupModel) ToApiCreateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.NpmGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+	m.Group.MapToApi(&apiModel.Group)
+	return apiModel
+}
+
+func (m *RepositoryNpmGroupModel) ToApiUpdateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }

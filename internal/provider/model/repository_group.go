@@ -30,6 +30,14 @@ type RepositoryGroupModel struct {
 	Group   repositoryGroupDetails `tfsdk:"group"`
 }
 
+// RepositoryGroupDeployModel
+// --------------------------------------------------------
+type RepositoryGroupDeployModel struct {
+	BasicRepositoryModel
+	Storage repositoryStorageModel       `tfsdk:"storage"`
+	Group   repositoryGroupDeployDetails `tfsdk:"group"`
+}
+
 // repositoryGroupDetails
 // --------------------------------------------------------
 type repositoryGroupDetails struct {
@@ -48,4 +56,27 @@ func (m *repositoryGroupDetails) MapToApi(api *sonatyperepo.GroupAttributes) {
 	for _, n := range m.MemberNames {
 		api.MemberNames = append(api.MemberNames, n.ValueString())
 	}
+}
+
+// repositoryGroupDeployDetails
+// --------------------------------------------------------
+type repositoryGroupDeployDetails struct {
+	repositoryGroupDetails
+	WritableMember types.String `tfsdk:"writable_member"`
+}
+
+func (m *repositoryGroupDeployDetails) MapFromApi(api *sonatyperepo.GroupDeployAttributes) {
+	m.MemberNames = make([]types.String, 0)
+	for _, n := range api.GetMemberNames() {
+		m.MemberNames = append(m.MemberNames, types.StringValue(n))
+	}
+	m.WritableMember = types.StringPointerValue(api.WritableMember)
+}
+
+func (m *repositoryGroupDeployDetails) MapToApi(api *sonatyperepo.GroupDeployAttributes) {
+	api.MemberNames = make([]string, 0)
+	for _, n := range m.MemberNames {
+		api.MemberNames = append(api.MemberNames, n.ValueString())
+	}
+	api.WritableMember = m.WritableMember.ValueStringPointer()
 }

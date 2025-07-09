@@ -211,7 +211,7 @@ func (f *MavenRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes()
+	return getCommonGroupSchemaAttributes(false)
 }
 
 func (f *MavenRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

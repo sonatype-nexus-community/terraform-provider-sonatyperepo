@@ -44,6 +44,10 @@ type NpmRepositoryFormatProxy struct {
 	NpmRepositoryFormat
 }
 
+type NpmRepositoryFormatGroup struct {
+	NpmRepositoryFormat
+}
+
 // --------------------------------------------
 // Generic NPM Format Functions
 // --------------------------------------------
@@ -115,7 +119,7 @@ func (f *NpmRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 }
 
 // --------------------------------------------
-// Hosted NPM Format Functions
+// PROXY NPM Format Functions
 // --------------------------------------------
 func (f *NpmRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
@@ -170,6 +174,63 @@ func (f *NpmRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.RepositoryNpmProxyModel)
 	stateModel.FromApiModel((api).(sonatyperepo.NpmProxyApiRepository))
+	return stateModel
+}
+
+// --------------------------------------------
+// GORUP NPM Format Functions
+// --------------------------------------------
+func (f *NpmRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryNpmGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateNpmGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
+
+func (f *NpmRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryNpmGroupModel)
+
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
+
+func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryNpmGroupModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryNpmGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateNpmGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	return getCommonGroupSchemaAttributes(true)
+}
+
+func (f *NpmRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryNpmGroupModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *NpmRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryNpmGroupModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *NpmRepositoryFormatGroup) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryNpmGroupModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *NpmRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryNpmGroupModel)
+	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupDeployRepository))
 	return stateModel
 }
 

@@ -23,23 +23,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func getCommonGroupSchemaAttributes() map[string]schema.Attribute {
+func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attribute {
+	attributes := map[string]schema.Attribute{
+		"member_names": schema.ListAttribute{
+			Description: "Member repositories' names",
+			ElementType: types.StringType,
+			Required:    false,
+			Optional:    true,
+			Validators: []validator.List{
+				listvalidator.SizeAtLeast(1),
+			},
+		},
+	}
+	if includeDeploy {
+		attributes["writable_member"] = schema.StringAttribute{
+			Description: "This field is for the Group Deployment feature available in Sonatype Nexus Repository Pro.",
+			Required:    false,
+			Optional:    true,
+		}
+	}
 	return map[string]schema.Attribute{
 		"group": schema.SingleNestedAttribute{
 			Description: "Group specific configuration for this Repository",
 			Required:    true,
 			Optional:    false,
-			Attributes: map[string]schema.Attribute{
-				"member_names": schema.ListAttribute{
-					Description: "Member repositories' names",
-					ElementType: types.StringType,
-					Required:    false,
-					Optional:    true,
-					Validators: []validator.List{
-						listvalidator.SizeAtLeast(1),
-					},
-				},
-			},
+			Attributes:  attributes,
 		},
 	}
 }
