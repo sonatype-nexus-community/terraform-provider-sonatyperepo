@@ -136,24 +136,26 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	for _, role := range rolesResponse {
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s Role", *role.Name))
+		newRole := model.RoleModelIncludingReadOnly{}
+		newRole.MapFromApi(&role)
 
-		newRole := model.RoleModel{
-			Id:          types.StringValue(*role.Id),
-			Name:        types.StringValue(*role.Name),
-			Description: types.StringValue(*role.Description),
-			ReadOnly:    types.BoolValue(*role.ReadOnly),
-			Source:      types.StringValue(*role.Source),
-			Privileges:  make([]types.String, 0),
-			Roles:       make([]types.String, 0),
-		}
+		// newRole := model.RoleModelIncludingReadOnly{
+		// 	Id:          types.StringValue(*role.Id),
+		// 	Name:        types.StringValue(*role.Name),
+		// 	Description: types.StringValue(*role.Description),
+		// 	ReadOnly:    types.BoolValue(*role.ReadOnly),
+		// 	Source:      types.StringValue(*role.Source),
+		// 	Privileges:  make([]types.String, 0),
+		// 	Roles:       make([]types.String, 0),
+		// }
 
-		for _, privilege := range role.Privileges {
-			newRole.Privileges = append(newRole.Privileges, types.StringValue(privilege))
-		}
+		// for _, privilege := range role.Privileges {
+		// 	newRole.Privileges = append(newRole.Privileges, types.StringValue(privilege))
+		// }
 
-		for _, r := range role.Roles {
-			newRole.Roles = append(newRole.Roles, types.StringValue(r))
-		}
+		// for _, r := range role.Roles {
+		// 	newRole.Roles = append(newRole.Roles, types.StringValue(r))
+		// }
 
 		state.Roles = append(state.Roles, newRole)
 	}
