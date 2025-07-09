@@ -48,6 +48,45 @@ type EmailConfigurationModel struct {
 	LastUpdated                   types.String `tfsdk:"last_updated"`
 }
 
+type IqConnectionModel struct {
+	Enabled                types.Bool   `tfsdk:"enabled"`
+	Url                    types.String `tfsdk:"url"`
+	NexusTrustStoreEnabled types.Bool   `tfsdk:"nexus_trust_store_enabled"`
+	AuthenticationMethod   types.String `tfsdk:"authentication_method"`
+	Username               types.String `tfsdk:"username"`
+	Password               types.String `tfsdk:"password"`
+	ConnectionTimeout      types.Int32  `tfsdk:"connection_timeout"`
+	Properties             types.String `tfsdk:"properties"`
+	ShowIQServerLink       types.Bool   `tfsdk:"show_iq_server_link"`
+	FailOpenModeEnabled    types.Bool   `tfsdk:"fail_open_mode_enabled"`
+	LastUpdated            types.String `tfsdk:"last_updated"`
+}
+
+func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
+	m.AuthenticationMethod = types.StringValue(api.AuthenticationType)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	m.NexusTrustStoreEnabled = types.BoolPointerValue(api.UseTrustStoreForUrl)
+	m.Url = types.StringPointerValue(api.Url)
+	m.Username = types.StringPointerValue(api.Username)
+	// Skip password
+	m.ConnectionTimeout = types.Int32PointerValue(api.TimeoutSeconds)
+	m.Properties = types.StringPointerValue(api.Properties)
+	m.ShowIQServerLink = types.BoolPointerValue(api.ShowLink)
+	m.FailOpenModeEnabled = types.BoolPointerValue(api.FailOpenModeEnabled)
+}
+
+func (m *IqConnectionModel) MapToApi(api *sonatyperepo.IqConnectionXo) {
+	api.Enabled = m.Enabled.ValueBoolPointer()
+	api.Url = m.Url.ValueStringPointer()
+	api.AuthenticationType = m.AuthenticationMethod.ValueString()
+	api.Username = m.Username.ValueStringPointer()
+	api.Password = m.Password.ValueStringPointer()
+	api.TimeoutSeconds = m.ConnectionTimeout.ValueInt32Pointer()
+	api.Properties = m.Properties.ValueStringPointer()
+	api.ShowLink = m.ShowIQServerLink.ValueBoolPointer()
+	api.FailOpenModeEnabled = m.FailOpenModeEnabled.ValueBoolPointer()
+}
+
 type LdapServerModel struct {
 	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
