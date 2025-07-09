@@ -26,6 +26,8 @@ const (
 	HTTP_AUTH_TYPE_BEARER_TOKEN          string = "bearerToken"
 	HTTP_AUTH_TYPE_NTLM                  string = "ntlm"
 	HTTP_AUTH_TYPE_USERNAME              string = "username"
+	IQ_AUTHENTICATON_TYPE_PKI            string = "PKI"
+	IQ_AUTHENTICATON_TYPE_USER           string = "USER"
 	LDAP_GROUP_MAPPING_DYNAMIC           string = "DYNAMIC"
 	LDAP_GROUP_MAPPING_STATIC            string = "STATIC"
 	MAVEN_CONTENT_DISPOSITION_ATTACHMENT string = "ATTACHMENT"
