@@ -27,29 +27,29 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
-func TestAccRepositoryMavenGroupResource(t *testing.T) {
+func TestAccRepositoryNpmGroupResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceName := "sonatyperepo_repository_maven_group.repo"
+	resourceName := "sonatyperepo_repository_npm_group.repo"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config:      getRepositoryMavenGroupResourceConfigNoMembers(randomString),
+				Config:      getRepositorNpmGroupResourceConfigNoMembers(randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			{
-				Config: getRepositoryMavenGroupResourceConfigWithMembers(randomString),
+				Config: getRepositoryNpmGroupResourceConfigWithMembers(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-
 					// Verify
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("maven-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("npm-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceName, "url"),
 					resource.TestCheckResourceAttr(resourceName, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "group.member_names.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "group.writable_member", "npm-internal"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -57,10 +57,10 @@ func TestAccRepositoryMavenGroupResource(t *testing.T) {
 	})
 }
 
-func getRepositoryMavenGroupResourceConfigNoMembers(randomString string) string {
+func getRepositorNpmGroupResourceConfigNoMembers(randomString string) string {
 	return fmt.Sprintf(utils.ProviderConfig+`
-resource "sonatyperepo_repository_maven_group" "repo" {
-  name = "maven-group-repo-%s"
+resource "sonatyperepo_repository_npm_group" "repo" {
+  name = "npm-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -73,17 +73,18 @@ resource "sonatyperepo_repository_maven_group" "repo" {
 `, randomString)
 }
 
-func getRepositoryMavenGroupResourceConfigWithMembers(randomString string) string {
+func getRepositoryNpmGroupResourceConfigWithMembers(randomString string) string {
 	return fmt.Sprintf(utils.ProviderConfig+`
-resource "sonatyperepo_repository_maven_group" "repo" {
-  name = "maven-group-repo-%s"
+resource "sonatyperepo_repository_npm_group" "repo" {
+  name = "npm-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   group = {
-	member_names = ["maven-proxy"]
+	member_names = ["npm-proxy", "npm-internal"]
+	writable_member = "npm-internal"
   }
 }
 `, randomString)

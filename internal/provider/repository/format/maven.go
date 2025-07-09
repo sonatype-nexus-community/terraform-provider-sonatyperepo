@@ -46,6 +46,10 @@ type MavenRepositoryFormatProxy struct {
 	MavenRepositoryFormat
 }
 
+type MavenRepositoryFormatGroup struct {
+	MavenRepositoryFormat
+}
+
 // --------------------------------------------
 // Generic Maven Format Functions
 // --------------------------------------------
@@ -172,6 +176,63 @@ func (f *MavenRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.RepositoryMavenProxyModel)
 	stateModel.FromApiModel((api).(sonatyperepo.MavenProxyApiRepository))
+	return stateModel
+}
+
+// --------------------------------------------
+// GROUP Maven Format Functions
+// --------------------------------------------
+func (f *MavenRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryMavenGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateMavenGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
+
+func (f *MavenRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryMavenGroupModel)
+
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
+
+func (f *MavenRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryMavenGroupModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryMavenGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateMavenGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	return getCommonGroupSchemaAttributes(false)
+}
+
+func (f *MavenRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryMavenGroupModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *MavenRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryMavenGroupModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *MavenRepositoryFormatGroup) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryMavenGroupModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryMavenGroupModel)
+	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
 }
 

@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
@@ -50,7 +49,6 @@ func TestAccRepositoryMavenProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceNameMavenProxy, "url"),
 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.blob_store_name", "default"),
 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.write_policy", common.WRITE_POLICY_ALLOW),
 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.metadata_max_age", "1440"),
@@ -143,7 +141,6 @@ resource "%s" "repo" {
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
-	write_policy = "ALLOW"
   }
   proxy = {
     remote_url = "https://repo1.maven.org/maven2/"

@@ -30,6 +30,7 @@ type repositoryMavenSpecificModel struct {
 }
 
 // Hosted Maven
+// --------------------------------------------
 type RepositoryMavenHostedModel struct {
 	RepositoryHostedModel
 	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
@@ -47,8 +48,7 @@ func (m *RepositoryMavenHostedModel) FromApiModel(api sonatyperepo.MavenHostedAp
 	}
 
 	// Storage
-	m.Storage = repositoryStorageModelNonGroup{}
-	mapHostedStorageAttributesFromApi(&api.Storage, &m.Storage)
+	m.Storage.MapFromApi(&api.Storage)
 
 	// Maven Specific
 	m.Maven = repositoryMavenSpecificModel{}
@@ -67,7 +67,7 @@ func (m *RepositoryMavenHostedModel) ToApiCreateModel() sonatyperepo.MavenHosted
 			PolicyNames: make([]string, 0),
 		},
 	}
-	mapHostedStorageAttributesToApi(m.Storage, &apiModel.Storage)
+	m.Storage.MapToApi(&apiModel.Storage)
 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
 	m.Component.MapToApi(apiModel.Component)
 
@@ -82,6 +82,7 @@ func (m *RepositoryMavenHostedModel) ToApiUpdateModel() sonatyperepo.MavenHosted
 }
 
 // Proxy Maven
+// --------------------------------------------
 type RepositoryMavenProxyModel struct {
 	RepositoryProxyModel
 	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
@@ -99,8 +100,7 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 	}
 
 	// Storage
-	m.Storage = repositoryStorageModelNonGroup{}
-	mapStorageNonGroupFromApi(&api.Storage, &m.Storage)
+	m.Storage.MapFromApi(&api.Storage)
 
 	// Proxy Specific
 	m.Proxy.MapFromApi(&api.Proxy)
@@ -117,18 +117,14 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 
 func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
 	apiModel := sonatyperepo.MavenProxyRepositoryApiRequest{
-		Name:   m.Name.ValueString(),
-		Online: m.Online.ValueBool(),
-		Storage: sonatyperepo.StorageAttributes{
-			BlobStoreName:               m.Storage.BlobStoreName.ValueString(),
-			StrictContentTypeValidation: m.Storage.StrictContentTypeValidation.ValueBool(),
-			WritePolicy:                 m.Storage.WritePolicy.ValueStringPointer(),
-		},
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
 		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
 			PolicyNames: make([]string, 0),
 		},
 	}
-
+	m.Storage.MapToApi(&apiModel.Storage)
 	if m.Cleanup != nil {
 		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
 	}
@@ -165,24 +161,38 @@ func (m *repositoryMavenSpecificModel) mapToApi(api *sonatyperepo.MavenAttribute
 	api.VersionPolicy = m.VersionPolicy.ValueStringPointer()
 }
 
-// ---- OLD BELOW
-
+// Group Maven
+// --------------------------------------------
 type RepositoryMavenGroupModel struct {
-	Name        types.String               `tfsdk:"name"`
-	Format      types.String               `tfsdk:"format"`
-	Type        types.String               `tfsdk:"type"`
-	Url         types.String               `tfsdk:"url"`
-	Online      types.Bool                 `tfsdk:"online"`
-	Storage     repositoryStorageModeGroup `tfsdk:"storage"`
-	Group       RepositoryGroupModel       `tfsdk:"group"`
-	LastUpdated types.String               `tfsdk:"last_updated"`
+	RepositoryGroupModel
 }
 
-type repositoryStorageModeGroup struct {
-	BlobStoreName               types.String `tfsdk:"blob_store_name"`
-	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+func (m *RepositoryMavenGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Group Attributes
+	m.Group.MapFromApi(&api.Group)
 }
 
-type RepositoryGroupModel struct {
-	MemberNames []types.String `tfsdk:"member_names"`
+func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.MavenGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+
+	// Group
+	m.Group.MapToApi(&apiModel.Group)
+
+	return apiModel
+}
+
+func (m *RepositoryMavenGroupModel) ToApiUpdateModel() sonatyperepo.MavenGroupRepositoryApiRequest {
+	return m.ToApiCreateModel()
 }

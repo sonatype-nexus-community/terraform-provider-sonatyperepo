@@ -28,6 +28,7 @@ import (
 // --------------------------------------------------------
 type RepositoryProxyModel struct {
 	BasicRepositoryModel
+	Storage       repositoryStorageModel       `tfsdk:"storage"`
 	Proxy         repositoryProxyModel         `tfsdk:"proxy"`
 	NegativeCache repositoryNegativeCacheModel `tfsdk:"negative_cache"`
 	HttpClient    repositoryHttpClientModel    `tfsdk:"http_client"`
