@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_maven_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group Maven Repositories
+  Manage Group MAVEN Repositories
 ---
 
 # sonatyperepo_repository_maven_group (Resource)
 
-Manage Group Maven Repositories
+Manage Group MAVEN Repositories
 
 
 
@@ -17,15 +17,14 @@ Manage Group Maven Repositories
 
 ### Required
 
-- `group` (Attributes) Repository Group configuration (see [below for nested schema](#nestedatt--group))
+- `group` (Attributes) Group specific configuration for this Repository (see [below for nested schema](#nestedatt--group))
 - `name` (String) Name of the Repository
 - `online` (Boolean) Whether this Repository is online and accepting incoming requests
 - `storage` (Attributes) Storage configuration for this Repository (see [below for nested schema](#nestedatt--storage))
 
 ### Optional
 
-- `format` (String) Format of this Repository - will always be 'maven2'
-- `type` (String) Type of this Repository - will always be 'proxy'
+- `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
 - `url` (String) URL to access the Repository
 
 ### Read-Only
@@ -47,3 +46,11 @@ Required:
 
 - `blob_store_name` (String) Name of the Blob Store to use
 - `strict_content_type_validation` (Boolean) Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format
+
+
+<a id="nestedatt--cleanup"></a>
+### Nested Schema for `cleanup`
+
+Optional:
+
+- `policy_names` (List of String) Components that match any of the applied policies will be deleted

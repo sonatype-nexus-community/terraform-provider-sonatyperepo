@@ -45,7 +45,7 @@ func (m *RepositoryNpmHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepo
 			PolicyNames: make([]string, 0),
 		},
 	}
-	mapHostedStorageAttributesToApi(m.Storage, &apiModel.Storage)
+	m.Storage.MapToApi(&apiModel.Storage)
 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
 	m.Component.MapToApi(apiModel.Component)
 	return apiModel
@@ -86,8 +86,7 @@ func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepos
 	}
 
 	// Storage
-	m.Storage = repositoryStorageModelNonGroup{}
-	mapStorageNonGroupFromApi(&api.Storage, &m.Storage)
+	m.Storage.MapFromApi(&api.Storage)
 
 	// Proxy Specific
 	m.Proxy.MapFromApi(&api.Proxy)
@@ -111,7 +110,7 @@ func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyReposi
 			PolicyNames: make([]string, 0),
 		},
 	}
-	mapStorageNonGroupToApi(&m.Storage, &apiModel.Storage)
+	m.Storage.MapToApi(&apiModel.Storage)
 
 	if m.Cleanup != nil {
 		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)

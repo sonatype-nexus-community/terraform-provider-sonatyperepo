@@ -24,7 +24,28 @@ import (
 
 type RepositoryHostedModel struct {
 	BasicRepositoryModel
-	Component *RepositoryComponentModel `tfsdk:"component"`
+	Storage   repositoryStorageModelHosted `tfsdk:"storage"`
+	Component *RepositoryComponentModel    `tfsdk:"component"`
+}
+
+// repositoryStorageModelHosted
+// ----------------------------------------
+type repositoryStorageModelHosted struct {
+	BlobStoreName               types.String `tfsdk:"blob_store_name"`
+	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
+	WritePolicy                 types.String `tfsdk:"write_policy"`
+}
+
+func (m *repositoryStorageModelHosted) MapFromApi(api *sonatyperepo.HostedStorageAttributes) {
+	m.BlobStoreName = types.StringValue(api.BlobStoreName)
+	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
+	m.WritePolicy = types.StringValue(api.WritePolicy)
+}
+
+func (m *repositoryStorageModelHosted) MapToApi(api *sonatyperepo.HostedStorageAttributes) {
+	api.BlobStoreName = m.BlobStoreName.ValueString()
+	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
+	api.WritePolicy = m.WritePolicy.ValueString()
 }
 
 // RepositoryComponentModel
@@ -49,8 +70,7 @@ func (m *RepositoryHostedModel) mapSimpleApiHostedRepository(api sonatyperepo.Si
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
 	m.Url = types.StringPointerValue(api.Url)
-	m.Storage = repositoryStorageModelNonGroup{}
-	mapHostedStorageAttributesFromApi(&api.Storage, &m.Storage)
+	m.Storage.MapFromApi(&api.Storage)
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {

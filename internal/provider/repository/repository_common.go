@@ -294,6 +294,50 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
+	storageAttributes := map[string]schema.Attribute{
+		"blob_store_name": schema.StringAttribute{
+			Description: "Name of the Blob Store to use",
+			Required:    true,
+			Optional:    false,
+		},
+		"strict_content_type_validation": schema.BoolAttribute{
+			Description: "Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
+			Required:    true,
+		},
+	}
+
+	// Write Policy is only for Hosted Repositories
+	if repoType == format.REPO_TYPE_HOSTED {
+		storageAttributes["write_policy"] = schema.StringAttribute{
+			Description: "Controls if deployments of and updates to assets are allowed",
+			Required:    true,
+			Optional:    false,
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					common.WRITE_POLICY_ALLOW,
+					common.WRITE_POLICY_ALLOW_ONCE,
+					common.WRITE_POLICY_DENY,
+				),
+			},
+		}
+	}
+	// else {
+	// 	storageAttributes["write_policy"] = schema.StringAttribute{
+	// 		Description: "Controls if deployments of and updates to assets are allowed",
+	// 		Computed:    true,
+	// 		Optional:    false,
+	// 		Default:     stringdefault.StaticString(common.WRITE_POLICY_ALLOW),
+	// 		Validators: []validator.String{
+	// 			stringvalidator.OneOf(
+	// 				common.WRITE_POLICY_ALLOW,
+	// 			),
+	// 		},
+	// 		PlanModifiers: []planmodifier.String{
+	// 			stringplanmodifier.UseStateForUnknown(),
+	// 		},
+	// 	}
+	// }
+
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),
 		Attributes: map[string]schema.Attribute{
@@ -317,29 +361,7 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 				Description: "Storage configuration for this Repository",
 				Required:    true,
 				Optional:    false,
-				Attributes: map[string]schema.Attribute{
-					"blob_store_name": schema.StringAttribute{
-						Description: "Name of the Blob Store to use",
-						Required:    true,
-						Optional:    false,
-					},
-					"strict_content_type_validation": schema.BoolAttribute{
-						Description: "Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
-						Required:    true,
-					},
-					"write_policy": schema.StringAttribute{
-						Description: "Controls if deployments of and updates to assets are allowed",
-						Required:    true,
-						Optional:    false,
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								common.WRITE_POLICY_ALLOW,
-								common.WRITE_POLICY_ALLOW_ONCE,
-								common.WRITE_POLICY_DENY,
-							),
-						},
-					},
-				},
+				Attributes:  storageAttributes,
 			},
 			"cleanup": schema.SingleNestedAttribute{
 				Description: "Repository Cleanup configuration",

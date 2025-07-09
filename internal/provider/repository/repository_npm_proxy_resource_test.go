@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
@@ -49,7 +48,6 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceNameNpmProxy, "url"),
 					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.blob_store_name", "default"),
 					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.write_policy", common.WRITE_POLICY_ALLOW),
 					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.remote_url", "https://registry.npmjs.org"),
 					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.metadata_max_age", "1400"),
@@ -142,7 +140,6 @@ resource "%s" "repo" {
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
-	write_policy = "ALLOW"
   }
   proxy = {
     remote_url = "https://registry.npmjs.org"

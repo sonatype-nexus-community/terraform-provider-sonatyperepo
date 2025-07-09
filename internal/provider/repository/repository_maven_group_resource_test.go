@@ -24,7 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"terraform-provider-sonatyperepo/internal/provider/repository"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
@@ -47,8 +46,6 @@ func TestAccRepositoryMavenGroupResource(t *testing.T) {
 
 					// Verify
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("maven-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "format", repository.REPOSITORY_FORMAT_MAVEN),
-					resource.TestCheckResourceAttr(resourceName, "type", repository.REPOSITORY_TYPE_PROXY),
 					resource.TestCheckResourceAttr(resourceName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceName, "url"),
 					resource.TestCheckResourceAttr(resourceName, "storage.blob_store_name", "default"),

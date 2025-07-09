@@ -37,3 +37,11 @@ func NewRepositoryMavenProxyResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
+
+// NewRepositoryMavenGroupResource is a helper function to simplify the provider implementation.
+func NewRepositoryMavenGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.MavenRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

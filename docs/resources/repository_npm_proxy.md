@@ -103,7 +103,6 @@ Required:
 
 - `blob_store_name` (String) Name of the Blob Store to use
 - `strict_content_type_validation` (Boolean) Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format
-- `write_policy` (String) Controls if deployments of and updates to assets are allowed
 
 
 <a id="nestedatt--cleanup"></a>
