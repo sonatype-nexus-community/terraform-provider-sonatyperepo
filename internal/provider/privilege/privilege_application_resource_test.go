@@ -18,6 +18,7 @@ package privilege_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 	"terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -51,6 +52,8 @@ resource "%s" "p" {
 					// Verify
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "some description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "type", privilege_type.TypeApplication.String()),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "domain", "rubbish"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "1"),
 				),
