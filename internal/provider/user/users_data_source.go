@@ -150,26 +150,8 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	for _, u := range usersResponse {
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s User", *u.UserId))
-
-		newUser := model.UserModel{
-			UserId:        types.StringValue(*u.UserId),
-			FirstName:     types.StringValue(*u.FirstName),
-			LastName:      types.StringValue(*u.LastName),
-			EmailAddress:  types.StringValue(*u.EmailAddress),
-			ReadOnly:      types.BoolValue(*u.ReadOnly),
-			Source:        types.StringValue(*u.Source),
-			Status:        types.StringValue(u.Status),
-			Roles:         make([]types.String, 0),
-			ExternalRoles: make([]types.String, 0),
-		}
-
-		for _, r := range u.Roles {
-			newUser.Roles = append(newUser.Roles, types.StringValue(r))
-		}
-		for _, er := range u.ExternalRoles {
-			newUser.ExternalRoles = append(newUser.ExternalRoles, types.StringValue(er))
-		}
-
+		newUser := model.UserModel{}
+		newUser.MapFromApi(&u)
 		state.Users = append(state.Users, newUser)
 	}
 
