@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/hashicorp/terraform-plugin-testing v1.12.0
-	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.14
+	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.18
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/text v0.26.0
 )
@@ -70,5 +70,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

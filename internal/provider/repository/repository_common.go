@@ -321,22 +321,6 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 			},
 		}
 	}
-	// else {
-	// 	storageAttributes["write_policy"] = schema.StringAttribute{
-	// 		Description: "Controls if deployments of and updates to assets are allowed",
-	// 		Computed:    true,
-	// 		Optional:    false,
-	// 		Default:     stringdefault.StaticString(common.WRITE_POLICY_ALLOW),
-	// 		Validators: []validator.String{
-	// 			stringvalidator.OneOf(
-	// 				common.WRITE_POLICY_ALLOW,
-	// 			),
-	// 		},
-	// 		PlanModifiers: []planmodifier.String{
-	// 			stringplanmodifier.UseStateForUnknown(),
-	// 		},
-	// 	}
-	// }
 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),

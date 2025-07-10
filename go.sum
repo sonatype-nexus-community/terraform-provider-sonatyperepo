@@ -360,6 +360,14 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.12 h1:WvnQ
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.12/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.14 h1:/uGsIIUVNaDOPvLomMinyGUY+QKRc2P0HnQAw7SYp+g=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.14/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.15 h1:BXrPDISzb0tJbdQTyNVmB8d4sUYzsiVHn5QC0z4gf1A=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.15/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.16 h1:GdBmj9nD/fckDSrGhPDLMmEDkdWaKS/El9XnN9P2Jcc=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.16/go.mod h1:2k1SVPCbbf1eh9iwH+Uu6Rciw4BiOsgkE7okyrxKu+Y=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.17 h1:H4TTgzwgvYk7iWm6k3gczm6KWzrQJKUhK69CdK+OybE=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.17/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.18 h1:VRaTHZRYTKrXObB04gE5NGSxZu0oOJJO7dEGVny9rEA=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.18/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
@@ -725,6 +733,8 @@ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntN
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
 gopkg.in/cheggaaa/pb.v1 v1.0.27/go.mod h1:V/YB90LKu/1FcN3WVnfiiE5oMCibMjukxqG/qStrOgw=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
+gopkg.in/validator.v2 v2.0.1 h1:xF0KWyGWXm/LM2G1TrEjqOu4pa6coO9AlWSf3msVfDY=
+gopkg.in/validator.v2 v2.0.1/go.mod h1:lIUZBlB3Im4s/eYp39Ry/wkR02yOPhZ9IwIRBjuPuG8=
 gopkg.in/warnings.v0 v0.1.2 h1:wFXVbFY8DY5/xOe1ECiWdKCzZlxgshcYVNkBHstARME=
 gopkg.in/warnings.v0 v0.1.2/go.mod h1:jksf8JmL6Qr/oQM2OXTHunEvvTAsrWBLb6OOjuVWRNI=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

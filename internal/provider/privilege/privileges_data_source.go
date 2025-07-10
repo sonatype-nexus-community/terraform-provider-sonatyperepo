@@ -29,6 +29,7 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
+	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
@@ -88,7 +89,7 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 							Required:    true,
 							Optional:    false,
 							Validators: []validator.String{
-								stringvalidator.OneOf(model.AllPrivilegeTypes()...),
+								stringvalidator.OneOf(privilege_type.AllPrivilegeTypes()...),
 							},
 						},
 					},
@@ -108,7 +109,7 @@ func (d *privilegesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		d.Auth,
 	)
 
-	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetPrivileges1(ctx).Execute()
+	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetAllPrivileges(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable list Privileges",

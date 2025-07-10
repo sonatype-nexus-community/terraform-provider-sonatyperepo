@@ -22,47 +22,6 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type PrivilegeType int8
-
-const (
-	TypeApplication PrivilegeType = iota
-	TypeRepositoryAdmin
-	TypeRepositoryContentSelector
-	TypeRepositoryView
-	TypeScript
-	TypeWildcard
-)
-
-func (pt PrivilegeType) String() string {
-	switch pt {
-	case TypeApplication:
-		return "application"
-	case TypeRepositoryAdmin:
-		return "repository-admin"
-	case TypeRepositoryContentSelector:
-		return "repository-content-selector"
-	case TypeRepositoryView:
-		return "repository-view"
-	case TypeScript:
-		return "script"
-	case TypeWildcard:
-		return "wildcard"
-	}
-
-	return "unknown"
-}
-
-func AllPrivilegeTypes() []string {
-	return []string{
-		TypeApplication.String(),
-		TypeRepositoryAdmin.String(),
-		TypeRepositoryContentSelector.String(),
-		TypeRepositoryView.String(),
-		TypeScript.String(),
-		TypeWildcard.String(),
-	}
-}
-
 // BasePrivilegeModel
 // ------------------------------------
 type BasePrivilegeModel struct {
@@ -72,15 +31,22 @@ type BasePrivilegeModel struct {
 	Type        types.String `tfsdk:"type"`
 }
 
-func (m *BasePrivilegeModel) MapFromApi(api *sonatyperepo.ApiPrivilege) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *BasePrivilegeModel) MapFromApi(api *sonatyperepo.ApiPrivilegeRequest) {
+	m.Name = types.StringValue(api.Name)
 	m.Description = types.StringPointerValue(api.Description)
 	m.ReadOnly = types.BoolPointerValue(api.ReadOnly)
-	m.Type = types.StringPointerValue(api.Type)
+	m.Type = types.StringValue(api.Type)
 }
 
 // PrivilegesModel (used by DataSource)
 // ------------------------------------
 type PrivilegesModel struct {
 	Privileges []BasePrivilegeModel `tfsdk:"privileges"`
+}
+
+// PrivilegeModelResource
+// ------------------------------------
+type PrivilegeModelResource struct {
+	BasePrivilegeModel
+	LastUpdated types.String `tfsdk:"last_updated"`
 }
