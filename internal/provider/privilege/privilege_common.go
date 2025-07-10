@@ -52,14 +52,9 @@ type privilegeResource struct {
 	PrivilegeTypeType privilege_type.PrivilegeTypeType
 }
 
-// // NewPrivilegeResource is a helper function to simplify the provider implementation.
-// func NewPrivilegeResource() resource.Resource {
-// 	return &privilegeResource{}
-// }
-
 // Metadata returns the resource type name.
 func (r *privilegeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.GetResourceName())
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.GetResourceName(r.PrivilegeTypeType))
 }
 
 // Schema defines the schema for the resource.
@@ -285,9 +280,9 @@ func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) 
 			"type": schema.StringAttribute{
 				Description: "The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
 				Computed:    true,
-				Default:     stringdefault.StaticString(privilege_type.TypeApplication.String()),
+				Default:     stringdefault.StaticString(privilegeTypeType.String()),
 				Validators: []validator.String{
-					stringvalidator.OneOf(privilege_type.TypeApplication.String()),
+					stringvalidator.OneOf(privilegeTypeType.String()),
 				},
 			},
 			"last_updated": schema.StringAttribute{

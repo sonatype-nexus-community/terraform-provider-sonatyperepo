@@ -22,36 +22,40 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-// PrivilegeApplicationModel
+// PrivilegeRepositoryAdminModel
 // ------------------------------------
-type PrivilegeApplicationModel struct {
+type PrivilegeRepositoryAdminModel struct {
 	PrivilegeModelResource
-	Actions []types.String `tfsdk:"actions"`
-	Domain  types.String   `tfsdk:"domain"`
+	Actions    []types.String `tfsdk:"actions"`
+	Format     types.String   `tfsdk:"format"`
+	Repository types.String   `tfsdk:"repository"`
 }
 
-func (p *PrivilegeApplicationModel) FromApiModel(api sonatyperepo.ApiPrivilegeRequest) {
+func (p *PrivilegeRepositoryAdminModel) FromApiModel(api sonatyperepo.ApiPrivilegeRequest) {
 	p.Name = types.StringValue(api.Name)
 	p.Description = types.StringPointerValue(api.Description)
 	p.ReadOnly = types.BoolPointerValue(api.ReadOnly)
-	p.Domain = types.StringPointerValue(api.Domain)
 	p.Actions = make([]types.String, 0)
 	for _, a := range api.Actions {
 		p.Actions = append(p.Actions, types.StringValue(a))
 	}
+	p.Format = types.StringPointerValue(api.Format)
+	p.Repository = types.StringPointerValue(api.Repository)
 }
 
-func (p *PrivilegeApplicationModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeApplicationRequest {
-	apiModel := sonatyperepo.NewApiPrivilegeApplicationRequest()
+func (p *PrivilegeRepositoryAdminModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeRepositoryAdminRequest {
+	apiModel := sonatyperepo.NewApiPrivilegeRepositoryAdminRequest()
 	p.MapToApi(apiModel)
 	return *apiModel
 }
 
-func (p *PrivilegeApplicationModel) MapToApi(api *sonatyperepo.ApiPrivilegeApplicationRequest) {
+func (p *PrivilegeRepositoryAdminModel) MapToApi(api *sonatyperepo.ApiPrivilegeRepositoryAdminRequest) {
 	api.Name = p.Name.ValueStringPointer()
 	api.Description = p.Description.ValueStringPointer()
 	api.Actions = make([]string, 0)
 	for _, a := range p.Actions {
 		api.Actions = append(api.Actions, a.ValueString())
 	}
+	api.Format = p.Format.ValueStringPointer()
+	api.Repository = p.Repository.ValueStringPointer()
 }

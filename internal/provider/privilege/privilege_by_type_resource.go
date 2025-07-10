@@ -29,3 +29,11 @@ func NewApplicationPrivilegeResource() resource.Resource {
 		PrivilegeTypeType: privilege_type.TypeApplication,
 	}
 }
+
+// NewRepositoryAdminPrivilegeResource is a helper function to simplify the provider implementation.
+func NewRepositoryAdminPrivilegeResource() resource.Resource {
+	return &privilegeResource{
+		PrivilegeType:     &privilege_type.RepositoryAdminPrivilegeType{},
+		PrivilegeTypeType: privilege_type.TypeRepositoryAdmin,
+	}
+}

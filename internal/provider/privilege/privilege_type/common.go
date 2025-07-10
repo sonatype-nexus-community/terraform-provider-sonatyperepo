@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -117,11 +118,19 @@ func AllActionsExceptRun() []string {
 	}
 }
 
+func BreadActions() []string {
+	return []string{
+		ActionAdd.String(),
+		ActionBrowse.String(),
+		ActionDelete.String(),
+		ActionEdit.String(),
+		ActionRead.String(),
+	}
+}
+
 // BasePrivilegeType that all Privilege Types build from
 // --------------------------------------------
-type BasePrivilegeType struct {
-	Type PrivilegeTypeType
-}
+type BasePrivilegeType struct{}
 
 func (f *BasePrivilegeType) DoDeleteRequest(privilegeName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Call API to Delete
@@ -132,8 +141,8 @@ func (f *BasePrivilegeType) GetApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
 }
 
-func (f *BasePrivilegeType) GetResourceName() string {
-	return fmt.Sprintf("privilege_%s", f.Type.String())
+func (f *BasePrivilegeType) GetResourceName(privType PrivilegeTypeType) string {
+	return fmt.Sprintf("privilege_%s", strings.Replace(privType.String(), "-", "_", -1))
 }
 
 // PrivilegeType that all Privilege Types must implement
@@ -147,8 +156,7 @@ type PrivilegeType interface {
 	GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName() string
-	// GetKey() string
+	GetResourceName(privType PrivilegeTypeType) string
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 }

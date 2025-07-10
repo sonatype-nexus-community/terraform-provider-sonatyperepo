@@ -185,6 +185,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreS3Resource,
 		privilege.NewApplicationPrivilegeResource,
+		privilege.NewRepositoryAdminPrivilegeResource,
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
