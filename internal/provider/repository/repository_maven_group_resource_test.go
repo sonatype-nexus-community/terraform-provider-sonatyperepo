@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
 func TestAccRepositoryMavenGroupResource(t *testing.T) {
@@ -33,7 +33,7 @@ func TestAccRepositoryMavenGroupResource(t *testing.T) {
 	resourceName := "sonatyperepo_repository_maven_group.repo"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -58,7 +58,7 @@ func TestAccRepositoryMavenGroupResource(t *testing.T) {
 }
 
 func getRepositoryMavenGroupResourceConfigNoMembers(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_repository_maven_group" "repo" {
   name = "maven-group-repo-%s"
   online = true
@@ -74,7 +74,7 @@ resource "sonatyperepo_repository_maven_group" "repo" {
 }
 
 func getRepositoryMavenGroupResourceConfigWithMembers(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_repository_maven_group" "repo" {
   name = "maven-group-repo-%s"
   online = true

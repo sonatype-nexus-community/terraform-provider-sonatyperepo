@@ -17,7 +17,7 @@
 package blob_store_test
 
 import (
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,11 +25,11 @@ import (
 
 func TestAccBlobStoresDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: utils.ProviderConfig + `data "sonatyperepo_blob_stores" "blob_stores" {
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_stores" "blob_stores" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.#"),

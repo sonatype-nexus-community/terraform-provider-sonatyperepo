@@ -18,7 +18,7 @@ package blob_store_test
 
 import (
 	"regexp"
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -26,7 +26,7 @@ import (
 
 func TestAccBlobStoreGroupDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			// {
@@ -39,7 +39,7 @@ func TestAccBlobStoreGroupDataSource(t *testing.T) {
 			// 	),
 			// },
 			{
-				Config: utils.ProviderConfig + `data "sonatyperepo_blob_store_group" "b" {
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_group" "b" {
 					name = "this-will-not-exist"
 				}`,
 				ExpectError: regexp.MustCompile("Error: Unable to Read Group Blob Store"),

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package blob_store_test
+package privilege_test
 
 import (
 	"fmt"
-	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -26,37 +26,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TODO: Acceptance Tests do not have access to an environment that has appropriate AWS connectivity.
-func TestAccBlobStoreS3Resource(t *testing.T) {
+var (
+	resourceTypePrivilegeWildcard = "sonatyperepo_privilege_wildcard"
+	resourceNamePrivilegeWildcard = fmt.Sprintf("%s.p", resourceTypePrivilegeWildcard)
+)
 
+func TestAccPrivilegeWildcardResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	// resourceName := "sonatyperepo_blob_store_s3.b"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config:      getTestAccBlobStoreS3ResourceWillFail(randomString),
-				ExpectError: regexp.MustCompile("Error creating S3 Blob Store"),
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-wildcard-%s"
+	description = "some description"
+	pattern = "test-pattern"
+}`, resourceTypePrivilegeWildcard, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "description", "some description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "pattern", "test-pattern"),
+				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
-}
-
-func getTestAccBlobStoreS3ResourceWillFail(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_s3" "b" {
-  name = "test-%s"
-  bucket_configuration = {
-	bucket = {
-		region = "eu-west-2"
-		name = "bucket-name-%s"
-		prefix = "prefix-%s"
-		expiration = 99
-	}
-  }
-}
-`, randomString, randomString, randomString)
 }

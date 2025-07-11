@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package role_test
+package privilege_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -25,12 +26,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	resourceTypeRole = "sonatyperepo_role"
-	resourceNameRole = "sonatyperepo_role.rl"
+var (
+	resourceTypePrivilegeApplication = "sonatyperepo_privilege_application"
+	resourceNamePrivilegeApplication = fmt.Sprintf("%s.p", resourceTypePrivilegeApplication)
 )
 
-func TestAccRoleResource(t *testing.T) {
+func TestAccPrivilegeApplicationResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -38,34 +39,26 @@ func TestAccRoleResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: getRoleResourceConfig(randomString),
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-app-%s"
+	description = "some description"
+	domain = "rubbish"
+	actions = [
+    	"ALL"
+  	]
+}`, resourceTypePrivilegeApplication, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameRole, "id", fmt.Sprintf("my-test-role-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, "name", fmt.Sprintf("My Test Role %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, "description", "This is a test role"),
-					resource.TestCheckResourceAttr(resourceNameRole, "privileges.#", "1"),
-					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "1"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "some description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "type", privilege_type.TypeApplication.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "domain", "rubbish"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
-
-}
-
-func getRoleResourceConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "rl" {
-  id = "my-test-role-%s"
-  name = "My Test Role %s"
-  description = "This is a test role"
-  privileges = [
-    "nx-healthcheck-read"
-  ]
-  roles = [
-    "nx-anonymous"
-  ]
-}
-`, resourceTypeRole, randomString, randomString)
 }

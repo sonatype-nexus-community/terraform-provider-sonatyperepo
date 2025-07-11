@@ -39,3 +39,4 @@ local-tests
 
 # Ignore artifact
 terraform-provider-sonatyperepo
+.vscode

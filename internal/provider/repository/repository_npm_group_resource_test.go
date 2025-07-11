@@ -19,12 +19,11 @@ package repository_test
 import (
 	"fmt"
 	"regexp"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
 func TestAccRepositoryNpmGroupResource(t *testing.T) {
@@ -33,7 +32,7 @@ func TestAccRepositoryNpmGroupResource(t *testing.T) {
 	resourceName := "sonatyperepo_repository_npm_group.repo"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -58,7 +57,7 @@ func TestAccRepositoryNpmGroupResource(t *testing.T) {
 }
 
 func getRepositorNpmGroupResourceConfigNoMembers(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_repository_npm_group" "repo" {
   name = "npm-group-repo-%s"
   online = true
@@ -74,7 +73,7 @@ resource "sonatyperepo_repository_npm_group" "repo" {
 }
 
 func getRepositoryNpmGroupResourceConfigWithMembers(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_repository_npm_group" "repo" {
   name = "npm-group-repo-%s"
   online = true

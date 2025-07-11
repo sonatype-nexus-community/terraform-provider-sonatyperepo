@@ -14,35 +14,26 @@
  * limitations under the License.
  */
 
-package blob_store_test
+package privilege_test
 
 import (
-	"regexp"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoreS3DataSource(t *testing.T) {
+func TestAccUsersDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
-			// {
-			// 	Config: utils.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
-			// 		name = "default"
-			// 	}`,
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-			// 		resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "soft_quota.%"),
-			// 	),
-			// },
 			{
-				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
-					name = "this-will-not-exist"
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_privileges" "ps" {
 				}`,
-				ExpectError: regexp.MustCompile("Error: S3 Blobstore not found"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_privileges.ps", "privileges.#"),
+				),
 			},
 		},
 	})

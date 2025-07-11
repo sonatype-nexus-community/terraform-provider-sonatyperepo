@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package utils_test
 
 import (
 	"terraform-provider-sonatyperepo/internal/provider"
