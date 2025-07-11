@@ -53,3 +53,11 @@ func NewRepositoryViewPrivilegeResource() resource.Resource {
 		PrivilegeTypeType: privilege_type.TypeRepositoryView,
 	}
 }
+
+// NewScriptPrivilegeResource is a helper function to simplify the provider implementation.
+func NewScriptPrivilegeResource() resource.Resource {
+	return &privilegeResource{
+		PrivilegeType:     &privilege_type.ScriptPrivilegeType{},
+		PrivilegeTypeType: privilege_type.TypeScript,
+	}
+}

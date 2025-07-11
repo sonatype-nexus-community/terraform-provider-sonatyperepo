@@ -61,6 +61,9 @@ func (r *privilegeResource) Metadata(_ context.Context, req resource.MetadataReq
 func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := getBasePrivilegeSchema(r.PrivilegeTypeType)
 	maps.Copy(schema.Attributes, r.PrivilegeType.GetPrivilegeTypeSchemaAttributes())
+	if r.PrivilegeType.IsDeprecated() {
+		schema.DeprecationMessage = "Groovy scripting has been disbaled by default since Sonatype Nexus Repository 3.21.2 - see https://help.sonatype.com/en/script-api.html"
+	}
 	resp.Schema = schema
 }
 

@@ -128,6 +128,12 @@ func BreadActions() []string {
 	}
 }
 
+func BreadAndRunActions() []string {
+	actions := BreadActions()
+	actions = append(actions, ActionRun.String())
+	return actions
+}
+
 // BasePrivilegeType that all Privilege Types build from
 // --------------------------------------------
 type BasePrivilegeType struct{}
@@ -145,6 +151,10 @@ func (f *BasePrivilegeType) GetResourceName(privType PrivilegeTypeType) string {
 	return fmt.Sprintf("privilege_%s", strings.Replace(privType.String(), "-", "_", -1))
 }
 
+func (f *BasePrivilegeType) IsDeprecated() bool {
+	return false
+}
+
 // PrivilegeType that all Privilege Types must implement
 // --------------------------------------------
 type PrivilegeType interface {
@@ -152,6 +162,7 @@ type PrivilegeType interface {
 	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
+	IsDeprecated() bool
 	GetApiCreateSuccessResponseCodes() []int
 	GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
