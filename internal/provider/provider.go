@@ -198,6 +198,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryNpmProxyResource,
 		role.NewRoleResource,
 		system.NewAnonymousAccessSystemResource,
+		system.NewSystemConfigProductLicenseResource,
 		system.NewSystemConfigLdapResource,
 		system.NewSystemConfigMailResource,
 		system.NewSystemConfigIqConnectionResource,
