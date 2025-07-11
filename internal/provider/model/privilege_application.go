@@ -54,4 +54,5 @@ func (p *PrivilegeApplicationModel) MapToApi(api *sonatyperepo.ApiPrivilegeAppli
 	for _, a := range p.Actions {
 		api.Actions = append(api.Actions, a.ValueString())
 	}
+	api.Domain = p.Domain.ValueStringPointer()
 }
