@@ -37,3 +37,11 @@ func NewRepositoryAdminPrivilegeResource() resource.Resource {
 		PrivilegeTypeType: privilege_type.TypeRepositoryAdmin,
 	}
 }
+
+// NewRepositoryContentSelectorPrivilegeResource is a helper function to simplify the provider implementation.
+func NewRepositoryContentSelectorPrivilegeResource() resource.Resource {
+	return &privilegeResource{
+		PrivilegeType:     &privilege_type.RepositoryContentSelectorPrivilegeType{},
+		PrivilegeTypeType: privilege_type.TypeRepositoryContentSelector,
+	}
+}
