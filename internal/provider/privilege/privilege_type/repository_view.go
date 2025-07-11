@@ -22,11 +22,8 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -65,30 +62,7 @@ func (pt *RepositoryViewPrivilegeType) DoUpdateRequest(plan any, state any, apiC
 }
 
 func (pt *RepositoryViewPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"actions": schema.ListAttribute{
-			Description: "A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
-			Required:    true,
-			Optional:    false,
-			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre([]validator.String{
-					stringvalidator.OneOf(BreadActions()...),
-				}...),
-				listvalidator.UniqueValues(),
-			},
-		},
-		"format": schema.StringAttribute{
-			Description: "The repository format (i.e 'nuget', 'npm') this privilege will grant access to (or * for all).",
-			Required:    true,
-			Optional:    false,
-		},
-		"repository": schema.StringAttribute{
-			Description: "The name of the repository this privilege will grant access to (or * for all).",
-			Required:    true,
-			Optional:    false,
-		},
-	}
+	return getSchemaAttributesActionFormatRepository()
 }
 
 func (pt *RepositoryViewPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
