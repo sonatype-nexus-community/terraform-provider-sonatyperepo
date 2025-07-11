@@ -148,7 +148,7 @@ func (f *BasePrivilegeType) GetApiCreateSuccessResponseCodes() []int {
 }
 
 func (f *BasePrivilegeType) GetResourceName(privType PrivilegeTypeType) string {
-	return fmt.Sprintf("privilege_%s", strings.Replace(privType.String(), "-", "_", -1))
+	return fmt.Sprintf("privilege_%s", strings.ReplaceAll(privType.String(), "-", "_"))
 }
 
 func (f *BasePrivilegeType) IsDeprecated() bool {

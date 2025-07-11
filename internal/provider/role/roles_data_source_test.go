@@ -17,20 +17,19 @@
 package role_test
 
 import (
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
-
-	"terraform-provider-sonatyperepo/internal/provider/utils"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccRolesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: utils.ProviderConfig + `data "sonatyperepo_roles" "roles" {
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_roles" "roles" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_roles.roles", "roles.#"),

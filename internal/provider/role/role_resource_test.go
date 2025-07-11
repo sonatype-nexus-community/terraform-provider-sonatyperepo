@@ -18,7 +18,7 @@ package role_test
 
 import (
 	"fmt"
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -34,7 +34,7 @@ func TestAccRoleResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -55,7 +55,7 @@ func TestAccRoleResource(t *testing.T) {
 }
 
 func getRoleResourceConfig(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "rl" {
   id = "my-test-role-%s"
   name = "My Test Role %s"

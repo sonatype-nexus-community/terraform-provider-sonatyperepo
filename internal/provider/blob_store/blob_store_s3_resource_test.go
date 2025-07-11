@@ -19,7 +19,7 @@ package blob_store_test
 import (
 	"fmt"
 	"regexp"
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -33,7 +33,7 @@ func TestAccBlobStoreS3Resource(t *testing.T) {
 	// resourceName := "sonatyperepo_blob_store_s3.b"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -46,7 +46,7 @@ func TestAccBlobStoreS3Resource(t *testing.T) {
 }
 
 func getTestAccBlobStoreS3ResourceWillFail(randomString string) string {
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_blob_store_s3" "b" {
   name = "test-%s"
   bucket_configuration = {

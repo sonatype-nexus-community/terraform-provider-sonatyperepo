@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package privilege
+package privilege_test
 
 import (
 	"fmt"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
-	"terraform-provider-sonatyperepo/internal/provider/utils"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -35,11 +35,11 @@ func TestAccPrivilegeRepositoryAdminResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: fmt.Sprintf(utils.ProviderConfig+`
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "p" {
 	name = "test-priv-repo-admin-%s"
 	description = "a description"

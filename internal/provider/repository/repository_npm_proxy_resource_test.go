@@ -18,12 +18,11 @@ package repository_test
 
 import (
 	"fmt"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
 const (
@@ -36,7 +35,7 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -133,7 +132,7 @@ func getRepositoryNpmProxyResourceConfig(randomString string, includeReplication
 	}	
 `
 	}
-	return fmt.Sprintf(utils.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
   name = "npm-proxy-repo-%s"
   online = true
