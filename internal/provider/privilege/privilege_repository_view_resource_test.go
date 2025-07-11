@@ -27,11 +27,11 @@ import (
 )
 
 var (
-	resourceTypePrivilegeApplication = "sonatyperepo_privilege_application"
-	resourceNamePrivilegeApplication = fmt.Sprintf("%s.p", resourceTypePrivilegeApplication)
+	resourceTypePrivilegeRepoView = "sonatyperepo_privilege_repository_view"
+	resourceNamePrivilegeRepoView = fmt.Sprintf("%s.p", resourceTypePrivilegeRepoView)
 )
 
-func TestAccPrivilegeApplicationResource(t *testing.T) {
+func TestAccPrivilegeRepositoryViewResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -41,21 +41,24 @@ func TestAccPrivilegeApplicationResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils.ProviderConfig+`
 resource "%s" "p" {
-	name = "test-priv-app-%s"
-	description = "some description"
-	domain = "rubbish"
+	name = "test-priv-repo-view-%s"
+	description = "a description"
 	actions = [
-    	"ALL"
+    	"BROWSE",
+		"READ"
   	]
-}`, resourceTypePrivilegeApplication, randomString),
+	format = "npm"
+	repository = "npm-all"
+}`, resourceTypePrivilegeRepoView, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "some description"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "type", privilege_type.TypeApplication.String()),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "domain", "rubbish"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "1"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "name", fmt.Sprintf("test-priv-repo-view-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "description", "a description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "type", privilege_type.TypeRepositoryView.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "actions.#", "2"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "format", "npm"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "npm-all"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
