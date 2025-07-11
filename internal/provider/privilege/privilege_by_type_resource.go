@@ -61,3 +61,11 @@ func NewScriptPrivilegeResource() resource.Resource {
 		PrivilegeTypeType: privilege_type.TypeScript,
 	}
 }
+
+// NewWildcardPrivilegeResource is a helper function to simplify the provider implementation.
+func NewWildcardPrivilegeResource() resource.Resource {
+	return &privilegeResource{
+		PrivilegeType:     &privilege_type.WildcardPrivilegeType{},
+		PrivilegeTypeType: privilege_type.TypeWildcard,
+	}
+}
