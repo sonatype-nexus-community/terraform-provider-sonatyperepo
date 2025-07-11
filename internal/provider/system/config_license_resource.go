@@ -247,7 +247,11 @@ func (r *systemConfigProductLicenseResource) updateProductLicense(ctx context.Co
 	}
 
 	_, err = productLicenseFile.Write(licenseData)
-	productLicenseFile.Close()
+	if err != nil {
+		tflog.Error(ctx, fmt.Sprintf("Failed to write Product License to temporary file: %v", err))
+		return
+	}
+	_ = productLicenseFile.Close()
 
 	// Seems we have to close and re-open the file in order for the API Client library to be
 	// able to zero > 0 bytes in the file to read
@@ -256,7 +260,7 @@ func (r *systemConfigProductLicenseResource) updateProductLicense(ctx context.Co
 		tflog.Error(ctx, fmt.Sprintf("Could not open temporary license file: %v", err))
 		return
 	}
-	defer os.Remove(productLicenseFileName)
+	defer func() { _ = os.Remove(productLicenseFileName) }()
 
 	// Call API to Create
 	ctx = context.WithValue(
