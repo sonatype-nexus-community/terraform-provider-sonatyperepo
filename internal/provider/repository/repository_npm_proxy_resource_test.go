@@ -171,5 +171,5 @@ resource "%s" "repo" {
   }
   %s
 }
-`, resourceNameNpmProxy, randomString, replicationConfig)
+`, resourceTypeNpmProxy, randomString, replicationConfig)
 }
