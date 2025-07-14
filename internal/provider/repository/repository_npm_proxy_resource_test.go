@@ -39,34 +39,34 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: getRepositoryDockerProxyResourceConfig(randomString, false),
+				Config: getRepositoryNpmProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameDockerProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.remote_url", "https://registry.npmjs.org"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceNameDockerProxy, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceNameDockerProxy, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameNpmProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.remote_url", "https://registry.npmjs.org"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "proxy.metadata_max_age", "1400"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceNameNpmProxy, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceNameNpmProxy, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceNameNpmProxy, "replication.asset_path_regex"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -171,5 +171,5 @@ resource "%s" "repo" {
   }
   %s
 }
-`, resourceTypeDockerProxy, randomString, replicationConfig)
+`, resourceNameNpmProxy, randomString, replicationConfig)
 }
