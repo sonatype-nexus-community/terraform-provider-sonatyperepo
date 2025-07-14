@@ -6,11 +6,13 @@ name: Tests
 on:
     pull_request:
         paths-ignore:
+            - 'CHANGELOG.md'
             - 'README.md'
     push:
         branches:
             - main
         paths-ignore:
+            - 'CHANGELOG.md'
             - 'README.md'
 
 env:
