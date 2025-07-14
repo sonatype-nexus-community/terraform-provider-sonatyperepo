@@ -17,13 +17,16 @@
 package common
 
 const (
-	AUTH_SCHEME_NONE                            = "NONE"
-	AUTH_SCHEME_SIMPLE                          = "SIMPLE"
-	AUTH_SCHEME_DIGEST_MD5                      = "DIGEST_MD5"
-	AUTH_SCHEME_CRAM_MD5                        = "CRAM_MD5"
+	AUTH_SCHEME_NONE                     string = "NONE"
+	AUTH_SCHEME_SIMPLE                   string = "SIMPLE"
+	AUTH_SCHEME_DIGEST_MD5               string = "DIGEST_MD5"
+	AUTH_SCHEME_CRAM_MD5                 string = "CRAM_MD5"
 	DEFAULT_ANONYMOUS_USERNAME           string = "anonymous"
 	DEFAULT_REALM_NAME                   string = "NexusAuthorizingRealm"
 	DEFAULT_USER_SOURCE                  string = "default"
+	DOCKER_PROXY_INDEX_TYPE_HUB          string = "HUB"
+	DOCKER_PROXY_INDEX_TYPE_REGISTRY     string = "REGISTRY"
+	DOCKER_PROXY_INDEX_TYPE_CUSTOM       string = "CUSTOM"
 	HTTP_AUTH_TYPE_BEARER_TOKEN          string = "bearerToken"
 	HTTP_AUTH_TYPE_NTLM                  string = "ntlm"
 	HTTP_AUTH_TYPE_USERNAME              string = "username"
@@ -42,6 +45,7 @@ const (
 	PROTOCOL_LDAP                        string = "LDAP"
 	PROTOCOL_LDAPS                       string = "LDAPS"
 	REPO_FORMAT_APT                      string = "APT"
+	REPO_FORMAT_DOCKER                   string = "DOCKER"
 	REPO_FORMAT_MAVEN                    string = "MAVEN"
 	REPO_FORMAT_NPM                      string = "NPM"
 	USER_STATUS_ACTIVE                   string = "active"
