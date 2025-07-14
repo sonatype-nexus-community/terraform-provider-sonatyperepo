@@ -323,8 +323,8 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 		}
 	}
 
-	// LatestPolicy is only for Docker Repositories
-	if repoFormat == common.REPO_FORMAT_DOCKER {
+	// LatestPolicy is only for Docker Hosted Repositories
+	if repoFormat == common.REPO_FORMAT_DOCKER && repoType == format.REPO_TYPE_HOSTED {
 		storageAttributes["latest_policy"] = schema.BoolAttribute{
 			Description: "Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
 			Optional:    true,

@@ -193,6 +193,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryAptHostedResource,
 		repository.NewRepositoryAptProxyResource,
 		repository.NewRepositoryDockerHostedResource,
+		repository.NewRepositoryDockerProxyResource,
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,

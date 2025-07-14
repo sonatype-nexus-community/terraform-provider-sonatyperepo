@@ -31,7 +31,7 @@ const (
 	resourceTypeDockerHosted = "sonatyperepo_repository_docker_hosted"
 )
 
-func TestAccRepositoryDockerProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositoryDockerHostedResourceNoReplication(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 

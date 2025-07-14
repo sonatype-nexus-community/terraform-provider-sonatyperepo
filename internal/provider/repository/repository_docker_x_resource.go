@@ -31,12 +31,12 @@ func NewRepositoryDockerHostedResource() resource.Resource {
 }
 
 // NewRepositoryDockerProxyResource is a helper function to simplify the provider implementation.
-// func NewRepositoryDockerProxyResource() resource.Resource {
-// 	return &repositoryResource{
-// 		RepositoryFormat: &format.DockerRepositoryFormatProxy{},
-// 		RepositoryType:   format.REPO_TYPE_PROXY,
-// 	}
-// }
+func NewRepositoryDockerProxyResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.DockerRepositoryFormatProxy{},
+		RepositoryType:   format.REPO_TYPE_PROXY,
+	}
+}
 
 // // NewRepositoryDockerGroupResource is a helper function to simplify the provider implementation.
 // func NewRepositoryDockerGroupResource() resource.Resource {

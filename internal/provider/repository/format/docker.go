@@ -24,8 +24,15 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -121,61 +128,62 @@ func (f *DockerRepositoryFormatHosted) UpdateStateFromApi(state any, api any) an
 // --------------------------------------------
 // PROXY Docker Format Functions
 // --------------------------------------------
-// func (f *NpmRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryNpmProxyModel)
+func (f *DockerRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryDockerProxyModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.CreateNpmProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateDockerProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
 
-// func (f *NpmRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryNpmProxyModel)
+func (f *DockerRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryDockerProxyModel)
 
-// 	// Call to API to Read
-// 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-// 	return *apiResponse, httpResponse, err
-// }
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
 
-// func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryNpmProxyModel)
+func (f *DockerRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryDockerProxyModel)
 
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryNpmProxyModel)
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryDockerProxyModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateDockerProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
 
-// func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-// 	additionalAttributes := getCommonProxySchemaAttributes()
-// 	maps.Copy(additionalAttributes, getNpmSchemaAttributes())
-// 	return additionalAttributes
-// }
+func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
+	maps.Copy(additionalAttributes, getDockerProxySchemaAttributes())
+	return additionalAttributes
+}
 
-// func (f *NpmRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
-// 	var planModel model.RepositoryNpmProxyModel
-// 	return planModel, plan.Get(ctx, &planModel)
-// }
+func (f *DockerRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryDockerProxyModel
+	return planModel, plan.Get(ctx, &planModel)
+}
 
-// func (f *NpmRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
-// 	var stateModel model.RepositoryNpmProxyModel
-// 	return stateModel, state.Get(ctx, &stateModel)
-// }
+func (f *DockerRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryDockerProxyModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
 
-// func (f *NpmRepositoryFormatProxy) UpdatePlanForState(plan any) any {
-// 	var planModel = (plan).(model.RepositoryNpmProxyModel)
-// 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-// 	return planModel
-// }
+func (f *DockerRepositoryFormatProxy) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryDockerProxyModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
 
-// func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-// 	stateModel := (state).(model.RepositoryNpmProxyModel)
-// 	stateModel.FromApiModel((api).(sonatyperepo.NpmProxyApiRepository))
-// 	return stateModel
-// }
+func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryDockerProxyModel)
+	stateModel.FromApiModel((api).(sonatyperepo.DockerProxyApiRepository))
+	return stateModel
+}
 
 // // --------------------------------------------
 // // GORUP Docker Format Functions
@@ -263,6 +271,51 @@ func getDockerSchemaAttributes() map[string]schema.Attribute {
 				"v1_enabled": schema.BoolAttribute{
 					Description: "Whether to allow clients to use the V1 API to interact with this repository",
 					Required:    true,
+				},
+			},
+		},
+	}
+}
+
+func getDockerProxySchemaAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"docker_proxy": schema.SingleNestedAttribute{
+			Description: "Docker Proxy specific configuration for this Repository",
+			Required:    true,
+			Optional:    false,
+			Attributes: map[string]schema.Attribute{
+				"cache_foreign_layers": schema.BoolAttribute{
+					Description: "Allow Nexus Repository Manager to download and cache foreign layers",
+					Optional:    true,
+					Computed:    true,
+					Default:     booldefault.StaticBool(false),
+				},
+				"foreign_layer_url_whitelist": schema.ListAttribute{
+					Description: "Foreign Layer URL Whitelist",
+					Optional:    true,
+					Computed:    true,
+					ElementType: types.StringType,
+					Validators: []validator.List{
+						listvalidator.UniqueValues(),
+					},
+					Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
+				},
+				"index_type": schema.StringAttribute{
+					Description: "Type of Docker Index",
+					Optional:    true,
+					Computed:    true,
+					Validators: []validator.String{
+						stringvalidator.OneOf(
+							common.DOCKER_PROXY_INDEX_TYPE_HUB,
+							common.DOCKER_PROXY_INDEX_TYPE_REGISTRY,
+							common.DOCKER_PROXY_INDEX_TYPE_CUSTOM,
+						),
+					},
+					Default: stringdefault.StaticString(common.DOCKER_PROXY_INDEX_TYPE_REGISTRY),
+				},
+				"index_url": schema.StringAttribute{
+					Description: "Url of Docker Index to use",
+					Optional:    true,
 				},
 			},
 		},

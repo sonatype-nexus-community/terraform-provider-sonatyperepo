@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -26,11 +27,11 @@ import (
 )
 
 const (
-	resourceNameNpmProxy = "sonatyperepo_repository_npm_proxy.repo"
-	resourceTypeNpmProxy = "sonatyperepo_repository_npm_proxy"
+	resourceNameDockerProxy = "sonatyperepo_repository_docker_proxy.repo"
+	resourceTypeDockerProxy = "sonatyperepo_repository_docker_proxy"
 )
 
-func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositoryDockerProxyResourceNoReplication(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -42,12 +43,12 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 				Config: getRepositoryDockerProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "name", fmt.Sprintf("docker-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameDockerProxy, "url"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "storage.blob_store_name", "default"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.remote_url", "https://registry.npmjs.org"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.remote_url", "https://registry-1.docker.io"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "proxy.metadata_max_age", "1400"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "negative_cache.enabled", "true"),
@@ -67,6 +68,11 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceNameDockerProxy, "routing_rule"),
 					resource.TestCheckResourceAttr(resourceNameDockerProxy, "replication.preemptive_pull_enabled", "false"),
 					resource.TestCheckNoResourceAttr(resourceNameDockerProxy, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "docker.force_basic_auth", "true"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "docker.v1_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "docker_proxy.cache_foreign_layers", "false"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "docker_proxy.foreign_layer_url_whitelist.#", "0"),
+					resource.TestCheckResourceAttr(resourceNameDockerProxy, "docker_proxy.index_type", common.DOCKER_PROXY_INDEX_TYPE_REGISTRY),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -74,55 +80,7 @@ func TestAccRepositoryNpmProxyResourceNoReplication(t *testing.T) {
 	})
 }
 
-// Replication can only be from an NXRM instance and we have no instance to Acceptance Test this against
-//
-// func TestAccRepositoryMavenProxyResourceWithReplication(t *testing.T) {
-
-// 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-// 	// resourceName := "sonatyperepo_repository_maven_proxy.repo"
-
-// 	resource.Test(t, resource.TestCase{
-// 		ProtoV6ProviderFactories: utils.TestAccProtoV6ProviderFactories,
-// 		Steps: []resource.TestStep{
-// 			// Create and Read testing
-// 			{
-// 				Config: getRepositoryMavenProxyResourceConfig(randomString, true),
-// 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					// Verify
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "online", "true"),
-// 					resource.TestCheckResourceAttrSet(resourceNameMavenProxy, "url"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.blob_store_name", "default"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.strict_content_type_validation", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "storage.write_policy", common.WRITE_POLICY_ALLOW),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.content_max_age", "1441"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "proxy.metadata_max_age", "1440"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "negative_cache.enabled", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "negative_cache.time_to_live", "1440"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.blocked", "false"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.auto_block", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.enable_circular_redirects", "false"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.enable_cookies", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.use_trust_store", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.retries", "9"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.timeout", "999"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.connection.user_agent_suffix", "terraform"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.username", "user"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.password", "pass"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.preemptive", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "http_client.authentication.type", "username"),
-// 					resource.TestCheckNoResourceAttr(resourceNameMavenProxy, "routing_rule"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "replication.preemptive_pull_enabled", "true"),
-// 					resource.TestCheckResourceAttr(resourceNameMavenProxy, "replication.asset_path_regex", "some-value"),
-// 				),
-// 			},
-// 			// Delete testing automatically occurs in TestCase
-// 		},
-// 	})
-// }
-
-func getRepositoryNpmProxyResourceConfig(randomString string, includeReplication bool) string {
+func getRepositoryDockerProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
@@ -134,14 +92,14 @@ func getRepositoryNpmProxyResourceConfig(randomString string, includeReplication
 	}
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "npm-proxy-repo-%s"
+  name = "docker-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://registry.npmjs.org"
+    remote_url = "https://registry-1.docker.io"
     content_max_age = 1442
     metadata_max_age = 1400
   }
@@ -166,9 +124,11 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  npm = {
-	remove_quarrantined = true
+  docker = {
+    force_basic_auth = true
+    v1_enabled = true
   }
+  docker_proxy = {  }
   %s
 }
 `, resourceTypeDockerProxy, randomString, replicationConfig)

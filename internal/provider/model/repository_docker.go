@@ -126,86 +126,109 @@ func (m *RepositoryDockerHostedModel) ToApiUpdateModel() sonatyperepo.DockerHost
 
 // Docker Proxy
 // ----------------------------------------
-// type npmSpecificProxyModel struct {
-// 	RemoveQuarrantined types.Bool `tfsdk:"remove_quarrantined"`
-// }
+type dockerProxyAttributesModel struct {
+	CacheForeignLayers       types.Bool     `tfsdk:"cache_foreign_layers"`
+	ForeignLayerUrlWhitelist []types.String `tfsdk:"foreign_layer_url_whitelist"`
+	IndexType                types.String   `tfsdk:"index_type"`
+	IndexUrl                 types.String   `tfsdk:"index_url"`
+}
 
-// func (m *npmSpecificProxyModel) MapFromApi(api *sonatyperepo.NpmAttributes) {
-// 	m.RemoveQuarrantined = types.BoolValue(api.RemoveQuarantined)
-// }
+func (m *dockerProxyAttributesModel) MapFromApi(api *sonatyperepo.DockerProxyAttributes) {
+	m.CacheForeignLayers = types.BoolPointerValue(api.CacheForeignLayers)
+	m.ForeignLayerUrlWhitelist = make([]types.String, 0)
+	for _, l := range api.ForeignLayerUrlWhitelist {
+		m.ForeignLayerUrlWhitelist = append(m.ForeignLayerUrlWhitelist, types.StringValue(l))
+	}
+	m.IndexType = types.StringPointerValue(api.IndexType)
+	m.IndexUrl = types.StringPointerValue(api.IndexUrl)
+}
 
-// func (m *npmSpecificProxyModel) MapToApi(api *sonatyperepo.NpmAttributes) {
-// 	api.RemoveQuarantined = m.RemoveQuarrantined.ValueBool()
-// }
+func (m *dockerProxyAttributesModel) MapToApi(api *sonatyperepo.DockerProxyAttributes) {
+	api.CacheForeignLayers = m.CacheForeignLayers.ValueBoolPointer()
+	api.ForeignLayerUrlWhitelist = make([]string, 0)
+	for _, l := range m.ForeignLayerUrlWhitelist {
+		api.ForeignLayerUrlWhitelist = append(api.ForeignLayerUrlWhitelist, l.ValueString())
+	}
+	api.IndexType = m.IndexType.ValueStringPointer()
+	api.IndexUrl = m.IndexUrl.ValueStringPointer()
+}
 
-// type RepositoryDockerProxyModel struct {
-// 	RepositoryProxyModel
-// 	// Npm *npmSpecificProxyModel `tfsdk:"npm"`
-// }
+type RepositoryDockerProxyModel struct {
+	RepositoryProxyModel
+	Docker      dockerAttributesModel      `tfsdk:"docker"`
+	DockerProxy dockerProxyAttributesModel `tfsdk:"docker_proxy"`
+}
 
-// func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerHostedApiRepository) {
-// 	m.Name = types.StringPointerValue(api.Name)
-// 	m.Online = types.BoolValue(api.Online)
-// 	m.Url = types.StringPointerValue(api.Url)
+func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
 
-// 	// Cleanup
-// 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-// 		m.Cleanup = NewRepositoryCleanupModel()
-// 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
-// 	}
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
 
-// 	// Storage
-// 	m.Storage.MapFromApi(&api.Storage)
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
 
-// 	// Docker Specific
-// 	m.Docker.MapFromApi(api.Docker)
-// 	// m.Npm.MapFromApi(api.Npm)
-// }
+	// Proxy Specific
+	m.Proxy.MapFromApi(&api.Proxy)
+	m.NegativeCache.MapFromApi(&api.NegativeCache)
+	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
+	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
+	if api.Replication != nil {
+		m.Replication.MapFromApi(api.Replication)
+	}
 
-// func (m *RepositoryDockerProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
-// 	apiModel := sonatyperepo.NpmProxyRepositoryApiRequest{
-// 		Name:    m.Name.ValueString(),
-// 		Online:  m.Online.ValueBool(),
-// 		Storage: sonatyperepo.StorageAttributes{},
-// 		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
-// 			PolicyNames: make([]string, 0),
-// 		},
-// 	}
-// 	m.Storage.MapToApi(&apiModel.Storage)
+	// Docker Specific
+	m.Docker.MapFromApi(&api.Docker)
+	m.DockerProxy.MapFromApi(&api.DockerProxy)
+}
 
-// 	if m.Cleanup != nil {
-// 		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
-// 	}
+func (m *RepositoryDockerProxyModel) ToApiCreateModel() sonatyperepo.DockerProxyRepositoryApiRequest {
+	apiModel := sonatyperepo.DockerProxyRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
 
-// 	// Proxy Specific
-// 	apiModel.Proxy = sonatyperepo.ProxyAttributes{}
-// 	m.Proxy.MapToApi(&apiModel.Proxy)
+	if m.Cleanup != nil {
+		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	}
 
-// 	apiModel.NegativeCache = sonatyperepo.NegativeCacheAttributes{}
-// 	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
+	// Proxy Specific
+	apiModel.Proxy = sonatyperepo.ProxyAttributes{}
+	m.Proxy.MapToApi(&apiModel.Proxy)
 
-// 	apiModel.HttpClient = sonatyperepo.HttpClientAttributes{}
-// 	m.HttpClient.MapToApiHttpClientAttributes(&apiModel.HttpClient)
+	apiModel.NegativeCache = sonatyperepo.NegativeCacheAttributes{}
+	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
 
-// 	if m.Replication != nil {
-// 		apiModel.Replication = &sonatyperepo.ReplicationAttributes{}
-// 		m.Replication.MapToApi(apiModel.Replication)
-// 	}
+	apiModel.HttpClient = sonatyperepo.HttpClientAttributes{}
+	m.HttpClient.MapToApiHttpClientAttributes(&apiModel.HttpClient)
 
-// 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
+	if m.Replication != nil {
+		apiModel.Replication = &sonatyperepo.ReplicationAttributes{}
+		m.Replication.MapToApi(apiModel.Replication)
+	}
 
-// 	// NPM Specific
-// 	if m.Npm != nil {
-// 		apiModel.Npm = &sonatyperepo.NpmAttributes{}
-// 		m.Npm.MapToApi(apiModel.Npm)
-// 	}
+	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
 
-// 	return apiModel
-// }
+	// Docker Specific
+	m.Docker.MapToApi(&apiModel.Docker)
+	m.DockerProxy.MapToApi(&apiModel.DockerProxy)
 
-// func (m *RepositoryDockerProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
-// 	return m.ToApiCreateModel()
-// }
+	return apiModel
+}
+
+func (m *RepositoryDockerProxyModel) ToApiUpdateModel() sonatyperepo.DockerProxyRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
 
 // // Docker Group
 // // ----------------------------------------
