@@ -230,31 +230,42 @@ func (m *RepositoryDockerProxyModel) ToApiUpdateModel() sonatyperepo.DockerProxy
 	return m.ToApiCreateModel()
 }
 
-// // Docker Group
-// // ----------------------------------------
-// type RepositoryDockerroupModel struct {
-// 	RepositoryGroupDeployModel
-// }
+// Docker Group
+// ----------------------------------------
+type RepositoryDockerroupModel struct {
+	RepositoryGroupDeployModel
+	Docker dockerAttributesModel `tfsdk:"docker"`
+}
 
-// func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupDeployRepository) {
-// 	m.Name = types.StringPointerValue(api.Name)
-// 	m.Online = types.BoolValue(api.Online)
-// 	m.Url = types.StringPointerValue(api.Url)
-// 	m.Storage.MapFromApi(&api.Storage)
-// 	m.Group.MapFromApi(&api.Group)
-// }
+func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.DockerGroupApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
 
-// func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
-// 	apiModel := sonatyperepo.NpmGroupRepositoryApiRequest{
-// 		Name:    m.Name.ValueString(),
-// 		Online:  m.Online.ValueBool(),
-// 		Storage: sonatyperepo.StorageAttributes{},
-// 	}
-// 	m.Storage.MapToApi(&apiModel.Storage)
-// 	m.Group.MapToApi(&apiModel.Group)
-// 	return apiModel
-// }
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
 
-// func (m *RepositoryDockerroupModel) ToApiUpdateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
-// 	return m.ToApiCreateModel()
-// }
+	// Group Attributes
+	m.Group.MapFromApi(&api.Group)
+
+	// Docker
+	m.Docker.MapFromApi(&api.Docker)
+}
+
+func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.DockerGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+	m.Group.MapToApi(&apiModel.Group)
+
+	// Docker
+	m.Docker.MapToApi(&apiModel.Docker)
+	return apiModel
+}
+
+func (m *RepositoryDockerroupModel) ToApiUpdateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}

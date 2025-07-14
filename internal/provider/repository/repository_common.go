@@ -89,16 +89,20 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Handle Errors
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
-			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
 	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResposneCodes(), httpResponse.StatusCode) {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
-			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -109,14 +113,18 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -155,14 +163,18 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -199,14 +211,18 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -219,14 +235,18 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

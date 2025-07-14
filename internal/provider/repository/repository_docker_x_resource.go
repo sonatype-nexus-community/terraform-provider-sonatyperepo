@@ -39,9 +39,9 @@ func NewRepositoryDockerProxyResource() resource.Resource {
 }
 
 // // NewRepositoryDockerGroupResource is a helper function to simplify the provider implementation.
-// func NewRepositoryDockerGroupResource() resource.Resource {
-// 	return &repositoryResource{
-// 		RepositoryFormat: &format.NpmRepositoryFormatGroup{},
-// 		RepositoryType:   format.REPO_TYPE_GROUP,
-// 	}
-// }
+func NewRepositoryDockerGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.DockerRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

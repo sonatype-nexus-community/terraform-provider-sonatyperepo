@@ -185,62 +185,64 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	return stateModel
 }
 
-// // --------------------------------------------
-// // GORUP Docker Format Functions
-// // --------------------------------------------
-// func (f *NpmRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryNpmGroupModel)
+// --------------------------------------------
+// GORUP Docker Format Functions
+// --------------------------------------------
+func (f *DockerRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryDockerroupModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.CreateNpmGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateDockerGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
 
-// func (f *NpmRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryNpmGroupModel)
+func (f *DockerRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryDockerroupModel)
 
-// 	// Call to API to Read
-// 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
-// 	return *apiResponse, httpResponse, err
-// }
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
 
-// func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryNpmGroupModel)
+func (f *DockerRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryDockerroupModel)
 
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryNpmGroupModel)
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryDockerroupModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.UpdateNpmGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateDockerGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
 
-// func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-// 	return getCommonGroupSchemaAttributes(true)
-// }
+func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	additionalAttributes := getCommonGroupSchemaAttributes(true)
+	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
+	return additionalAttributes
+}
 
-// func (f *NpmRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
-// 	var planModel model.RepositoryNpmGroupModel
-// 	return planModel, plan.Get(ctx, &planModel)
-// }
+func (f *DockerRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryDockerroupModel
+	return planModel, plan.Get(ctx, &planModel)
+}
 
-// func (f *NpmRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
-// 	var stateModel model.RepositoryNpmGroupModel
-// 	return stateModel, state.Get(ctx, &stateModel)
-// }
+func (f *DockerRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryDockerroupModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
 
-// func (f *NpmRepositoryFormatGroup) UpdatePlanForState(plan any) any {
-// 	var planModel = (plan).(model.RepositoryNpmGroupModel)
-// 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-// 	return planModel
-// }
+func (f *DockerRepositoryFormatGroup) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryDockerroupModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
 
-// func (f *NpmRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-// 	stateModel := (state).(model.RepositoryNpmGroupModel)
-// 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupDeployRepository))
-// 	return stateModel
-// }
+func (f *DockerRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryDockerroupModel)
+	stateModel.FromApiModel((api).(sonatyperepo.DockerGroupApiRepository))
+	return stateModel
+}
 
 // --------------------------------------------
 // Common Functions

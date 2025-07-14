@@ -192,6 +192,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		privilege.NewWildcardPrivilegeResource,
 		repository.NewRepositoryAptHostedResource,
 		repository.NewRepositoryAptProxyResource,
+		repository.NewRepositoryDockerGroupResource,
 		repository.NewRepositoryDockerHostedResource,
 		repository.NewRepositoryDockerProxyResource,
 		repository.NewRepositoryMavenGroupResource,
