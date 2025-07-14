@@ -59,61 +59,61 @@ func (f *AptRepositoryFormat) GetResourceName(repoType RepositoryType) string {
 // --------------------------------------------
 // HOSTED APT Format Functions
 // --------------------------------------------
-// func (f *AptRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryMavenHostedModel)
+func (f *AptRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryAptHostedModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.CreateMavenHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateAptHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
 
-// func (f *AptRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryMavenHostedModel)
+func (f *AptRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryAptHostedModel)
 
-// 	// Call to API to Read
-// 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
-// 	return *apiResponse, httpResponse, err
-// }
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
 
-// func (f *AptRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
-// 	// Cast to correct Plan Model Type
-// 	planModel := (plan).(model.RepositoryMavenHostedModel)
+func (f *AptRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryAptHostedModel)
 
-// 	// Cast to correct State Model Type
-// 	stateModel := (state).(model.RepositoryMavenHostedModel)
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryAptHostedModel)
 
-// 	// Call API to Create
-// 	return apiClient.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
-// }
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateAptHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
 
-// func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-// 	additionalAttributes := getCommonHostedSchemaAttributes()
-// 	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
-// 	return additionalAttributes
-// }
+func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+	additionalAttributes := getCommonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, getAptSchemaAttributes(false))
+	return additionalAttributes
+}
 
-// func (f *AptRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
-// 	var planModel model.RepositoryMavenHostedModel
-// 	return planModel, plan.Get(ctx, &planModel)
-// }
+func (f *AptRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryAptHostedModel
+	return planModel, plan.Get(ctx, &planModel)
+}
 
-// func (f *AptRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
-// 	var stateModel model.RepositoryMavenHostedModel
-// 	return stateModel, state.Get(ctx, &stateModel)
-// }
+func (f *AptRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryAptHostedModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
 
-// func (f *AptRepositoryFormatHosted) UpdatePlanForState(plan any) any {
-// 	var planModel = (plan).(model.RepositoryMavenHostedModel)
-// 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-// 	return planModel
-// }
+func (f *AptRepositoryFormatHosted) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryAptHostedModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
 
-// func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-// 	stateModel := (state).(model.RepositoryMavenHostedModel)
-// 	stateModel.FromApiModel((api).(sonatyperepo.MavenHostedApiRepository))
-// 	return stateModel
-// }
+func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.RepositoryAptHostedModel)
+	stateModel.FromApiModel((api).(sonatyperepo.AptHostedApiRepository))
+	return stateModel
+}
 
 // --------------------------------------------
 // PROXY Maven Format Functions
@@ -207,13 +207,14 @@ func getAptSchemaAttributes(isProxy bool) map[string]schema.Attribute {
 			Description: "APT signing configuration for this Repository",
 			Optional:    true,
 			Attributes: map[string]schema.Attribute{
-				"keypair": schema.StringAttribute{
+				"key_pair": schema.StringAttribute{
 					Description: "PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
 					Required:    true,
 				},
 				"passphrase": schema.StringAttribute{
 					Description: "Passphrase to access PGP signing key",
 					Required:    true,
+					Sensitive:   true,
 				},
 			},
 		}

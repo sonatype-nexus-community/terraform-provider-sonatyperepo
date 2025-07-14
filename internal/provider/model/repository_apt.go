@@ -17,6 +17,8 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -24,41 +26,98 @@ import (
 
 // APT Hosted
 // ----------------------------------------
-// type RepositoryAptHostedModel struct {
-// 	RepositoryHostedModel
-// }
+type RepositoryAptHostedModel struct {
+	RepositoryHostedModel
+	Apt        aptSpecificHostedModel `tfsdk:"apt"`
+	AptSigning aptSigningModel        `tfsdk:"apt_signing"`
+}
 
-// func (m *RepositoryAptHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-// 	m.mapSimpleApiHostedRepository(api)
-// }
+type aptSpecificHostedModel struct {
+	Distribution types.String `tfsdk:"distribution"`
+}
 
-// func (m *RepositoryAptHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
-// 	apiModel := sonatyperepo.NpmHostedRepositoryApiRequest{
-// 		Name:    m.Name.ValueString(),
-// 		Online:  m.Online.ValueBool(),
-// 		Storage: sonatyperepo.HostedStorageAttributes{},
-// 		Component: &sonatyperepo.ComponentAttributes{
-// 			ProprietaryComponents: common.NewFalse(),
-// 		},
-// 		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
-// 			PolicyNames: make([]string, 0),
-// 		},
-// 	}
-// 	m.Storage.MapToApi(&apiModel.Storage)
-// 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
-// 	m.Component.MapToApi(apiModel.Component)
-// 	return apiModel
-// }
+func (m *aptSpecificHostedModel) MapFromApi(api *sonatyperepo.AptHostedRepositoriesAttributes) {
+	m.Distribution = types.StringPointerValue(api.Distribution)
+}
 
-// func (m *RepositoryAptHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
-// 	return m.ToApiCreateModel()
-// }
+func (m *aptSpecificHostedModel) MapToApi(api *sonatyperepo.AptHostedRepositoriesAttributes) {
+	api.Distribution = m.Distribution.ValueStringPointer()
+}
+
+type aptSigningModel struct {
+	KeyPair    types.String `tfsdk:"key_pair"`
+	Passphrase types.String `tfsdk:"passphrase"`
+}
+
+func (m *aptSigningModel) MapFromApi(api *sonatyperepo.AptSigningRepositoriesAttributes) {
+	m.KeyPair = types.StringPointerValue(api.Keypair)
+	// m.Passphrase = types.StringPointerValue(api.Passphrase)
+}
+
+func (m *aptSigningModel) MapToApi(api *sonatyperepo.AptSigningRepositoriesAttributes) {
+	api.Keypair = m.KeyPair.ValueStringPointer()
+	api.Passphrase = m.Passphrase.ValueStringPointer()
+}
+
+func (m *RepositoryAptHostedModel) FromApiModel(api sonatyperepo.AptHostedApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
+
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
+
+	// APT Specific
+	m.Apt.MapFromApi(&api.Apt)
+	m.AptSigning.MapFromApi(&api.AptSigning)
+}
+
+func (m *RepositoryAptHostedModel) ToApiCreateModel() sonatyperepo.AptHostedRepositoryApiRequest {
+	apiModel := sonatyperepo.AptHostedRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.HostedStorageAttributes{},
+		Component: &sonatyperepo.ComponentAttributes{
+			ProprietaryComponents: common.NewFalse(),
+		},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+		Apt:        *sonatyperepo.NewAptHostedRepositoriesAttributes(),
+		AptSigning: *sonatyperepo.NewAptSigningRepositoriesAttributes(),
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	m.Component.MapToApi(apiModel.Component)
+
+	// APT
+	m.Apt.MapToApi(&apiModel.Apt)
+	m.AptSigning.MapToApi(&apiModel.AptSigning)
+
+	return apiModel
+}
+
+func (m *RepositoryAptHostedModel) ToApiUpdateModel() sonatyperepo.AptHostedRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
 
 // APT Proxy
 // ----------------------------------------
 type aptSpecificProxyModel struct {
-	Distribution types.String `tfsdk:"distribution"`
-	Flat         types.Bool   `tfsdk:"flat"`
+	aptSpecificHostedModel
+	Flat types.Bool `tfsdk:"flat"`
 }
 
 func (m *aptSpecificProxyModel) MapFromApi(api *sonatyperepo.AptProxyRepositoriesAttributes) {

@@ -22,13 +22,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 )
 
-// NewRepositoryNpmHostedResource is a helper function to simplify the provider implementation.
-// func NewRepositoryNpmHostedResource() resource.Resource {
-// 	return &repositoryResource{
-// 		RepositoryFormat: &format.NpmRepositoryFormatHosted{},
-// 		RepositoryType:   format.REPO_TYPE_HOSTED,
-// 	}
-// }
+// NewRepositoryAptHostedResource is a helper function to simplify the provider implementation.
+func NewRepositoryAptHostedResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.AptRepositoryFormatHosted{},
+		RepositoryType:   format.REPO_TYPE_HOSTED,
+	}
+}
 
 // NewRepositoryAptProxyResource is a helper function to simplify the provider implementation.
 func NewRepositoryAptProxyResource() resource.Resource {
