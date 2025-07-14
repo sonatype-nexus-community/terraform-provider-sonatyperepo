@@ -190,6 +190,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		privilege.NewRepositoryViewPrivilegeResource,
 		privilege.NewScriptPrivilegeResource,
 		privilege.NewWildcardPrivilegeResource,
+		repository.NewRepositoryAptProxyResource,
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
