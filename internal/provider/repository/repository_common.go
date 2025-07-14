@@ -29,6 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -319,6 +320,16 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 					common.WRITE_POLICY_DENY,
 				),
 			},
+		}
+	}
+
+	// LatestPolicy is only for Docker Repositories
+	if repoFormat == common.REPO_FORMAT_DOCKER {
+		storageAttributes["latest_policy"] = schema.BoolAttribute{
+			Description: "Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		}
 	}
 

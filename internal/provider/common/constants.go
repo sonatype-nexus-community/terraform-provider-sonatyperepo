@@ -42,6 +42,7 @@ const (
 	PROTOCOL_LDAP                        string = "LDAP"
 	PROTOCOL_LDAPS                       string = "LDAPS"
 	REPO_FORMAT_APT                      string = "APT"
+	REPO_FORMAT_DOCKER                   string = "DOCKER"
 	REPO_FORMAT_MAVEN                    string = "MAVEN"
 	REPO_FORMAT_NPM                      string = "NPM"
 	USER_STATUS_ACTIVE                   string = "active"
