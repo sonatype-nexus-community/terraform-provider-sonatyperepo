@@ -22,6 +22,8 @@ const (
 	AUTH_SCHEME_DIGEST_MD5               string = "DIGEST_MD5"
 	AUTH_SCHEME_CRAM_MD5                 string = "CRAM_MD5"
 	DEFAULT_ANONYMOUS_USERNAME           string = "anonymous"
+	DEFAULT_HTTP_CONNECTION_RETRIES      int64  = 0
+	DEFAULT_HTTP_CONNECTION_TIMEOUT      int64  = 60
 	DEFAULT_REALM_NAME                   string = "NexusAuthorizingRealm"
 	DEFAULT_USER_SOURCE                  string = "default"
 	DOCKER_PROXY_INDEX_TYPE_HUB          string = "HUB"
@@ -48,6 +50,7 @@ const (
 	REPO_FORMAT_DOCKER                   string = "DOCKER"
 	REPO_FORMAT_MAVEN                    string = "MAVEN"
 	REPO_FORMAT_NPM                      string = "NPM"
+	REPO_FORMAT_PYPI                     string = "PYPI"
 	USER_STATUS_ACTIVE                   string = "active"
 	USER_STATUS_LOCKED                   string = "locked"
 	USER_STATUS_DISABLED                 string = "disabled"

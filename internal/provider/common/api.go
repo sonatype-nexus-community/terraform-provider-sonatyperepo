@@ -27,14 +27,14 @@ import (
 func HandleApiError(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
 	respDiags.AddError(
 		message,
-		fmt.Sprintf("%s: %s: %s", message, httpResponse.Status, getResponseBody(httpResponse)),
+		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 	)
 }
 
 func HandleApiWarning(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
 	respDiags.AddWarning(
-		"LDAP Connection does not exist",
-		fmt.Sprintf("%s: %s: %s", message, httpResponse.Status, getResponseBody(httpResponse)),
+		message,
+		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 	)
 }
 
