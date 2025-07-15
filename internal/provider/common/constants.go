@@ -21,6 +21,8 @@ const (
 	AUTH_SCHEME_SIMPLE                   string = "SIMPLE"
 	AUTH_SCHEME_DIGEST_MD5               string = "DIGEST_MD5"
 	AUTH_SCHEME_CRAM_MD5                 string = "CRAM_MD5"
+	CONTENT_DISPOSITION_ATTACHMENT       string = "ATTACHMENT"
+	CONTENT_DISPOSITION_INLINE           string = "INLINE"
 	DEFAULT_ANONYMOUS_USERNAME           string = "anonymous"
 	DEFAULT_HTTP_CONNECTION_RETRIES      int64  = 0
 	DEFAULT_HTTP_CONNECTION_TIMEOUT      int64  = 60
@@ -54,6 +56,7 @@ const (
 	REPO_FORMAT_NPM                      string = "NPM"
 	REPO_FORMAT_NUGET                    string = "NUGET"
 	REPO_FORMAT_PYPI                     string = "PYPI"
+	REPO_FORMAT_RAW                      string = "RAW"
 	USER_STATUS_ACTIVE                   string = "active"
 	USER_STATUS_LOCKED                   string = "locked"
 	USER_STATUS_DISABLED                 string = "disabled"
