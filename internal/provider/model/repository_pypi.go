@@ -20,22 +20,32 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-// NPM Hosted
-// ----------------------------------------
-type RepositoryNpmHostedModel struct {
+// Hosted PyPi
+// --------------------------------------------
+type RepositoryPyPiHostedModel struct {
 	RepositoryHostedModel
 }
 
-func (m *RepositoryNpmHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-	m.mapSimpleApiHostedRepository(api)
+func (m *RepositoryPyPiHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
+
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
 }
 
-func (m *RepositoryNpmHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
-	apiModel := sonatyperepo.NpmHostedRepositoryApiRequest{
+func (m *RepositoryPyPiHostedModel) ToApiCreateModel() sonatyperepo.PypiHostedRepositoryApiRequest {
+	apiModel := sonatyperepo.PypiHostedRepositoryApiRequest{
 		Name:    m.Name.ValueString(),
 		Online:  m.Online.ValueBool(),
 		Storage: sonatyperepo.HostedStorageAttributes{},
@@ -49,24 +59,25 @@ func (m *RepositoryNpmHostedModel) ToApiCreateModel() sonatyperepo.NpmHostedRepo
 	m.Storage.MapToApi(&apiModel.Storage)
 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
 	m.Component.MapToApi(apiModel.Component)
+
 	return apiModel
 }
 
-func (m *RepositoryNpmHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepositoryApiRequest {
+func (m *RepositoryPyPiHostedModel) ToApiUpdateModel() sonatyperepo.PypiHostedRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
 
-// NPM Proxy
-// ----------------------------------------
-type RepositoryNpmProxyModel struct {
+// Proxy Maven
+// --------------------------------------------
+type RepositoryPyPiProxyModel struct {
 	RepositoryProxyModel
-	Npm *ProxyRemoveQuarrantiedModel `tfsdk:"npm"`
+	PyPi *ProxyRemoveQuarrantiedModel `tfsdk:"pypi"`
 }
 
-func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
@@ -86,80 +97,77 @@ func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepos
 		m.Replication.MapFromApi(api.Replication)
 	}
 
-	// NPM Specific
-	m.Npm.MapFromNpmApi(api.Npm)
+	// PyPi
+	m.PyPi.MapFromPyPiApi(&api.Pypi)
 }
 
-func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
-	apiModel := sonatyperepo.NpmProxyRepositoryApiRequest{
+func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepositoryApiRequest {
+	apiModel := sonatyperepo.PypiProxyRepositoryApiRequest{
 		Name:    m.Name.ValueString(),
 		Online:  m.Online.ValueBool(),
 		Storage: sonatyperepo.StorageAttributes{},
 		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
 			PolicyNames: make([]string, 0),
 		},
+		Pypi: &sonatyperepo.PyPiProxyAttributes{},
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
-
 	if m.Cleanup != nil {
 		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
 	}
 
-	// Proxy Specific
-	apiModel.Proxy = sonatyperepo.ProxyAttributes{}
-	m.Proxy.MapToApi(&apiModel.Proxy)
-
-	apiModel.NegativeCache = sonatyperepo.NegativeCacheAttributes{}
-	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
-
+	// Proxy
 	apiModel.HttpClient = sonatyperepo.HttpClientAttributes{}
 	m.HttpClient.MapToApiHttpClientAttributes(&apiModel.HttpClient)
-
+	m.NegativeCache.MapToApi(&apiModel.NegativeCache)
+	m.Proxy.MapToApi(&apiModel.Proxy)
 	if m.Replication != nil {
 		apiModel.Replication = &sonatyperepo.ReplicationAttributes{}
 		m.Replication.MapToApi(apiModel.Replication)
 	}
 
-	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
-
-	// NPM Specific
-	if m.Npm != nil {
-		apiModel.Npm = &sonatyperepo.NpmAttributes{}
-		m.Npm.MapToNpmApi(apiModel.Npm)
-	}
+	// PyPi
+	m.PyPi.MapToPyPiApi(apiModel.Pypi)
 
 	return apiModel
 }
 
-func (m *RepositoryNpmProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
+func (m *RepositoryPyPiProxyModel) ToApiUpdateModel() sonatyperepo.PypiProxyRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
 
-// NPM Group
-// ----------------------------------------
-type RepositoryNpmGroupModel struct {
+// Group PyPi
+// --------------------------------------------
+type RepositoryPyPiGroupModel struct {
 	RepositoryGroupDeployModel
 }
 
-func (m *RepositoryNpmGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupDeployRepository) {
+func (m *RepositoryPyPiGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupDeployRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
 	m.Url = types.StringPointerValue(api.Url)
+
+	// Storage
 	m.Storage.MapFromApi(&api.Storage)
+
+	// Group Attributes
 	m.Group.MapFromApi(&api.Group)
 }
 
-func (m *RepositoryNpmGroupModel) ToApiCreateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
-	apiModel := sonatyperepo.NpmGroupRepositoryApiRequest{
+func (m *RepositoryPyPiGroupModel) ToApiCreateModel() sonatyperepo.PypiGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.PypiGroupRepositoryApiRequest{
 		Name:    m.Name.ValueString(),
 		Online:  m.Online.ValueBool(),
 		Storage: sonatyperepo.StorageAttributes{},
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
+
+	// Group
 	m.Group.MapToApi(&apiModel.Group)
+
 	return apiModel
 }
 
-func (m *RepositoryNpmGroupModel) ToApiUpdateModel() sonatyperepo.NpmGroupRepositoryApiRequest {
+func (m *RepositoryPyPiGroupModel) ToApiUpdateModel() sonatyperepo.PypiGroupRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }

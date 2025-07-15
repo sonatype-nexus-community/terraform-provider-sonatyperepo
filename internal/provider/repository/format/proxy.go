@@ -100,7 +100,7 @@ func getCommonProxySchemaAttributes() map[string]schema.Attribute {
 							Required:    false,
 							Optional:    true,
 							Computed:    true,
-							Default:     int64default.StaticInt64(0),
+							Default:     int64default.StaticInt64(common.DEFAULT_HTTP_CONNECTION_RETRIES),
 							Validators: []validator.Int64{
 								int64validator.Between(0, 10),
 							},
@@ -115,7 +115,7 @@ func getCommonProxySchemaAttributes() map[string]schema.Attribute {
 							Required:    false,
 							Optional:    true,
 							Computed:    true,
-							Default:     int64default.StaticInt64(60),
+							Default:     int64default.StaticInt64(common.DEFAULT_HTTP_CONNECTION_TIMEOUT),
 							Validators: []validator.Int64{
 								int64validator.Between(1, 3600),
 							},
@@ -139,6 +139,24 @@ func getCommonProxySchemaAttributes() map[string]schema.Attribute {
 							Default:     booldefault.StaticBool(false),
 						},
 					},
+					Default: objectdefault.StaticValue(types.ObjectValueMust(
+						map[string]attr.Type{
+							"retries":                   types.Int64Type,
+							"user_agent_suffix":         types.StringType,
+							"timeout":                   types.Int64Type,
+							"enable_circular_redirects": types.BoolType,
+							"enable_cookies":            types.BoolType,
+							"use_trust_store":           types.BoolType,
+						},
+						map[string]attr.Value{
+							"retries":                   types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES),
+							"user_agent_suffix":         types.StringNull(),
+							"timeout":                   types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT),
+							"enable_circular_redirects": types.BoolValue(false),
+							"enable_cookies":            types.BoolValue(false),
+							"use_trust_store":           types.BoolValue(false),
+						},
+					)),
 					PlanModifiers: []planmodifier.Object{
 						objectplanmodifier.UseStateForUnknown(),
 					},

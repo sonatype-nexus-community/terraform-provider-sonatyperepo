@@ -264,3 +264,25 @@ func (m *RepositoryReplicationModel) MapToApi(api *sonatyperepo.ReplicationAttri
 		api.AssetPathRegex = m.AssetPathRegex.ValueStringPointer()
 	}
 }
+
+// RepositoryReplicationModel
+// --------------------------------------------------------
+type ProxyRemoveQuarrantiedModel struct {
+	RemoveQuarrantined types.Bool `tfsdk:"remove_quarrantined"`
+}
+
+func (m *ProxyRemoveQuarrantiedModel) MapFromNpmApi(api *sonatyperepo.NpmAttributes) {
+	m.RemoveQuarrantined = types.BoolValue(api.RemoveQuarantined)
+}
+
+func (m *ProxyRemoveQuarrantiedModel) MapToNpmApi(api *sonatyperepo.NpmAttributes) {
+	api.RemoveQuarantined = m.RemoveQuarrantined.ValueBool()
+}
+
+func (m *ProxyRemoveQuarrantiedModel) MapFromPyPiApi(api *sonatyperepo.PyPiProxyAttributes) {
+	m.RemoveQuarrantined = types.BoolValue(api.RemoveQuarantined)
+}
+
+func (m *ProxyRemoveQuarrantiedModel) MapToPyPiApi(api *sonatyperepo.PyPiProxyAttributes) {
+	api.RemoveQuarantined = m.RemoveQuarrantined.ValueBool()
+}
