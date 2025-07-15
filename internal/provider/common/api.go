@@ -34,7 +34,7 @@ func HandleApiError(message string, err *error, httpResponse *http.Response, res
 func HandleApiWarning(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
 	respDiags.AddWarning(
 		message,
-		fmt.Sprintf("%s: %s: %s", &err, httpResponse.Status, getResponseBody(httpResponse)),
+		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 	)
 }
 
