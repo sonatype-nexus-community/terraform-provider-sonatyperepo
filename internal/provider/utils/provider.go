@@ -25,13 +25,14 @@ import (
 
 const (
 	// ProviderConfig is a shared configuration to combine with the actual test configuration.
-	ProviderConfig = `
+	ProviderConfig string = `
 provider "sonatyperepo" {
   username = ""
   password = ""
   url     = ""
 }
 `
+	RES_NAME_FORMAT string = "%s.repo"
 )
 
 // TestAccProtoV6ProviderFactories are used to instantiate a provider during
