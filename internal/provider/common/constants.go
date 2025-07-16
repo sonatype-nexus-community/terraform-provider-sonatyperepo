@@ -62,6 +62,7 @@ const (
 	REPO_FORMAT_MAVEN                    string = "MAVEN"
 	REPO_FORMAT_NPM                      string = "NPM"
 	REPO_FORMAT_NUGET                    string = "NUGET"
+	REPO_FORMAT_P2                       string = "P2"
 	REPO_FORMAT_PYPI                     string = "PYPI"
 	REPO_FORMAT_RAW                      string = "RAW"
 	USER_STATUS_ACTIVE                   string = "active"
