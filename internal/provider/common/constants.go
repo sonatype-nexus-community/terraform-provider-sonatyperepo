@@ -55,6 +55,7 @@ const (
 	REPO_FORMAT_COMPOSER                 string = "COMPOSER"
 	REPO_FORMAT_CONDA                    string = "CONDA"
 	REPO_FORMAT_DOCKER                   string = "DOCKER"
+	REPO_FORMAT_GIT_LFS                  string = "GITLFS"
 	REPO_FORMAT_GO                       string = "GO"
 	REPO_FORMAT_HELM                     string = "HELM"
 	REPO_FORMAT_HUGGING_FACE             string = "HUGGINGFACE"

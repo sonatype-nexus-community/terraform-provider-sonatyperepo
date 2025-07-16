@@ -12,6 +12,7 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_docker_group` [GH-36]
 * **New Resource:** `sonatyperepo_repository_docker_hosted` [GH-36]
 * **New Resource:** `sonatyperepo_repository_docker_proxy` [GH-36]
+* **New Resource:** `sonatyperepo_repository_gitlfs_hosted` [GH-46]
 * **New Resource:** `sonatyperepo_repository_go_group` [GH-41]
 * **New Resource:** `sonatyperepo_repository_go_hosted` [GH-41]
 * **New Resource:** `sonatyperepo_repository_helm_hosted` [GH-42]
