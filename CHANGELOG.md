@@ -15,6 +15,7 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_go_hosted` [GH-41]
 * **New Resource:** `sonatyperepo_repository_helm_hosted` [GH-42]
 * **New Resource:** `sonatyperepo_repository_helm_proxy` [GH-42]
+* **New Resource:** `sonatyperepo_repository_huggingface_proxy` [GH-43]
 * **New Resource:** `sonatyperepo_repository_nuget_group` [GH-38]
 * **New Resource:** `sonatyperepo_repository_nuget_hosted` [GH-38]
 * **New Resource:** `sonatyperepo_repository_nuget_proxy` [GH-38]
