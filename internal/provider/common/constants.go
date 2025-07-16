@@ -53,6 +53,7 @@ const (
 	REPO_FORMAT_APT                      string = "APT"
 	REPO_FORMAT_COCOAPODS                string = "COCOAPODS"
 	REPO_FORMAT_COMPOSER                 string = "COMPOSER"
+	REPO_FORMAT_CONDA                    string = "CONDA"
 	REPO_FORMAT_DOCKER                   string = "DOCKER"
 	REPO_FORMAT_GO                       string = "GO"
 	REPO_FORMAT_HELM                     string = "HELM"
