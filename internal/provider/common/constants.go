@@ -55,6 +55,7 @@ const (
 	REPO_FORMAT_COMPOSER                 string = "COMPOSER"
 	REPO_FORMAT_DOCKER                   string = "DOCKER"
 	REPO_FORMAT_GO                       string = "GO"
+	REPO_FORMAT_HELM                     string = "HELM"
 	REPO_FORMAT_MAVEN                    string = "MAVEN"
 	REPO_FORMAT_NPM                      string = "NPM"
 	REPO_FORMAT_NUGET                    string = "NUGET"
