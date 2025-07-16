@@ -25,6 +25,9 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_pypi_group` [GH-37]
 * **New Resource:** `sonatyperepo_repository_pypi_hosted` [GH-37]
 * **New Resource:** `sonatyperepo_repository_pypi_proxy` [GH-37]
+* **New Resource:** `sonatyperepo_repository_ruby_gems_group` [GH-48]
+* **New Resource:** `sonatyperepo_repository_ruby_gems_hosted` [GH-48]
+* **New Resource:** `sonatyperepo_repository_ruby_gems_proxy` [GH-48]
 
 ## 0.1.0 July 11, 2025
 
