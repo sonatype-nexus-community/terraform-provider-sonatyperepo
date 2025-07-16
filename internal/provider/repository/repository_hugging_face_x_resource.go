@@ -22,18 +22,10 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 )
 
-// NewRepositoryHelmHostedResource is a helper function to simplify the provider implementation.
-func NewRepositoryHelmHostedResource() resource.Resource {
+// NewRepositoryHuggingFaceProxyResource is a helper function to simplify the provider implementation.
+func NewRepositoryHuggingFaceProxyResource() resource.Resource {
 	return &repositoryResource{
-		RepositoryFormat: &format.HelmRepositoryFormatHosted{},
-		RepositoryType:   format.REPO_TYPE_HOSTED,
-	}
-}
-
-// NewRepositoryHelmProxyResource is a helper function to simplify the provider implementation.
-func NewRepositoryHelmProxyResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.HelmRepositoryFormatProxy{},
+		RepositoryFormat: &format.HuggingFaceRepositoryFormatProxy{},
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
