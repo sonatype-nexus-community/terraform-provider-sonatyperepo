@@ -20,6 +20,7 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_nuget_group` [GH-38]
 * **New Resource:** `sonatyperepo_repository_nuget_hosted` [GH-38]
 * **New Resource:** `sonatyperepo_repository_nuget_proxy` [GH-38]
+* **New Resource:** `sonatyperepo_repository_p2_proxy` [GH-47]
 * **New Resource:** `sonatyperepo_repository_pypi_group` [GH-37]
 * **New Resource:** `sonatyperepo_repository_pypi_hosted` [GH-37]
 * **New Resource:** `sonatyperepo_repository_pypi_proxy` [GH-37]
