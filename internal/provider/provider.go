@@ -212,6 +212,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryNugetGroupResource,
 		repository.NewRepositoryNugetHostedResource,
 		repository.NewRepositoryNugetProxyResource,
+		repository.NewRepositoryP2ProxyResource,
 		repository.NewRepositoryPyPiGroupResource,
 		repository.NewRepositoryPyPiHostedResource,
 		repository.NewRepositoryPyPiProxyResource,
