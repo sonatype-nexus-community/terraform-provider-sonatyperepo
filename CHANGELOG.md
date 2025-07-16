@@ -6,6 +6,9 @@ FEATURES:
 
 * **New Resource:** `sonatyperepo_repository_apt_hosted` [GH-35]
 * **New Resource:** `sonatyperepo_repository_apt_proxy` [GH-35]
+* **New Resource:** `sonatyperepo_repository_cargo_group` [GH-50]
+* **New Resource:** `sonatyperepo_repository_cargo_hosted` [GH-50]
+* **New Resource:** `sonatyperepo_repository_cargo_proxy` [GH-50]
 * **New Resource:** `sonatyperepo_repository_cocoapods_proxy` [GH-39]
 * **New Resource:** `sonatyperepo_repository_composer_proxy` [GH-40]
 * **New Resource:** `sonatyperepo_repository_conda_proxy` [GH-45]

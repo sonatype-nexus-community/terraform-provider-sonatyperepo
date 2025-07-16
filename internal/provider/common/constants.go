@@ -51,6 +51,7 @@ const (
 	PROTOCOL_LDAP                        string = "LDAP"
 	PROTOCOL_LDAPS                       string = "LDAPS"
 	REPO_FORMAT_APT                      string = "APT"
+	REPO_FORMAT_CARGO                    string = "CARGO"
 	REPO_FORMAT_COCOAPODS                string = "COCOAPODS"
 	REPO_FORMAT_COMPOSER                 string = "COMPOSER"
 	REPO_FORMAT_CONDA                    string = "CONDA"
