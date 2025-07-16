@@ -65,6 +65,7 @@ const (
 	REPO_FORMAT_P2                       string = "P2"
 	REPO_FORMAT_PYPI                     string = "PYPI"
 	REPO_FORMAT_RAW                      string = "RAW"
+	REPO_FORMAT_R                        string = "R"
 	REPO_FORMAT_RUBY_GEMS                string = "RUBY_GEMS"
 	USER_STATUS_ACTIVE                   string = "active"
 	USER_STATUS_LOCKED                   string = "locked"

@@ -27,12 +27,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryRubyGemsResource(t *testing.T) {
+func TestAccRepositoryRResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_ruby_gems_group"
-	resourceTypeHosted := "sonatyperepo_repository_ruby_gems_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_ruby_gems_proxy"
+	resourceTypeGroup := "sonatyperepo_repository_r_group"
+	resourceTypeHosted := "sonatyperepo_repository_r_hosted"
+	resourceTypeProxy := "sonatyperepo_repository_r_proxy"
 	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
 	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
 	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
@@ -44,7 +44,7 @@ func TestAccRepositoryRubyGemsResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "ruby-gems-group-repo-%s"
+  name = "r-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -60,7 +60,7 @@ resource "%s" "repo" {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "ruby-gems-hosted-repo-%s"
+  name = "r-hosted-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -70,14 +70,14 @@ resource "%s" "repo" {
 }
 
 resource "%s" "repo" {
-  name = "ruby-gems-proxy-repo-%s"
+  name = "r-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://rubygems.org"
+    remote_url = "https://cran.r-project.org/"
     content_max_age = 1441
     metadata_max_age = 1440
   }
@@ -105,14 +105,14 @@ resource "%s" "repo" {
 }
 
 resource "%s" "repo" {
-  name = "ruby-gems-group-repo-%s"
+  name = "r-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   group = {
-	member_names = ["ruby-gems-proxy-repo-%s"]
+	member_names = ["r-proxy-repo-%s"]
   }
 
   depends_on = [
@@ -122,7 +122,7 @@ resource "%s" "repo" {
 `, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("ruby-gems-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("r-hosted-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.blob_store_name", "default"),
@@ -132,12 +132,12 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("ruby-gems-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("r-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.blob_store_name", "default"),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://rubygems.org"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://cran.r-project.org/"),
 					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
@@ -159,7 +159,7 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("ruby-gems-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("r-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
 					resource.TestCheckResourceAttr(resourceGroupName, "storage.blob_store_name", "default"),
