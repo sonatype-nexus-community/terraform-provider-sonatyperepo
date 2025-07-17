@@ -396,6 +396,8 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.31 h1:CxTw
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.31/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.32 h1:ME6ZHUb3s0fVZiYcWRtzxiYrowpUxqEtK7kIfhELO1g=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.32/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.33 h1:d9AZXSmTS6LJlOjViC/8JrdMjuwX8RlA7IgoPPyAAt8=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.81.33/go.mod h1:yT67yOjcXg6OrzJMEfsVFlnkoWgH1dZQtCCzGrcIe4I=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
