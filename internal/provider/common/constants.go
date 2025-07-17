@@ -30,6 +30,8 @@ const (
 	DEFAULT_HTTP_CONNECTION_TIMEOUT      int64  = 60
 	DEFAULT_REALM_NAME                   string = "NexusAuthorizingRealm"
 	DEFAULT_USER_SOURCE                  string = "default"
+	DEPLOY_POLICY_PERMISSIVE             string = "PERMISSIVE"
+	DEPLOY_POLICY_STRICT                 string = "STRICT"
 	DOCKER_PROXY_INDEX_TYPE_HUB          string = "HUB"
 	DOCKER_PROXY_INDEX_TYPE_REGISTRY     string = "REGISTRY"
 	DOCKER_PROXY_INDEX_TYPE_CUSTOM       string = "CUSTOM"
@@ -71,6 +73,7 @@ const (
 	REPO_FORMAT_RAW                      string = "RAW"
 	REPO_FORMAT_R                        string = "R"
 	REPO_FORMAT_RUBY_GEMS                string = "RUBY_GEMS"
+	REPO_FORMAT_YUM                      string = "YUM"
 	USER_STATUS_ACTIVE                   string = "active"
 	USER_STATUS_LOCKED                   string = "locked"
 	USER_STATUS_DISABLED                 string = "disabled"
