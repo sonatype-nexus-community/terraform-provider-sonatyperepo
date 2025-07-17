@@ -17,6 +17,7 @@ on:
 
 env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
+    NXRM_VERSION: "3.81.1-01"
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -120,7 +121,30 @@ jobs:
                     # - '1.11.*' 
                     - '1.12.*' # Latest
         steps:
-            - uses: actions/checkout@v4
+            - name: Download, Unpack & Start Sonatype Nexus Repository Manager
+              run: |
+                  wget https://download.sonatype.com/nexus/3/nexus-${{ env.NXRM_VERSION }}-linux-x86_64.tar.gz 
+                  tar xvz --keep-directory-symlink -f nexus-${{ env.NXRM_VERSION }}-linux-x86_64.tar.gz 
+                  cd nexus-${{ env.NXRM_VERSION }}/bin && ./nexus start
+
+            - name: Wait for Sonatype Nexus Repository Manager to be ready
+              run: |
+                  sleep 20
+                  while true; do
+                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
+
+                    if [ "$STATUS" -eq 200 ]; then
+                        echo "Received 200 OK from http://localhost:8081/service/rest/v1/status"
+                        break
+                    else
+                        echo "Waiting for 200 OK... Current status: $STATUS for http://localhost:8081/service/rest/v1/status"
+                        sleep 5
+                    fi
+                  done
+
+            - name: Checkout Source
+              uses: actions/checkout@v4
+              
             - uses: actions/setup-go@v5
               with:
                   go-version-file: 'go.mod'
@@ -131,9 +155,12 @@ jobs:
                   terraform_wrapper: false
             - run: go mod download
             - env:
-                  NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
-                  NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
-                  NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
+                  NXRM_SERVER_URL: "http://localhost:8081"
+                  NXRM_SERVER_USERNAME: "admin"
+                  NXRM_SERVER_PASSWORD: "admin123"
+                #   NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
+                #   NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
+                #   NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
                   TF_ACC: '1'
               run: go test -v -cover ./...
               timeout-minutes: 10
