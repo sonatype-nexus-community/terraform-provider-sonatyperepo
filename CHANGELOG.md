@@ -37,6 +37,9 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_ruby_gems_group` [GH-48]
 * **New Resource:** `sonatyperepo_repository_ruby_gems_hosted` [GH-48]
 * **New Resource:** `sonatyperepo_repository_ruby_gems_proxy` [GH-48]
+* **New Resource:** `sonatyperepo_repository_yum_group` [GH-52]
+* **New Resource:** `sonatyperepo_repository_yum_hosted` [GH-52]
+* **New Resource:** `sonatyperepo_repository_yum_proxy` [GH-52]
 
 ## 0.1.0 July 11, 2025
 
