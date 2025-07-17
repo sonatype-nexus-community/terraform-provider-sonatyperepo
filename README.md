@@ -2,7 +2,8 @@
 
 [![shield_tfr-version]][link_tfr]
 [![shield_gh-workflow-test]][link_gh-workflow-test]
-[![shield_license]][license_file]
+[![shield_license]][license_file] 
+[![shield_nxrm_version]][link_nxrm_release]
 
 ---
 
@@ -34,7 +35,9 @@ Phew, that was easier than I thought. Last but not least of all - have fun!
 [shield_gh-workflow-test]: https://img.shields.io/github/actions/workflow/status/sonatype-nexus-community/terraform-provider-sonatyperepo/test.yml?branch=main&logo=GitHub&logoColor=white "build"
 [shield_tfr-version]: https://img.shields.io/badge/Terraform%20Registry-8A2BE2
 [shield_license]: https://img.shields.io/github/license/sonatype-nexus-community/terraform-provider-sonatyperepo?logo=open%20source%20initiative&logoColor=white "license"
+[shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.81.1-blue
 
 [link_tfr]: https://registry.terraform.io/providers/sonatype-nexus-community/sonatyperepo/latest
 [link_gh-workflow-test]: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/actions/workflows/test.yml?query=branch%3Amain
 [license_file]: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/blob/main/LICENSE
+[link_nxrm_release]: https://help.sonatype.com/en/sonatype-nexus-repository-3-81-0-release-notes.html
