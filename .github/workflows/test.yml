@@ -186,3 +186,9 @@ jobs:
                   TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...
               timeout-minutes: 10
+
+            - name: Store nexus.log
+              uses: actions/upload-artifact@v4
+              with:
+                name: "nexus.log-nxrm-${{ matrix.nxrm }}-terraform-${{ matrix.terraform }}"
+                path: "${{ github.workspace }}/sonatype-work/nexus3/log/nexus.log"
