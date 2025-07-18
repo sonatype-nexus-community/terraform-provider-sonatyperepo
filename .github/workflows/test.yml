@@ -135,11 +135,10 @@ jobs:
                   echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
                   wget https://download.sonatype.com/nexus/3/nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
                   tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
-                  ./nexus-${{ matrix.nxrm }}/bin/nexus start
+                  sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
 
             - name: Start Sonatype Nexus Repository Manager
               run: ./nexus start
-              shell: bash
               working-directory: "${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin"
 
             - name: Wait for Sonatype Nexus Repository Manager to be ready
