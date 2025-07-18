@@ -107,8 +107,7 @@ jobs:
             fail-fast: false
             matrix:
                 nxrm:
-                    - '3.79.0-09' # FIRST WITH BUNDLED JRE
-                    - '3.79.1-04' 
+                    - '3.79.1-04' # FIRST WITH BUNDLED JRE
                     - '3.80.0-06' 
                     - '3.81.1-01' # LATEST
                 # list whatever Terraform versions here you would like to support
