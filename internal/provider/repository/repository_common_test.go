@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package repository
+package repository_test
 
-// Repository Types.
 const (
-	REPOSITORY_TYPE_HOSTED string = "hosted"
-	REPOSITORY_TYPE_PROXY  string = "proxy"
-	REPOSITORY_TYPE_GROUP  string = "group"
+	RES_ATTR_DOCKER_FORCE_BASIC_AUTH string = "docker.force_basic_auth"
+	RES_ATTR_DOCKER_V1_ENABLED       string = "docker.v1_enabled"
+	RES_ATTR_RAW_CONTENT_DISPOSITION string = "raw.content_disposition"
+	RES_ATTR_STORAGE_BLOB_STORE_NAME string = "storage.blob_store_name"
 )

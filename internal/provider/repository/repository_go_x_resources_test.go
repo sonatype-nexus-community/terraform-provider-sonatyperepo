@@ -19,6 +19,7 @@ package repository_test
 import (
 	"fmt"
 	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -112,7 +113,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("go-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://proxy.golang.org/"),
 					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
@@ -139,7 +140,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("go-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
 				),
 			},
