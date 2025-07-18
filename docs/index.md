@@ -11,6 +11,10 @@ The `sonatyperepo` provider is used to interact with resources supported by [Son
 
 The provider needs to be configured with the proper credentials before it can be used.
 
+## Compatability
+
+This Provider is tested on Sonatype Nexus Repository Manager versions `3.79.0` through `3.81.1` currently.
+
 Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
 		
 Some resources and features depend on the version of Sonatype Nexus Repository you are running. See individual Data Source and Resource documentaiton for details.
