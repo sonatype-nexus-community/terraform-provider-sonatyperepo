@@ -130,6 +130,9 @@ jobs:
                     # - '1.13.*'
                     # - '1.14.*'
         steps:
+            - name: Checkout Source
+              uses: actions/checkout@v4
+
             - name: Download & Unpack Sonatype Nexus Repository Manager
               run: |
                   echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
@@ -166,17 +169,10 @@ jobs:
                     fi
                   done
 
-            - name: Checkout Source
-              uses: actions/checkout@v4
-              
             - uses: actions/setup-go@v5
               with:
                   go-version-file: 'go.mod'
                   cache: true
-
-            - run: |
-                ls -al ${{ github.workspace }}
-                exit 1
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3 
