@@ -26,6 +26,7 @@ const (
 	CONTENT_DISPOSITION_ATTACHMENT       string = "ATTACHMENT"
 	CONTENT_DISPOSITION_INLINE           string = "INLINE"
 	DEFAULT_ANONYMOUS_USERNAME           string = "anonymous"
+	DEFAULT_BLOB_STORE_NAME              string = "default"
 	DEFAULT_HTTP_CONNECTION_RETRIES      int64  = 0
 	DEFAULT_HTTP_CONNECTION_TIMEOUT      int64  = 60
 	DEFAULT_REALM_NAME                   string = "NexusAuthorizingRealm"

@@ -53,7 +53,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("git-lfs-hosted-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),

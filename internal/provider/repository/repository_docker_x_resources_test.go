@@ -27,12 +27,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryConanResource(t *testing.T) {
+func TestAccRepositorDockerResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_conan_group"
-	resourceTypeHosted := "sonatyperepo_repository_conan_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_conan_proxy"
+	resourceTypeGroup := "sonatyperepo_repository_docker_group"
+	resourceTypeHosted := "sonatyperepo_repository_docker_hosted"
+	resourceTypeProxy := "sonatyperepo_repository_docker_proxy"
 	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
 	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
 	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
@@ -44,7 +44,7 @@ func TestAccRepositoryConanResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "conan-group-repo-%s"
+  name = "docker-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -53,6 +53,10 @@ resource "%s" "repo" {
   group = {
 	member_names = []
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = false
+  }
 }
 `, resourceTypeGroup, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
@@ -60,26 +64,30 @@ resource "%s" "repo" {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "conan-hosted-repo-%s"
+  name = "docker-hosted-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
 	write_policy = "ALLOW_ONCE"
   }
+  docker = {
+    force_basic_auth = true
+    v1_enabled = true
+  }
 }
 
 resource "%s" "repo" {
-  name = "conan-proxy-repo-%s"
+  name = "docker-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://center2.conan.io"
-    content_max_age = 1441
-    metadata_max_age = 1440
+    remote_url = "https://registry-1.docker.io"
+    content_max_age = 1442
+    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -102,20 +110,26 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  conan = {
-    conan_version = "V2"
+  docker = {
+    force_basic_auth = true
+    v1_enabled = true
   }
+  docker_proxy = {  }
 }
 
 resource "%s" "repo" {
-  name = "conan-group-repo-%s"
+  name = "docker-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   group = {
-	member_names = ["conan-proxy-repo-%s"]
+	member_names = ["docker-proxy-repo-%s"]
+  }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = false
   }
 
   depends_on = [
@@ -125,7 +139,7 @@ resource "%s" "repo" {
 `, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("conan-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
 					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
@@ -133,16 +147,18 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
 					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("conan-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("docker-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
 					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://center2.conan.io"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://registry-1.docker.io"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1400"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
@@ -160,14 +176,20 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
 					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
 					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
-					resource.TestCheckResourceAttr(resourceProxyName, "conan.conan_version", "V2"),
+					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
+					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.cache_foreign_layers", "false"),
+					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.foreign_layer_url_whitelist.#", "0"),
+					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.index_type", common.DOCKER_PROXY_INDEX_TYPE_REGISTRY),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("conan-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("docker-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
 					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
+					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

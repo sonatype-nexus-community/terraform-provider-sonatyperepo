@@ -27,12 +27,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryConanResource(t *testing.T) {
+func TestAccRepositoryMavenResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_conan_group"
-	resourceTypeHosted := "sonatyperepo_repository_conan_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_conan_proxy"
+	resourceTypeGroup := "sonatyperepo_repository_maven_group"
+	resourceTypeHosted := "sonatyperepo_repository_maven_hosted"
+	resourceTypeProxy := "sonatyperepo_repository_maven_proxy"
 	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
 	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
 	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
@@ -44,7 +44,7 @@ func TestAccRepositoryConanResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "conan-group-repo-%s"
+  name = "maven-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
@@ -60,26 +60,31 @@ resource "%s" "repo" {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "conan-hosted-repo-%s"
+  name = "maven-hosted-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
 	write_policy = "ALLOW_ONCE"
   }
+  maven = {
+	content_disposition = "ATTACHMENT"
+	layout_policy = "STRICT"
+	version_policy = "RELEASE"
+  }
 }
 
 resource "%s" "repo" {
-  name = "conan-proxy-repo-%s"
+  name = "maven-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://center2.conan.io"
-    content_max_age = 1441
-    metadata_max_age = 1440
+    remote_url = "https://repo1.maven.org/maven2/"
+    content_max_age = 1442
+    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -102,20 +107,22 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  conan = {
-    conan_version = "V2"
+  maven = {
+	content_disposition = "ATTACHMENT"
+	layout_policy = "STRICT"
+	version_policy = "RELEASE"
   }
 }
 
 resource "%s" "repo" {
-  name = "conan-group-repo-%s"
+  name = "maven-group-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   group = {
-	member_names = ["conan-proxy-repo-%s"]
+	member_names = ["maven-proxy-repo-%s"]
   }
 
   depends_on = [
@@ -125,7 +132,7 @@ resource "%s" "repo" {
 `, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("conan-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("maven-hosted-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
 					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
@@ -133,16 +140,19 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
 					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceHostedName, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceHostedName, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceHostedName, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("conan-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("maven-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
 					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://center2.conan.io"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1400"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
@@ -158,12 +168,12 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
 					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
-					resource.TestCheckResourceAttr(resourceProxyName, "conan.conan_version", "V2"),
+					resource.TestCheckResourceAttr(resourceProxyName, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceProxyName, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceProxyName, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("conan-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("maven-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
 					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),

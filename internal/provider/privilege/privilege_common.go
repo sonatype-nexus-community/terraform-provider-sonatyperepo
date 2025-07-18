@@ -90,16 +90,20 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Handle Errors
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			fmt.Sprintf("Error creating %s Privilege", r.PrivilegeTypeType.String()),
-			fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
 	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
-			fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -136,14 +140,18 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -181,14 +189,18 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -235,14 +247,18 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
-				fmt.Sprintf(PRIVILEGE_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

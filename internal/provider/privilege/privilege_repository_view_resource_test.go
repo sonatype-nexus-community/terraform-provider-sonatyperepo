@@ -47,8 +47,8 @@ resource "%s" "p" {
     	"BROWSE",
 		"READ"
   	]
-	format = "npm"
-	repository = "npm-all"
+	format = "maven2"
+	repository = "maven-central"
 }`, resourceTypePrivilegeRepoView, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
@@ -57,8 +57,8 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "read_only", "false"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "type", privilege_type.TypeRepositoryView.String()),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "actions.#", "2"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "format", "npm"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "npm-all"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "format", "maven2"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "maven-central"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

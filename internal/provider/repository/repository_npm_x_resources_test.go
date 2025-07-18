@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -26,11 +27,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositorCondaResource(t *testing.T) {
+func TestAccRepositoryNpmResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_conda_proxy"
-	resourceProxyName := fmt.Sprintf("%s.repo", resourceTypeProxy)
+	resourceTypeGroup := "sonatyperepo_repository_npm_group"
+	resourceTypeHosted := "sonatyperepo_repository_npm_hosted"
+	resourceTypeProxy := "sonatyperepo_repository_npm_proxy"
+	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
+	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
+	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -39,16 +44,42 @@ func TestAccRepositorCondaResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "conda-proxy-repo-%s"
+  name = "npm-group-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+  }
+  group = {
+	member_names = []
+  }
+}
+`, resourceTypeGroup, randomString),
+				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
+			},
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "npm-hosted-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
+  }
+}
+
+resource "%s" "repo" {
+  name = "npm-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://repo.anaconda.com/pkgs/"
-    content_max_age = 1441
-    metadata_max_age = 1440
+    remote_url = "https://registry.npmjs.org"
+    content_max_age = 1442
+    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -71,18 +102,47 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
+  npm = {
+	remove_quarrantined = true
+  }
 }
-`, resourceTypeProxy, randomString),
+
+resource "%s" "repo" {
+  name = "npm-group-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+  }
+  group = {
+	member_names = ["npm-proxy-repo-%s"]
+  }
+
+  depends_on = [
+	%s.repo
+  ]
+}
+`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Hosted
+					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("npm-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("conda-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
 					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://repo.anaconda.com/pkgs/"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://registry.npmjs.org"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1400"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
@@ -98,8 +158,14 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
 					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceProxyName, "npm.remove_quarrantined", "true"),
+
+					// Verify Group
+					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("npm-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
