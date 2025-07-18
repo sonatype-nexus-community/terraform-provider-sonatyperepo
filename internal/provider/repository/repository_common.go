@@ -25,6 +25,7 @@ import (
 	"slices"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -289,28 +290,47 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName.ValueString(), r.Client, ctx)
 
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
-			)
-		} else {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
-				fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
-			)
+	attempts := 1
+	maxAttempts := 3
+	success := false
+
+	for !success && attempts < maxAttempts {
+		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName.ValueString(), r.Client, ctx)
+
+		// Trap 500 Error as they occur when Repo is not in appropriate internal state
+		if httpResponse.StatusCode == http.StatusInternalServerError {
+			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempts))
+			attempts++
+			continue
 		}
-		return
-	}
-	if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Unexpected response when deleting %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryFormat),
-			fmt.Sprintf("Error response: %s", httpResponse.Status),
-		)
+
+		if err != nil {
+			if httpResponse.StatusCode == http.StatusNotFound {
+				resp.State.RemoveResource(ctx)
+				resp.Diagnostics.AddWarning(
+					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
+					fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+				)
+			} else {
+				resp.Diagnostics.AddError(
+					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
+					fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+				)
+			}
+			return
+		}
+		if httpResponse.StatusCode != http.StatusNoContent {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempts),
+				fmt.Sprintf("Error response: %s", httpResponse.Status),
+			)
+
+			time.Sleep(1 * time.Second)
+			attempts++
+		} else {
+			success = true
+		}
 	}
 }
 
