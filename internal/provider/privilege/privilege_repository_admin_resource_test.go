@@ -46,8 +46,8 @@ resource "%s" "p" {
 	actions = [
     	"BROWSE"
   	]
-	format = "npm"
-	repository = "npm-all"
+	format = "maven2"
+	repository = "maven-public"
 }`, resourceTypePrivilegeRepoAdmin, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
@@ -56,8 +56,8 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "read_only", "false"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "type", privilege_type.TypeRepositoryAdmin.String()),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "actions.#", "1"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "npm"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "npm-all"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "maven2"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "maven-public"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
