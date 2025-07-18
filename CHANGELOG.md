@@ -1,6 +1,9 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## X.Y.Z (Unreleased)
+## X.Y.Z (UNRELEASED)
+
+
+## 0.2.0 July 17, 2025
 
 FEATURES:
 
