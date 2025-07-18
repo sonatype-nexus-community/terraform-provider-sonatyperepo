@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -45,7 +46,7 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameComposerProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.remote_url", "https://repo.packagist.org/"),
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.content_max_age", "1441"),

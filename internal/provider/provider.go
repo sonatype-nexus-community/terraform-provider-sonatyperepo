@@ -82,9 +82,12 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 			},
 			"api_base_path": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Base Path at which the API is present - defaults to /service/rest. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
+				MarkdownDescription: "Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
 			},
 		},
+		MarkdownDescription: `Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
+		
+Some resources and features depend on the version of Sonatype Nexus Repository you are running. See individual Data Source and Resource documentaiton for details.`,
 	}
 }
 
@@ -168,16 +171,17 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	client := sonatyperepo.NewAPIClient(configuration)
-	resp.DataSourceData = common.SonatypeDataSourceData{
+	ds := common.SonatypeDataSourceData{
 		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
 		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
 		Client:  client,
 	}
-	resp.ResourceData = common.SonatypeDataSourceData{
-		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
-		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
-		Client:  client,
-	}
+
+	// Check NXRM is Writable and determine Version
+	ds.CheckWritableAndGetVersion(ctx, &resp.Diagnostics)
+
+	resp.DataSourceData = ds
+	resp.ResourceData = ds
 }
 
 func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.Resource {

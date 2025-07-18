@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -45,7 +46,7 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.content_max_age", "1441"),

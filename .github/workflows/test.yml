@@ -17,9 +17,8 @@ on:
 
 env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
-    # NEXUS_SECURITY_RANDOMPASSWORD: "false"
-    # INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
-    # NXRM_VERSION: "3.81.1-01"
+    NEXUS_SECURITY_RANDOMPASSWORD: "false"
+    INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -97,7 +96,7 @@ jobs:
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
-        name: Terraform Provider Acceptance Tests
+        name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         needs: 
             - build
             - sonatype
@@ -107,6 +106,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
+                nxrm:
+                    - '3.79.1-04' # FIRST WITH BUNDLED JRE
+                    - '3.80.0-06' 
+                    - '3.81.1-01' # LATEST
                 # list whatever Terraform versions here you would like to support
                 terraform:
                     - '1.0.*' # Minimum
@@ -122,77 +125,77 @@ jobs:
                     # - '1.10.*'
                     # - '1.11.*' 
                     - '1.12.*' # Latest
+                    # - '1.13.*'
+                    # - '1.14.*'
         steps:
-            # - name: Download, Unpack & Start Sonatype Nexus Repository Manager
-            #   run: |
-            #       echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace}}/license.lic
-            #       wget https://download.sonatype.com/nexus/3/nexus-${{ env.NXRM_VERSION }}-linux-x86_64.tar.gz 
-            #       tar xvz --keep-directory-symlink -f nexus-${{ env.NXRM_VERSION }}-linux-x86_64.tar.gz 
-            #       cd nexus-${{ env.NXRM_VERSION }}/bin && ./nexus start
-
-            # - name: Wait for Sonatype Nexus Repository Manager to be ready
-            #   run: |
-            #       sleep 20
-            #       while true; do
-            #         STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
-
-            #         if [ "$STATUS" -eq 200 ]; then
-            #             echo "Received 200 OK from http://localhost:8081/service/rest/v1/status"
-            #             break
-            #         else
-            #             echo "Waiting for 200 OK... Current status: $STATUS for http://localhost:8081/service/rest/v1/status"
-            #             sleep 5
-            #         fi
-            #       done
-            #       curl -u admin:admin123 http://localhost:8081/service/rest/v1/status/checks
-
+            - name: Set Clean TF Version
+              run: |
+                ORIG="${{ matrix.terraform }}"
+                TF_SAFE_VERSION="${ORIG//\*/}"
+                echo "TF_SAFE_VERSION=$TF_SAFE_VERSION" >> "$GITHUB_ENV"
+                
             - name: Checkout Source
               uses: actions/checkout@v4
-              
+
+            - name: Download & Unpack Sonatype Nexus Repository Manager
+              run: |
+                  echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
+                  wget https://download.sonatype.com/nexus/3/nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
+                  tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
+                  sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
+                  head -5 ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
+
+            - name: Start Sonatype Nexus Repository Manager
+              run: ./nexus start
+              working-directory: "${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin"
+
+            - name: Wait for Sonatype Nexus Repository Manager to be ready
+              run: |
+                  set +e
+                  sleep 20
+                  while true; do
+                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
+                    CURL_EXIT=$?
+
+                    echo "CURL Exit Code: $CURL_EXIT"
+
+                    if [ "$CURL_EXIT" -eq 0 ]; then
+                      if [ "$STATUS" -eq 200 ]; then
+                          echo "✅ Received 200 OK from http://localhost:8081/service/rest/v1/status"
+                          break
+                      else
+                          echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8081/service/rest/v1/status"
+                          sleep 5
+                      fi
+                    else
+                      echo "⚠️ curl returned unexpected exit code $CURL_EXIT. Retrying..."
+                      sleep 5
+                    fi
+                  done
+
             - uses: actions/setup-go@v5
               with:
                   go-version-file: 'go.mod'
                   cache: true
-            - uses: hashicorp/setup-terraform@v3
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3 
               with:
                   terraform_version: ${{ matrix.terraform }}
                   terraform_wrapper: false
             - run: go mod download
             - env:
-                #   NXRM_SERVER_URL: "http://localhost:8081"
-                #   NXRM_SERVER_USERNAME: "admin"
-                #   NXRM_SERVER_PASSWORD: "admin123"
-                  NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
-                  NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
-                  NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
-                  TF_ACC: '1'
-              run: go test -v -cover ./...
-              timeout-minutes: 10
-
-    test-single-hit:
-        name: Terraform Provider Acceptance Tests (Single Hit)
-        needs: 
-            - build
-            - sonatype
-            - generate
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-go@v5
-              with:
-                  go-version-file: 'go.mod'
-                  cache: true
-            - uses: hashicorp/setup-terraform@v3
-              with:
-                  terraform_version: 1.12.*
-                  terraform_wrapper: false
-            - run: go mod download
-            - env:
-                  NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
-                  NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
-                  NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
+                  NXRM_SERVER_URL: "http://localhost:8081"
+                  NXRM_SERVER_USERNAME: "admin"
+                  NXRM_SERVER_PASSWORD: "admin123"
                   TF_ACC: '1'
                   TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...
               timeout-minutes: 10
+
+            - name: Store nexus.log
+              if: success() || failure()
+              uses: actions/upload-artifact@v4
+              with:
+                name: "nexus.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
+                path: "${{ github.workspace }}/sonatype-work/nexus3/log/nexus.log"

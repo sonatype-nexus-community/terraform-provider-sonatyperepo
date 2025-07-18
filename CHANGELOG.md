@@ -5,6 +5,13 @@
 
 ## 0.2.0 July 17, 2025
 
+ENHANCEMENTS:
+
+* Confirm Sonatype Nexus Repository Manager is WRITABLE [GH-54]
+* Determine version of Sonatype Nexus Repository Manager for future use in this Provider [GH-54]
+
+## 0.2.0 July 17, 2025
+
 FEATURES:
 
 * **New Resource:** `sonatyperepo_repository_apt_hosted` [GH-35]

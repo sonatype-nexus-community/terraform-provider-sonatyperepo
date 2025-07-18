@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -45,7 +46,7 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameAptProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameAptProxy, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceNameAptProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "proxy.content_max_age", "1442"),
