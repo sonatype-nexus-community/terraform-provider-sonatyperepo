@@ -116,11 +116,13 @@ func (d *blobStoresDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		d.Auth,
 	)
 
-	blobStores, _, err := d.Client.BlobStoreAPI.ListBlobStores(ctx).Execute()
+	blobStores, httpResponse, err := d.Client.BlobStoreAPI.ListBlobStores(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Unable to Read Blob Stores",
-			err.Error(),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
