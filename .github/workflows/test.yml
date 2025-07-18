@@ -132,7 +132,8 @@ jobs:
         steps:
             - name: Set Clean TF Version
               run: |
-                TF_SAFE_VERSION="${${{ matrix.terraform }}//\*/}"
+                ORIG="${{ matrix.terraform }}"
+                TF_SAFE_VERSION="${ORIG//\*/}"
                 echo "TF_SAFE_VERSION=$TF_SAFE_VERSION" >> "$GITHUB_ENV"
                 
             - name: Checkout Source
