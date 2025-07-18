@@ -146,7 +146,7 @@ jobs:
               run: |
                   sleep 20
                   while true; do
-                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
+                    STATUS=$(curl -v -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
 
                     if [ "$STATUS" -eq 200 ]; then
                         echo "Received 200 OK from http://localhost:8081/service/rest/v1/status"
