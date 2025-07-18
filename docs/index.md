@@ -11,6 +11,10 @@ The `sonatyperepo` provider is used to interact with resources supported by [Son
 
 The provider needs to be configured with the proper credentials before it can be used.
 
+Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
+		
+Some resources and features depend on the version of Sonatype Nexus Repository you are running. See individual Data Source and Resource documentaiton for details.
+
 ## Example Usage
 
 ```terraform
@@ -32,4 +36,4 @@ provider "sonatyperepo" {
 
 ### Optional
 
-- `api_base_path` (String) Base Path at which the API is present - defaults to /service/rest. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.
+- `api_base_path` (String) Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.
