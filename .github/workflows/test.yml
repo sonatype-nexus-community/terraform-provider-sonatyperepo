@@ -156,7 +156,6 @@ jobs:
                         sleep 5
                     fi
                   done
-                  curl -u admin:admin123 http://localhost:8081/service/rest/v1/status/check
 
             - name: Checkout Source
               uses: actions/checkout@v4
@@ -178,31 +177,3 @@ jobs:
                   TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...
               timeout-minutes: 10
-
-    # test-single-hit:
-    #     name: Terraform Provider Acceptance Tests (Single Hit)
-    #     needs: 
-    #         - build
-    #         - sonatype
-    #         - generate
-    #     runs-on: ubuntu-latest
-    #     timeout-minutes: 15
-    #     steps:
-    #         - uses: actions/checkout@v4
-    #         - uses: actions/setup-go@v5
-    #           with:
-    #               go-version-file: 'go.mod'
-    #               cache: true
-    #         - uses: hashicorp/setup-terraform@v3
-    #           with:
-    #               terraform_version: 1.12.*
-    #               terraform_wrapper: false
-    #         - run: go mod download
-    #         - env:
-    #               NXRM_SERVER_URL: ${{ secrets.NXRM_SERVER_URL }}
-    #               NXRM_SERVER_USERNAME: ${{ secrets.NXRM_SERVER_USERNAME }}
-    #               NXRM_SERVER_PASSWORD: ${{ secrets.NXRM_SERVER_PASSWORD }}
-    #               TF_ACC: '1'
-    #               TF_ACC_SINGLE_HIT: '1'
-    #           run: go test -v -cover ./...
-    #           timeout-minutes: 10
