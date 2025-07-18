@@ -102,7 +102,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 		UserId:    plan.UserId.ValueStringPointer(),
 	}
 
-	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update2(ctx).Body(payload).Execute()
+	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update3(ctx).Body(payload).Execute()
 
 	// Handle Error
 	if err != nil {
@@ -208,7 +208,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 		UserId:    plan.UserId.ValueStringPointer(),
 	}
 
-	apiResponse, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update2(ctx).Body(payload).Execute()
+	apiResponse, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update3(ctx).Body(payload).Execute()
 
 	// Handle Error
 	if err != nil {
@@ -272,7 +272,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 		UserId:    common.StringPointer(common.DEFAULT_ANONYMOUS_USERNAME),
 	}
 
-	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update2(ctx).Body(payload).Execute()
+	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update3(ctx).Body(payload).Execute()
 
 	// Handle Error
 	if err != nil {
