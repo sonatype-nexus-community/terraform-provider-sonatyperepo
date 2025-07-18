@@ -173,7 +173,13 @@ jobs:
               with:
                   go-version-file: 'go.mod'
                   cache: true
-            - uses: hashicorp/setup-terraform@v3
+
+            - run: |
+                ls -al ${{ github.workspace }}
+                exit 1
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3 
               with:
                   terraform_version: ${{ matrix.terraform }}
                   terraform_wrapper: false
