@@ -139,6 +139,7 @@ jobs:
 
             - name: Start Sonatype Nexus Repository Manager
               run: ./nexus start
+              shell: bash
               working-directory: "${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin"
 
             - name: Wait for Sonatype Nexus Repository Manager to be ready
