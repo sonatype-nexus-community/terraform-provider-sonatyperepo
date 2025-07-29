@@ -41,6 +41,7 @@ func TestAccRepositoryCargoResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
+			// Know regression in NXRM 3.82.0 - skip these tests as they will fail - see https://sonatype.atlassian.net/browse/NEXUS-48088
 			testutil.SkipIfNxrmVersionEq(t, &common.SystemVersion{
 				Major: 3,
 				Minor: 82,
