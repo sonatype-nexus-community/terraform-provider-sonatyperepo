@@ -28,8 +28,6 @@ var CurrenTestNxrmVersion = common.ParseServerHeaderToVersion(fmt.Sprintf("Nexus
 func SkipIfNxrmVersionEq(t *testing.T, v *common.SystemVersion) {
 	t.Helper()
 
-	t.Logf("Checking if Current NXRM Test Version (%s) is equal to %s", CurrenTestNxrmVersion.String(), v.String())
-
 	if v.Major == CurrenTestNxrmVersion.Major && v.Minor == CurrenTestNxrmVersion.Minor && v.Patch == CurrenTestNxrmVersion.Patch {
 		t.Skipf("NXRM Version is == %s - skipping", v.String())
 	}
