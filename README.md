@@ -51,7 +51,7 @@ Phew, that was easier than I thought. Last but not least of all - have fun!
 [shield_tfr-version]: https://img.shields.io/badge/Terraform%20Registry-0.2.0-8A2BE2
 [shield_license]: https://img.shields.io/github/license/sonatype-nexus-community/terraform-provider-sonatyperepo?logo=open%20source%20initiative&logoColor=white "license"
 [shield_tf_version]: https://img.shields.io/badge/Terraform-1.0.0+-blue
-[shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.79.1&nbsp;&ndash;&nbsp;3.81.1-blue
+[shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.79.1&nbsp;&ndash;&nbsp;3.82.0-blue
 
 [link_tfr]: https://registry.terraform.io/providers/sonatype-nexus-community/sonatyperepo/latest
 [link_gh-workflow-test]: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/actions/workflows/test.yml?query=branch%3Amain
