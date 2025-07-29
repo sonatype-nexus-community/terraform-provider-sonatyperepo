@@ -189,6 +189,7 @@ jobs:
                   NXRM_SERVER_URL: "http://localhost:8081"
                   NXRM_SERVER_USERNAME: "admin"
                   NXRM_SERVER_PASSWORD: "admin123"
+                  NXRM_VERSION: "${{ matrix.nxrm }}"
                   TF_ACC: '1'
                   TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...
