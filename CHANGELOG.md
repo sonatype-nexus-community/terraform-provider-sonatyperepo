@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+
+## 0.3.0 July 29, 2025
+
 ENHANCEMENTS:
 
 * Confirm Sonatype Nexus Repository Manager is WRITABLE [GH-54]
