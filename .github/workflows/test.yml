@@ -109,7 +109,8 @@ jobs:
                 nxrm:
                     - '3.79.1-04' # FIRST WITH BUNDLED JRE
                     - '3.80.0-06' 
-                    - '3.81.1-01' # LATEST
+                    - '3.81.1-01' 
+                    - '3.82.0-08' # LATEST
                 # list whatever Terraform versions here you would like to support
                 terraform:
                     - '1.0.*' # Minimum
@@ -188,6 +189,7 @@ jobs:
                   NXRM_SERVER_URL: "http://localhost:8081"
                   NXRM_SERVER_USERNAME: "admin"
                   NXRM_SERVER_PASSWORD: "admin123"
+                  NXRM_VERSION: "${{ matrix.nxrm }}"
                   TF_ACC: '1'
                   TF_ACC_SINGLE_HIT: '1'
               run: go test -v -cover ./...

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -39,6 +40,14 @@ func TestAccRepositoryCargoResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Know regression in NXRM 3.82.0 - skip these tests as they will fail - see https://sonatype.atlassian.net/browse/NEXUS-48088
+			testutil.SkipIfNxrmVersionEq(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 82,
+				Patch: 0,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{

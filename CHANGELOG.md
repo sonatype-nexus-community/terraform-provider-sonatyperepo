@@ -7,6 +7,9 @@ ENHANCEMENTS:
 * Confirm Sonatype Nexus Repository Manager is WRITABLE [GH-54]
 * Determine version of Sonatype Nexus Repository Manager for future use in this Provider [GH-54]
 
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.82.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html)
+
 ## 0.2.0 July 17, 2025
 
 FEATURES:
