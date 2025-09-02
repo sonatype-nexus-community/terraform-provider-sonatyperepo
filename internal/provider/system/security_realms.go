@@ -26,6 +26,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -59,7 +61,7 @@ func (r *securityRealmsResource) Metadata(_ context.Context, req resource.Metada
 // Schema defines the schema for the resource.
 func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Activate and order Nexus Security realms. This resource manages the configuration of active security realms and their order.",
+		Description: "Activate and order Sontaype Nexus Repository Security realms. This resource manages the configuration of active security realms and their order.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Resource identifier",
@@ -72,10 +74,15 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Specify active security realms in usage order. At least one realm must be specified.",
 				ElementType: types.StringType,
 				Required:    true,
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+					listvalidator.UniqueValues(),
+				},
 			},
 		},
 	}
 }
+
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *securityRealmsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
