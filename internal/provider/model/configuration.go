@@ -62,6 +62,11 @@ type IqConnectionModel struct {
 	LastUpdated            types.String `tfsdk:"last_updated"`
 }
 
+type SecurityRealmsModel struct {
+	Active      types.List   `tfsdk:"active"`
+	ID          types.String `tfsdk:"id"`
+}
+
 func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
 	m.AuthenticationMethod = types.StringValue(api.AuthenticationType)
 	m.Enabled = types.BoolPointerValue(api.Enabled)
