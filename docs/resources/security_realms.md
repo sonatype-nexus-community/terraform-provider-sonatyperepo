@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_security_realms Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Activate and order Nexus Security realms. This resource manages the configuration of active security realms and their order.
+  Activate and order Sonatype Nexus Repository Security realms. This resource manages the configuration of active security realms and their order.
 ---
 
 # sonatyperepo_security_realms (Resource)
 
-Activate and order Nexus Security realms. This resource manages the configuration of active security realms and their order.
+Activate and order Sonatype Nexus Repository Security realms. This resource manages the configuration of active security realms and their order.
 
 
 
