@@ -2,6 +2,11 @@
 
 ## X.Y.Z (UNRELEASED)
 
+## 0.4.0 September 3, 2025
+
+FEATURES:
+
+* **New Resource:** `sonatyperepo_security_realms` [GH-60]
 
 ## 0.3.0 July 29, 2025
 
