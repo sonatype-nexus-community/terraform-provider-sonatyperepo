@@ -239,6 +239,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryYumGroupResource,
 		repository.NewRepositoryYumHostedResource,
 		repository.NewRepositoryYumProxyResource,
+		repository.NewCleanupPolicyResource,
 		role.NewRoleResource,
 		system.NewAnonymousAccessSystemResource,
 		system.NewSystemConfigProductLicenseResource,
