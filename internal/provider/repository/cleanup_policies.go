@@ -106,22 +106,7 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 	}
 }
 
-// validateCriteria validates that at least one required criterion is provided
-func validateCriteria(criteria *model.CleanupPolicyCriteriaModel) error {
-	if criteria == nil {
-		return fmt.Errorf("criteria block is required")
-	}
 
-	hasValidCriteria := !criteria.LastBlobUpdated.IsNull() ||
-		!criteria.LastDownloaded.IsNull() ||
-		!criteria.AssetRegex.IsNull()
-
-	if !hasValidCriteria {
-		return fmt.Errorf("at least one criterion (last_blob_updated, last_downloaded, or asset_regex) must be specified")
-	}
-
-	return nil
-}
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -151,41 +136,7 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 		r.Auth,
 	)
 
-	requestPayload := sonatyperepo.CleanupPolicyResourceXO{
-		Name:   plan.Name.ValueString(),
-		Format: plan.Format.ValueString(),
-	}
-
-	if !plan.Notes.IsNull() {
-		notes := plan.Notes.ValueString()
-		requestPayload.Notes = &notes
-	}
-
-	// Set criteria fields
-	if !plan.Criteria.LastBlobUpdated.IsNull() {
-		lastBlobUpdated := plan.Criteria.LastBlobUpdated.ValueInt64()
-		requestPayload.CriteriaLastBlobUpdated = &lastBlobUpdated
-	}
-	
-	if !plan.Criteria.LastDownloaded.IsNull() {
-		lastDownloaded := plan.Criteria.LastDownloaded.ValueInt64()
-		requestPayload.CriteriaLastDownloaded = &lastDownloaded
-	}
-	
-	if !plan.Criteria.ReleaseType.IsNull() {
-		releaseType := plan.Criteria.ReleaseType.ValueString()
-		requestPayload.CriteriaReleaseType = &releaseType
-	}
-	
-	if !plan.Criteria.AssetRegex.IsNull() {
-		assetRegex := plan.Criteria.AssetRegex.ValueString()
-		requestPayload.CriteriaAssetRegex = &assetRegex
-	}
-
-	if !plan.Retain.IsNull() {
-		retain := int32(plan.Retain.ValueInt64())
-		requestPayload.Retain = &retain
-	}
+	requestPayload := buildRequestPayload(plan)
 
 	apiResponse, err := r.Client.CleanupPoliciesAPI.Create1(ctx).Body(requestPayload).Execute()
 
@@ -223,117 +174,48 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 	var state model.CleanupPolicyModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
-	// Read API Call
-	httpResponse, err := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
-
+	// Fetch cleanup policy from API
+	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
 	if err != nil {
+		// Check if this is a 404 error by attempting to get the HTTP response
+		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading cleanup policy",
-				"Unable to read cleanup policy: "+err.Error(),
-			)
+			return
 		}
-		return
-	}
-
-	// Parse response body to get the actual cleanup policy data
-	responseBody, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
+		
 		resp.Diagnostics.AddError(
-			"Error reading response body",
-			"Could not read cleanup policy response: "+err.Error(),
+			"Error Reading cleanup policy",
+			"Unable to read cleanup policy: "+err.Error(),
 		)
 		return
 	}
 
-	// Unmarshal the response to get cleanup policy data
-	var cleanupPolicy sonatyperepo.CleanupPolicyResourceXO
-	err = json.Unmarshal(responseBody, &cleanupPolicy)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error parsing response",
-			"Could not parse cleanup policy response: "+err.Error(),
-		)
-		return
-	}
-
-	// Overwrite items with refreshed state
-	state.Name = types.StringValue(cleanupPolicy.Name)
-	state.Format = types.StringValue(cleanupPolicy.Format)
-	
-	if cleanupPolicy.Notes != nil {
-		state.Notes = types.StringValue(*cleanupPolicy.Notes)
-	} else {
-		state.Notes = types.StringNull()
-	}
-
-	// Handle criteria - ensure we always have a criteria object since it's required
-	if state.Criteria == nil {
-		state.Criteria = &model.CleanupPolicyCriteriaModel{}
-	}
-	
-	if cleanupPolicy.CriteriaLastBlobUpdated != nil {
-		state.Criteria.LastBlobUpdated = types.Int64Value(*cleanupPolicy.CriteriaLastBlobUpdated)
-	} else {
-		state.Criteria.LastBlobUpdated = types.Int64Null()
-	}
-	
-	if cleanupPolicy.CriteriaLastDownloaded != nil {
-		state.Criteria.LastDownloaded = types.Int64Value(*cleanupPolicy.CriteriaLastDownloaded)
-	} else {
-		state.Criteria.LastDownloaded = types.Int64Null()
-	}
-	
-	if cleanupPolicy.CriteriaReleaseType != nil {
-		state.Criteria.ReleaseType = types.StringValue(*cleanupPolicy.CriteriaReleaseType)
-	} else {
-		state.Criteria.ReleaseType = types.StringNull()
-	}
-	
-	if cleanupPolicy.CriteriaAssetRegex != nil {
-		state.Criteria.AssetRegex = types.StringValue(*cleanupPolicy.CriteriaAssetRegex)
-	} else {
-		state.Criteria.AssetRegex = types.StringNull()
-	}
-
-	if cleanupPolicy.Retain != nil {
-		state.Retain = types.Int64Value(int64(*cleanupPolicy.Retain))
-	} else {
-		state.Retain = types.Int64Null()
-	}
+	// Update state from API response
+	updateStateFromAPI(&state, *cleanupPolicy)
 
 	// Set refreshed state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan & state
-	var plan model.CleanupPolicyModel
-	var state model.CleanupPolicyModel
+	var plan, state model.CleanupPolicyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting plan data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
+	
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
@@ -342,87 +224,30 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 
 	// Validate criteria
 	if err := validateCriteria(plan.Criteria); err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid cleanup policy configuration",
-			err.Error(),
-		)
+		resp.Diagnostics.AddError("Invalid cleanup policy configuration", err.Error())
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
-	// Update API Call
-	requestPayload := sonatyperepo.CleanupPolicyResourceXO{
-		Name:   plan.Name.ValueString(),
-		Format: plan.Format.ValueString(),
-	}
+	// Build request payload and make API call
+	requestPayload := buildRequestPayload(plan)
+	apiRequest := r.Client.CleanupPoliciesAPI.Update1(ctx, state.Name.ValueString()).Body(requestPayload)
+	apiResponse, err := apiRequest.Execute()
 
-	if !plan.Notes.IsNull() {
-		notes := plan.Notes.ValueString()
-		requestPayload.Notes = &notes
-	}
-
-	// Set criteria fields
-	if !plan.Criteria.LastBlobUpdated.IsNull() {
-		lastBlobUpdated := plan.Criteria.LastBlobUpdated.ValueInt64()
-		requestPayload.CriteriaLastBlobUpdated = &lastBlobUpdated
-	}
-	
-	if !plan.Criteria.LastDownloaded.IsNull() {
-		lastDownloaded := plan.Criteria.LastDownloaded.ValueInt64()
-		requestPayload.CriteriaLastDownloaded = &lastDownloaded
-	}
-	
-	if !plan.Criteria.ReleaseType.IsNull() {
-		releaseType := plan.Criteria.ReleaseType.ValueString()
-		requestPayload.CriteriaReleaseType = &releaseType
-	}
-	
-	if !plan.Criteria.AssetRegex.IsNull() {
-		assetRegex := plan.Criteria.AssetRegex.ValueString()
-		requestPayload.CriteriaAssetRegex = &assetRegex
-	}
-
-	if !plan.Retain.IsNull() {
-		retain := int32(plan.Retain.ValueInt64())
-		requestPayload.Retain = &retain
-	}
-
-	api_request := r.Client.CleanupPoliciesAPI.Update1(ctx, state.Name.ValueString()).Body(requestPayload)
-
-	// Call API
-	api_response, err := api_request.Execute()
-
-	// Handle Error(s)
+	// Handle API response
 	if err != nil {
-		if api_response != nil && api_response.StatusCode == 404 {
-			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Cleanup policy to update did not exist",
-				fmt.Sprintf("Unable to update cleanup policy: %d: %s", api_response.StatusCode, api_response.Status),
-			)
-		} else {
-			resp.Diagnostics.AddError(
-				"Error Updating cleanup policy",
-				fmt.Sprintf("Unable to update cleanup policy: %s", err.Error()),
-			)
-		}
+		r.handleUpdateError(resp, apiResponse, err)
 		return
-	} else if api_response.StatusCode == http.StatusNoContent || api_response.StatusCode == http.StatusOK {
-		// Map response body to schema and populate Computed attribute values
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	}
 
-		// Set state to fully populated data
+	if apiResponse.StatusCode == http.StatusNoContent || apiResponse.StatusCode == http.StatusOK {
+		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
 	}
 }
+
+
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -442,15 +267,15 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	)
 
 	// Delete API Call
-	api_response, err := r.Client.CleanupPoliciesAPI.DeletePolicyByName(ctx, state.Name.ValueString()).Execute()
+	apiResponse, err := r.Client.CleanupPoliciesAPI.DeletePolicyByName(ctx, state.Name.ValueString()).Execute()
 
 	// Handle Error(s)
 	if err != nil {
-		if api_response != nil && api_response.StatusCode == 404 {
+		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
 			resp.Diagnostics.AddWarning(
 				"Cleanup policy to delete did not exist",
-				fmt.Sprintf("Cleanup policy was already deleted: %d: %s", api_response.StatusCode, api_response.Status),
+				fmt.Sprintf("Cleanup policy was already deleted: %d: %s", apiResponse.StatusCode, apiResponse.Status),
 			)
 		} else {
 			resp.Diagnostics.AddError(
@@ -461,10 +286,10 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	if api_response.StatusCode != http.StatusNoContent && api_response.StatusCode != http.StatusOK {
+	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"Failed to delete cleanup policy",
-			fmt.Sprintf("Unable to delete cleanup policy: %d: %s", api_response.StatusCode, api_response.Status),
+			fmt.Sprintf("Unable to delete cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
 		)
 		return
 	}
@@ -474,4 +299,157 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 func (r *cleanupPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to name attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
+// Helper functions
+
+// validateCriteria validates that at least one required criterion is provided
+func validateCriteria(criteria *model.CleanupPolicyCriteriaModel) error {
+	if criteria == nil {
+		return fmt.Errorf("criteria block is required")
+	}
+
+	hasValidCriteria := !criteria.LastBlobUpdated.IsNull() ||
+		!criteria.LastDownloaded.IsNull() ||
+		!criteria.AssetRegex.IsNull()
+
+	if !hasValidCriteria {
+		return fmt.Errorf("at least one criterion (last_blob_updated, last_downloaded, or asset_regex) must be specified")
+	}
+
+	return nil
+}
+
+// buildRequestPayload creates the API request payload from the model
+func buildRequestPayload(plan model.CleanupPolicyModel) sonatyperepo.CleanupPolicyResourceXO {
+	requestPayload := sonatyperepo.CleanupPolicyResourceXO{
+		Name:   plan.Name.ValueString(),
+		Format: plan.Format.ValueString(),
+	}
+
+	if !plan.Notes.IsNull() {
+		notes := plan.Notes.ValueString()
+		requestPayload.Notes = &notes
+	}
+
+	setCriteriaFields(&requestPayload, plan.Criteria)
+
+	if !plan.Retain.IsNull() {
+		retain := int32(plan.Retain.ValueInt64())
+		requestPayload.Retain = &retain
+	}
+
+	return requestPayload
+}
+
+// setCriteriaFields sets the criteria fields in the request payload
+func setCriteriaFields(payload *sonatyperepo.CleanupPolicyResourceXO, criteria *model.CleanupPolicyCriteriaModel) {
+	if !criteria.LastBlobUpdated.IsNull() {
+		lastBlobUpdated := criteria.LastBlobUpdated.ValueInt64()
+		payload.CriteriaLastBlobUpdated = &lastBlobUpdated
+	}
+	
+	if !criteria.LastDownloaded.IsNull() {
+		lastDownloaded := criteria.LastDownloaded.ValueInt64()
+		payload.CriteriaLastDownloaded = &lastDownloaded
+	}
+	
+	if !criteria.ReleaseType.IsNull() {
+		releaseType := criteria.ReleaseType.ValueString()
+		payload.CriteriaReleaseType = &releaseType
+	}
+	
+	if !criteria.AssetRegex.IsNull() {
+		assetRegex := criteria.AssetRegex.ValueString()
+		payload.CriteriaAssetRegex = &assetRegex
+	}
+}
+
+// updateStateFromAPI updates the state model from the API response
+func updateStateFromAPI(state *model.CleanupPolicyModel, cleanupPolicy sonatyperepo.CleanupPolicyResourceXO) {
+	state.Name = types.StringValue(cleanupPolicy.Name)
+	state.Format = types.StringValue(cleanupPolicy.Format)
+	
+	if cleanupPolicy.Notes != nil {
+		state.Notes = types.StringValue(*cleanupPolicy.Notes)
+	} else {
+		state.Notes = types.StringNull()
+	}
+
+	// Ensure we always have a criteria object since it's required
+	if state.Criteria == nil {
+		state.Criteria = &model.CleanupPolicyCriteriaModel{}
+	}
+	
+	updateCriteriaFromAPI(state.Criteria, cleanupPolicy)
+
+	if cleanupPolicy.Retain != nil {
+		state.Retain = types.Int64Value(int64(*cleanupPolicy.Retain))
+	} else {
+		state.Retain = types.Int64Null()
+	}
+}
+
+// updateCriteriaFromAPI updates the criteria model from the API response
+func updateCriteriaFromAPI(criteria *model.CleanupPolicyCriteriaModel, cleanupPolicy sonatyperepo.CleanupPolicyResourceXO) {
+	if cleanupPolicy.CriteriaLastBlobUpdated != nil {
+		criteria.LastBlobUpdated = types.Int64Value(*cleanupPolicy.CriteriaLastBlobUpdated)
+	} else {
+		criteria.LastBlobUpdated = types.Int64Null()
+	}
+	
+	if cleanupPolicy.CriteriaLastDownloaded != nil {
+		criteria.LastDownloaded = types.Int64Value(*cleanupPolicy.CriteriaLastDownloaded)
+	} else {
+		criteria.LastDownloaded = types.Int64Null()
+	}
+	
+	if cleanupPolicy.CriteriaReleaseType != nil {
+		criteria.ReleaseType = types.StringValue(*cleanupPolicy.CriteriaReleaseType)
+	} else {
+		criteria.ReleaseType = types.StringNull()
+	}
+	
+	if cleanupPolicy.CriteriaAssetRegex != nil {
+		criteria.AssetRegex = types.StringValue(*cleanupPolicy.CriteriaAssetRegex)
+	} else {
+		criteria.AssetRegex = types.StringNull()
+	}
+}
+
+// fetchCleanupPolicy retrieves and parses the cleanup policy from the API
+func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name string) (*sonatyperepo.CleanupPolicyResourceXO, error) {
+	httpResponse, err := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, name).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response body: %w", err)
+	}
+
+	var cleanupPolicy sonatyperepo.CleanupPolicyResourceXO
+	err = json.Unmarshal(responseBody, &cleanupPolicy)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	return &cleanupPolicy, nil
+}
+
+// handleUpdateError handles errors from the update API call
+func (r *cleanupPolicyResource) handleUpdateError(resp *resource.UpdateResponse, apiResponse *http.Response, err error) {
+	if apiResponse != nil && apiResponse.StatusCode == 404 {
+		resp.State.RemoveResource(context.Background())
+		resp.Diagnostics.AddWarning(
+			"Cleanup policy to update did not exist",
+			fmt.Sprintf("Unable to update cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		)
+	} else {
+		resp.Diagnostics.AddError(
+			"Error Updating cleanup policy",
+			fmt.Sprintf("Unable to update cleanup policy: %s", err.Error()),
+		)
+	}
 }
