@@ -27,6 +27,11 @@ import (
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
+const (
+	criteriaLastBlobUpdated = "criteria.last_blob_updated"
+	criteriaAssetRegex      = "criteria.asset_regex"
+)
+
 func TestAccCleanupPolicyResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := "sonatyperepo_cleanup_policy.test"
@@ -42,7 +47,7 @@ func TestAccCleanupPolicyResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", cleanupPolicyName),
 					resource.TestCheckResourceAttr(resourceName, "format", "maven2"),
 					resource.TestCheckResourceAttr(resourceName, "notes", "Test cleanup policy"),
-					resource.TestCheckResourceAttr(resourceName, "criteria.last_blob_updated", "30"),
+					resource.TestCheckResourceAttr(resourceName, criteriaLastBlobUpdated, "30"),
 				),
 			},
 			// ImportState testing
@@ -61,8 +66,8 @@ func TestAccCleanupPolicyResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", cleanupPolicyName),
 					resource.TestCheckResourceAttr(resourceName, "format", "maven2"),
 					resource.TestCheckResourceAttr(resourceName, "notes", "Updated test cleanup policy"),
-					resource.TestCheckResourceAttr(resourceName, "criteria.last_blob_updated", "60"),
-					resource.TestCheckResourceAttr(resourceName, "criteria.asset_regex", ".*\\.war$"),
+					resource.TestCheckResourceAttr(resourceName, criteriaLastBlobUpdated, "60"),
+					resource.TestCheckResourceAttr(resourceName, criteriaAssetRegex, ".*\\.war$"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -83,7 +88,7 @@ func TestAccCleanupPolicyResourceMinimal(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("minimal-cleanup-policy-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "format", "maven2"),
-					resource.TestCheckResourceAttr(resourceName, "criteria.last_blob_updated", "30"),
+					resource.TestCheckResourceAttr(resourceName, criteriaLastBlobUpdated, "30"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
