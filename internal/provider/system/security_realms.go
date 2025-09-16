@@ -38,6 +38,16 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+// Constants for error messages to avoid duplication
+const (
+	errorSettingSecurityRealms           = "Error setting Security Realms configuration"
+	errorSettingSecurityRealmsWithDetail = "Error setting Security Realms configuration: %s"
+	unexpectedResponseCode               = "Unexpected Response Code whilst setting Security Realms configuration: %d: %s"
+	gettingStateDataHasErrors           = "Getting state data has errors: %v"
+	gettingPlanDataHasErrors            = "Getting plan data has errors: %v"
+	gettingRequestDataHasErrors         = "Getting request data has errors: %v"
+)
+
 // securityRealmsResource is the resource implementation.
 type securityRealmsResource struct {
 	common.BaseResource
@@ -91,7 +101,7 @@ func (r *securityRealmsResource) Create(ctx context.Context, req resource.Create
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(gettingRequestDataHasErrors, resp.Diagnostics.Errors()))
 		return
 	}
 
@@ -118,14 +128,14 @@ func (r *securityRealmsResource) Create(ctx context.Context, req resource.Create
 	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(activeRealms).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Error setting Security Realms configuration: %s", err.Error()),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(errorSettingSecurityRealmsWithDetail, err.Error()),
 		)
 		return
 	} else if apiResponse.StatusCode != http.StatusNoContent {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Security Realms configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(unexpectedResponseCode, apiResponse.StatusCode, apiResponse.Status),
 		)
 	}
 
@@ -147,65 +157,29 @@ func (r *securityRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 	var state model.SecurityRealmsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(gettingStateDataHasErrors, resp.Diagnostics.Errors()))
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
 	// Read API Call - GetActiveRealms returns []string directly
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
 	if err != nil {
-		if httpResponse != nil && httpResponse.StatusCode == 404 {
-			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Security Realms Configuration does not exist",
-				fmt.Sprintf("Unable to read Security Realms Configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-			)
-		} else {
-			errorMsg := "Unable to read Security Realms Configuration"
-			if httpResponse != nil {
-				errorMsg = fmt.Sprintf("%s: %s", errorMsg, httpResponse.Status)
-			}
-			resp.Diagnostics.AddError(
-				"Error Reading Security Realms Configuration",
-				fmt.Sprintf("%s: %s", errorMsg, err),
-			)
-		}
+		r.handleReadError(ctx, resp, httpResponse, err)
 		return
 	}
 
 	tflog.Debug(ctx, "Successfully read security realms configuration from API")
 
-	// Convert API response ([]string) back to Terraform types
-	if apiResponse != nil {
-		activeElements := make([]attr.Value, len(apiResponse))
-		for i, realm := range apiResponse {
-			activeElements[i] = types.StringValue(realm)
-		}
-		
-		activeList, diags := types.ListValue(types.StringType, activeElements)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		
-		state.Active = activeList
-	}
-
-	// Ensure ID is set (should already be set, but just in case)
-	if state.ID.IsNull() || state.ID.IsUnknown() {
-		state.ID = types.StringValue("security_realms")
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	// Convert API response and update state
+	r.updateStateFromAPIResponse(apiResponse, &state, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Ensure ID is set and save state
+	r.finalizeReadState(ctx, &state, resp)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -216,13 +190,13 @@ func (r *securityRealmsResource) Update(ctx context.Context, req resource.Update
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting plan data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(gettingPlanDataHasErrors, resp.Diagnostics.Errors()))
 		return
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(gettingStateDataHasErrors, resp.Diagnostics.Errors()))
 		return
 	}
 
@@ -248,14 +222,14 @@ func (r *securityRealmsResource) Update(ctx context.Context, req resource.Update
 	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(activeRealms).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Error setting Security Realms configuration: %s", err.Error()),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(errorSettingSecurityRealmsWithDetail, err.Error()),
 		)
 		return
 	} else if apiResponse.StatusCode != http.StatusNoContent {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Security Realms configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(unexpectedResponseCode, apiResponse.StatusCode, apiResponse.Status),
 		)
 	}
 
@@ -282,7 +256,7 @@ func (r *securityRealmsResource) Delete(ctx context.Context, req resource.Delete
 	var state model.SecurityRealmsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(gettingStateDataHasErrors, resp.Diagnostics.Errors()))
 		return
 	}
 
@@ -301,19 +275,21 @@ func (r *securityRealmsResource) Delete(ctx context.Context, req resource.Delete
 	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(defaultRealms).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Error setting Security Realms configuration: %s", err.Error()),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(errorSettingSecurityRealmsWithDetail, err.Error()),
 		)
 		return
 	} else if apiResponse.StatusCode != http.StatusNoContent {
 		resp.Diagnostics.AddError(
-			"Error setting Security Realms configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Security Realms configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			errorSettingSecurityRealms,
+			fmt.Sprintf(unexpectedResponseCode, apiResponse.StatusCode, apiResponse.Status),
 		)
 	}
 
 	tflog.Info(ctx, "Successfully reset security realms configuration to defaults")
 }
+
+// Helper functions
 
 // convertActiveRealms converts a Terraform List to a slice of strings
 func (r *securityRealmsResource) convertActiveRealms(active types.List) ([]string, error) {
@@ -326,4 +302,54 @@ func (r *securityRealmsResource) convertActiveRealms(active types.List) ([]strin
 		}
 	}
 	return activeRealms, nil
+}
+
+// handleReadError processes errors from the GetActiveRealms API call
+func (r *securityRealmsResource) handleReadError(ctx context.Context, resp *resource.ReadResponse, httpResponse *http.Response, err error) {
+	if httpResponse != nil && httpResponse.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
+		resp.Diagnostics.AddWarning(
+			"Security Realms Configuration does not exist",
+			fmt.Sprintf("Unable to read Security Realms Configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		)
+		return
+	}
+
+	errorMsg := "Unable to read Security Realms Configuration"
+	if httpResponse != nil {
+		errorMsg = fmt.Sprintf("%s: %s", errorMsg, httpResponse.Status)
+	}
+	resp.Diagnostics.AddError(
+		"Error Reading Security Realms Configuration",
+		fmt.Sprintf("%s: %s", errorMsg, err),
+	)
+}
+
+// updateStateFromAPIResponse converts API response to Terraform types and updates state
+func (r *securityRealmsResource) updateStateFromAPIResponse(apiResponse []string, state *model.SecurityRealmsModel, resp *resource.ReadResponse) {
+	if apiResponse == nil {
+		return
+	}
+
+	activeElements := make([]attr.Value, len(apiResponse))
+	for i, realm := range apiResponse {
+		activeElements[i] = types.StringValue(realm)
+	}
+
+	activeList, diags := types.ListValue(types.StringType, activeElements)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state.Active = activeList
+}
+
+// finalizeReadState ensures ID is set and saves the final state
+func (r *securityRealmsResource) finalizeReadState(ctx context.Context, state *model.SecurityRealmsModel, resp *resource.ReadResponse) {
+	if state.ID.IsNull() || state.ID.IsUnknown() {
+		state.ID = types.StringValue("security_realms")
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
