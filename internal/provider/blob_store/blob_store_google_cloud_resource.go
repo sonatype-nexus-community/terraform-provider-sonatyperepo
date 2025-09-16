@@ -189,67 +189,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
-	bucketConfig := sonatyperepo.GoogleCloudBlobStoreApiBucketConfiguration{
-		Bucket: sonatyperepo.GoogleCloudBlobStoreApiBucket{
-			Name: *plan.BucketConfiguration.Bucket.Name.ValueStringPointer(),
-		},
-	}
-
-	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-		bucketConfig.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
-	}
-	if !plan.BucketConfiguration.Bucket.Region.IsNull() {
-		bucketConfig.Bucket.Region = plan.BucketConfiguration.Bucket.Region.ValueStringPointer()
-	}
-
-	var auth *sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication
-	if plan.BucketConfiguration.Authentication != nil && !plan.BucketConfiguration.Authentication.AuthenticationMethod.IsNull() {
-		auth = &sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication{
-			AuthenticationMethod: plan.BucketConfiguration.Authentication.AuthenticationMethod.ValueString(),
-		}
-		if !plan.BucketConfiguration.Authentication.AccountKey.IsNull() {
-			auth.AccountKey = plan.BucketConfiguration.Authentication.AccountKey.ValueStringPointer()
-		}
-	}
-
-	var encryption *sonatyperepo.GoogleCloudBlobStoreApiEncryption
-	if plan.BucketConfiguration.Encryption != nil && (!plan.BucketConfiguration.Encryption.EncryptionType.IsNull() || !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull()) {
-		encryption = &sonatyperepo.GoogleCloudBlobStoreApiEncryption{}
-		if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
-			encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
-			encryption.EncryptionKey = plan.BucketConfiguration.Encryption.EncryptionKey.ValueStringPointer()
-		}
-	}
-
-	requestPayload := sonatyperepo.GoogleCloudBlobstoreApiModel{
-		Name:                *plan.Name.ValueStringPointer(),
-		Type:                sonatyperepo.PtrString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
-		BucketConfiguration: bucketConfig,
-	}
-
-	if auth != nil {
-		requestPayload.BucketConfiguration.BucketSecurity = auth
-		tflog.Info(ctx, fmt.Sprintf("Authentication configured: %s", auth.AuthenticationMethod))
-	}
-
-	if encryption != nil {
-		requestPayload.BucketConfiguration.Encryption = encryption
-		encType := ""
-		if encryption.EncryptionType != nil {
-			encType = *encryption.EncryptionType
-		}
-		tflog.Info(ctx, fmt.Sprintf("Encryption configured: type=%s", encType))
-	}
-
-	if plan.SoftQuota != nil {
-		requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
-			Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
-			Type:  plan.SoftQuota.Type.ValueStringPointer(),
-		}
-	}
-
+	requestPayload := r.buildRequestPayload(ctx, &plan, "create")
 	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore1(ctx).Body(requestPayload).Execute()
 
 	if err != nil {
@@ -264,6 +204,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	if apiResponse.StatusCode == http.StatusCreated {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		plan.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
+		
 		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
 			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
 		}
@@ -301,10 +242,11 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	state.Name = types.StringValue(state.Name.ValueString())
+	// Set basic fields
 	state.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
 	state.BucketConfiguration.Bucket.Name = types.StringValue(apiResponse.BucketConfiguration.Bucket.Name)
 	
+	// Update bucket configuration
 	if apiResponse.BucketConfiguration.Bucket.Prefix != nil {
 		state.BucketConfiguration.Bucket.Prefix = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Prefix)
 	}
@@ -327,6 +269,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 		state.BucketConfiguration.Encryption = nil
 	}
 
+	// Handle soft quota configuration
 	if apiResponse.SoftQuota != nil {
 		state.SoftQuota = &model.BlobStoreSoftQuota{
 			Type:  types.StringValue(*apiResponse.SoftQuota.Type),
@@ -350,67 +293,7 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
-	bucketConfig := sonatyperepo.GoogleCloudBlobStoreApiBucketConfiguration{
-		Bucket: sonatyperepo.GoogleCloudBlobStoreApiBucket{
-			Name: *plan.BucketConfiguration.Bucket.Name.ValueStringPointer(),
-		},
-	}
-
-	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-		bucketConfig.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
-	}
-	if !plan.BucketConfiguration.Bucket.Region.IsNull() {
-		bucketConfig.Bucket.Region = plan.BucketConfiguration.Bucket.Region.ValueStringPointer()
-	}
-
-	var auth *sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication
-	if plan.BucketConfiguration.Authentication != nil && !plan.BucketConfiguration.Authentication.AuthenticationMethod.IsNull() {
-		auth = &sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication{
-			AuthenticationMethod: plan.BucketConfiguration.Authentication.AuthenticationMethod.ValueString(),
-		}
-		if !plan.BucketConfiguration.Authentication.AccountKey.IsNull() {
-			auth.AccountKey = plan.BucketConfiguration.Authentication.AccountKey.ValueStringPointer()
-		}
-	}
-
-	var encryption *sonatyperepo.GoogleCloudBlobStoreApiEncryption
-	if plan.BucketConfiguration.Encryption != nil && (!plan.BucketConfiguration.Encryption.EncryptionType.IsNull() || !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull()) {
-		encryption = &sonatyperepo.GoogleCloudBlobStoreApiEncryption{}
-		if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
-			encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
-			encryption.EncryptionKey = plan.BucketConfiguration.Encryption.EncryptionKey.ValueStringPointer()
-		}
-	}
-
-	requestPayload := sonatyperepo.GoogleCloudBlobstoreApiModel{
-		Name:                *plan.Name.ValueStringPointer(),
-		Type:                sonatyperepo.PtrString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
-		BucketConfiguration: bucketConfig,
-	}
-
-	if auth != nil {
-		requestPayload.BucketConfiguration.BucketSecurity = auth
-		tflog.Info(ctx, fmt.Sprintf("Authentication configured for update: %s", auth.AuthenticationMethod))
-	}
-
-	if encryption != nil {
-		requestPayload.BucketConfiguration.Encryption = encryption
-		encType := ""
-		if encryption.EncryptionType != nil {
-			encType = *encryption.EncryptionType
-		}
-		tflog.Info(ctx, fmt.Sprintf("Encryption configured for update: type=%s", encType))
-	}
-
-	if plan.SoftQuota != nil {
-		requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
-			Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
-			Type:  plan.SoftQuota.Type.ValueStringPointer(),
-		}
-	}
-
+	requestPayload := r.buildRequestPayload(ctx, &plan, "update")
 	apiResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore1(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
 
 	if err != nil {
@@ -445,4 +328,109 @@ func (r *blobStoreGoogleCloudResource) Delete(ctx context.Context, req resource.
 
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
+}
+
+// ====================== SHARED HELPER METHODS ======================
+
+// buildRequestPayload constructs the API request payload for both create and update operations
+func (r *blobStoreGoogleCloudResource) buildRequestPayload(ctx context.Context, plan *model.BlobStoreGoogleCloudModel, operation string) sonatyperepo.GoogleCloudBlobstoreApiModel {
+	bucketConfig := r.buildBucketConfiguration(plan)
+	
+	requestPayload := sonatyperepo.GoogleCloudBlobstoreApiModel{
+		Name:                *plan.Name.ValueStringPointer(),
+		Type:                sonatyperepo.PtrString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
+		BucketConfiguration: bucketConfig,
+	}
+
+	r.configureBucketSecurity(ctx, plan, &requestPayload, operation)
+	r.configureBucketEncryption(ctx, plan, &requestPayload, operation)
+	r.configureSoftQuota(plan, &requestPayload)
+
+	return requestPayload
+}
+
+// buildBucketConfiguration creates the basic bucket configuration (shared between Create/Update)
+func (r *blobStoreGoogleCloudResource) buildBucketConfiguration(plan *model.BlobStoreGoogleCloudModel) sonatyperepo.GoogleCloudBlobStoreApiBucketConfiguration {
+	bucketConfig := sonatyperepo.GoogleCloudBlobStoreApiBucketConfiguration{
+		Bucket: sonatyperepo.GoogleCloudBlobStoreApiBucket{
+			Name: *plan.BucketConfiguration.Bucket.Name.ValueStringPointer(),
+		},
+	}
+
+	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
+		bucketConfig.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
+	}
+	if !plan.BucketConfiguration.Bucket.Region.IsNull() {
+		bucketConfig.Bucket.Region = plan.BucketConfiguration.Bucket.Region.ValueStringPointer()
+	}
+
+	return bucketConfig
+}
+
+// configureBucketSecurity sets up authentication configuration (shared between Create/Update)
+func (r *blobStoreGoogleCloudResource) configureBucketSecurity(ctx context.Context, plan *model.BlobStoreGoogleCloudModel, requestPayload *sonatyperepo.GoogleCloudBlobstoreApiModel, operation string) {
+	if plan.BucketConfiguration.Authentication == nil || plan.BucketConfiguration.Authentication.AuthenticationMethod.IsNull() {
+		return
+	}
+
+	auth := &sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication{
+		AuthenticationMethod: plan.BucketConfiguration.Authentication.AuthenticationMethod.ValueString(),
+	}
+	
+	if !plan.BucketConfiguration.Authentication.AccountKey.IsNull() {
+		auth.AccountKey = plan.BucketConfiguration.Authentication.AccountKey.ValueStringPointer()
+	}
+
+	requestPayload.BucketConfiguration.BucketSecurity = auth
+	
+	logMsg := fmt.Sprintf("Authentication configured: %s", auth.AuthenticationMethod)
+	if operation == "update" {
+		logMsg = fmt.Sprintf("Authentication configured for update: %s", auth.AuthenticationMethod)
+	}
+	tflog.Info(ctx, logMsg)
+}
+
+// configureBucketEncryption sets up encryption configuration (shared between Create/Update)
+func (r *blobStoreGoogleCloudResource) configureBucketEncryption(ctx context.Context, plan *model.BlobStoreGoogleCloudModel, requestPayload *sonatyperepo.GoogleCloudBlobstoreApiModel, operation string) {
+	if plan.BucketConfiguration.Encryption == nil {
+		return
+	}
+	
+	if plan.BucketConfiguration.Encryption.EncryptionType.IsNull() && plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
+		return
+	}
+
+	encryption := &sonatyperepo.GoogleCloudBlobStoreApiEncryption{}
+	
+	if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
+		encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
+	}
+	if !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
+		encryption.EncryptionKey = plan.BucketConfiguration.Encryption.EncryptionKey.ValueStringPointer()
+	}
+
+	requestPayload.BucketConfiguration.Encryption = encryption
+	
+	encType := ""
+	if encryption.EncryptionType != nil {
+		encType = *encryption.EncryptionType
+	}
+	
+	logMsg := fmt.Sprintf("Encryption configured: type=%s", encType)
+	if operation == "update" {
+		logMsg = fmt.Sprintf("Encryption configured for update: type=%s", encType)
+	}
+	tflog.Info(ctx, logMsg)
+}
+
+// configureSoftQuota sets up soft quota configuration (shared between Create/Update)
+func (r *blobStoreGoogleCloudResource) configureSoftQuota(plan *model.BlobStoreGoogleCloudModel, requestPayload *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	if plan.SoftQuota == nil {
+		return
+	}
+
+	requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
+		Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
+		Type:  plan.SoftQuota.Type.ValueStringPointer(),
+	}
 }
