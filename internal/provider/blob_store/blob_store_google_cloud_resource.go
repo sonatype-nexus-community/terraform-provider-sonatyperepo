@@ -254,30 +254,9 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 		state.BucketConfiguration.Bucket.Region = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Region)
 	}
 
-	// Handle encryption configuration from API response
-	if apiResponse.BucketConfiguration.Encryption != nil {
-		if state.BucketConfiguration.Encryption == nil {
-			state.BucketConfiguration.Encryption = &model.BlobStoreGoogleCloudEncryption{}
-		}
-		if apiResponse.BucketConfiguration.Encryption.EncryptionType != nil {
-			state.BucketConfiguration.Encryption.EncryptionType = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionType)
-		}
-		if apiResponse.BucketConfiguration.Encryption.EncryptionKey != nil {
-			state.BucketConfiguration.Encryption.EncryptionKey = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionKey)
-		}
-	} else {
-		state.BucketConfiguration.Encryption = nil
-	}
-
-	// Handle soft quota configuration
-	if apiResponse.SoftQuota != nil {
-		state.SoftQuota = &model.BlobStoreSoftQuota{
-			Type:  types.StringValue(*apiResponse.SoftQuota.Type),
-			Limit: types.Int64Value(*apiResponse.SoftQuota.Limit),
-		}
-	} else {
-		state.SoftQuota = nil
-	}
+	// Handle encryption and soft quota configuration
+	r.setEncryptionFromResponse(&state, apiResponse)
+	r.setSoftQuotaFromResponse(&state, apiResponse)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -330,7 +309,7 @@ func (r *blobStoreGoogleCloudResource) Delete(ctx context.Context, req resource.
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
 }
 
-// ====================== SHARED HELPER METHODS ======================
+// ====================== HELPER METHODS ======================
 
 // buildRequestPayload constructs the API request payload for both create and update operations
 func (r *blobStoreGoogleCloudResource) buildRequestPayload(ctx context.Context, plan *model.BlobStoreGoogleCloudModel, operation string) sonatyperepo.GoogleCloudBlobstoreApiModel {
@@ -432,5 +411,37 @@ func (r *blobStoreGoogleCloudResource) configureSoftQuota(plan *model.BlobStoreG
 	requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
 		Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
 		Type:  plan.SoftQuota.Type.ValueStringPointer(),
+	}
+}
+
+// setEncryptionFromResponse handles encryption configuration from API response
+func (r *blobStoreGoogleCloudResource) setEncryptionFromResponse(state *model.BlobStoreGoogleCloudModel, apiResponse *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	if apiResponse.BucketConfiguration.Encryption == nil {
+		state.BucketConfiguration.Encryption = nil
+		return
+	}
+
+	if state.BucketConfiguration.Encryption == nil {
+		state.BucketConfiguration.Encryption = &model.BlobStoreGoogleCloudEncryption{}
+	}
+	
+	if apiResponse.BucketConfiguration.Encryption.EncryptionType != nil {
+		state.BucketConfiguration.Encryption.EncryptionType = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionType)
+	}
+	if apiResponse.BucketConfiguration.Encryption.EncryptionKey != nil {
+		state.BucketConfiguration.Encryption.EncryptionKey = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionKey)
+	}
+}
+
+// setSoftQuotaFromResponse handles soft quota configuration from API response
+func (r *blobStoreGoogleCloudResource) setSoftQuotaFromResponse(state *model.BlobStoreGoogleCloudModel, apiResponse *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	if apiResponse.SoftQuota == nil {
+		state.SoftQuota = nil
+		return
+	}
+
+	state.SoftQuota = &model.BlobStoreSoftQuota{
+		Type:  types.StringValue(*apiResponse.SoftQuota.Type),
+		Limit: types.Int64Value(*apiResponse.SoftQuota.Limit),
 	}
 }
