@@ -38,6 +38,11 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+const (
+	attributeNameValidationError = "must be a valid attribute name"
+	stateDataErrorMessage       = "Getting state data has errors: %v"
+)
+
 // securitySamlResource is the resource implementation.
 type securitySamlResource struct {
 	common.BaseResource
@@ -88,7 +93,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.RegexMatches(
 						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						"must be a valid attribute name",
+						attributeNameValidationError,
 					),
 				},
 			},
@@ -99,7 +104,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.RegexMatches(
 						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						"must be a valid attribute name",
+						attributeNameValidationError,
 					),
 				},
 			},
@@ -110,7 +115,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.RegexMatches(
 						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						"must be a valid attribute name",
+						attributeNameValidationError,
 					),
 				},
 			},
@@ -121,7 +126,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.RegexMatches(
 						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						"must be a valid attribute name",
+						attributeNameValidationError,
 					),
 				},
 			},
@@ -132,7 +137,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.RegexMatches(
 						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						"must be a valid attribute name",
+						attributeNameValidationError,
 					),
 				},
 			},
@@ -218,7 +223,7 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 	var state model.SecuritySamlModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(stateDataErrorMessage, resp.Diagnostics.Errors()))
 		return
 	}
 
@@ -274,7 +279,7 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(stateDataErrorMessage, resp.Diagnostics.Errors()))
 		return
 	}
 
@@ -333,7 +338,7 @@ func (r *securitySamlResource) Delete(ctx context.Context, req resource.DeleteRe
 	var state model.SecuritySamlModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf(stateDataErrorMessage, resp.Diagnostics.Errors()))
 		return
 	}
 

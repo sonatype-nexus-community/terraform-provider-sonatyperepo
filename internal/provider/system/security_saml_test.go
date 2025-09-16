@@ -31,7 +31,7 @@ const (
 	securitySamlResourceType = "sonatyperepo_security_saml"
 )
 
-func TestAccSecuritySamlResource_basic(t *testing.T) {
+func TestAccSecuritySamlResourceBasic(t *testing.T) {
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -57,7 +57,7 @@ func TestAccSecuritySamlResource_basic(t *testing.T) {
 	})
 }
 
-func TestAccSecuritySamlResource_update(t *testing.T) {
+func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -91,7 +91,7 @@ func TestAccSecuritySamlResource_update(t *testing.T) {
 	})
 }
 
-func TestAccSecuritySamlResource_minimal(t *testing.T) {
+func TestAccSecuritySamlResourceMinimal(t *testing.T) {
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -109,7 +109,7 @@ func TestAccSecuritySamlResource_minimal(t *testing.T) {
 	})
 }
 
-func testAccSecuritySamlResourceConfig_basic(randomSuffix string) string {
+func testAccSecuritySamlResourceConfigBasic(randomSuffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "test" {
   idp_metadata = %s
@@ -125,7 +125,7 @@ resource "%s" "test" {
 `, securitySamlResourceType, testSamlMetadata(), randomSuffix)
 }
 
-func testAccSecuritySamlResourceConfig_updated(randomSuffix string) string {
+func testAccSecuritySamlResourceConfigUpdated(randomSuffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "test" {
   idp_metadata = %s
@@ -141,7 +141,7 @@ resource "%s" "test" {
 `, securitySamlResourceType, testSamlMetadata(), randomSuffix)
 }
 
-func testAccSecuritySamlResourceConfig_minimal(randomSuffix string) string {
+func testAccSecuritySamlResourceConfigMinimal(randomSuffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "test" {
   idp_metadata = %s
