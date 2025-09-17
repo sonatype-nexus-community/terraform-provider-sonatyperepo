@@ -29,6 +29,15 @@ import (
 const (
 	resourceTypeSecurityRealms = "sonatyperepo_security_realms"
 	resourceNameSecurityRealms = "sonatyperepo_security_realms.test"
+	
+	// Test attribute paths
+	activeCount = "active.#"
+	activeIndex0 = "active.0"
+	activeIndex1 = "active.1"
+	activeIndex2 = "active.2"
+	activeIndex3 = "active.3"
+	activeIndex4 = "active.4"
+	idAttr = "id"
 )
 
 func TestAccSecurityRealmsResource(t *testing.T) {
@@ -42,9 +51,9 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm"}),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify single realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.#", "1"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.0", "NexusAuthenticatingRealm"),
-						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, "id"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "1"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
 				// Update and Read testing - multiple realms
@@ -52,10 +61,10 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 					Config: getSecurityRealmsResourceConfig(randomString, []string{"DockerToken", "NexusAuthenticatingRealm"}),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify multiple realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.#", "2"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.0", "DockerToken"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.1", "NexusAuthenticatingRealm"),
-						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, "id"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "2"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "DockerToken"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
 				// Update and Read testing - reorder realms
@@ -63,10 +72,10 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm","DockerToken"}),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify reordered realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.#", "2"),						
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.0", "NexusAuthenticatingRealm"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.1", "DockerToken"),
-						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, "id"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "2"),						
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "DockerToken"),
+						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
 				// Delete testing automatically occurs in TestCase
@@ -75,7 +84,7 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 	}
 }
 
-func TestAccSecurityRealmsResource_MinimalConfig(t *testing.T) {
+func TestAccSecurityRealmsResourceMinimalConfig(t *testing.T) {
 	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resource.Test(t, resource.TestCase{
@@ -86,9 +95,9 @@ func TestAccSecurityRealmsResource_MinimalConfig(t *testing.T) {
 					Config: getSecurityRealmsMinimalResourceConfig(randomString),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify minimal realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.#", "1"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.0", "NexusAuthenticatingRealm"),
-						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, "id"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "1"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
 				// Delete testing automatically occurs in TestCase
@@ -97,7 +106,7 @@ func TestAccSecurityRealmsResource_MinimalConfig(t *testing.T) {
 	}
 }
 
-func TestAccSecurityRealmsResource_CommonRealms(t *testing.T) {
+func TestAccSecurityRealmsResourceCommonRealms(t *testing.T) {
 	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resource.Test(t, resource.TestCase{
@@ -114,13 +123,13 @@ func TestAccSecurityRealmsResource_CommonRealms(t *testing.T) {
 					}),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify common enterprise realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.#", "5"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.0", "NexusAuthenticatingRealm"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.1", "LdapRealm"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.2", "DockerToken"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.3", "NpmToken"),
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, "active.4", "NuGetApiKey"),
-						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, "id"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "5"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "LdapRealm"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex2, "DockerToken"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex3, "NpmToken"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex4, "NuGetApiKey"),
+						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
 				// Delete testing automatically occurs in TestCase
