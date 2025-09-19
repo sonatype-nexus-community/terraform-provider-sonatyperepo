@@ -2,6 +2,10 @@
 
 ## X.Y.Z (UNRELEASED)
 
+FEATURES:
+
+* **New Resource:** `sonatyperepo_cleanup_policy` [GH-58]
+
 ## 0.4.0 September 3, 2025
 
 FEATURES:
