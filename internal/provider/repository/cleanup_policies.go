@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -29,6 +30,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -63,6 +66,13 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 255),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
+						"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
+					),
 				},
 			},
 			"notes": schema.StringAttribute{
@@ -328,8 +338,8 @@ func buildRequestPayload(plan model.CleanupPolicyModel) sonatyperepo.CleanupPoli
 	}
 
 	if !plan.Notes.IsNull() {
-		notes := plan.Notes.ValueString()
-		requestPayload.Notes = &notes
+		notes := plan.Notes.ValueStringPointer()
+		requestPayload.Notes = notes
 	}
 
 	setCriteriaFields(&requestPayload, plan.Criteria)
