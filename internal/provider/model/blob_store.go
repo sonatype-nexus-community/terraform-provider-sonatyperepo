@@ -93,3 +93,33 @@ type BlobStoreS3AdvancedBucketConnectionModel struct {
 	ForcePathStyle        types.Bool   `tfsdk:"force_path_style"`
 	MaxConnectionPoolSize types.Int64  `tfsdk:"max_connection_pool_size"`
 }
+
+type BlobStoreGoogleCloudModel struct {
+	Name                types.String                              `tfsdk:"name"`
+	Type                types.String                              `tfsdk:"type"`
+	BucketConfiguration BlobStoreGoogleCloudBucketConfiguration   `tfsdk:"bucket_configuration"`
+	SoftQuota           *BlobStoreSoftQuota                       `tfsdk:"soft_quota"`
+	LastUpdated         types.String                              `tfsdk:"last_updated"`
+}
+
+type BlobStoreGoogleCloudBucketConfiguration struct {
+	Bucket         BlobStoreGoogleCloudBucket         `tfsdk:"bucket"`
+	Authentication *BlobStoreGoogleCloudAuthentication `tfsdk:"authentication"`
+	Encryption     *BlobStoreGoogleCloudEncryption     `tfsdk:"encryption"`
+}
+
+type BlobStoreGoogleCloudBucket struct {
+	Name   types.String `tfsdk:"name"`
+	Prefix types.String `tfsdk:"prefix"`
+	Region types.String `tfsdk:"region"`
+}
+
+type BlobStoreGoogleCloudAuthentication struct {
+	AuthenticationMethod types.String `tfsdk:"authentication_method"`
+	AccountKey           types.String `tfsdk:"account_key"`
+}
+
+type BlobStoreGoogleCloudEncryption struct {
+	EncryptionType types.String `tfsdk:"encryption_type"`
+	EncryptionKey  types.String `tfsdk:"encryption_key"`
+}
