@@ -27,9 +27,5 @@ Configure Sonatype Nexus Repository Security SAML.
 - `first_name_attribute` (String) IdP field mappings for user's given name
 - `groups_attribute` (String) IdP field mappings for user's groups
 - `last_name_attribute` (String) IdP field mappings for user's family name
-- `validate_assertion_signature` (Boolean) By default, if a signing key is found in the IdP metadata, then NXRM will attempt to validate signatures on the assertions.
+- `validate_assertion_signature` (Boolean) By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.
 - `validate_response_signature` (Boolean) Validate SAML response signature
-
-### Read-Only
-
-- `id` (String) Resource identifier
