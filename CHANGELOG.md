@@ -5,6 +5,7 @@
 FEATURES:
 
 * **New Resource:** `sonatyperepo_cleanup_policy` [GH-58]
+* **New Resource:** `sonatyperepo_security_saml` [GH-63]
 
 ## 0.4.0 September 3, 2025
 
