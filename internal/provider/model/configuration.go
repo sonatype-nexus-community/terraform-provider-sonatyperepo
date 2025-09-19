@@ -68,15 +68,15 @@ type SecurityRealmsModel struct {
 }
 
 type SecuritySamlModel struct {
-	IdpMetadata      types.String   `tfsdk:"idp_metadata"`
+	IdpMetadata                types.String `tfsdk:"idp_metadata"`
 	UsernameAttribute          types.String `tfsdk:"username_attribute"`
-	FirstNameAttribute          types.String `tfsdk:"first_name_attribute"`
+	FirstNameAttribute         types.String `tfsdk:"first_name_attribute"`
 	LastNameAttribute          types.String `tfsdk:"last_name_attribute"`
-	EmailAttribute          types.String `tfsdk:"email_attribute"`
-	GroupsAttribute          types.String `tfsdk:"groups_attribute"`
-	ValidateResponseSignature          types.Bool `tfsdk:"validate_response_signature"`
-	ValidateAssertionSignature          types.Bool `tfsdk:"validate_assertion_signature"`
-	EntityId          types.String `tfsdk:"entity_id"`
+	EmailAttribute             types.String `tfsdk:"email_attribute"`
+	GroupsAttribute            types.String `tfsdk:"groups_attribute"`
+	ValidateResponseSignature  types.Bool   `tfsdk:"validate_response_signature"`
+	ValidateAssertionSignature types.Bool   `tfsdk:"validate_assertion_signature"`
+	EntityId                   types.String `tfsdk:"entity_id"`
 }
 
 func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
