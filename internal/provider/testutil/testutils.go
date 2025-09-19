@@ -32,3 +32,16 @@ func SkipIfNxrmVersionEq(t *testing.T, v *common.SystemVersion) {
 		t.Skipf("NXRM Version is == %s - skipping", v.String())
 	}
 }
+
+func SkipIfNxrmVersionInRange(t *testing.T, low *common.SystemVersion, high *common.SystemVersion) {
+	t.Helper()
+
+	if CurrenTestNxrmVersion.Major >= low.Major &&
+		CurrenTestNxrmVersion.Minor >= low.Minor &&
+		CurrenTestNxrmVersion.Patch >= low.Patch &&
+		CurrenTestNxrmVersion.Major <= high.Major &&
+		CurrenTestNxrmVersion.Minor <= high.Minor &&
+		CurrenTestNxrmVersion.Patch <= high.Patch {
+		t.Skipf("NXRM Version within range %s and %s - skipping", low.String(), high.String())
+	}
+}
