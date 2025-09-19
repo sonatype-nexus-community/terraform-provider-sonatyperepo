@@ -101,7 +101,7 @@ func TestAccBlobStoreGoogleCloudResourceSchema(t *testing.T) {
 
 func getTestAccBlobStoreGoogleCloudResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_google_cloud" "gc_minimal" {
+resource "sonatyperepo_blob_store_gcs" "gc_minimal" {
   name = "test-gc-minimal-%s"
   
   bucket_configuration {
@@ -127,7 +127,7 @@ resource "sonatyperepo_blob_store_google_cloud" "gc_minimal" {
 
 func getTestAccBlobStoreGoogleCloudResourceComplete(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_google_cloud" "gc_complete" {
+resource "sonatyperepo_blob_store_gcs" "gc_complete" {
   name = "test-gc-complete-%s"
   
   bucket_configuration {
@@ -162,7 +162,7 @@ resource "sonatyperepo_blob_store_google_cloud" "gc_complete" {
 
 func getTestAccBlobStoreGoogleCloudResourceInvalidBucket() string {
 	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_google_cloud" "gc_invalid" {
+resource "sonatyperepo_blob_store_gcs" "gc_invalid" {
   name = "test-gc-invalid"
   
   bucket_configuration {
@@ -184,7 +184,7 @@ resource "sonatyperepo_blob_store_google_cloud" "gc_invalid" {
 
 func getTestAccBlobStoreGoogleCloudResourceMissingName() string {
 	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_google_cloud" "gc_missing" {
+resource "sonatyperepo_blob_store_gcs" "gc_missing" {
   bucket_configuration {
     bucket {
       name = "valid-bucket-name"
@@ -204,7 +204,7 @@ resource "sonatyperepo_blob_store_google_cloud" "gc_missing" {
 
 func getTestAccBlobStoreGoogleCloudResourceInvalidSoftQuota() string {
 	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_google_cloud" "gc_invalid_quota" {
+resource "sonatyperepo_blob_store_gcs" "gc_invalid_quota" {
   name = "test-gc-invalid-quota"
   
   bucket_configuration {
@@ -233,8 +233,8 @@ resource "sonatyperepo_blob_store_google_cloud" "gc_invalid_quota" {
 
 func TestBlobStoreGoogleCloudResourceName(t *testing.T) {
 	// Test resource type name format
-	expectedPattern := `^sonatyperepo_blob_store_google_cloud$`
-	resourceTypeName := "sonatyperepo_blob_store_google_cloud"
+	expectedPattern := `^sonatyperepo_blob_store_gcs$`
+	resourceTypeName := "sonatyperepo_blob_store_gcs"
 	
 	matched, err := regexp.MatchString(expectedPattern, resourceTypeName)
 	if err != nil {

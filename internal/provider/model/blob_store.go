@@ -98,8 +98,8 @@ type BlobStoreGoogleCloudModel struct {
 	Name                types.String                              `tfsdk:"name"`
 	Type                types.String                              `tfsdk:"type"`
 	BucketConfiguration BlobStoreGoogleCloudBucketConfiguration   `tfsdk:"bucket_configuration"`
-	SoftQuota          *BlobStoreSoftQuota                        `tfsdk:"soft_quota"`
-	LastUpdated        types.String                               `tfsdk:"last_updated"`
+	SoftQuota           *BlobStoreSoftQuota                       `tfsdk:"soft_quota"`
+	LastUpdated         types.String                              `tfsdk:"last_updated"`
 }
 
 type BlobStoreGoogleCloudBucketConfiguration struct {

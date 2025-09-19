@@ -52,7 +52,7 @@ Optional:
 
 Required:
 
-- `name` (String) The name of the Google Cloud Storage bucket
+- `name` (String) The name of the Google Cloud Storage bucket. ([Google requirements](#https://cloud.google.com/storage/docs/buckets))
 
 Optional:
 

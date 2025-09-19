@@ -62,8 +62,8 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]*[a-z0-9])?$`),
-						"Name must contain only lowercase letters, numbers, hyphens, and underscores. Must start and end with a letter or number.",
+						regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]*$`),
+						"Name must contain only letters, digits, underscores(_), hyphens(-), and dots(.). May not start with underscore or dot.",
 					),
 				},
 			},
