@@ -115,7 +115,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional: true,
 			},
 			"validate_assertion_signature": schema.BoolAttribute{
-				Description: "By default, if a signing key is found in the IdP metadata, then NXRM will attempt to validate signatures on the assertions.",
+				Description: "By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.",
 				Optional: true,
 			},
 			"entity_id": schema.StringAttribute{
