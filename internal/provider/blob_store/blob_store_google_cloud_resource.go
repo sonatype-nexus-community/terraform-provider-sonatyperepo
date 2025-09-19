@@ -49,7 +49,7 @@ func NewBlobStoreGoogleCloudResource() resource.Resource {
 }
 
 func (r *blobStoreGoogleCloudResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_blob_store_google_cloud"
+	resp.TypeName = req.ProviderTypeName + "_blob_store_gcs"
 }
 
 func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -62,8 +62,8 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$`),
-						"Name must contain only letters, numbers, hyphens, and underscores. Must start and end with a letter or number.",
+						regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]*[a-z0-9])?$`),
+						"Name must contain only lowercase letters, numbers, hyphens, and underscores. Must start and end with a letter or number.",
 					),
 				},
 			},
