@@ -21,6 +21,8 @@ import (
 	"os"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"testing"
+
+	semver "github.com/hashicorp/go-version"
 )
 
 var CurrenTestNxrmVersion = common.ParseServerHeaderToVersion(fmt.Sprintf("Nexus/%s (PRO)", os.Getenv("NXRM_VERSION")))
@@ -36,12 +38,37 @@ func SkipIfNxrmVersionEq(t *testing.T, v *common.SystemVersion) {
 func SkipIfNxrmVersionInRange(t *testing.T, low *common.SystemVersion, high *common.SystemVersion) {
 	t.Helper()
 
-	if CurrenTestNxrmVersion.Major >= low.Major &&
-		CurrenTestNxrmVersion.Minor >= low.Minor &&
-		CurrenTestNxrmVersion.Patch >= low.Patch &&
-		CurrenTestNxrmVersion.Major <= high.Major &&
-		CurrenTestNxrmVersion.Minor <= high.Minor &&
-		CurrenTestNxrmVersion.Patch <= high.Patch {
+	inRange, err := VersionInRange(&CurrenTestNxrmVersion, low, high)
+
+	if err != nil {
+		t.Errorf("Error comparing versions: %v", err)
+		t.FailNow()
+	}
+
+	if inRange {
 		t.Skipf("NXRM Version within range %s and %s - skipping", low.String(), high.String())
 	}
+}
+
+func VersionInRange(ver *common.SystemVersion, low *common.SystemVersion, high *common.SystemVersion) (bool, error) {
+	thisVersion, err := semver.NewVersion(ver.SemVerString())
+	if err != nil {
+		return false, err
+	}
+
+	lowVersion, err := semver.NewVersion(low.SemVerString())
+	if err != nil {
+		return false, err
+	}
+
+	highVersion, err := semver.NewVersion(high.SemVerString())
+	if err != nil {
+		return false, err
+	}
+
+	if lowVersion.LessThanOrEqual(thisVersion) && highVersion.GreaterThanOrEqual(thisVersion) {
+		return true, nil
+	}
+
+	return false, nil
 }

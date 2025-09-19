@@ -113,6 +113,10 @@ func (s *SystemVersion) OlderThan(major, minor, patch, build int) bool {
 	return !s.NewerThan(major, minor, patch, build)
 }
 
+func (s *SystemVersion) SemVerString() string {
+	return fmt.Sprintf("%d.%d.%d-%d", s.Major, s.Minor, s.Patch, s.Build)
+}
+
 func (s *SystemVersion) String() string {
 	return fmt.Sprintf("%d.%d.%d-%d (PRO=%t)", s.Major, s.Minor, s.Patch, s.Build, s.ProVersion)
 }

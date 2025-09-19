@@ -49,7 +49,7 @@ func TestAccRepositoryCargoResource(t *testing.T) {
 			}, &common.SystemVersion{
 				Major: 3,
 				Minor: 84,
-				Patch: 1,
+				Patch: 99,
 			})
 		},
 		Steps: []resource.TestStep{
