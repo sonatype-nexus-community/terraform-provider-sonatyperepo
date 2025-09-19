@@ -39,7 +39,7 @@ func TestAccSecuritySamlResourceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccSecuritySamlResourceConfig_basic(randomSuffix),
+				Config: testAccSecuritySamlResourceConfigBasic(randomSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "first_name_attribute", "firstName"),
@@ -49,7 +49,6 @@ func TestAccSecuritySamlResourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_assertion_signature", "false"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
-					resource.TestCheckResourceAttrSet(securitySamlResourceName, "id"),
 					resource.TestCheckResourceAttrSet(securitySamlResourceName, "idp_metadata"),
 				),
 			},
@@ -65,7 +64,7 @@ func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create initial resource
 			{
-				Config: testAccSecuritySamlResourceConfig_basic(randomSuffix),
+				Config: testAccSecuritySamlResourceConfigBasic(randomSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
@@ -74,7 +73,7 @@ func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 			},
 			// Update resource
 			{
-				Config: testAccSecuritySamlResourceConfig_updated(randomSuffix),
+				Config: testAccSecuritySamlResourceConfigUpdated(randomSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "updatedUsername"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "first_name_attribute", "updatedFirstName"),
@@ -84,7 +83,6 @@ func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "false"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_assertion_signature", "true"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("updated-entity-%s", randomSuffix)),
-					resource.TestCheckResourceAttrSet(securitySamlResourceName, "id"),
 				),
 			},
 		},
@@ -98,10 +96,9 @@ func TestAccSecuritySamlResourceMinimal(t *testing.T) {
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecuritySamlResourceConfig_minimal(randomSuffix),
+				Config: testAccSecuritySamlResourceConfigMinimal(randomSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
-					resource.TestCheckResourceAttrSet(securitySamlResourceName, "id"),
 					resource.TestCheckResourceAttrSet(securitySamlResourceName, "idp_metadata"),
 				),
 			},

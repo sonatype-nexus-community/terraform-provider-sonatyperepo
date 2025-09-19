@@ -24,12 +24,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -39,8 +36,7 @@ import (
 )
 
 const (
-	attributeNameValidationError = "must be a valid attribute name"
-	stateDataErrorMessage       = "Getting state data has errors: %v"
+	stateDataErrorMessage = "Getting state data has errors: %v"
 )
 
 // securitySamlResource is the resource implementation.
@@ -68,13 +64,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 	resp.Schema = schema.Schema{
 		Description: "Configure Sonatype Nexus Repository Security SAML.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Resource identifier",
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"idp_metadata": schema.StringAttribute{
 				Description: "SAML Identity Provider Metadata XML",
 				Required:    true,
@@ -91,10 +80,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						attributeNameValidationError,
-					),
 				},
 			},
 			"first_name_attribute": schema.StringAttribute{
@@ -102,10 +87,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						attributeNameValidationError,
-					),
 				},
 			},
 			"last_name_attribute": schema.StringAttribute{
@@ -113,10 +94,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						attributeNameValidationError,
-					),
 				},
 			},
 			"email_attribute": schema.StringAttribute{
@@ -124,10 +101,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						attributeNameValidationError,
-					),
 				},
 			},
 			"groups_attribute": schema.StringAttribute{
@@ -135,10 +108,6 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.-]*$`),
-						attributeNameValidationError,
-					),
 				},
 			},
 			"validate_response_signature": schema.BoolAttribute{
@@ -179,9 +148,9 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 	)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
-		IdpMetadata:                       plan.IdpMetadata.ValueString(),
-		UsernameAttribute:                          plan.UsernameAttribute.ValueString(),
-		FirstNameAttribute:                          plan.FirstNameAttribute.ValueStringPointer(),
+		IdpMetadata: plan.IdpMetadata.ValueString(),
+		UsernameAttribute: plan.UsernameAttribute.ValueString(),
+		FirstNameAttribute: plan.FirstNameAttribute.ValueStringPointer(),
 		LastNameAttribute: plan.LastNameAttribute.ValueStringPointer(),
 		EmailAttribute: plan.EmailAttribute.ValueStringPointer(),
 		GroupsAttribute: plan.GroupsAttribute.ValueStringPointer(),
@@ -208,8 +177,6 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	tflog.Info(ctx, "Successfully created security saml configuration")
-	
-	plan.Id = types.StringValue("security_saml")
 	
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -256,10 +223,6 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 
 	tflog.Debug(ctx, "Successfully read security SAML configuration from API")
 
-	if state.Id.IsNull() || state.Id.IsUnknown() {
-		state.Id = types.StringValue("security_saml")
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -290,9 +253,9 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 	)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
-		IdpMetadata:                       plan.IdpMetadata.ValueString(),
-		UsernameAttribute:                          plan.UsernameAttribute.ValueString(),
-		FirstNameAttribute:                          plan.FirstNameAttribute.ValueStringPointer(),
+		IdpMetadata: plan.IdpMetadata.ValueString(),
+		UsernameAttribute: plan.UsernameAttribute.ValueString(),
+		FirstNameAttribute: plan.FirstNameAttribute.ValueStringPointer(),
 		LastNameAttribute: plan.LastNameAttribute.ValueStringPointer(),
 		EmailAttribute: plan.EmailAttribute.ValueStringPointer(),
 		GroupsAttribute: plan.GroupsAttribute.ValueStringPointer(),
@@ -320,11 +283,6 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	tflog.Info(ctx, "Successfully updated security SAML configuration")
-
-	plan.Id = state.Id
-	if plan.Id.IsNull() || plan.Id.IsUnknown() {
-		plan.Id = types.StringValue("security_saml")
-	}
 	
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)

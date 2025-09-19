@@ -68,7 +68,6 @@ type SecurityRealmsModel struct {
 }
 
 type SecuritySamlModel struct {
-	Id types.String   `tfsdk:"id"`
 	IdpMetadata      types.String   `tfsdk:"idp_metadata"`
 	UsernameAttribute          types.String `tfsdk:"username_attribute"`
 	FirstNameAttribute          types.String `tfsdk:"first_name_attribute"`
