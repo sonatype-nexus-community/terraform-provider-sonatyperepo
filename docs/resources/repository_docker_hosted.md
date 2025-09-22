@@ -44,7 +44,7 @@ Optional:
 
 - `http_port` (Number) Create an HTTP connector at specified port
 - `https_port` (Number) Create an HTTPS connector at specified port
-- `path_enabled` (Boolean) Allows to use repository name in Docker image paths (Sonatype Nexus Repository Manager >= 3.83.0)
+- `path_enabled` (Boolean) Allows to use repository name in Docker image paths (only supply for Sonatype Nexus Repository Manager >= 3.83.0)
 - `subdomain` (String) Allows to use subdomain
 
 
