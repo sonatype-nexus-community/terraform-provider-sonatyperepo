@@ -4,6 +4,12 @@
 
 *TBC*
 
+## 0.6.0 September 22, 2025
+
+FEATURES:
+
+* **New Resource:** `sonatyperepo_blob_store_google_cloud` [GH-64]
+
 ## 0.5.0 September 22, 2025
 
 FEATURES:
