@@ -7,6 +7,11 @@ FEATURES:
 * **New Resource:** `sonatyperepo_cleanup_policy` [GH-58]
 * **New Resource:** `sonatyperepo_security_saml` [GH-63]
 
+ENHANCEMENTS:
+* resource/sonatyperepo_repository_docker_group: Add `path_enabled` attribute [GH-75]
+* resource/sonatyperepo_repository_docker_hosted: Add `path_enabled` attribute [GH-75]
+* resource/sonatyperepo_repository_docker_proxy: Add `path_enabled` attribute [GH-75]
+
 ## 0.4.0 September 3, 2025
 
 FEATURES:
