@@ -12,6 +12,9 @@ ENHANCEMENTS:
 * resource/sonatyperepo_repository_docker_hosted: Add `path_enabled` attribute [GH-75]
 * resource/sonatyperepo_repository_docker_proxy: Add `path_enabled` attribute [GH-75]
 
+NOTES:
+* Tested against Sonatype Nexus Repository Manager 3.79.1 through 3.84.1
+
 ## 0.4.0 September 3, 2025
 
 FEATURES:
