@@ -122,12 +122,12 @@ type aptSpecificProxyModel struct {
 
 func (m *aptSpecificProxyModel) MapFromApi(api *sonatyperepo.AptProxyRepositoriesAttributes) {
 	m.Distribution = types.StringPointerValue(api.Distribution)
-	m.Flat = types.BoolPointerValue(api.Flat)
+	m.Flat = types.BoolValue(api.Flat)
 }
 
 func (m *aptSpecificProxyModel) MapToApi(api *sonatyperepo.AptProxyRepositoriesAttributes) {
 	api.Distribution = m.Distribution.ValueStringPointer()
-	api.Flat = m.Flat.ValueBoolPointer()
+	api.Flat = m.Flat.ValueBool()
 }
 
 type RepositoryAptProxyModel struct {

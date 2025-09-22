@@ -51,6 +51,7 @@ type dockerAttributesModel struct {
 	ForceBasicAuth types.Bool   `tfsdk:"force_basic_auth"`
 	HttpPort       types.Int32  `tfsdk:"http_port"`
 	HttpsPort      types.Int32  `tfsdk:"https_port"`
+	PathEnabled    types.Bool   `tfsdk:"path_enabled"`
 	Subdomain      types.String `tfsdk:"subdomain"`
 	V1Enabled      types.Bool   `tfsdk:"v1_enabled"`
 }
@@ -59,6 +60,7 @@ func (m *dockerAttributesModel) MapFromApi(api *sonatyperepo.DockerAttributes) {
 	m.ForceBasicAuth = types.BoolValue(api.ForceBasicAuth)
 	m.HttpPort = types.Int32PointerValue(api.HttpPort)
 	m.HttpsPort = types.Int32PointerValue(api.HttpsPort)
+	m.PathEnabled = types.BoolPointerValue(api.PathEnabled)
 	m.Subdomain = types.StringPointerValue(api.Subdomain)
 	m.V1Enabled = types.BoolValue(api.V1Enabled)
 }
@@ -67,6 +69,7 @@ func (m *dockerAttributesModel) MapToApi(api *sonatyperepo.DockerAttributes) {
 	api.ForceBasicAuth = m.ForceBasicAuth.ValueBool()
 	api.HttpPort = m.HttpPort.ValueInt32Pointer()
 	api.HttpsPort = m.HttpsPort.ValueInt32Pointer()
+	api.PathEnabled = m.PathEnabled.ValueBoolPointer()
 	api.Subdomain = m.Subdomain.ValueStringPointer()
 	api.V1Enabled = m.V1Enabled.ValueBool()
 }

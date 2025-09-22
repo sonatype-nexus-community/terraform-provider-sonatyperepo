@@ -196,3 +196,48 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeHosted := "sonatyperepo_repository_docker_hosted"
+	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+	resource "%s" "repo" {
+	name = "docker-hosted-repo-%s"
+	online = true
+	storage = {
+		blob_store_name = "default"
+		strict_content_type_validation = true
+		write_policy = "ALLOW_ONCE"
+	}
+	docker = {
+		force_basic_auth = true
+		path_enabled = true
+		v1_enabled = true
+	}
+	}`, resourceTypeHosted, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Hosted
+					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_PATH_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
+				),
+				// Delete testing automatically occurs in TestCase
+			},
+		},
+	})
+}

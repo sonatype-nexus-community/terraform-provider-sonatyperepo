@@ -18,6 +18,7 @@ package repository_test
 
 const (
 	RES_ATTR_DOCKER_FORCE_BASIC_AUTH string = "docker.force_basic_auth"
+	RES_ATTR_DOCKER_PATH_ENABLED     string = "docker.path_enabled"
 	RES_ATTR_DOCKER_V1_ENABLED       string = "docker.v1_enabled"
 	RES_ATTR_RAW_CONTENT_DISPOSITION string = "raw.content_disposition"
 	RES_ATTR_STORAGE_BLOB_STORE_NAME string = "storage.blob_store_name"

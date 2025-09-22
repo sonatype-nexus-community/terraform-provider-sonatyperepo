@@ -25,13 +25,13 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -83,7 +83,7 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Repository format that this cleanup policy applies to",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget","p2", "pypi", "r", "raw", "rubygems", "yum"),
+					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum"),
 				},
 			},
 			"criteria": schema.SingleNestedAttribute{
@@ -118,8 +118,6 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 		},
 	}
 }
-
-
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -203,7 +201,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		
+
 		resp.Diagnostics.AddError(
 			"Error Reading cleanup policy",
 			"Unable to read cleanup policy: "+err.Error(),
@@ -228,7 +226,7 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 		tflog.Error(ctx, fmt.Sprintf("Getting plan data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
-	
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
@@ -245,7 +243,7 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 
 	// Build request payload and make API call
 	requestPayload := buildRequestPayload(plan)
-	apiRequest := r.Client.CleanupPoliciesAPI.Update1(ctx, state.Name.ValueString()).Body(requestPayload)
+	apiRequest := r.Client.CleanupPoliciesAPI.Update2(ctx, state.Name.ValueString()).Body(requestPayload)
 	apiResponse, err := apiRequest.Execute()
 
 	// Handle API response
@@ -259,8 +257,6 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	}
 }
-
-
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -361,17 +357,17 @@ func setCriteriaFields(payload *sonatyperepo.CleanupPolicyResourceXO, criteria *
 		lastBlobUpdated := criteria.LastBlobUpdated.ValueInt64()
 		payload.CriteriaLastBlobUpdated = &lastBlobUpdated
 	}
-	
+
 	if !criteria.LastDownloaded.IsNull() {
 		lastDownloaded := criteria.LastDownloaded.ValueInt64()
 		payload.CriteriaLastDownloaded = &lastDownloaded
 	}
-	
+
 	if !criteria.ReleaseType.IsNull() {
 		releaseType := criteria.ReleaseType.ValueString()
 		payload.CriteriaReleaseType = &releaseType
 	}
-	
+
 	if !criteria.AssetRegex.IsNull() {
 		assetRegex := criteria.AssetRegex.ValueString()
 		payload.CriteriaAssetRegex = &assetRegex
@@ -382,7 +378,7 @@ func setCriteriaFields(payload *sonatyperepo.CleanupPolicyResourceXO, criteria *
 func updateStateFromAPI(state *model.CleanupPolicyModel, cleanupPolicy sonatyperepo.CleanupPolicyResourceXO) {
 	state.Name = types.StringValue(cleanupPolicy.Name)
 	state.Format = types.StringValue(cleanupPolicy.Format)
-	
+
 	if cleanupPolicy.Notes != nil {
 		state.Notes = types.StringValue(*cleanupPolicy.Notes)
 	} else {
@@ -393,7 +389,7 @@ func updateStateFromAPI(state *model.CleanupPolicyModel, cleanupPolicy sonatyper
 	if state.Criteria == nil {
 		state.Criteria = &model.CleanupPolicyCriteriaModel{}
 	}
-	
+
 	updateCriteriaFromAPI(state.Criteria, cleanupPolicy)
 
 	if cleanupPolicy.Retain != nil {
@@ -410,19 +406,19 @@ func updateCriteriaFromAPI(criteria *model.CleanupPolicyCriteriaModel, cleanupPo
 	} else {
 		criteria.LastBlobUpdated = types.Int64Null()
 	}
-	
+
 	if cleanupPolicy.CriteriaLastDownloaded != nil {
 		criteria.LastDownloaded = types.Int64Value(*cleanupPolicy.CriteriaLastDownloaded)
 	} else {
 		criteria.LastDownloaded = types.Int64Null()
 	}
-	
+
 	if cleanupPolicy.CriteriaReleaseType != nil {
 		criteria.ReleaseType = types.StringValue(*cleanupPolicy.CriteriaReleaseType)
 	} else {
 		criteria.ReleaseType = types.StringNull()
 	}
-	
+
 	if cleanupPolicy.CriteriaAssetRegex != nil {
 		criteria.AssetRegex = types.StringValue(*cleanupPolicy.CriteriaAssetRegex)
 	} else {

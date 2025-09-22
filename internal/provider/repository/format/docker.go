@@ -266,6 +266,10 @@ func getDockerSchemaAttributes() map[string]schema.Attribute {
 					Description: "Create an HTTPS connector at specified port",
 					Optional:    true,
 				},
+				"path_enabled": schema.BoolAttribute{
+					Description: "Allows to use repository name in Docker image paths (Sonatype Nexus Repository Manager >= 3.83.0)",
+					Optional:    true,
+				},
 				"subdomain": schema.StringAttribute{
 					Description: "Allows to use subdomain",
 					Optional:    true,
