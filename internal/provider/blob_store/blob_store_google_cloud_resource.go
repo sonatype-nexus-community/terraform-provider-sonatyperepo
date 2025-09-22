@@ -190,7 +190,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "create")
-	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore1(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
 
 	if err != nil {
 		errorBody, _ := io.ReadAll(apiResponse.Body)
@@ -204,7 +204,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	if apiResponse.StatusCode == http.StatusCreated {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		plan.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
-		
+
 		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
 			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
 		}
@@ -228,7 +228,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetBlobStore1(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetBlobStore2(ctx, state.Name.ValueString()).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -245,7 +245,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 	// Set basic fields
 	state.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
 	state.BucketConfiguration.Bucket.Name = types.StringValue(apiResponse.BucketConfiguration.Bucket.Name)
-	
+
 	// Update bucket configuration
 	if apiResponse.BucketConfiguration.Bucket.Prefix != nil {
 		state.BucketConfiguration.Bucket.Prefix = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Prefix)
@@ -273,7 +273,7 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "update")
-	apiResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore1(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
+	apiResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore2(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
 
 	if err != nil {
 		if apiResponse.StatusCode == 404 {
@@ -290,7 +290,7 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 		}
 		return
 	}
-	
+
 	if apiResponse.StatusCode == http.StatusNoContent {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -314,7 +314,7 @@ func (r *blobStoreGoogleCloudResource) Delete(ctx context.Context, req resource.
 // buildRequestPayload constructs the API request payload for both create and update operations
 func (r *blobStoreGoogleCloudResource) buildRequestPayload(ctx context.Context, plan *model.BlobStoreGoogleCloudModel, operation string) sonatyperepo.GoogleCloudBlobstoreApiModel {
 	bucketConfig := r.buildBucketConfiguration(plan)
-	
+
 	requestPayload := sonatyperepo.GoogleCloudBlobstoreApiModel{
 		Name:                *plan.Name.ValueStringPointer(),
 		Type:                sonatyperepo.PtrString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
@@ -355,13 +355,13 @@ func (r *blobStoreGoogleCloudResource) configureBucketSecurity(ctx context.Conte
 	auth := &sonatyperepo.GoogleCloudBlobStoreApiBucketAuthentication{
 		AuthenticationMethod: plan.BucketConfiguration.Authentication.AuthenticationMethod.ValueString(),
 	}
-	
+
 	if !plan.BucketConfiguration.Authentication.AccountKey.IsNull() {
 		auth.AccountKey = plan.BucketConfiguration.Authentication.AccountKey.ValueStringPointer()
 	}
 
 	requestPayload.BucketConfiguration.BucketSecurity = auth
-	
+
 	logMsg := fmt.Sprintf("Authentication configured: %s", auth.AuthenticationMethod)
 	if operation == "update" {
 		logMsg = fmt.Sprintf("Authentication configured for update: %s", auth.AuthenticationMethod)
@@ -374,13 +374,13 @@ func (r *blobStoreGoogleCloudResource) configureBucketEncryption(ctx context.Con
 	if plan.BucketConfiguration.Encryption == nil {
 		return
 	}
-	
+
 	if plan.BucketConfiguration.Encryption.EncryptionType.IsNull() && plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
 		return
 	}
 
 	encryption := &sonatyperepo.GoogleCloudBlobStoreApiEncryption{}
-	
+
 	if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
 		encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
 	}
@@ -389,12 +389,12 @@ func (r *blobStoreGoogleCloudResource) configureBucketEncryption(ctx context.Con
 	}
 
 	requestPayload.BucketConfiguration.Encryption = encryption
-	
+
 	encType := ""
 	if encryption.EncryptionType != nil {
 		encType = *encryption.EncryptionType
 	}
-	
+
 	logMsg := fmt.Sprintf("Encryption configured: type=%s", encType)
 	if operation == "update" {
 		logMsg = fmt.Sprintf("Encryption configured for update: type=%s", encType)
@@ -424,7 +424,7 @@ func (r *blobStoreGoogleCloudResource) setEncryptionFromResponse(state *model.Bl
 	if state.BucketConfiguration.Encryption == nil {
 		state.BucketConfiguration.Encryption = &model.BlobStoreGoogleCloudEncryption{}
 	}
-	
+
 	if apiResponse.BucketConfiguration.Encryption.EncryptionType != nil {
 		state.BucketConfiguration.Encryption.EncryptionType = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionType)
 	}
