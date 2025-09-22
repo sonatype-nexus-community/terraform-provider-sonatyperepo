@@ -30,7 +30,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -125,6 +127,16 @@ func (f *DockerRepositoryFormatHosted) UpdateStateFromApi(state any, api any) an
 	return stateModel
 }
 
+func (f *DockerRepositoryFormatHosted) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
+	var planModel = (plan).(model.RepositoryDockerHostedModel)
+	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
+		return []string{
+			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
+		}
+	}
+	return nil
+}
+
 // --------------------------------------------
 // PROXY Docker Format Functions
 // --------------------------------------------
@@ -183,6 +195,16 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	stateModel := (state).(model.RepositoryDockerProxyModel)
 	stateModel.FromApiModel((api).(sonatyperepo.DockerProxyApiRepository))
 	return stateModel
+}
+
+func (f *DockerRepositoryFormatProxy) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
+	var planModel = (plan).(model.RepositoryDockerProxyModel)
+	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
+		return []string{
+			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
+		}
+	}
+	return nil
 }
 
 // --------------------------------------------
@@ -244,6 +266,16 @@ func (f *DockerRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any
 	return stateModel
 }
 
+func (f *DockerRepositoryFormatGroup) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
+	var planModel = (plan).(model.RepositoryDockerroupModel)
+	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
+		return []string{
+			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
+		}
+	}
+	return nil
+}
+
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
@@ -267,8 +299,11 @@ func getDockerSchemaAttributes() map[string]schema.Attribute {
 					Optional:    true,
 				},
 				"path_enabled": schema.BoolAttribute{
-					Description: "Allows to use repository name in Docker image paths (Sonatype Nexus Repository Manager >= 3.83.0)",
+					Description: "Allows to use repository name in Docker image paths (only supply for Sonatype Nexus Repository Manager >= 3.83.0)",
 					Optional:    true,
+					PlanModifiers: []planmodifier.Bool{
+						boolplanmodifier.UseStateForUnknown(),
+					},
 				},
 				"subdomain": schema.StringAttribute{
 					Description: "Allows to use subdomain",

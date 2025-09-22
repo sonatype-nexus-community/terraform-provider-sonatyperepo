@@ -78,6 +78,17 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	planValidationMessagesForNxrmVersion := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
+	if len(planValidationMessagesForNxrmVersion) > 0 {
+		for _, m := range planValidationMessagesForNxrmVersion {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
+				m,
+			)
+		}
+		return
+	}
+
 	// Request Context
 	ctx = context.WithValue(
 		ctx,
@@ -98,7 +109,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResposneCodes(), httpResponse.StatusCode) {
+	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		common.HandleApiError(
 			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			&err,

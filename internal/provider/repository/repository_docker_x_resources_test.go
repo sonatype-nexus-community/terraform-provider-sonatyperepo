@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -205,6 +206,18 @@ func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// This is new functionality in NXRM 3.83.0+
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 0,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 82,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`

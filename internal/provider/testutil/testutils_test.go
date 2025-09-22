@@ -94,6 +94,26 @@ func TestAccVersionInRangeTrue384001(t *testing.T) {
 	assert.True(t, inRange)
 }
 
+func TestAccVersionInRangeTrue382108(t *testing.T) {
+	var testVer = common.ParseServerHeaderToVersion("Nexus/3.82.1-08 (PRO)")
+
+	inRange, err := VersionInRange(
+		&testVer,
+		&common.SystemVersion{
+			Major: 3,
+			Minor: 82,
+			Patch: 0,
+		},
+		&common.SystemVersion{
+			Major: 3,
+			Minor: 84,
+			Patch: 99,
+		},
+	)
+	assert.Nil(t, err)
+	assert.True(t, inRange)
+}
+
 func TestAccVersionInRangeTrue384101(t *testing.T) {
 	var testVer = common.ParseServerHeaderToVersion("Nexus/3.84.1-01 (PRO)")
 

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -58,8 +59,12 @@ func (f *BaseRepositoryFormat) DoDeleteRequest(repositoryName string, apiClient 
 	return apiClient.RepositoryManagementAPI.DeleteRepository(ctx, repositoryName).Execute()
 }
 
-func (f *BaseRepositoryFormat) GetApiCreateSuccessResposneCodes() []int {
+func (f *BaseRepositoryFormat) GetApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
+}
+
+func (f *BaseRepositoryFormat) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
+	return nil
 }
 
 // RepositoryFormat that all Repository Formats must implement
@@ -69,7 +74,7 @@ type RepositoryFormat interface {
 	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
-	GetApiCreateSuccessResposneCodes() []int
+	GetApiCreateSuccessResponseCodes() []int
 	GetFormatSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
@@ -77,6 +82,7 @@ type RepositoryFormat interface {
 	GetKey() string
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
+	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 }
 
 // var RepositoryFormats map[string]RepositoryFormat = map[string]RepositoryFormat{

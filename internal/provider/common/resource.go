@@ -33,9 +33,11 @@ var (
 
 // applicationResource is the resource implementation.
 type BaseResource struct {
-	Auth    sonatyperepo.BasicAuth
-	BaseUrl string
-	Client  *sonatyperepo.APIClient
+	Auth         sonatyperepo.BasicAuth
+	BaseUrl      string
+	Client       *sonatyperepo.APIClient
+	NxrmVersion  SystemVersion
+	NxrmWritable bool
 }
 
 // Create implements resource.Resource.
@@ -87,4 +89,6 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.Auth = config.Auth
 	r.BaseUrl = config.BaseUrl
 	r.Client = config.Client
+	r.NxrmVersion = config.NxrmVersion
+	r.NxrmWritable = config.NxrmWritable
 }

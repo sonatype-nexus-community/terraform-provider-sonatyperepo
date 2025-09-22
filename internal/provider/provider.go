@@ -36,6 +36,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
@@ -179,6 +180,7 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check NXRM is Writable and determine Version
 	ds.CheckWritableAndGetVersion(ctx, &resp.Diagnostics)
+	tflog.Info(ctx, fmt.Sprintf("Determined Sonatype Nexus Repository to be version %s", ds.NxrmVersion.String()))
 
 	resp.DataSourceData = ds
 	resp.ResourceData = ds
