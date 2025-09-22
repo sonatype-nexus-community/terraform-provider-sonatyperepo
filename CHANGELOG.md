@@ -2,6 +2,10 @@
 
 ## X.Y.Z (UNRELEASED)
 
+*TBC*
+
+## 0.5.0 September 22, 2025
+
 FEATURES:
 
 * **New Resource:** `sonatyperepo_cleanup_policy` [GH-58]
