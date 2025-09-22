@@ -190,6 +190,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 	return []func() resource.Resource{
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreS3Resource,
+		blob_store.NewBlobStoreGoogleCloudResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
 		privilege.NewRepositoryContentSelectorPrivilegeResource,

@@ -20,4 +20,5 @@ package blob_store
 const (
 	BLOB_STORE_TYPE_FILE string = "file"
 	BLOB_STORE_TYPE_S3   string = "s3"
+	BLOB_STORE_TYPE_GOOGLE_CLOUD string = "gc_storage"
 )
