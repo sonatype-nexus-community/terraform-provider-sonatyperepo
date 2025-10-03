@@ -352,6 +352,8 @@ github.com/skeema/knownhosts v1.3.1 h1:X2osQ+RAjK76shCbvhHHHVl3ZlgDm8apHEHFqRjnB
 github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQNxPwTcfiY=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.84.0 h1:2+u/d3zSODesAsnZLBma8dr3QaZmCLyZsp7SPsQ533E=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.84.0/go.mod h1:frLIIXL4eWyTP0y51sobFPKQQtO7hmZr2b1D9X2lfMQ=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.84.1 h1:OOgbJSa6UIya5dSvJ51yO86j4rZzZvkFTOEiQA7L2Zg=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.84.1/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
