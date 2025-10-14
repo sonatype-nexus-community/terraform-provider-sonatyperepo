@@ -2,7 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
-*TBC*
+BUG FIXES:
+
+* **Bug:** Unable to create Docker Registry on NXRM 3.84+ as `latest_policy` not returned in API create response
 
 ## 0.6.0 September 22, 2025
 
