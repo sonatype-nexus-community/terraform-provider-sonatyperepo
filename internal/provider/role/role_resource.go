@@ -51,12 +51,16 @@ func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest,
 // Schema defines the schema for the resource.
 func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Configure the Sonatype IQ Server Connection",
+		Description: "Manage Roles in Sonatype Nexus Repository",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The id of the role.",
-				Required:    true,
-				Optional:    false,
+				MarkdownDescription: `The id of the Role.
+
+This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication. 
+Matching Roles based on id will automatically be granted to LDAP or SAML users.`,
+				Required: true,
+				Optional: false,
 			},
 			"name": schema.StringAttribute{
 				Description: "The name of the role.",

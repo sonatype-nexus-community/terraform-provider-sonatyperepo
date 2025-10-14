@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_role Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Configure the Sonatype IQ Server Connection
+  Manage Roles in Sonatype Nexus Repository
 ---
 
 # sonatyperepo_role (Resource)
 
-Configure the Sonatype IQ Server Connection
+Manage Roles in Sonatype Nexus Repository
 
 
 
@@ -18,7 +18,10 @@ Configure the Sonatype IQ Server Connection
 ### Required
 
 - `description` (String) The description of this role.
-- `id` (String) The id of the role.
+- `id` (String) The id of the Role.
+
+This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication. 
+Matching Roles based on id will automatically be granted to LDAP or SAML users.
 - `name` (String) The name of the role.
 - `privileges` (List of String) The list of privileges assigned to this role.
 - `roles` (List of String) The list of roles assigned to this role.
