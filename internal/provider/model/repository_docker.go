@@ -35,7 +35,9 @@ func (m *dockerHostedStorageModel) MapFromApi(api *sonatyperepo.DockerHostedStor
 	m.BlobStoreName = types.StringValue(api.BlobStoreName)
 	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
 	m.WritePolicy = types.StringValue(api.WritePolicy)
-	m.LatestPolicy = types.BoolPointerValue(api.LatestPolicy)
+	if api.LatestPolicy != nil {
+		m.LatestPolicy = types.BoolPointerValue(api.LatestPolicy)
+	}
 }
 
 func (m *dockerHostedStorageModel) MapToApi(api *sonatyperepo.DockerHostedStorageAttributes) {
