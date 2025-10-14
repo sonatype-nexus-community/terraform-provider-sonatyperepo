@@ -2,6 +2,14 @@
 
 ## X.Y.Z (UNRELEASED)
 
+## 0.6.2 October 14, 2025
+
+NOTES:
+
+* **Docs:** Clarified that `sonatyperepo_role` resource can be used to create Roles that auto-map to LDAP or SAML groups
+
+## 0.6.1 October 14, 2025
+
 BUG FIXES:
 
 * **Bug:** Unable to create Docker Registry on NXRM 3.84+ as `latest_policy` not returned in API create response
