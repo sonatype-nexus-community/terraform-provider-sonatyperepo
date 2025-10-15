@@ -2,6 +2,12 @@
 
 ## X.Y.Z (UNRELEASED)
 
+FEATURES:
+
+* **New Data Source:** `sonatyperepo_content_selector` [GH-84]
+* **New Data Source:** `sonatyperepo_content_selectors` [GH-84]
+* **New Resource:** `sonatyperepo_content_selector` [GH-84]
+
 ## 0.6.2 October 14, 2025
 
 NOTES:

@@ -24,6 +24,7 @@ import (
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/blob_store"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/content_selector"
 	"terraform-provider-sonatyperepo/internal/provider/privilege"
 	"terraform-provider-sonatyperepo/internal/provider/repository"
 	"terraform-provider-sonatyperepo/internal/provider/role"
@@ -191,6 +192,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreS3Resource,
 		blob_store.NewBlobStoreGoogleCloudResource,
+		content_selector.NewContentSelectorResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
 		privilege.NewRepositoryContentSelectorPrivilegeResource,
@@ -261,6 +263,8 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 		blob_store.BlobStoreFileDataSource,
 		blob_store.BlobStoreGroupDataSource,
 		blob_store.BlobStoreS3DataSource,
+		content_selector.ContentSelectorDataSource,
+		content_selector.ContentSelectorsDataSource,
 		privilege.PrivilegesDataSource,
 		repository.RepositoriesDataSource,
 		role.RolesDataSource,
