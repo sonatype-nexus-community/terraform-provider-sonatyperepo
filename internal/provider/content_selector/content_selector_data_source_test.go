@@ -38,8 +38,10 @@ func TestAccContentSelectorDataSource(t *testing.T) {
 				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
 			{
-				Config:      getConfigContentSelectorDoesNotExist(randomString),
-				ExpectError: regexp.MustCompile("Error: Unable find Content Selector"),
+				Config: getConfigContentSelectorDoesNotExist(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("data.sonatyperepo_content_selector.cs", "name"),
+				),
 			},
 		},
 	})
