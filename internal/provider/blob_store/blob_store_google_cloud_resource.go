@@ -162,7 +162,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								Description: "The type of GCP server side encryption to use",
 								Optional:    true,
 								Validators: []validator.String{
-									stringvalidator.OneOf("kms", "default"),
+									stringvalidator.OneOf("kmsManagedEncryption", "default"),
 								},
 							},
 							"encryption_key": schema.StringAttribute{
