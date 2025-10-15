@@ -57,6 +57,7 @@ Required:
 Optional:
 
 - `prefix` (String) The path within your Cloud Storage bucket where blob data should be stored
+- `project_id` (String) The Google Cloud project id for the bucket
 - `region` (String) The Google Cloud region for the bucket
 
 
