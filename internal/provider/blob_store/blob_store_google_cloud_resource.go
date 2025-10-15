@@ -123,10 +123,6 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								Default:     stringdefault.StaticString(""),
 								Validators: []validator.String{
 									stringvalidator.LengthAtMost(1024),
-									stringvalidator.RegexMatches(
-										regexp.MustCompile(`^[a-zA-Z0-9\-_/]*$`),
-										"Prefix must contain only letters, numbers, hyphens, underscores, and forward slashes.",
-									),
 								},
 							},
 							"region": schema.StringAttribute{
