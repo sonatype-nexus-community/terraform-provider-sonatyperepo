@@ -112,6 +112,7 @@ type BlobStoreGoogleCloudBucket struct {
 	Name   types.String `tfsdk:"name"`
 	Prefix types.String `tfsdk:"prefix"`
 	Region types.String `tfsdk:"region"`
+	ProjectId types.String `tfsdk:"project_id"`
 }
 
 type BlobStoreGoogleCloudAuthentication struct {

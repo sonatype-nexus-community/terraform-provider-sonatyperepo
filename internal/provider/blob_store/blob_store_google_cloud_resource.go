@@ -132,6 +132,10 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								Description: "The Google Cloud region for the bucket",
 								Optional:    true,
 							},
+							"project_id": schema.StringAttribute{
+								Description: "The Google Cloud project id for the bucket",
+								Optional:    true,
+							},
 						},
 					},
 					"authentication": schema.SingleNestedBlock{
@@ -254,6 +258,10 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 		state.BucketConfiguration.Bucket.Region = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Region)
 	}
 
+	if apiResponse.BucketConfiguration.Bucket.ProjectId != nil {
+		state.BucketConfiguration.Bucket.ProjectId = types.StringValue(*apiResponse.BucketConfiguration.Bucket.ProjectId)
+	}
+
 	// Handle encryption and soft quota configuration
 	r.setEncryptionFromResponse(&state, apiResponse)
 	r.setSoftQuotaFromResponse(&state, apiResponse)
@@ -341,6 +349,9 @@ func (r *blobStoreGoogleCloudResource) buildBucketConfiguration(plan *model.Blob
 	}
 	if !plan.BucketConfiguration.Bucket.Region.IsNull() {
 		bucketConfig.Bucket.Region = plan.BucketConfiguration.Bucket.Region.ValueStringPointer()
+	}
+	if !plan.BucketConfiguration.Bucket.ProjectId.IsNull() {
+		bucketConfig.Bucket.ProjectId = plan.BucketConfiguration.Bucket.ProjectId.ValueStringPointer()
 	}
 
 	return bucketConfig
