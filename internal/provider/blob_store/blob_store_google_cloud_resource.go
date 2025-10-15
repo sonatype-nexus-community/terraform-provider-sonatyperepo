@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -248,21 +249,12 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 
 	// Set basic fields
 	state.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
-	state.BucketConfiguration.Bucket.Name = types.StringValue(apiResponse.BucketConfiguration.Bucket.Name)
 
-	// Update bucket configuration
-	if apiResponse.BucketConfiguration.Bucket.Prefix != nil {
-		state.BucketConfiguration.Bucket.Prefix = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Prefix)
-	}
-	if apiResponse.BucketConfiguration.Bucket.Region != nil {
-		state.BucketConfiguration.Bucket.Region = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Region)
-	}
+	// Populate bucket configuration from API response
+	r.setBucketConfigurationFromResponse(&state, apiResponse)
 
-	if apiResponse.BucketConfiguration.Bucket.ProjectId != nil {
-		state.BucketConfiguration.Bucket.ProjectId = types.StringValue(*apiResponse.BucketConfiguration.Bucket.ProjectId)
-	}
-
-	// Handle encryption and soft quota configuration
+	// Handle authentication, encryption and soft quota configuration
+	r.setAuthenticationFromResponse(&state, apiResponse)
 	r.setEncryptionFromResponse(&state, apiResponse)
 	r.setSoftQuotaFromResponse(&state, apiResponse)
 
@@ -315,6 +307,13 @@ func (r *blobStoreGoogleCloudResource) Delete(ctx context.Context, req resource.
 
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
+}
+
+// ImportState implements the import functionality for the Google Cloud Storage Blob Store resource.
+// This allows users to import existing blob stores into Terraform state using the blob store name as the identifier.
+func (r *blobStoreGoogleCloudResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the blob store name as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
 
 // ====================== HELPER METHODS ======================
@@ -425,13 +424,74 @@ func (r *blobStoreGoogleCloudResource) configureSoftQuota(plan *model.BlobStoreG
 	}
 }
 
+// setBucketConfigurationFromResponse handles bucket configuration from API response
+func (r *blobStoreGoogleCloudResource) setBucketConfigurationFromResponse(state *model.BlobStoreGoogleCloudModel, apiResponse *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	// Initialize BucketConfiguration if it's nil
+	if state.BucketConfiguration == nil {
+		state.BucketConfiguration = &model.BlobStoreGoogleCloudBucketConfiguration{}
+	}
+
+	// Set bucket name (required field)
+	state.BucketConfiguration.Bucket.Name = types.StringValue(apiResponse.BucketConfiguration.Bucket.Name)
+
+	// Set bucket prefix - use empty string as default if not provided
+	if apiResponse.BucketConfiguration.Bucket.Prefix != nil {
+		state.BucketConfiguration.Bucket.Prefix = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Prefix)
+	} else {
+		state.BucketConfiguration.Bucket.Prefix = types.StringValue("")
+	}
+	
+	// Set bucket region if provided
+	if apiResponse.BucketConfiguration.Bucket.Region != nil {
+		state.BucketConfiguration.Bucket.Region = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Region)
+	} else {
+		state.BucketConfiguration.Bucket.Region = types.StringNull()
+	}
+
+	// Set bucket project ID if provided
+	if apiResponse.BucketConfiguration.Bucket.ProjectId != nil {
+		state.BucketConfiguration.Bucket.ProjectId = types.StringValue(*apiResponse.BucketConfiguration.Bucket.ProjectId)
+	} else {
+		state.BucketConfiguration.Bucket.ProjectId = types.StringNull()
+	}
+}
+
+// setAuthenticationFromResponse handles authentication configuration from API response
+func (r *blobStoreGoogleCloudResource) setAuthenticationFromResponse(state *model.BlobStoreGoogleCloudModel, apiResponse *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	// Initialize BucketConfiguration if it's nil
+	if state.BucketConfiguration == nil {
+		state.BucketConfiguration = &model.BlobStoreGoogleCloudBucketConfiguration{}
+	}
+
+	if apiResponse.BucketConfiguration.BucketSecurity == nil {
+		state.BucketConfiguration.Authentication = nil
+		return
+	}
+
+	// Initialize Authentication if it's nil
+	if state.BucketConfiguration.Authentication == nil {
+		state.BucketConfiguration.Authentication = &model.BlobStoreGoogleCloudAuthentication{}
+	}
+
+	state.BucketConfiguration.Authentication.AuthenticationMethod = types.StringValue(apiResponse.BucketConfiguration.BucketSecurity.AuthenticationMethod)
+	
+	// Note: We don't read back the account key for security reasons - it's write-only
+	// The account key will remain in state from the configuration but won't be updated from the API response
+}
+
 // setEncryptionFromResponse handles encryption configuration from API response
 func (r *blobStoreGoogleCloudResource) setEncryptionFromResponse(state *model.BlobStoreGoogleCloudModel, apiResponse *sonatyperepo.GoogleCloudBlobstoreApiModel) {
+	// Initialize BucketConfiguration if it's nil
+	if state.BucketConfiguration == nil {
+		state.BucketConfiguration = &model.BlobStoreGoogleCloudBucketConfiguration{}
+	}
+
 	if apiResponse.BucketConfiguration.Encryption == nil {
 		state.BucketConfiguration.Encryption = nil
 		return
 	}
 
+	// Initialize Encryption if it's nil
 	if state.BucketConfiguration.Encryption == nil {
 		state.BucketConfiguration.Encryption = &model.BlobStoreGoogleCloudEncryption{}
 	}
