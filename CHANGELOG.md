@@ -8,6 +8,10 @@ FEATURES:
 * **New Data Source:** `sonatyperepo_content_selectors` [GH-84]
 * **New Resource:** `sonatyperepo_content_selector` [GH-84]
 
+BUG FIXES:
+
+* **Bug:** Changing the `id` on a `sonatyperepo_role` did not force a recreation of the resource - failed with `409 - Conflict`
+
 ## 0.6.2 October 14, 2025
 
 NOTES:
