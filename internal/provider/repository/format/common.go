@@ -85,10 +85,6 @@ type RepositoryFormat interface {
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 }
 
-// var RepositoryFormats map[string]RepositoryFormat = map[string]RepositoryFormat{
-// 	common.REPO_FORMAT_NPM: &NpmRepositoryFormat{},
-// }
-
 func getResourceName(format string, repoType RepositoryType) string {
 	return fmt.Sprintf("repository_%s_%s", strings.ToLower(format), repoType.String())
 }

@@ -19,8 +19,11 @@ package model
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+// Task Frequency
+// ----------------------------------------
 type TaskFrequency struct {
 	Schedule       types.String   `tfsdk:"schedule"`
 	StartDate      *types.Int32   `tfsdk:"start_date"`
@@ -29,6 +32,30 @@ type TaskFrequency struct {
 	CronExpression *types.String  `tfsdk:"cron_expression"`
 }
 
+func (f *TaskFrequency) ToApiModel(api *v3.FrequencyXO) {
+	api.CronExpression = f.CronExpression.ValueStringPointer()
+	api.RecurringDays = make([]int32, 0)
+	for _, rd := range *f.RecurringDays {
+		api.RecurringDays = append(api.RecurringDays, rd.ValueInt32())
+	}
+	api.Schedule = f.Schedule.ValueString()
+	if f.StartDate.ValueInt32Pointer() != nil {
+		val := int64(*f.StartDate.ValueInt32Pointer())
+		api.StartDate = &val
+	} else {
+		api.StartDate = nil
+	}
+	api.TimeZoneOffset = f.TimezoneOffset.ValueStringPointer()
+}
+
+// Tasks Model
+// ----------------------------------------
+type TasksModel struct {
+	Tasks []TaskModelSimple `tfsdk:"tasks"`
+}
+
+// Task Model (Simple)
+// ----------------------------------------
 type TaskModelSimple struct {
 	Id   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
@@ -41,7 +68,9 @@ func (m *TaskModelSimple) MapFromApi(api *sonatyperepo.TaskXO) {
 	m.Type = types.StringPointerValue(api.Type)
 }
 
-type TaskModel struct {
+// Base Task Model (Complete) - used for create and update
+// ----------------------------------------
+type BaseTaskModel struct {
 	TaskModelSimple
 	Enabled               types.Bool    `tfsdk:"enabled"`
 	AlertEmail            *types.String `tfsdk:"alert_email"`
@@ -49,14 +78,28 @@ type TaskModel struct {
 	Frequency             TaskFrequency `tfsdk:"frequency"`
 }
 
-func (m *TaskModel) MapFromApi(api *sonatyperepo.TaskXO) {
+func (m *BaseTaskModel) MapFromApi(api *sonatyperepo.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
 	m.Type = types.StringPointerValue(api.Type)
-
 }
 
-// TasksModel
-type TasksModel struct {
-	Tasks []TaskModelSimple `tfsdk:"tasks"`
+func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
+	api := v3.NewTaskTemplateXOWithDefaults()
+	api.Name = m.Name.ValueString()
+	api.Type = m.Type.ValueString()
+	api.Enabled = m.Enabled.ValueBool()
+	api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+	m.Frequency.ToApiModel(&api.Frequency)
+	api.AlertEmail = m.AlertEmail.ValueStringPointer()
+	api.NotificationCondition = m.NotificationCondition.ValueString()
+	return api
+}
+
+// Base Task Properties
+// ----------------------------------------
+type BaseTaskProperties struct{}
+
+func (p *BaseTaskProperties) AsMap() *map[string]string {
+	return StructToMap(p)
 }
