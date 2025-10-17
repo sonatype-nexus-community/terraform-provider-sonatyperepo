@@ -97,7 +97,7 @@ type BlobStoreS3AdvancedBucketConnectionModel struct {
 type BlobStoreGoogleCloudModel struct {
 	Name                types.String                              `tfsdk:"name"`
 	Type                types.String                              `tfsdk:"type"`
-	BucketConfiguration BlobStoreGoogleCloudBucketConfiguration   `tfsdk:"bucket_configuration"`
+	BucketConfiguration *BlobStoreGoogleCloudBucketConfiguration   `tfsdk:"bucket_configuration"`
 	SoftQuota           *BlobStoreSoftQuota                       `tfsdk:"soft_quota"`
 	LastUpdated         types.String                              `tfsdk:"last_updated"`
 }
@@ -112,6 +112,7 @@ type BlobStoreGoogleCloudBucket struct {
 	Name   types.String `tfsdk:"name"`
 	Prefix types.String `tfsdk:"prefix"`
 	Region types.String `tfsdk:"region"`
+	ProjectId types.String `tfsdk:"project_id"`
 }
 
 type BlobStoreGoogleCloudAuthentication struct {

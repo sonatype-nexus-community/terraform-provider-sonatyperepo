@@ -16,19 +16,31 @@
 package common
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"syscall"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 func HandleApiError(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
-	respDiags.AddError(
-		message,
-		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
-	)
+	networkError, errorMessage := handleNetworkError(*err)
+	if networkError {
+		respDiags.AddError(
+			errorMessage,
+			fmt.Sprintf("Networking Error: %s (%v)", errorMessage, *err),
+		)
+	} else {
+		respDiags.AddError(
+			message,
+			fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
+		)
+	}
 }
 
 func HandleApiWarning(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
@@ -36,6 +48,31 @@ func HandleApiWarning(message string, err *error, httpResponse *http.Response, r
 		message,
 		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 	)
+}
+
+func handleNetworkError(err error) (bool, string) {
+	// Check for specific error types
+	if opErr, ok := err.(*net.OpError); ok {
+		// Network operation error (dial, read, write, etc.)
+		return true, fmt.Sprintf("OpError: %s, %s", opErr.Op, opErr.Net)
+	}
+
+	if dnsErr, ok := err.(*net.DNSError); ok {
+		// DNS resolution error
+		return true, fmt.Sprintf("DNS Error: %v", dnsErr)
+	}
+
+	if errors.Is(err, context.DeadlineExceeded) {
+		// Timeout error
+		return true, fmt.Sprintf("Connection timed out: %v", err)
+	}
+
+	// General network error check
+	if errors.Is(err, syscall.ECONNREFUSED) {
+		return true, fmt.Sprintf("Connection refused: %v", err)
+	}
+
+	return false, ""
 }
 
 func getResponseBody(httpResponse *http.Response) []byte {
