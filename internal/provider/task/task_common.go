@@ -28,6 +28,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -58,6 +59,12 @@ func (t *taskResource) Metadata(_ context.Context, req resource.MetadataRequest,
 // Set Schema for this Resource
 func (t *taskResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = getTaskSchema(t.TaskType)
+}
+
+// This allows users to import existing Tasks into Terraform state.
+func (r *taskResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the Task ID as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -243,39 +250,28 @@ func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 		Description: fmt.Sprintf("Manage Task of type %s", tt.GetType().String()),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Description: "The internal ID of the Task.",
+				Computed:    true,
+			},
+			"name": schema.StringAttribute{
 				Description: "The name of the Task.",
 				Required:    true,
 				Optional:    false,
 			},
-			"name": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
 			"enabled": schema.BoolAttribute{
 				Description: "Indicates if the task is enabled.",
-				Required:    false,
+				Required:    true,
 				Optional:    false,
-				Computed:    true,
 			},
 			"alert_email": schema.StringAttribute{
 				Description: "E-mail address for task notifications.",
 				Required:    false,
-				Optional:    false,
-				Computed:    true,
+				Optional:    true,
 			},
 			"notification_condition": schema.StringAttribute{
 				Description: "The type of Task.",
-				Required:    false,
+				Required:    true,
 				Optional:    false,
-				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						common.NOTIFICATION_CONDITION_FAILURE, common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
@@ -284,9 +280,8 @@ func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 			},
 			"frequency": schema.SingleNestedAttribute{
 				Description: "Frequency Schedule for this Task.",
-				Required:    false,
+				Required:    true,
 				Optional:    false,
-				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"schedule": schema.StringAttribute{
 						Description: "Type of Schedule.",
@@ -304,7 +299,7 @@ func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 							),
 						},
 					},
-					"start_date": schema.Int64Attribute{
+					"start_date": schema.Int32Attribute{
 						Description: "Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
 						Required:    false,
 						Optional:    true,
@@ -335,9 +330,8 @@ func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 			},
 			"properties": schema.SingleNestedAttribute{
 				Description: "Properties specific to this Task type",
-				Required:    false,
+				Required:    true,
 				Optional:    false,
-				Computed:    true,
 				Attributes:  tt.GetPropertiesSchema(),
 			},
 			"last_updated": schema.StringAttribute{

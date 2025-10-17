@@ -17,6 +17,10 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
@@ -24,9 +28,9 @@ import (
 // ----------------------------------------
 type TaskPropertiesBlobstoreCompact struct {
 	BaseTaskProperties
-	BlobstoreName string `tfsdk:"blobstoreName"`
+	BlobstoreName types.String `tfsdk:"blob_store_name" nxrm:"blobStoreName"`
 	// The number of days a blob should kept before permanent deletion (default 0)
-	BlobstoreOlderThan int32 `tfsdk:"blobsOlderThan"`
+	BlobsOlderThan *types.Int32 `tfsdk:"blobs_older_than" nxrm:"blobsOlderThan"`
 }
 
 // Task Blobstore Compact
@@ -38,6 +42,7 @@ type TaskBlobstoreCompactModel struct {
 
 func (m *TaskBlobstoreCompactModel) ToApiCreateModel() *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
+	api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
 	api.Properties = m.Properties.AsMap()
 	return api
 }

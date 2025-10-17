@@ -19,14 +19,13 @@ package tasktype
 import (
 	"context"
 	"net/http"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
@@ -38,7 +37,7 @@ type BlobstoreCompactTask struct {
 func NewBlobstoreCompactTask() *BlobstoreCompactTask {
 	return &BlobstoreCompactTask{
 		BaseTaskType: BaseTaskType{
-			taskType: TASK_TYPE_BLOBSTORE_COMPACT,
+			taskType: common.TASK_TYPE_BLOBSTORE_COMPACT,
 		},
 	}
 }
@@ -67,7 +66,7 @@ func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *s
 }
 
 func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
-	var planModel model.RepositoryAptHostedModel
+	var planModel model.TaskBlobstoreCompactModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
@@ -88,18 +87,18 @@ func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]schema.Attribute
 }
 
 func (f *BlobstoreCompactTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
-	var stateModel model.RepositoryAptHostedModel
+	var stateModel model.TaskBlobstoreCompactModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
 
 func (f *BlobstoreCompactTask) UpdatePlanForState(plan any) any {
-	var planModel = (plan).(model.RepositoryAptHostedModel)
-	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	var planModel = (plan).(model.TaskBlobstoreCompactModel)
+	// planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return planModel
 }
 
 func (f *BlobstoreCompactTask) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryAptHostedModel)
-	stateModel.FromApiModel((api).(sonatyperepo.AptHostedApiRepository))
+	stateModel := (state).(model.TaskBlobstoreCompactModel)
+	// stateModel.FromApiModel((api).(sonatyperepo.TaskXO))
 	return stateModel
 }

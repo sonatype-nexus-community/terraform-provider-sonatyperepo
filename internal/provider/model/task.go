@@ -24,7 +24,7 @@ import (
 
 // Task Frequency
 // ----------------------------------------
-type TaskFrequency struct {
+type taskFrequency struct {
 	Schedule       types.String   `tfsdk:"schedule"`
 	StartDate      *types.Int32   `tfsdk:"start_date"`
 	TimezoneOffset *types.String  `tfsdk:"timezone_offset"`
@@ -32,7 +32,7 @@ type TaskFrequency struct {
 	CronExpression *types.String  `tfsdk:"cron_expression"`
 }
 
-func (f *TaskFrequency) ToApiModel(api *v3.FrequencyXO) {
+func (f *taskFrequency) ToApiModel(api *v3.FrequencyXO) {
 	api.CronExpression = f.CronExpression.ValueStringPointer()
 	api.RecurringDays = make([]int32, 0)
 	for _, rd := range *f.RecurringDays {
@@ -59,35 +59,35 @@ type TasksModel struct {
 type TaskModelSimple struct {
 	Id   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
-	Type types.String `tfsdk:"type"`
+	// Type types.String `tfsdk:"type"`
 }
 
 func (m *TaskModelSimple) MapFromApi(api *sonatyperepo.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
-	m.Type = types.StringPointerValue(api.Type)
+	// m.Type = types.StringPointerValue(api.Type)
 }
 
 // Base Task Model (Complete) - used for create and update
 // ----------------------------------------
 type BaseTaskModel struct {
 	TaskModelSimple
-	Enabled               types.Bool    `tfsdk:"enabled"`
-	AlertEmail            *types.String `tfsdk:"alert_email"`
-	NotificationCondition types.String  `tfsdk:"notification_condition"`
-	Frequency             TaskFrequency `tfsdk:"frequency"`
+	Enabled               types.Bool     `tfsdk:"enabled"`
+	AlertEmail            *types.String  `tfsdk:"alert_email"`
+	NotificationCondition types.String   `tfsdk:"notification_condition"`
+	Frequency             *taskFrequency `tfsdk:"frequency"`
+	LastUpdated           types.String   `tfsdk:"last_updated"`
 }
 
 func (m *BaseTaskModel) MapFromApi(api *sonatyperepo.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
-	m.Type = types.StringPointerValue(api.Type)
+	// m.Type = types.StringPointerValue(api.Type)
 }
 
 func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
 	api := v3.NewTaskTemplateXOWithDefaults()
 	api.Name = m.Name.ValueString()
-	api.Type = m.Type.ValueString()
 	api.Enabled = m.Enabled.ValueBool()
 	api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
 	m.Frequency.ToApiModel(&api.Frequency)

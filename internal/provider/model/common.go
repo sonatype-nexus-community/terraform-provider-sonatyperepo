@@ -41,8 +41,8 @@ func StructToMap(v interface{}) *map[string]string {
 		field := typ.Field(i)
 		fieldVal := val.Field(i)
 
-		// Get the tfsdk tag, fallback to field name
-		key := field.Tag.Get("tfsdk")
+		// Get the nxrm tag, fallback to field name
+		key := field.Tag.Get("nxrm")
 		if key == "" {
 			key = field.Name
 		}
