@@ -10,7 +10,8 @@ FEATURES:
 
 BUG FIXES:
 
-* **Bug:** Changing the `id` on a `sonatyperepo_role` did not force a recreation of the resource - failed with `409 - Conflict`
+* **Bug:** Changing the `id` on a `sonatyperepo_role` did not force a recreation of the resource - failed with `409 - Conflict` [GH-88]
+* **Bug:** Handle connectivity errors to Sonatype Nexus Repository without the provider crashing [GH-94]
 
 ## 0.6.2 October 14, 2025
 
