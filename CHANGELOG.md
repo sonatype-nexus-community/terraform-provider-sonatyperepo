@@ -4,7 +4,7 @@
 
 BUG FIXES:
 * **Bug:** `userMemberOfAttribute` was not mapped in API requests for `sonatyperepo_system_config_ldap_connection` resource [GH-101]
-* **Bug:** `prefix` was not stored in Terraform State correctly leading to *inconsistent results after apply* error [GH-103]
+* **Bug:** `prefix` for `sonatyperepo_blob_store_s3` was not stored in Terraform State correctly leading to *inconsistent results after apply* error [GH-103]
 
 NOTES:
 * Tested against Sonatype Nexus Repository Manager 3.85.0
