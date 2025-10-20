@@ -63,8 +63,8 @@ type IqConnectionModel struct {
 }
 
 type SecurityRealmsModel struct {
-	Active      types.List   `tfsdk:"active"`
-	ID          types.String `tfsdk:"id"`
+	Active types.List   `tfsdk:"active"`
+	ID     types.String `tfsdk:"id"`
 }
 
 type SecuritySamlModel struct {
@@ -165,6 +165,7 @@ func (model *LdapServerModel) FromApiModel(api *sonatyperepo.ReadLdapServerXo) {
 	model.UserLdapFilter = types.StringPointerValue(api.UserLdapFilter)
 	model.UserIdAttribute = types.StringPointerValue(api.UserIdAttribute)
 	model.UserPasswordAttribute = types.StringPointerValue(api.UserPasswordAttribute)
+	model.UserMemberOfAttribute = types.StringPointerValue(api.UserMemberOfAttribute)
 	model.MapLdapGroupsAsRoles = types.BoolPointerValue(api.LdapGroupsAsRoles)
 	model.GroupType = types.StringPointerValue(api.GroupType)
 	model.GroupBaseDn = types.StringPointerValue(api.GroupBaseDn)
@@ -194,6 +195,7 @@ func (model *LdapServerModel) ToApiCreateModel() *sonatyperepo.CreateLdapServerX
 		UserRealNameAttribute:       model.UserRealNameAttribute.ValueStringPointer(),
 		UserEmailAddressAttribute:   model.UserEmailAttribute.ValueStringPointer(),
 		UserPasswordAttribute:       model.UserPasswordAttribute.ValueStringPointer(),
+		UserMemberOfAttribute:       model.UserMemberOfAttribute.ValueStringPointer(),
 		LdapGroupsAsRoles:           model.MapLdapGroupsAsRoles.ValueBoolPointer(),
 	}
 	if apiModel.Protocol == common.PROTOCOL_LDAPS {
