@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+BUG FIXES:
+* **Bug:** `userMemberOfAttribute` was not mapped in API requests for `sonatyperepo_system_config_ldap_connection` resource [GH-101]
+
 NOTES:
 * Tested against Sonatype Nexus Repository Manager 3.85.0
 
