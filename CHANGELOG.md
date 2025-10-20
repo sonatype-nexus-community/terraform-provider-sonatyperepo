@@ -2,7 +2,8 @@
 
 ## X.Y.Z (UNRELEASED)
 
-*TBC*
+NOTES:
+* Tested against Sonatype Nexus Repository Manager 3.85.0
 
 ## 0.7.0 October 17, 2025
 

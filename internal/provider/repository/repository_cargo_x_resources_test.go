@@ -48,7 +48,7 @@ func TestAccRepositoryCargoResource(t *testing.T) {
 				Patch: 0,
 			}, &common.SystemVersion{
 				Major: 3,
-				Minor: 84,
+				Minor: 85,
 				Patch: 99,
 			})
 		},
