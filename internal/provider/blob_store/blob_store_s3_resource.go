@@ -305,7 +305,9 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 
 		// Inject some defaults that are not in the API response
 		plan.Type = types.StringValue(BLOB_STORE_TYPE_S3)
-		plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
+		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
+			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
+		}
 
 		diags := resp.State.Set(ctx, plan)
 		resp.Diagnostics.Append(diags...)
