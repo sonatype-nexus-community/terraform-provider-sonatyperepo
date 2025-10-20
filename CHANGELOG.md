@@ -2,6 +2,10 @@
 
 ## X.Y.Z (UNRELEASED)
 
+*TBC*
+
+## 0.7.0 October 17, 2025
+
 FEATURES:
 
 * **New Data Source:** `sonatyperepo_content_selector` [GH-84]
