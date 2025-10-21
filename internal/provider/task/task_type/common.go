@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
@@ -55,8 +55,8 @@ func (f *BaseTaskType) GetType() common.TaskType {
 // TaskTypeI that all Repository Formats must implement
 // --------------------------------------------
 type TaskTypeI interface {
-	DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error)
-	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
+	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error)
+	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context) (*http.Response, error)
 	GetApiCreateSuccessResponseCodes() []int
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]schema.Attribute

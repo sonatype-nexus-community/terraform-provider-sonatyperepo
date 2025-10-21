@@ -18,7 +18,6 @@ package model
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
@@ -68,7 +67,7 @@ type TaskModelSimple struct {
 	Type types.String `tfsdk:"type"`
 }
 
-func (m *TaskModelSimple) MapFromApi(api *sonatyperepo.TaskXO) {
+func (m *TaskModelSimple) MapFromApi(api *v3.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
 	m.Type = types.StringPointerValue(api.Type)
@@ -85,7 +84,7 @@ type BaseTaskModel struct {
 	LastUpdated           types.String   `tfsdk:"last_updated"`
 }
 
-func (m *BaseTaskModel) MapFromApi(api *sonatyperepo.TaskXO) {
+func (m *BaseTaskModel) MapFromApi(api *v3.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
 	// m.Type = types.StringPointerValue(api.Type)

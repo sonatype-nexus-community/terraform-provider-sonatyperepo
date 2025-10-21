@@ -29,7 +29,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
@@ -48,7 +47,7 @@ func NewBlobstoreCompactTask() *BlobstoreCompactTask {
 // --------------------------------------------
 // Blobstore Compact Format Functions
 // --------------------------------------------
-func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
@@ -56,7 +55,7 @@ func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *sonatyperepo
 	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel()).Execute()
 }
 
-func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
