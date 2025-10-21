@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+
+## 0.8.0 October 18, 2025
+
 BUG FIXES:
 * **Bug:** `userMemberOfAttribute` was not mapped in API requests for `sonatyperepo_system_config_ldap_connection` resource [GH-101]
 * **Bug:** `prefix` for `sonatyperepo_blob_store_s3` was not stored in Terraform State correctly leading to *inconsistent results after apply* error [GH-103]
