@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -33,6 +34,12 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+)
+
+// Ensure resource satisfies various resource interfaces.
+var (
+	_ resource.Resource                = &systemConfigMailResource{}
+	_ resource.ResourceWithImportState = &systemConfigMailResource{}
 )
 
 // systemConfigMailResource is the resource implementation.
@@ -120,6 +127,24 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 			},
 		},
 	}
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *systemConfigMailResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Since this is a singleton resource (system email configuration), 
+	// we don't need to validate the ID - any non-empty string is acceptable
+	if req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Invalid Import ID",
+			"Import ID cannot be empty. Use any non-empty string (e.g., 'system-email-config') to import the system email configuration.",
+		)
+		return
+	}
+
+	// Set the ID to a fixed value since this is a singleton resource
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_updated"), types.StringValue("system-email-config"))...)
+
+	tflog.Info(ctx, fmt.Sprintf("Imported system email configuration with ID: %s", req.ID))
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -231,29 +256,49 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 			state.Username = types.StringPointerValue(apiResponse.Username)
 		}
 
-		// Ignore Password
+		// Ignore Password during reads for security reasons
 
-		// if apiResponse.FromAddress != nil {
-		// 	state.FromAddress = types.StringPointerValue(apiResponse.FromAddress)
-		// }
-		// if apiResponse.SubjectPrefix != nil {
-		// 	state.SubjectPrefix = types.StringPointerValue(apiResponse.SubjectPrefix)
-		// }
-		// if apiResponse.StartTlsEnabled != nil {
-		// 	state.StartTLSEnabled = types.BoolPointerValue(apiResponse.StartTlsEnabled)
-		// }
-		// if apiResponse.StartTlsRequired != nil {
-		// 	state.StartTLSRequired = types.BoolPointerValue(apiResponse.StartTlsRequired)
-		// }
-		// if apiResponse.SslOnConnectEnabled != nil {
-		// 	state.SSLOnConnectEnabled = types.BoolPointerValue(apiResponse.SslOnConnectEnabled)
-		// }
-		// if apiResponse.SslServerIdentityCheckEnabled != nil {
-		// 	state.SSLServerIdentityCheckEnabled = types.BoolPointerValue(apiResponse.SslServerIdentityCheckEnabled)
-		// }
-		// if apiResponse.NexusTrustStoreEnabled != nil {
-		// 	state.NexusTrustStoreEnabled = types.BoolPointerValue(apiResponse.NexusTrustStoreEnabled)
-		// }
+		if apiResponse.FromAddress != nil {
+			state.FromAddress = types.StringPointerValue(apiResponse.FromAddress)
+		} else {
+			state.FromAddress = types.StringNull()
+		}
+		
+		if apiResponse.SubjectPrefix != nil {
+			state.SubjectPrefix = types.StringPointerValue(apiResponse.SubjectPrefix)
+		} else {
+			state.SubjectPrefix = types.StringNull()
+		}
+		
+		if apiResponse.StartTlsEnabled != nil {
+			state.StartTLSEnabled = types.BoolPointerValue(apiResponse.StartTlsEnabled)
+		} else {
+			state.StartTLSEnabled = types.BoolNull()
+		}
+		
+		if apiResponse.StartTlsRequired != nil {
+			state.StartTLSRequired = types.BoolPointerValue(apiResponse.StartTlsRequired)
+		} else {
+			state.StartTLSRequired = types.BoolNull()
+		}
+		
+		if apiResponse.SslOnConnectEnabled != nil {
+			state.SSLOnConnectEnabled = types.BoolPointerValue(apiResponse.SslOnConnectEnabled)
+		} else {
+			state.SSLOnConnectEnabled = types.BoolNull()
+		}
+		
+		if apiResponse.SslServerIdentityCheckEnabled != nil {
+			state.SSLServerIdentityCheckEnabled = types.BoolPointerValue(apiResponse.SslServerIdentityCheckEnabled)
+		} else {
+			state.SSLServerIdentityCheckEnabled = types.BoolNull()
+		}
+		
+		if apiResponse.NexusTrustStoreEnabled != nil {
+			state.NexusTrustStoreEnabled = types.BoolPointerValue(apiResponse.NexusTrustStoreEnabled)
+		} else {
+			state.NexusTrustStoreEnabled = types.BoolNull()
+		}
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		if resp.Diagnostics.HasError() {
