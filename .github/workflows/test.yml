@@ -4,7 +4,7 @@ name: Tests
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
-    pull_request_target:
+    pull_request:
         paths-ignore:
             - 'CHANGELOG.md'
             - 'README.md'
@@ -109,10 +109,11 @@ jobs:
                 nxrm:
                     - '3.79.1-04' # FIRST WITH BUNDLED JRE
                     #- '3.80.0-06' 
-                    - '3.81.1-01' 
+                    # - '3.81.1-01' 
                     - '3.82.0-08' 
                     - '3.83.2-01'
-                    - '3.84.1-01' # LATEST
+                    - '3.84.1-01' 
+                    - '3.85.0-03' # LATEST
                 # list whatever Terraform versions here you would like to support
                 terraform:
                     - '1.0.*' # Minimum
