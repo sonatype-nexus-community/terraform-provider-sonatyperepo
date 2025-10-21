@@ -106,6 +106,47 @@ func TestAccSecuritySamlResourceMinimal(t *testing.T) {
 	})
 }
 
+func TestAccSecuritySamlResourceImport(t *testing.T) {
+	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial resource
+			{
+				Config: testAccSecuritySamlResourceConfigBasic(randomSuffix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "first_name_attribute", "firstName"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "last_name_attribute", "lastName"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "email_attribute", "email"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "groups_attribute", "groups"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_assertion_signature", "false"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+					resource.TestCheckResourceAttrSet(securitySamlResourceName, "idp_metadata"),
+				),
+			},
+			// Import existing resource - will have placeholder values initially
+			{
+				ResourceName:            securitySamlResourceName,
+				ImportState:             true,
+				ImportStateId:           "saml-configuration",
+				ImportStateVerify:       false, // Can't verify since imported values are placeholders
+				ImportStateVerifyIgnore: []string{},
+			},
+			// Apply configuration after import to set actual values
+			{
+				Config: testAccSecuritySamlResourceConfigBasic(randomSuffix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+				),
+			},
+		},
+	})
+}
+
 func testAccSecuritySamlResourceConfigBasic(randomSuffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "test" {

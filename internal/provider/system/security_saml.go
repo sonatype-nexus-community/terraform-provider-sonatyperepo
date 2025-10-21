@@ -129,6 +129,23 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 	}
 }
 
+// ImportState imports the resource state.
+func (r *securitySamlResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+
+	tflog.Info(ctx, "Importing SAML configuration", map[string]interface{}{
+		"import_id": req.ID,
+	})
+
+	var state model.SecuritySamlModel
+	
+	// Set the state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	
+	tflog.Info(ctx, "Successfully imported SAML configuration")
+}
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
