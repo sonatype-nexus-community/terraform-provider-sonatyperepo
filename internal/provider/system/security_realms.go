@@ -93,6 +93,65 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 	}
 }
 
+// ImportState imports the resource state from the remote system.
+// For security realms, we use a static ID since this is a singleton resource.
+func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+
+	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+
+	// Read current configuration from the API
+	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
+	if err != nil {
+		if httpResponse != nil && httpResponse.StatusCode == 404 {
+			resp.Diagnostics.AddError(
+				"Security Realms Configuration Not Found",
+				"Unable to import Security Realms Configuration: configuration does not exist on the server.",
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				"Error Reading Security Realms Configuration",
+				fmt.Sprintf("Unable to read Security Realms Configuration during import: %s", err),
+			)
+		}
+		return
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Successfully imported security realms configuration: %v", apiResponse))
+
+	// Convert API response to Terraform state
+	var state model.SecurityRealmsModel
+	
+	// Set the ID
+	state.ID = types.StringValue("security_realms")
+	
+	// Convert API response to Terraform List
+	if apiResponse != nil {
+		activeElements := make([]attr.Value, len(apiResponse))
+		for i, realm := range apiResponse {
+			activeElements[i] = types.StringValue(realm)
+		}
+
+		activeList, diags := types.ListValue(types.StringType, activeElements)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		state.Active = activeList
+	} else {
+		// If no active realms, create empty list
+		emptyList, diags := types.ListValue(types.StringType, []attr.Value{})
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		state.Active = emptyList
+	}
+
+	// Set the state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	
+	tflog.Info(ctx, "Successfully imported security realms configuration")
+}
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *securityRealmsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
