@@ -67,7 +67,7 @@ type NestedStruct struct {
 	Name   string       `nxrm:"name"`
 }
 
-func TestStructToMap_SimpleStruct(t *testing.T) {
+func TestStructToMapSimpleStruct(t *testing.T) {
 	s := SimpleStruct{
 		Name:  "John Doe",
 		Age:   30,
@@ -87,7 +87,7 @@ func TestStructToMap_SimpleStruct(t *testing.T) {
 	}
 }
 
-func TestStructToMap_PointerToStruct(t *testing.T) {
+func TestStructToMapPointerToStruct(t *testing.T) {
 	s := &SimpleStruct{
 		Name:  "Jane Doe",
 		Age:   25,
@@ -107,7 +107,7 @@ func TestStructToMap_PointerToStruct(t *testing.T) {
 	}
 }
 
-func TestStructToMap_NoTags(t *testing.T) {
+func TestStructToMapNoTags(t *testing.T) {
 	s := StructWithNoTags{
 		Field1: "value1",
 		Field2: 42,
@@ -125,7 +125,7 @@ func TestStructToMap_NoTags(t *testing.T) {
 	}
 }
 
-func TestStructToMap_MixedTags(t *testing.T) {
+func TestStructToMapMixedTags(t *testing.T) {
 	s := StructWithMixedTags{
 		Tagged:   "tagged_value",
 		Untagged: "untagged_value",
@@ -155,7 +155,7 @@ func TestStructToMap_MixedTags(t *testing.T) {
 	}
 }
 
-func TestStructToMap_AllTypes(t *testing.T) {
+func TestStructToMapAllTypes(t *testing.T) {
 	s := AllTypesStruct{
 		StringField:  "test",
 		IntField:     -42,
@@ -202,7 +202,7 @@ func TestStructToMap_AllTypes(t *testing.T) {
 	}
 }
 
-func TestStructToMap_WithPointers(t *testing.T) {
+func TestStructToMapWithPointers(t *testing.T) {
 	str := "pointer_string"
 	num := 100
 	b := false
@@ -226,7 +226,7 @@ func TestStructToMap_WithPointers(t *testing.T) {
 	}
 }
 
-func TestStructToMap_WithNilPointers(t *testing.T) {
+func TestStructToMapWithNilPointers(t *testing.T) {
 	s := StructWithPointers{
 		StringPtr: nil,
 		IntPtr:    nil,
@@ -246,7 +246,7 @@ func TestStructToMap_WithNilPointers(t *testing.T) {
 	}
 }
 
-func TestStructToMap_EmptyStruct(t *testing.T) {
+func TestStructToMapEmptyStruct(t *testing.T) {
 	type EmptyStruct struct{}
 
 	s := EmptyStruct{}
@@ -257,7 +257,7 @@ func TestStructToMap_EmptyStruct(t *testing.T) {
 	}
 }
 
-func TestStructToMap_ZeroValues(t *testing.T) {
+func TestStructToMapZeroValues(t *testing.T) {
 	s := SimpleStruct{
 		Name:  "",
 		Age:   0,
@@ -277,7 +277,7 @@ func TestStructToMap_ZeroValues(t *testing.T) {
 	}
 }
 
-func TestStructToMap_NonStructInput(t *testing.T) {
+func TestStructToMapNonStructInput(t *testing.T) {
 	// Test with string
 	result := model.StructToMap("not a struct")
 	if len(*result) != 0 {
@@ -297,7 +297,7 @@ func TestStructToMap_NonStructInput(t *testing.T) {
 	}
 }
 
-func TestStructToMap_NestedStruct(t *testing.T) {
+func TestStructToMapNestedStruct(t *testing.T) {
 	s := NestedStruct{
 		Simple: SimpleStruct{
 			Name:  "Nested",
@@ -324,7 +324,7 @@ func TestStructToMap_NestedStruct(t *testing.T) {
 	}
 }
 
-func TestStructToMap_BooleanValues(t *testing.T) {
+func TestStructToMapBooleanValues(t *testing.T) {
 	type BoolStruct struct {
 		TrueField  bool `nxrm:"true_field"`
 		FalseField bool `nxrm:"false_field"`
@@ -347,7 +347,7 @@ func TestStructToMap_BooleanValues(t *testing.T) {
 	}
 }
 
-func TestStructToMap_NegativeNumbers(t *testing.T) {
+func TestStructToMapNegativeNumbers(t *testing.T) {
 	type NegativeStruct struct {
 		NegInt   int     `nxrm:"neg_int"`
 		NegFloat float64 `nxrm:"neg_float"`
