@@ -336,7 +336,7 @@ func (r *userResource) ImportState(ctx context.Context, req resource.ImportState
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: <user_id>,<source> - e.g. admin@SAML. Got: %q", req.ID),
+			fmt.Sprintf("Expected import identifier with format: <user_id>,<source> - e.g. admin,SAML. Got: %q", req.ID),
 		)
 		return
 	}
