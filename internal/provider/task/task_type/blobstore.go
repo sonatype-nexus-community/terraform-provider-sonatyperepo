@@ -21,13 +21,16 @@ import (
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 type BlobstoreCompactTask struct {
@@ -45,7 +48,7 @@ func NewBlobstoreCompactTask() *BlobstoreCompactTask {
 // --------------------------------------------
 // Blobstore Compact Format Functions
 // --------------------------------------------
-func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
@@ -55,14 +58,13 @@ func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *sonatyperepo
 
 func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
-	// 	planModel := (plan).(model.RepositoryAptHostedModel)
+	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
-	// 	// Cast to correct State Model Type
-	// 	stateModel := (state).(model.RepositoryAptHostedModel)
+	// Cast to correct State Model Type
+	stateModel := (state).(model.TaskBlobstoreCompactModel)
 
-	// // Call API to Create
-	// return apiClient.RepositoryManagementAPI.UpdateAptHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
-	return nil, nil
+	// Call API to Update
+	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel()).Execute()
 }
 
 func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -93,12 +95,23 @@ func (f *BlobstoreCompactTask) GetStateAsModel(ctx context.Context, state tfsdk.
 
 func (f *BlobstoreCompactTask) UpdatePlanForState(plan any) any {
 	var planModel = (plan).(model.TaskBlobstoreCompactModel)
-	// planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return planModel
 }
 
 func (f *BlobstoreCompactTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskBlobstoreCompactModel)
-	// stateModel.FromApiModel((api).(sonatyperepo.TaskXO))
+	apiModel := (api).(v3.CreateTask201Response)
+	stateModel.Id = types.StringValue(apiModel.Id)
 	return stateModel
+}
+
+func (f *BlobstoreCompactTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
+	planModel := (plan).(model.TaskBlobstoreCompactModel)
+	stateModel := (state).(model.TaskBlobstoreCompactModel)
+
+	planModel.Id = stateModel.Id
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	return planModel
 }

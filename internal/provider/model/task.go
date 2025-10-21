@@ -25,17 +25,17 @@ import (
 // Task Frequency
 // ----------------------------------------
 type taskFrequency struct {
-	Schedule       types.String   `tfsdk:"schedule"`
-	StartDate      *types.Int32   `tfsdk:"start_date"`
-	TimezoneOffset *types.String  `tfsdk:"timezone_offset"`
-	RecurringDays  *[]types.Int32 `tfsdk:"recurring_days"`
-	CronExpression *types.String  `tfsdk:"cron_expression"`
+	Schedule       types.String  `tfsdk:"schedule"`
+	StartDate      types.Int32   `tfsdk:"start_date"`
+	TimezoneOffset types.String  `tfsdk:"timezone_offset"`
+	RecurringDays  []types.Int32 `tfsdk:"recurring_days"`
+	CronExpression types.String  `tfsdk:"cron_expression"`
 }
 
 func (f *taskFrequency) ToApiModel(api *v3.FrequencyXO) {
 	api.CronExpression = f.CronExpression.ValueStringPointer()
 	api.RecurringDays = make([]int32, 0)
-	for _, rd := range *f.RecurringDays {
+	for _, rd := range f.RecurringDays {
 		api.RecurringDays = append(api.RecurringDays, rd.ValueInt32())
 	}
 	api.Schedule = f.Schedule.ValueString()
@@ -73,7 +73,7 @@ func (m *TaskModelSimple) MapFromApi(api *sonatyperepo.TaskXO) {
 type BaseTaskModel struct {
 	TaskModelSimple
 	Enabled               types.Bool     `tfsdk:"enabled"`
-	AlertEmail            *types.String  `tfsdk:"alert_email"`
+	AlertEmail            types.String   `tfsdk:"alert_email"`
 	NotificationCondition types.String   `tfsdk:"notification_condition"`
 	Frequency             *taskFrequency `tfsdk:"frequency"`
 	LastUpdated           types.String   `tfsdk:"last_updated"`
@@ -96,10 +96,13 @@ func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
 	return api
 }
 
-// Base Task Properties
-// ----------------------------------------
-type BaseTaskProperties struct{}
-
-func (p *BaseTaskProperties) AsMap() *map[string]string {
-	return StructToMap(p)
+func (m *BaseTaskModel) toApiUpdateModel() *v3.UpdateTaskRequest {
+	api := v3.NewUpdateTaskRequestWithDefaults()
+	api.Name = m.Name.ValueString()
+	api.Enabled = m.Enabled.ValueBool()
+	api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+	m.Frequency.ToApiModel(&api.Frequency)
+	api.AlertEmail = m.AlertEmail.ValueStringPointer()
+	api.NotificationCondition = m.NotificationCondition.ValueString()
+	return api
 }

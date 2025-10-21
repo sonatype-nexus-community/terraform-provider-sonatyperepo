@@ -27,10 +27,9 @@ import (
 // Properties for blobstore.compact
 // ----------------------------------------
 type TaskPropertiesBlobstoreCompact struct {
-	BaseTaskProperties
-	BlobstoreName types.String `tfsdk:"blob_store_name" nxrm:"blobStoreName"`
+	BlobstoreName types.String `tfsdk:"blob_store_name" nxrm:"blobstoreName"`
 	// The number of days a blob should kept before permanent deletion (default 0)
-	BlobsOlderThan *types.Int32 `tfsdk:"blobs_older_than" nxrm:"blobsOlderThan"`
+	BlobsOlderThan types.Int32 `tfsdk:"blobs_older_than" nxrm:"blobsOlderThan"`
 }
 
 // Task Blobstore Compact
@@ -43,6 +42,13 @@ type TaskBlobstoreCompactModel struct {
 func (m *TaskBlobstoreCompactModel) ToApiCreateModel() *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
-	api.Properties = m.Properties.AsMap()
+	api.Properties = StructToMap(m.Properties)
+	return api
+}
+
+func (m *TaskBlobstoreCompactModel) ToApiUpdateModel() *v3.UpdateTaskRequest {
+	api := m.toApiUpdateModel()
+	// api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
+	api.Properties = StructToMap(m.Properties)
 	return api
 }

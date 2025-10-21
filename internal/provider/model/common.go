@@ -77,6 +77,50 @@ func fieldValueToString(v reflect.Value) string {
 			return ""
 		}
 		return fieldValueToString(v.Elem())
+	case reflect.Struct:
+		// Handle Terraform types (types.String, types.Int32, etc.)
+		if v.CanInterface() {
+			// Check for ValueString() method (types.String)
+			if method := v.MethodByName("ValueString"); method.IsValid() {
+				result := method.Call(nil)
+				if len(result) > 0 {
+					return result[0].String()
+				}
+			}
+
+			// Check for ValueInt32() method (types.Int32)
+			if method := v.MethodByName("ValueInt32"); method.IsValid() {
+				result := method.Call(nil)
+				if len(result) > 0 {
+					return strconv.FormatInt(result[0].Int(), 10)
+				}
+			}
+
+			// Check for ValueInt64() method (types.Int64)
+			if method := v.MethodByName("ValueInt64"); method.IsValid() {
+				result := method.Call(nil)
+				if len(result) > 0 {
+					return strconv.FormatInt(result[0].Int(), 10)
+				}
+			}
+
+			// Check for ValueBool() method (types.Bool)
+			if method := v.MethodByName("ValueBool"); method.IsValid() {
+				result := method.Call(nil)
+				if len(result) > 0 {
+					return strconv.FormatBool(result[0].Bool())
+				}
+			}
+
+			// Check for ValueFloat64() method (types.Float64)
+			if method := v.MethodByName("ValueFloat64"); method.IsValid() {
+				result := method.Call(nil)
+				if len(result) > 0 {
+					return strconv.FormatFloat(result[0].Float(), 'f', -1, 64)
+				}
+			}
+		}
+		return fmt.Sprintf("%v", v.Interface())
 	default:
 		return fmt.Sprintf("%v", v.Interface())
 	}

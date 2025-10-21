@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // BaseTaskType that all task types build from
@@ -54,8 +55,8 @@ func (f *BaseTaskType) GetType() common.TaskType {
 // TaskTypeI that all Repository Formats must implement
 // --------------------------------------------
 type TaskTypeI interface {
-	DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
-	DoUpdateRequest(state any, plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
+	DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error)
+	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	GetApiCreateSuccessResponseCodes() []int
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]schema.Attribute
@@ -65,5 +66,5 @@ type TaskTypeI interface {
 	GetType() common.TaskType
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
-	// ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
+	UpdateStateFromPlanForUpdate(plan any, state any) any
 }

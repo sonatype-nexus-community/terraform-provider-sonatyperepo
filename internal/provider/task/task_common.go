@@ -77,17 +77,6 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	// planValidationMessagesForNxrmVersion := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
-	// if len(planValidationMessagesForNxrmVersion) > 0 {
-	// 	for _, m := range planValidationMessagesForNxrmVersion {
-	// 		resp.Diagnostics.AddError(
-	// 			fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
-	// 			m,
-	// 		)
-	// 	}
-	// 	return
-	// }
-
 	// Request Context
 	ctx = context.WithValue(
 		ctx,
@@ -96,7 +85,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	)
 
 	// Make API requet
-	httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Client, ctx)
+	taskCreateResponse, httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Client, ctx)
 
 	// Handle Errors
 	if err != nil {
@@ -117,6 +106,8 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		)
 	}
 
+	plan = t.TaskType.UpdateStateFromApi(plan, *taskCreateResponse)
+	plan = t.TaskType.UpdatePlanForState(plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -144,7 +135,7 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	)
 
 	// Make API requet
-	httpResponse, err := t.TaskType.DoUpdateRequest(stateModel, planModel, t.Client, ctx)
+	httpResponse, err := t.TaskType.DoUpdateRequest(planModel, stateModel, t.Client, ctx)
 
 	// Handle any errors
 	if err != nil {
@@ -167,6 +158,7 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	planModel = t.TaskType.UpdateStateFromPlanForUpdate(planModel, stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, planModel)...)
 	if resp.Diagnostics.HasError() {
 		return
