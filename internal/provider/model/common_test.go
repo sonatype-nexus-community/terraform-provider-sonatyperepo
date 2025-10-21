@@ -21,7 +21,7 @@ import (
 	"testing"
 )
 
-const expectedErrorFmtStr = expectedErrorFmtStr
+const expectedErrorFmtStr = "Expected %v, got %v"
 
 // Test structs
 type SimpleStruct struct {
