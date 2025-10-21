@@ -32,6 +32,14 @@ type TaskPropertiesBlobstoreCompact struct {
 	BlobsOlderThan types.Int32 `tfsdk:"blobs_older_than" nxrm:"blobsOlderThan"`
 }
 
+func (p *TaskPropertiesBlobstoreCompact) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	properties := StructToMap(p)
+	if version.OlderThan(3, 80, 0, 0) {
+		delete(*properties, "blobsOlderThan")
+	}
+	return properties
+}
+
 // Task Blobstore Compact
 // ----------------------------------------
 type TaskBlobstoreCompactModel struct {
@@ -39,16 +47,15 @@ type TaskBlobstoreCompactModel struct {
 	Properties TaskPropertiesBlobstoreCompact `tfsdk:"properties"`
 }
 
-func (m *TaskBlobstoreCompactModel) ToApiCreateModel() *v3.TaskTemplateXO {
+func (m *TaskBlobstoreCompactModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
-	api.Properties = StructToMap(m.Properties)
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
 }
 
-func (m *TaskBlobstoreCompactModel) ToApiUpdateModel() *v3.UpdateTaskRequest {
+func (m *TaskBlobstoreCompactModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	// api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
-	api.Properties = StructToMap(m.Properties)
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
 }

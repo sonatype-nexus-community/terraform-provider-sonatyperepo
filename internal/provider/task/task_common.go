@@ -85,7 +85,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	)
 
 	// Make API requet
-	taskCreateResponse, httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Client, ctx)
+	taskCreateResponse, httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Client, ctx, t.NxrmVersion)
 
 	// Handle Errors
 	if err != nil {
@@ -135,7 +135,7 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	)
 
 	// Make API requet
-	httpResponse, err := t.TaskType.DoUpdateRequest(planModel, stateModel, t.Client, ctx)
+	httpResponse, err := t.TaskType.DoUpdateRequest(planModel, stateModel, t.Client, ctx, t.NxrmVersion)
 
 	// Handle any errors
 	if err != nil {

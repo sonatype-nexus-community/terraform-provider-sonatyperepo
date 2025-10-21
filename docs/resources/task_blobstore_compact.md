@@ -75,4 +75,6 @@ Required:
 
 Optional:
 
-- `blobs_older_than` (Number) The number of days a blob should kept before permanent deletion (default 0)
+- `blobs_older_than` (Number) The number of days a blob should kept before permanent deletion (default 0).
+			
+**Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).

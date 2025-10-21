@@ -55,8 +55,8 @@ func (f *BaseTaskType) GetType() common.TaskType {
 // TaskTypeI that all Repository Formats must implement
 // --------------------------------------------
 type TaskTypeI interface {
-	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error)
-	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context) (*http.Response, error)
+	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
+	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	GetApiCreateSuccessResponseCodes() []int
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]schema.Attribute

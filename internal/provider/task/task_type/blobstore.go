@@ -47,15 +47,15 @@ func NewBlobstoreCompactTask() *BlobstoreCompactTask {
 // --------------------------------------------
 // Blobstore Compact Format Functions
 // --------------------------------------------
-func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
 	// Call API to Create
-	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel()).Execute()
+	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
-func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
@@ -63,7 +63,7 @@ func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v
 	stateModel := (state).(model.TaskBlobstoreCompactModel)
 
 	// Call API to Update
-	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel()).Execute()
+	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
 func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -79,10 +79,12 @@ func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]schema.Attribute
 			Optional:    false,
 		},
 		"blobs_older_than": schema.Int32Attribute{
-			Description: "The number of days a blob should kept before permanent deletion (default 0)",
-			Optional:    true,
-			Computed:    true,
-			Default:     int32default.StaticInt32(0),
+			MarkdownDescription: `The number of days a blob should kept before permanent deletion (default 0).
+			
+**Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).`,
+			Optional: true,
+			Computed: true,
+			Default:  int32default.StaticInt32(0),
 		},
 	}
 }
