@@ -21,6 +21,8 @@ import (
 	"testing"
 )
 
+const expectedErrorFmtStr = expectedErrorFmtStr
+
 // Test structs
 type SimpleStruct struct {
 	Name  string `nxrm:"name"`
@@ -83,7 +85,7 @@ func TestStructToMapSimpleStruct(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -103,7 +105,7 @@ func TestStructToMapPointerToStruct(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -121,7 +123,7 @@ func TestStructToMapNoTags(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -222,7 +224,7 @@ func TestStructToMapWithPointers(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -242,7 +244,7 @@ func TestStructToMapWithNilPointers(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -273,7 +275,7 @@ func TestStructToMapZeroValues(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
@@ -343,7 +345,7 @@ func TestStructToMapBooleanValues(t *testing.T) {
 	}
 
 	if !mapsEqual(*result, expected) {
-		t.Errorf("Expected %v, got %v", expected, *result)
+		t.Errorf(expectedErrorFmtStr, expected, *result)
 	}
 }
 
