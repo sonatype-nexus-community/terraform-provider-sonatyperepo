@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+
+## 0.8.1 October 21, 2025
+
 BUG FIXES:
 * **Bug:** Further improve connectivity errors to Sonatype Nexus Repository without the provider crashinh [GH-105]
 
