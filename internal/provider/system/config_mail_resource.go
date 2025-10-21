@@ -251,7 +251,7 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 		port := apiResponse.Port
 		state.Port = types.Int64Value(int64(port))
 
-		if apiResponse.Username != nil {
+		if apiResponse.Username != nil && *apiResponse.Username != "" {
 			state.Username = types.StringPointerValue(apiResponse.Username)
 		}
 
