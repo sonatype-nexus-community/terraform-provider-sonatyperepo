@@ -241,7 +241,6 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	} else {
 		// Update State
-		state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		state.Enabled = types.BoolPointerValue(apiResponse.Enabled)
 		if apiResponse.Host != nil {
 			state.Host = types.StringPointerValue(apiResponse.Host)
