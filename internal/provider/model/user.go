@@ -102,6 +102,10 @@ func (m *UserModel) MapFromApi(api *sonatyperepo.ApiUser) {
 	for _, r := range api.GetRoles() {
 		m.Roles = append(m.Roles, types.StringValue(r))
 	}
+	m.ExternalRoles = make([]types.String, 0)
+	for _, r := range api.GetExternalRoles() {
+		m.ExternalRoles = append(m.ExternalRoles, types.StringValue(r))
+	}
 	// Ignore Password
 	m.Source = types.StringPointerValue(api.Source)
 	m.ReadOnly = types.BoolPointerValue(api.ReadOnly)
