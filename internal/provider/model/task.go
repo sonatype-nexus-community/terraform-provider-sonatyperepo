@@ -54,24 +54,30 @@ type TasksModel struct {
 	Tasks []TaskModelSimple `tfsdk:"tasks"`
 }
 
+// Task Model Base
+// ----------------------------------------
+type baseTaskModel struct {
+	Id   types.String `tfsdk:"id"`
+	Name types.String `tfsdk:"name"`
+}
+
 // Task Model (Simple)
 // ----------------------------------------
 type TaskModelSimple struct {
-	Id   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
-	// Type types.String `tfsdk:"type"`
+	baseTaskModel
+	Type types.String `tfsdk:"type"`
 }
 
 func (m *TaskModelSimple) MapFromApi(api *sonatyperepo.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
-	// m.Type = types.StringPointerValue(api.Type)
+	m.Type = types.StringPointerValue(api.Type)
 }
 
 // Base Task Model (Complete) - used for create and update
 // ----------------------------------------
 type BaseTaskModel struct {
-	TaskModelSimple
+	baseTaskModel
 	Enabled               types.Bool     `tfsdk:"enabled"`
 	AlertEmail            types.String   `tfsdk:"alert_email"`
 	NotificationCondition types.String   `tfsdk:"notification_condition"`
