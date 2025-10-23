@@ -57,7 +57,7 @@ Required:
 
 Optional:
 
-- `policy_names` (List of String) Components that match any of the applied policies will be deleted
+- `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
 
 
 <a id="nestedatt--component"></a>

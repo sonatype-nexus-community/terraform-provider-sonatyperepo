@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -179,16 +179,15 @@ type PrivilegeType interface {
 // Common Schema
 func getSchemaAttributesActionFormatRepository() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"actions": schema.ListAttribute{
-			Description: "A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
+		"actions": schema.SetAttribute{
+			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
 			Required:    true,
 			Optional:    false,
 			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre([]validator.String{
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre([]validator.String{
 					stringvalidator.OneOf(BreadActions()...),
 				}...),
-				listvalidator.UniqueValues(),
 			},
 		},
 		"format": schema.StringAttribute{

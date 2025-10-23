@@ -24,12 +24,10 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -77,23 +75,17 @@ Matching Roles based on id will automatically be granted to LDAP or SAML users.`
 				Required:    true,
 				Optional:    false,
 			},
-			"privileges": schema.ListAttribute{
-				Description: "The list of privileges assigned to this role.",
+			"privileges": schema.SetAttribute{
+				Description: "The set of privileges assigned to this role.",
 				Required:    true,
 				Optional:    false,
 				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-				},
 			},
-			"roles": schema.ListAttribute{
-				Description: "The list of roles assigned to this role.",
+			"roles": schema.SetAttribute{
+				Description: "The set of roles assigned to this role.",
 				Required:    true,
 				Optional:    false,
 				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,

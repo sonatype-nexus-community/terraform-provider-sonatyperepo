@@ -2,8 +2,22 @@
 
 ## X.Y.Z (UNRELEASED)
 
+ENHANCEMENTS:
+* A number of resources have had their schemas updated to use `Set` rather than `List` to avoid unncessary plan changes due to ordering of data. The impacted data sources and resources are:
+  * Data Sources:
+    * `sonatyperepo_blob_store_group`
+    * `sonatyperepo_roles`
+    * `sonatyperepo_users`
+  * Resources:
+    * `sonatyperepo_privilege_*` (i.e. all Privilege resources)
+    * `sonatyperepo_repository_*_hosted` (i.e. all Hosted Repository resources)
+    * `sonatyperepo_repository_*_proxy` (i.e. all Proxy Repository resources)
+    * `sonatyperepo_role`
+    * `sonatyperepo_user`
+
 BUG FIXES:
 * **Bug:** Read for resource `sonatyperepo_user` might return incorrect User breaking state [GH-111]
+* **Bug:** Subsequent plans for `sonatyperepo_role` showed change due to ordering of privileges [GH-112]
 
 ## 0.8.1 October 21, 2025
 
