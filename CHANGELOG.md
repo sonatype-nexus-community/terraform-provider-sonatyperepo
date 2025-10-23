@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+
+## 0.8.2 October 23, 2025
+
 ENHANCEMENTS:
 * A number of resources have had their schemas updated to use `Set` rather than `List` to avoid unncessary plan changes due to ordering of data. The impacted data sources and resources are:
   * Data Sources:
