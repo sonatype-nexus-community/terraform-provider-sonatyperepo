@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -344,6 +345,35 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 			success = true
 		}
 	}
+}
+
+// ImportState implements the resource.ResourceWithImportState interface.
+// This enables terraform import functionality for the repository resource.
+func (r *repositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// The import ID should be the repository name
+	repositoryName := req.ID
+	
+	if repositoryName == "" {
+		resp.Diagnostics.AddError(
+			"Import Error",
+			"Repository name cannot be empty. Please provide the repository name as the import ID.",
+		)
+		return
+	}
+
+	// Set the repository name in the state
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), repositoryName)...)
+	
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Log the import operation
+	tflog.Info(ctx, fmt.Sprintf("Importing %s %s Repository with name: %s", 
+		r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName))
+
+	// The actual state population will be handled by the Read method
+	// which will be called automatically after ImportState completes
 }
 
 func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
