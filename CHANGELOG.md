@@ -17,6 +17,7 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * **Bug:** Read for resource `sonatyperepo_user` might return incorrect User breaking state [GH-111]
+* **Bug:** Subsequent plans for `sonatyperepo_role` showed change due to ordering of privileges [GH-112]
 
 ## 0.8.1 October 21, 2025
 
