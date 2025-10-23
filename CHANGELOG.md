@@ -10,7 +10,8 @@ ENHANCEMENTS:
     * `sonatyperepo_users`
   * Resources:
     * `sonatyperepo_privilege_*` (i.e. all Privilege resources)
-    * `sonatyperepo_repository_*` (i.e. all Repository resources)
+    * `sonatyperepo_repository_*_hosted` (i.e. all Hosted Repository resources)
+    * `sonatyperepo_repository_*_proxy` (i.e. all Proxy Repository resources)
     * `sonatyperepo_role`
     * `sonatyperepo_user`
 

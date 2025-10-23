@@ -17,7 +17,7 @@
 package format
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,13 +25,13 @@ import (
 
 func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attribute {
 	attributes := map[string]schema.Attribute{
-		"member_names": schema.SetAttribute{
+		"member_names": schema.ListAttribute{
 			Description: "Member repositories' names",
 			ElementType: types.StringType,
 			Required:    false,
 			Optional:    true,
-			Validators: []validator.Set{
-				setvalidator.SizeAtLeast(1),
+			Validators: []validator.List{
+				listvalidator.SizeAtLeast(1),
 			},
 		},
 	}

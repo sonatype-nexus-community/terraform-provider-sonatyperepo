@@ -37,7 +37,7 @@ Manage Group YUM Repositories
 
 Optional:
 
-- `member_names` (Set of String) Member repositories' names
+- `member_names` (List of String) Member repositories' names
 
 
 <a id="nestedatt--storage"></a>

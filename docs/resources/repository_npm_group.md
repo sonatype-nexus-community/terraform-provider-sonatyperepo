@@ -36,7 +36,7 @@ Manage Group NPM Repositories
 
 Optional:
 
-- `member_names` (Set of String) Member repositories' names
+- `member_names` (List of String) Member repositories' names
 - `writable_member` (String) This field is for the Group Deployment feature available in Sonatype Nexus Repository Pro.
 
 
