@@ -36,7 +36,7 @@ Manage Group CONAN Repositories
 
 Optional:
 
-- `member_names` (List of String) Member repositories' names
+- `member_names` (Set of String) Member repositories' names
 - `writable_member` (String) This field is for the Group Deployment feature available in Sonatype Nexus Repository Pro.
 
 
@@ -54,4 +54,4 @@ Required:
 
 Optional:
 
-- `policy_names` (List of String) Components that match any of the applied policies will be deleted
+- `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository

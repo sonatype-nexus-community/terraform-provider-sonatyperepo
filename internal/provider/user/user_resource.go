@@ -24,7 +24,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -96,14 +95,11 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					),
 				},
 			},
-			"roles": schema.ListAttribute{
+			"roles": schema.SetAttribute{
 				Description: "The list of roles assigned to this User.",
 				Required:    true,
 				Optional:    false,
 				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-				},
 			},
 			"read_only": schema.BoolAttribute{
 				Computed: true,

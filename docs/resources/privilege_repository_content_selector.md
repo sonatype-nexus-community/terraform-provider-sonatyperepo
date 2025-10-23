@@ -17,7 +17,7 @@ Manage a Privilege of type repository-content-selector
 
 ### Required
 
-- `actions` (List of String) A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
+- `actions` (Set of String) A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
 - `content_selector` (String) The name of a content selector that will be used to grant access to content via this privilege.
 - `description` (String) Friendly description of this Privilege
 - `format` (String) The repository format (i.e 'nuget', 'npm') this privilege will grant access to (or * for all).

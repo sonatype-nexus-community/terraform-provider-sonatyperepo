@@ -37,7 +37,7 @@ Manage Group RAW Repositories
 
 Optional:
 
-- `member_names` (List of String) Member repositories' names
+- `member_names` (Set of String) Member repositories' names
 
 
 <a id="nestedatt--raw"></a>
@@ -62,4 +62,4 @@ Required:
 
 Optional:
 
-- `policy_names` (List of String) Components that match any of the applied policies will be deleted
+- `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
