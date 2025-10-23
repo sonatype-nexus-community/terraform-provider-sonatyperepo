@@ -18,6 +18,7 @@ package system
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -25,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -131,14 +133,93 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 
 // ImportState imports the resource state.
 func (r *securitySamlResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-
 	tflog.Info(ctx, "Importing SAML configuration", map[string]interface{}{
 		"import_id": req.ID,
 	})
 
+	// Set up authentication context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Get the current SAML configuration from the API
+	httpResponse, err := r.Client.SecurityManagementSAMLAPI.GetSamlConfiguration(ctx).Execute()
+	if err != nil {
+		if httpResponse != nil && httpResponse.StatusCode == 404 {
+			resp.Diagnostics.AddError(
+				"SAML Configuration not found",
+				"No SAML configuration exists to import",
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				"Error Reading SAML Configuration during import",
+				fmt.Sprintf("Unable to read SAML Configuration: %s", err),
+			)
+		}
+		return
+	}
+
+	// Parse the response body to get the SamlConfigurationXO
+	var samlConfig sonatyperepo.SamlConfigurationXO
+	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing SAML Configuration response",
+			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
+		)
+		return
+	}
+
+	// Map the API response to our Terraform model
 	var state model.SecuritySamlModel
 	
-	// Set the state
+	state.IdpMetadata = types.StringValue(samlConfig.IdpMetadata)
+	state.UsernameAttribute = types.StringValue(samlConfig.UsernameAttribute)
+	
+	if samlConfig.FirstNameAttribute != nil {
+		state.FirstNameAttribute = types.StringValue(*samlConfig.FirstNameAttribute)
+	} else {
+		state.FirstNameAttribute = types.StringNull()
+	}
+	
+	if samlConfig.LastNameAttribute != nil {
+		state.LastNameAttribute = types.StringValue(*samlConfig.LastNameAttribute)
+	} else {
+		state.LastNameAttribute = types.StringNull()
+	}
+	
+	if samlConfig.EmailAttribute != nil {
+		state.EmailAttribute = types.StringValue(*samlConfig.EmailAttribute)
+	} else {
+		state.EmailAttribute = types.StringNull()
+	}
+	
+	if samlConfig.GroupsAttribute != nil {
+		state.GroupsAttribute = types.StringValue(*samlConfig.GroupsAttribute)
+	} else {
+		state.GroupsAttribute = types.StringNull()
+	}
+	
+	if samlConfig.ValidateResponseSignature != nil {
+		state.ValidateResponseSignature = types.BoolValue(*samlConfig.ValidateResponseSignature)
+	} else {
+		state.ValidateResponseSignature = types.BoolNull()
+	}
+	
+	if samlConfig.ValidateAssertionSignature != nil {
+		state.ValidateAssertionSignature = types.BoolValue(*samlConfig.ValidateAssertionSignature)
+	} else {
+		state.ValidateAssertionSignature = types.BoolNull()
+	}
+	
+	if samlConfig.EntityId != nil {
+		state.EntityId = types.StringValue(*samlConfig.EntityId)
+	} else {
+		state.EntityId = types.StringNull()
+	}
+
+	// Set the populated state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -236,6 +317,64 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 			)
 		}
 		return
+	}
+
+	// Parse the response body to get the SamlConfigurationXO
+	var samlConfig sonatyperepo.SamlConfigurationXO
+	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing SAML Configuration response",
+			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
+		)
+		return
+	}
+
+	// Update state with values from API
+	state.IdpMetadata = types.StringValue(samlConfig.IdpMetadata)
+	state.UsernameAttribute = types.StringValue(samlConfig.UsernameAttribute)
+	
+	if samlConfig.FirstNameAttribute != nil {
+		state.FirstNameAttribute = types.StringValue(*samlConfig.FirstNameAttribute)
+	} else {
+		state.FirstNameAttribute = types.StringNull()
+	}
+	
+	if samlConfig.LastNameAttribute != nil {
+		state.LastNameAttribute = types.StringValue(*samlConfig.LastNameAttribute)
+	} else {
+		state.LastNameAttribute = types.StringNull()
+	}
+	
+	if samlConfig.EmailAttribute != nil {
+		state.EmailAttribute = types.StringValue(*samlConfig.EmailAttribute)
+	} else {
+		state.EmailAttribute = types.StringNull()
+	}
+	
+	if samlConfig.GroupsAttribute != nil {
+		state.GroupsAttribute = types.StringValue(*samlConfig.GroupsAttribute)
+	} else {
+		state.GroupsAttribute = types.StringNull()
+	}
+	
+	if samlConfig.ValidateResponseSignature != nil {
+		state.ValidateResponseSignature = types.BoolValue(*samlConfig.ValidateResponseSignature)
+	} else {
+		state.ValidateResponseSignature = types.BoolNull()
+	}
+	
+	if samlConfig.ValidateAssertionSignature != nil {
+		state.ValidateAssertionSignature = types.BoolValue(*samlConfig.ValidateAssertionSignature)
+	} else {
+		state.ValidateAssertionSignature = types.BoolNull()
+	}
+
+	if !state.EntityId.IsNull() {
+		if samlConfig.EntityId != nil {
+			state.EntityId = types.StringValue(*samlConfig.EntityId)
+		} else {
+			state.EntityId = types.StringNull()
+		}
 	}
 
 	tflog.Debug(ctx, "Successfully read security SAML configuration from API")
