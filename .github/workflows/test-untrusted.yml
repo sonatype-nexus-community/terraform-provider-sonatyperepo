@@ -1,0 +1,65 @@
+# Terraform Provider testing workflow.
+name: Test (Untrusted)
+
+# This GitHub action runs your tests for each pull request and push.
+# Optionally, you can turn it on using a schedule for regular testing.
+on:
+    pull_request:
+        paths-ignore:
+            - 'CHANGELOG.md'
+            - 'README.md'
+        types: [opened, synchronize]
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - 'CHANGELOG.md'
+            - 'README.md'
+
+# Testing only needs permissions to read the repository contents.
+permissions:
+    contents: read
+
+jobs:
+    # Ensure project builds before running testing matrix
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - run: go mod download
+            - run: go build -v .
+            - name: Run linters
+              uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9 # v8
+              with:
+                  version: latest
+
+    docs-check:
+        name: Ensure Docs are Generated
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+              
+            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+
+            - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+              with:
+                terraform_version: 1.4.5
+                terraform_wrapper: false
+            
+            - name: Generate Docs
+              run: go generate ./...
+              working-directory: tools
+
+            - name: Check fo Documentation Diffs
+              run: |
+                  git diff --compact-summary --exit-code || \
+                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in `tools` directory command and commit."; exit 1)
