@@ -17,7 +17,7 @@ Manage a Privilege of type application
 
 ### Required
 
-- `actions` (List of String) A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
+- `actions` (Set of String) A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
 - `description` (String) Friendly description of this Privilege
 - `domain` (String) The domain (i.e. 'blobstores', 'capabilities' or even '*' for all) that this privilege is granting access to. Note that creating new privileges with a domain is only necessary when using plugins that define their own domain(s).
 - `name` (String) The name of the privilege. This value cannot be changed.

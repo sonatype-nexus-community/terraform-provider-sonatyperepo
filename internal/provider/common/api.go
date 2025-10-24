@@ -23,6 +23,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"reflect"
 	"syscall"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -36,10 +37,18 @@ func HandleApiError(message string, err *error, httpResponse *http.Response, res
 			fmt.Sprintf("Networking Error: %s (%v)", errorMessage, *err),
 		)
 	} else {
-		respDiags.AddError(
-			message,
-			fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
-		)
+		if httpResponse != nil {
+			respDiags.AddError(
+				message,
+				fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
+			)
+		} else {
+			respDiags.AddError(
+				message,
+				fmt.Sprintf("Unexpected Error: %v ('%s'): ", *err, reflect.TypeOf(*err)),
+			)
+
+		}
 	}
 }
 
