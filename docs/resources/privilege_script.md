@@ -17,7 +17,7 @@ Manage a Privilege of type script
 
 ### Required
 
-- `actions` (List of String) A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
+- `actions` (Set of String) A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.
 - `description` (String) Friendly description of this Privilege
 - `name` (String) The name of the privilege. This value cannot be changed.
 - `script_name` (String) The name of a script to give access to.
