@@ -29,6 +29,7 @@ import (
 const (
 	resourceTypeSysAnonymousAccess = "sonatyperepo_system_anonymous_access"
 	resourceNameSysAnonymousAccess = "sonatyperepo_system_anonymous_access.aa"
+	anonymousUserIDFormat          = "anonymous-%s"
 )
 
 func TestAccSystemAnonymousAccessResource(t *testing.T) {
@@ -44,7 +45,7 @@ func TestAccSystemAnonymousAccessResource(t *testing.T) {
 						// Verify
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
 					),
 				},
 				// ImportState testing
@@ -76,7 +77,7 @@ func TestAccSystemAnonymousAccessResourceImport(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
 					),
 				},
 				// Test import with different import IDs (all should work for singleton resource)
@@ -123,7 +124,7 @@ func TestAccSystemAnonymousAccessResourceUpdate(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", randomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
 					),
 				},
 				// Update and Read testing
@@ -132,7 +133,7 @@ func TestAccSystemAnonymousAccessResourceUpdate(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", updatedRandomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
 					),
 				},
 				// Test import after update
@@ -150,7 +151,7 @@ func TestAccSystemAnonymousAccessResourceUpdate(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "false"),
 						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf("anonymous-%s", updatedRandomString)),
+						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
 					),
 				},
 				// Test import when disabled
@@ -172,9 +173,9 @@ func getSystemAnonymousAccessResourceConfig(randomString string) string {
 resource "%s" "aa" {
 	enabled = true
 	realm_name = "%s"
-	user_id = "anonymous-%s"
+	user_id = "%s"
 }
-`, resourceTypeSysAnonymousAccess, common.DEFAULT_REALM_NAME, randomString)
+`, resourceTypeSysAnonymousAccess, common.DEFAULT_REALM_NAME, fmt.Sprintf(anonymousUserIDFormat, randomString))
 }
 
 func getSystemAnonymousAccessResourceConfigDisabled(randomString string) string {
@@ -182,7 +183,7 @@ func getSystemAnonymousAccessResourceConfigDisabled(randomString string) string 
 resource "%s" "aa" {
 	enabled = false
 	realm_name = "%s"
-	user_id = "anonymous-%s"
+	user_id = "%s"
 }
-`, resourceTypeSysAnonymousAccess, common.DEFAULT_REALM_NAME, randomString)
+`, resourceTypeSysAnonymousAccess, common.DEFAULT_REALM_NAME, fmt.Sprintf(anonymousUserIDFormat, randomString))
 }
