@@ -448,8 +448,8 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 				Required:    false,
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"policy_names": schema.ListAttribute{
-						Description: "Components that match any of the applied policies will be deleted",
+					"policy_names": schema.SetAttribute{
+						Description: "Set of Cleanup Policies that will apply to this Repository",
 						ElementType: types.StringType,
 						Required:    false,
 						Optional:    true,

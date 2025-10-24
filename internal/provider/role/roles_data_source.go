@@ -20,10 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -88,23 +86,17 @@ func (d *rolesDataSource) Schema(_ context.Context, req datasource.SchemaRequest
 							Required:    true,
 							Optional:    false,
 						},
-						"privileges": schema.ListAttribute{
-							Description: "The list of privileges assigned to this role.",
+						"privileges": schema.SetAttribute{
+							Description: "The set of privileges assigned to this role.",
 							Required:    true,
 							Optional:    false,
 							ElementType: types.StringType,
-							Validators: []validator.List{
-								listvalidator.UniqueValues(),
-							},
 						},
-						"roles": schema.ListAttribute{
-							Description: "The list of roles assigned to this role.",
+						"roles": schema.SetAttribute{
+							Description: "The set of roles assigned to this role.",
 							Required:    true,
 							Optional:    false,
 							ElementType: types.StringType,
-							Validators: []validator.List{
-								listvalidator.UniqueValues(),
-							},
 						},
 					},
 				},
