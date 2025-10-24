@@ -22,7 +22,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -71,16 +71,15 @@ func (pt *ApplicationPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[strin
 			Required:    true,
 			Optional:    false,
 		},
-		"actions": schema.ListAttribute{
-			Description: "A collection of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
+		"actions": schema.SetAttribute{
+			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
 			Required:    true,
 			Optional:    false,
 			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre([]validator.String{
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre([]validator.String{
 					stringvalidator.OneOf(AllActionsExceptRun()...),
 				}...),
-				listvalidator.UniqueValues(),
 			},
 		},
 	}

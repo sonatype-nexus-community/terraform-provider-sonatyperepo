@@ -21,7 +21,7 @@ Configure the Sonatype IQ Server Connection
 - `first_name` (String) The first name of the user.
 - `last_name` (String) The last name of the user.
 - `password` (String, Sensitive) The password for the user.
-- `roles` (List of String) The list of roles assigned to this User.
+- `roles` (Set of String) The list of roles assigned to this User.
 - `status` (String) The user's status.
 - `user_id` (String) The userid which is required for login. This value cannot be changed.
 

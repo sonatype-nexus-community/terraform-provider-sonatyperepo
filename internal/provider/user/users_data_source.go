@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -102,23 +101,17 @@ func (d *usersDataSource) Schema(_ context.Context, req datasource.SchemaRequest
 								stringvalidator.OneOf([]string{"active", "locked", "disabled", "changepassword"}...),
 							},
 						},
-						"roles": schema.ListAttribute{
+						"roles": schema.SetAttribute{
 							Description: "The roles which the user has been assigned within Nexus.",
 							Required:    true,
 							Optional:    false,
 							ElementType: types.StringType,
-							Validators: []validator.List{
-								listvalidator.UniqueValues(),
-							},
 						},
-						"external_roles": schema.ListAttribute{
+						"external_roles": schema.SetAttribute{
 							Description: "The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.",
 							Required:    true,
 							Optional:    false,
 							ElementType: types.StringType,
-							Validators: []validator.List{
-								listvalidator.UniqueValues(),
-							},
 						},
 					},
 				},
