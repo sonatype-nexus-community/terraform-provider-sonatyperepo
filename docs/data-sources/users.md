@@ -25,11 +25,11 @@ Use this data source to get all Users
 Required:
 
 - `email_address` (String) The email address associated with the user.
-- `external_roles` (List of String) The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.
+- `external_roles` (Set of String) The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.
 - `first_name` (String) The first name of the user.
 - `last_name` (String) The last name of the user.
 - `read_only` (Boolean) Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update.
-- `roles` (List of String) The roles which the user has been assigned within Nexus.
+- `roles` (Set of String) The roles which the user has been assigned within Nexus.
 - `source` (String) The user source which is the origin of this user. This value cannot be changed.
 - `status` (String) The user's status
 - `user_id` (String) The userid which is required for login. This value cannot be changed.

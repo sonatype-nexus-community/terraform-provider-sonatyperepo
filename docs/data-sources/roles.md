@@ -27,7 +27,7 @@ Required:
 - `description` (String) The description of this role.
 - `id` (String) The id of the role.
 - `name` (String) The name of the role.
-- `privileges` (List of String) The list of privileges assigned to this role.
+- `privileges` (Set of String) The set of privileges assigned to this role.
 - `read_only` (Boolean) Indicates whether the role can be changed. The system will ignore any supplied external values.
-- `roles` (List of String) The list of roles assigned to this role.
+- `roles` (Set of String) The set of roles assigned to this role.
 - `source` (String) The user source which is the origin of this role.

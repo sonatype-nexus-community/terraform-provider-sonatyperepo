@@ -24,7 +24,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -96,14 +95,11 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					),
 				},
 			},
-			"roles": schema.ListAttribute{
+			"roles": schema.SetAttribute{
 				Description: "The list of roles assigned to this User.",
 				Required:    true,
 				Optional:    false,
 				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-				},
 			},
 			"read_only": schema.BoolAttribute{
 				Computed: true,
@@ -188,7 +184,7 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Execute()
 
 	if err != nil {
-		if httpResponse.StatusCode == 404 {
+		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
 				"User does not exist",
@@ -206,13 +202,38 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if len(apiResponse) == 0 {
 		resp.Diagnostics.AddError(
 			"No User with requested User ID",
+			fmt.Sprintf("No user found for %s@%s", state.UserId.ValueString(), state.Source.ValueString()),
+		)
+		return
+	}
+
+	var actualUser *sonatyperepo.ApiUser
+	for _, u := range apiResponse {
+		if *u.UserId == state.UserId.ValueString() && *u.Source == state.Source.ValueString() {
+			tflog.Debug(ctx,
+				fmt.Sprintf(
+					"Matched User: %s=%s and %s=%s",
+					*u.UserId,
+					state.UserId.ValueString(),
+					*u.Source,
+					state.Source.ValueString(),
+				),
+			)
+			actualUser = &u
+		}
+	}
+
+	if actualUser == nil {
+		// No user with the exact User ID and Source
+		resp.Diagnostics.AddError(
+			"User does not exist",
 			fmt.Sprintf("No user returned: %s: %s", httpResponse.Status, err),
 		)
 		return
 	}
 
 	// Update State based on Response
-	state.MapFromApi(&apiResponse[0])
+	state.MapFromApi(actualUser)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
