@@ -44,6 +44,8 @@ jobs:
                   version: latest
             
     sonatype:
+        # Skip this job if PR is from a fork
+        if: github.event.pull_request.head.repo.full_name == github.repository
         name: Sonatype Scan
         runs-on: ubuntu-latest
         steps:
@@ -96,6 +98,8 @@ jobs:
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
+        # Skip this job if PR is from a fork
+        if: github.event.pull_request.head.repo.full_name == github.repository
         name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         needs: 
             - build
