@@ -26,7 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -171,53 +170,8 @@ func (r *securitySamlResource) ImportState(ctx context.Context, req resource.Imp
 		return
 	}
 
-	// Map the API response to our Terraform model
 	var state model.SecuritySamlModel
-	
-	state.IdpMetadata = types.StringValue(samlConfig.IdpMetadata)
-	state.UsernameAttribute = types.StringValue(samlConfig.UsernameAttribute)
-	
-	if samlConfig.FirstNameAttribute != nil {
-		state.FirstNameAttribute = types.StringValue(*samlConfig.FirstNameAttribute)
-	} else {
-		state.FirstNameAttribute = types.StringNull()
-	}
-	
-	if samlConfig.LastNameAttribute != nil {
-		state.LastNameAttribute = types.StringValue(*samlConfig.LastNameAttribute)
-	} else {
-		state.LastNameAttribute = types.StringNull()
-	}
-	
-	if samlConfig.EmailAttribute != nil {
-		state.EmailAttribute = types.StringValue(*samlConfig.EmailAttribute)
-	} else {
-		state.EmailAttribute = types.StringNull()
-	}
-	
-	if samlConfig.GroupsAttribute != nil {
-		state.GroupsAttribute = types.StringValue(*samlConfig.GroupsAttribute)
-	} else {
-		state.GroupsAttribute = types.StringNull()
-	}
-	
-	if samlConfig.ValidateResponseSignature != nil {
-		state.ValidateResponseSignature = types.BoolValue(*samlConfig.ValidateResponseSignature)
-	} else {
-		state.ValidateResponseSignature = types.BoolNull()
-	}
-	
-	if samlConfig.ValidateAssertionSignature != nil {
-		state.ValidateAssertionSignature = types.BoolValue(*samlConfig.ValidateAssertionSignature)
-	} else {
-		state.ValidateAssertionSignature = types.BoolNull()
-	}
-	
-	if samlConfig.EntityId != nil {
-		state.EntityId = types.StringValue(*samlConfig.EntityId)
-	} else {
-		state.EntityId = types.StringNull()
-	}
+	state.MapFromApi(&samlConfig)
 
 	// Set the populated state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -329,53 +283,8 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	// Update state with values from API
-	state.IdpMetadata = types.StringValue(samlConfig.IdpMetadata)
-	state.UsernameAttribute = types.StringValue(samlConfig.UsernameAttribute)
-	
-	if samlConfig.FirstNameAttribute != nil {
-		state.FirstNameAttribute = types.StringValue(*samlConfig.FirstNameAttribute)
-	} else {
-		state.FirstNameAttribute = types.StringNull()
-	}
-	
-	if samlConfig.LastNameAttribute != nil {
-		state.LastNameAttribute = types.StringValue(*samlConfig.LastNameAttribute)
-	} else {
-		state.LastNameAttribute = types.StringNull()
-	}
-	
-	if samlConfig.EmailAttribute != nil {
-		state.EmailAttribute = types.StringValue(*samlConfig.EmailAttribute)
-	} else {
-		state.EmailAttribute = types.StringNull()
-	}
-	
-	if samlConfig.GroupsAttribute != nil {
-		state.GroupsAttribute = types.StringValue(*samlConfig.GroupsAttribute)
-	} else {
-		state.GroupsAttribute = types.StringNull()
-	}
-	
-	if samlConfig.ValidateResponseSignature != nil {
-		state.ValidateResponseSignature = types.BoolValue(*samlConfig.ValidateResponseSignature)
-	} else {
-		state.ValidateResponseSignature = types.BoolNull()
-	}
-	
-	if samlConfig.ValidateAssertionSignature != nil {
-		state.ValidateAssertionSignature = types.BoolValue(*samlConfig.ValidateAssertionSignature)
-	} else {
-		state.ValidateAssertionSignature = types.BoolNull()
-	}
-
-	if !state.EntityId.IsNull() {
-		if samlConfig.EntityId != nil {
-			state.EntityId = types.StringValue(*samlConfig.EntityId)
-		} else {
-			state.EntityId = types.StringNull()
-		}
-	}
+	// Update state with values from API using MapFromApi
+	state.MapFromApi(&samlConfig)
 
 	tflog.Debug(ctx, "Successfully read security SAML configuration from API")
 

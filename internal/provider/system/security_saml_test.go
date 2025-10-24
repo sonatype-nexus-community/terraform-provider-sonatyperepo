@@ -29,6 +29,7 @@ import (
 const (
 	securitySamlResourceName = "sonatyperepo_security_saml.test"
 	securitySamlResourceType = "sonatyperepo_security_saml"
+	testEntityIDTemplate     = "test-entity-%s"
 )
 
 func TestAccSecuritySamlResourceBasic(t *testing.T) {
@@ -48,7 +49,7 @@ func TestAccSecuritySamlResourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(securitySamlResourceName, "groups_attribute", "groups"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_assertion_signature", "false"),
-					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf(testEntityIDTemplate, randomSuffix)),
 					resource.TestCheckResourceAttrSet(securitySamlResourceName, "idp_metadata"),
 				),
 			},
@@ -68,7 +69,7 @@ func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
-					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf(testEntityIDTemplate, randomSuffix)),
 				),
 			},
 			// Update resource
@@ -123,7 +124,7 @@ func TestAccSecuritySamlResourceImport(t *testing.T) {
 					resource.TestCheckResourceAttr(securitySamlResourceName, "groups_attribute", "groups"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_response_signature", "true"),
 					resource.TestCheckResourceAttr(securitySamlResourceName, "validate_assertion_signature", "false"),
-					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf(testEntityIDTemplate, randomSuffix)),
 					resource.TestCheckResourceAttrSet(securitySamlResourceName, "idp_metadata"),
 				),
 			},
@@ -140,7 +141,7 @@ func TestAccSecuritySamlResourceImport(t *testing.T) {
 				Config: testAccSecuritySamlResourceConfigBasic(randomSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(securitySamlResourceName, "username_attribute", "username"),
-					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf("test-entity-%s", randomSuffix)),
+					resource.TestCheckResourceAttr(securitySamlResourceName, "entity_id", fmt.Sprintf(testEntityIDTemplate, randomSuffix)),
 				),
 			},
 		},
@@ -158,9 +159,9 @@ resource "%s" "test" {
   groups_attribute = "groups"
   validate_response_signature = true
   validate_assertion_signature = false
-  entity_id = "test-entity-%s"
+  entity_id = "%s"
 }
-`, securitySamlResourceType, testSamlMetadata(), randomSuffix)
+`, securitySamlResourceType, testSamlMetadata(), fmt.Sprintf(testEntityIDTemplate, randomSuffix))
 }
 
 func testAccSecuritySamlResourceConfigUpdated(randomSuffix string) string {
