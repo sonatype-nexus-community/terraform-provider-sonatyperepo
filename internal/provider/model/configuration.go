@@ -48,6 +48,23 @@ type EmailConfigurationModel struct {
 	LastUpdated                   types.String `tfsdk:"last_updated"`
 }
 
+func (m *EmailConfigurationModel) MapFromApi(api *sonatyperepo.ApiEmailConfiguration) {
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	m.Host = types.StringPointerValue(api.Host)
+	m.Port = types.Int64Value(int64(api.Port))
+	if api.Username != nil && *api.Username != "" {
+		m.Username = types.StringPointerValue(api.Username)
+	}
+	// Skip password mapping for security reasons
+	m.FromAddress = types.StringPointerValue(api.FromAddress)
+	m.SubjectPrefix = types.StringPointerValue(api.SubjectPrefix)
+	m.StartTLSEnabled = types.BoolPointerValue(api.StartTlsEnabled)
+	m.StartTLSRequired = types.BoolPointerValue(api.StartTlsRequired)
+	m.SSLOnConnectEnabled = types.BoolPointerValue(api.SslOnConnectEnabled)
+	m.SSLServerIdentityCheckEnabled = types.BoolPointerValue(api.SslServerIdentityCheckEnabled)
+	m.NexusTrustStoreEnabled = types.BoolPointerValue(api.NexusTrustStoreEnabled)
+}
+
 type IqConnectionModel struct {
 	Enabled                types.Bool   `tfsdk:"enabled"`
 	Url                    types.String `tfsdk:"url"`
