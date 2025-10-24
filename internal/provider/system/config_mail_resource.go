@@ -241,63 +241,7 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	} else {
 		// Update State
-		state.Enabled = types.BoolPointerValue(apiResponse.Enabled)
-		if apiResponse.Host != nil {
-			state.Host = types.StringPointerValue(apiResponse.Host)
-		} else {
-			state.Host = types.StringNull()
-		}
-
-		port := apiResponse.Port
-		state.Port = types.Int64Value(int64(port))
-
-		if apiResponse.Username != nil && *apiResponse.Username != "" {
-			state.Username = types.StringPointerValue(apiResponse.Username)
-		}
-
-		// Ignore Password during reads for security reasons
-
-		if apiResponse.FromAddress != nil {
-			state.FromAddress = types.StringPointerValue(apiResponse.FromAddress)
-		} else {
-			state.FromAddress = types.StringNull()
-		}
-		
-		if apiResponse.SubjectPrefix != nil {
-			state.SubjectPrefix = types.StringPointerValue(apiResponse.SubjectPrefix)
-		} else {
-			state.SubjectPrefix = types.StringNull()
-		}
-		
-		if apiResponse.StartTlsEnabled != nil {
-			state.StartTLSEnabled = types.BoolPointerValue(apiResponse.StartTlsEnabled)
-		} else {
-			state.StartTLSEnabled = types.BoolNull()
-		}
-		
-		if apiResponse.StartTlsRequired != nil {
-			state.StartTLSRequired = types.BoolPointerValue(apiResponse.StartTlsRequired)
-		} else {
-			state.StartTLSRequired = types.BoolNull()
-		}
-		
-		if apiResponse.SslOnConnectEnabled != nil {
-			state.SSLOnConnectEnabled = types.BoolPointerValue(apiResponse.SslOnConnectEnabled)
-		} else {
-			state.SSLOnConnectEnabled = types.BoolNull()
-		}
-		
-		if apiResponse.SslServerIdentityCheckEnabled != nil {
-			state.SSLServerIdentityCheckEnabled = types.BoolPointerValue(apiResponse.SslServerIdentityCheckEnabled)
-		} else {
-			state.SSLServerIdentityCheckEnabled = types.BoolNull()
-		}
-		
-		if apiResponse.NexusTrustStoreEnabled != nil {
-			state.NexusTrustStoreEnabled = types.BoolPointerValue(apiResponse.NexusTrustStoreEnabled)
-		} else {
-			state.NexusTrustStoreEnabled = types.BoolNull()
-		}
+		state.MapFromApi(apiResponse)
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		if resp.Diagnostics.HasError() {
