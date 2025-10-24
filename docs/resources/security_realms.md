@@ -22,3 +22,16 @@ Activate and order Sontaype Nexus Repository Security realms. This resource mana
 ### Read-Only
 
 - `id` (String) Resource identifier
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing Security Realms configuration can be imported as follows.
+#
+# NOTE: The Identifier (SECURITY_REALMS) in below example has no meaning and is just to comply with Terraform syntax.
+
+# Example
+terraform import sonatyperepo_security_realms.realms SECURITY_REALMS
+```

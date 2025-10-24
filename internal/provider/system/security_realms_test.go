@@ -56,6 +56,13 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
+				// ImportState testing
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "security_realms",
+				},
 				// Update and Read testing - multiple realms
 				{
 					Config: getSecurityRealmsResourceConfig(randomString, []string{"DockerToken", "NexusAuthenticatingRealm"}),
@@ -67,6 +74,13 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
+				// ImportState testing after update
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "security_realms",
+				},
 				// Update and Read testing - reorder realms
 				{
 					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm","DockerToken"}),
@@ -77,6 +91,13 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "DockerToken"),
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
+				},
+				// ImportState testing with alternative ID (tests silent override)
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "any_id_here",
 				},
 				// Delete testing automatically occurs in TestCase
 			},
@@ -99,6 +120,13 @@ func TestAccSecurityRealmsResourceMinimalConfig(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
+				},
+				// ImportState testing
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "security_realms",
 				},
 				// Delete testing automatically occurs in TestCase
 			},
@@ -132,7 +160,49 @@ func TestAccSecurityRealmsResourceCommonRealms(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
 					),
 				},
+				// ImportState testing
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "security_realms",
+				},
 				// Delete testing automatically occurs in TestCase
+			},
+		})
+	}
+}
+
+// TestAccSecurityRealmsResourceImportOnly tests import functionality in isolation
+func TestAccSecurityRealmsResourceImportOnly(t *testing.T) {
+	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
+		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Create initial state to import from
+				{
+					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm", "DockerToken"}),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "2"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "DockerToken"),
+					),
+				},
+				// Test import with standard ID
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "security_realms",
+				},
+				// Test import with empty string ID
+				{
+					ResourceName:      resourceNameSecurityRealms,
+					ImportState:       true,
+					ImportStateVerify: true,
+					ImportStateId:     "",
+				},
 			},
 		})
 	}
