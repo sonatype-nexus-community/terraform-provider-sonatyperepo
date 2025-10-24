@@ -1,0 +1,1 @@
+terraform import sonatyperepo_system_anonymous_access.anonymous anonymous_access
