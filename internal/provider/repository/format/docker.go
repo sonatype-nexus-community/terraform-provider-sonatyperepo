@@ -42,6 +42,13 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+const (
+	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
+	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
+	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
+	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
+)
+
 type DockerRepositoryFormat struct {
 	BaseRepositoryFormat
 }
@@ -119,22 +126,22 @@ func (f *DockerRepositoryFormatHosted) ValidateRepositoryForImport(repositoryDat
 	}
 
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	actualFormat := strings.ToLower(*apiRepo.Format)
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	if actualFormat != expectedFormatLower {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil
@@ -229,22 +236,22 @@ func (f *DockerRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData
 
 	// Validate format (case-insensitive)
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	actualFormat := strings.ToLower(*apiRepo.Format)
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	if actualFormat != expectedFormatLower {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil
@@ -339,22 +346,22 @@ func (f *DockerRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData
 	}
 
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	actualFormat := strings.ToLower(*apiRepo.Format)
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	if actualFormat != expectedFormatLower {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil

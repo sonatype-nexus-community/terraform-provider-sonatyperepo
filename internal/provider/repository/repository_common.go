@@ -51,6 +51,7 @@ const (
 	REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s - %s"
 	REPOSITORY_ERROR_DID_NOT_EXIST             = "%s %s Repository did not exist to %s"
 	REPOSITORY_ERROR_IMPORT_VALIDATION         = "Repository validation failed during import: %s"
+	REPOSITORY_IMPORT_ERROR                    = "Import Error"
 )
 
 // Generic to all Repository Resources
@@ -269,7 +270,6 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(planModel, apiResponse)
-	// stateModel = (r.RepositoryFormat.UpdatePlanForState(stateModel)).(model.RepositoryNpmHostedModel)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 	if resp.Diagnostics.HasError() {
@@ -279,30 +279,31 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
+
+	repositoryName := reflect.ValueOf(stateModel).FieldByName("Name")
+	if !repositoryName.IsValid() {
+		resp.Diagnostics.AddError(
+			"No Repository Name in State",
+			"No Repository Name can be found in the state model",
+		)
+	}
 
 	// Handle any errors
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
 
-	// Request Context
+	// Set API Context
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
 		r.Auth,
 	)
 
-	// Make API request
-	repoNameStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Name").Interface()
-	repositoryName, ok := repoNameStructField.(basetypes.StringValue)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Failed to determine Repository Name to delete from State",
-			fmt.Sprintf("%s %s", REPOSITORY_ERROR_RESPONSE_PREFIX, repoNameStructField),
-		)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -356,7 +357,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 
 	if repositoryName == "" {
 		resp.Diagnostics.AddError(
-			"Import Error",
+			REPOSITORY_IMPORT_ERROR,
 			"Repository name cannot be empty. Please provide the repository name as the import ID.",
 		)
 		return
@@ -378,7 +379,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.Diagnostics.AddError(
-				"Import Error",
+				REPOSITORY_IMPORT_ERROR,
 				fmt.Sprintf("Repository '%s' does not exist on the server", repositoryName),
 			)
 		} else {
@@ -431,7 +432,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 		}
 	default:
 		resp.Diagnostics.AddError(
-			"Import Error", 
+			REPOSITORY_IMPORT_ERROR, 
 			fmt.Sprintf("Unknown repository type: %s", r.RepositoryType.String()),
 		)
 		return
