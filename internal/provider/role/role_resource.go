@@ -24,6 +24,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -260,4 +261,10 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			fmt.Sprintf("Unexpected Response Code whilst removing Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Import by ID - the import ID should be the role ID
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
