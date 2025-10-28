@@ -17,10 +17,9 @@ env:
 permissions:
     contents: read
 
-jobs:            
+jobs:
     sonatype:
-        # # Skip this job if PR is from a fork
-        # if: github.event.pull_request.head.repo.fork == false
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         name: Sonatype Scan
         runs-on: ubuntu-latest
         steps:
@@ -48,8 +47,7 @@ jobs:
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
-        # Skip this job if PR is from a fork
-        # if: github.event.pull_request.head.repo.fork == false
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         needs: 
             - sonatype
