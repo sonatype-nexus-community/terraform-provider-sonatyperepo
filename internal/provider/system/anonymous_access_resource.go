@@ -27,8 +27,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -69,9 +67,6 @@ func (r *anonymousAccessSystemResource) Schema(_ context.Context, _ resource.Sch
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
@@ -81,7 +76,7 @@ func (r *anonymousAccessSystemResource) Schema(_ context.Context, _ resource.Sch
 func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Since this is a singleton resource (there's only one anonymous access configuration),
 	// we don't need to parse the import ID. We just read the current configuration.
-	
+
 	// Set up authentication context
 	ctx = context.WithValue(
 		ctx,

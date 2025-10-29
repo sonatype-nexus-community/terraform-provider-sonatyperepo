@@ -67,7 +67,7 @@ func TestAccSystemAnonymousAccessResource(t *testing.T) {
 func TestAccSystemAnonymousAccessResourceImport(t *testing.T) {
 	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		
+
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
@@ -114,7 +114,7 @@ func TestAccSystemAnonymousAccessResourceUpdate(t *testing.T) {
 	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		updatedRandomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		
+
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
