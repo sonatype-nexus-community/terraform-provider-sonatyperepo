@@ -25,8 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -121,9 +119,6 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
@@ -131,7 +126,7 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 
 // ImportState imports the resource into Terraform state.
 func (r *systemConfigMailResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Since this is a singleton resource (system email configuration), 
+	// Since this is a singleton resource (system email configuration),
 	// we don't need to validate the ID - any non-empty string is acceptable
 	if req.ID == "" {
 		resp.Diagnostics.AddError(
