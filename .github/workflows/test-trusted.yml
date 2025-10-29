@@ -4,6 +4,12 @@ name: Test (Trusted)
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - 'CHANGELOG.md'
+            - 'README.md'
     workflow_run:
       workflows: ["Test (Untrusted)"]
       types: [completed]
@@ -19,7 +25,7 @@ permissions:
 
 jobs:
     sonatype:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        if: ${{ github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main') }}
         name: Sonatype Scan
         runs-on: ubuntu-latest
         steps:
@@ -47,7 +53,7 @@ jobs:
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        if: ${{ github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main') }}
         name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         needs: 
             - sonatype
