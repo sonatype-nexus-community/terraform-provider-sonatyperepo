@@ -3,6 +3,7 @@
 ## X.Y.Z (UNRELEASED)
 
 ENHANCEMENTS:
+* Resource `sonatyperepo_system_config_mail` now supports import [GH-119] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_security_realms` now supports import [GH-118] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_system_anonymous_access` now supports import [GH-117] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_user` now supports import [GH-97]
