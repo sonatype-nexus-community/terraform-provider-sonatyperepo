@@ -24,15 +24,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -331,15 +330,12 @@ func getDockerProxySchemaAttributes() map[string]schema.Attribute {
 					Computed:    true,
 					Default:     booldefault.StaticBool(false),
 				},
-				"foreign_layer_url_whitelist": schema.ListAttribute{
+				"foreign_layer_url_whitelist": schema.SetAttribute{
 					Description: "Foreign Layer URL Whitelist",
 					Optional:    true,
 					Computed:    true,
 					ElementType: types.StringType,
-					Validators: []validator.List{
-						listvalidator.UniqueValues(),
-					},
-					Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
+					Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 				},
 				"index_type": schema.StringAttribute{
 					Description: "Type of Docker Index",

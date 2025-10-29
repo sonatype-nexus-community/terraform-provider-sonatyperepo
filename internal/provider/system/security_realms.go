@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -43,9 +43,9 @@ const (
 	errorSettingSecurityRealms           = "Error setting Security Realms configuration"
 	errorSettingSecurityRealmsWithDetail = "Error setting Security Realms configuration: %s"
 	unexpectedResponseCode               = "Unexpected Response Code whilst setting Security Realms configuration: %d: %s"
-	gettingStateDataHasErrors           = "Getting state data has errors: %v"
-	gettingPlanDataHasErrors            = "Getting plan data has errors: %v"
-	gettingRequestDataHasErrors         = "Getting request data has errors: %v"
+	gettingStateDataHasErrors            = "Getting state data has errors: %v"
+	gettingPlanDataHasErrors             = "Getting plan data has errors: %v"
+	gettingRequestDataHasErrors          = "Getting request data has errors: %v"
 )
 
 // securityRealmsResource is the resource implementation.
@@ -92,7 +92,6 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 		},
 	}
 }
-
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *securityRealmsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -143,7 +142,7 @@ func (r *securityRealmsResource) Create(ctx context.Context, req resource.Create
 
 	// Set the ID - for a singleton resource, we can use a static ID
 	plan.ID = types.StringValue("security_realms")
-	
+
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -240,7 +239,7 @@ func (r *securityRealmsResource) Update(ctx context.Context, req resource.Update
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
 		plan.ID = types.StringValue("security_realms")
 	}
-	
+
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

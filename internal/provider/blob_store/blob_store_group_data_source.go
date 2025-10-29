@@ -62,8 +62,8 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 				Description: "Name of the Blob Store Group",
 				Required:    true,
 			},
-			"members": schema.ListAttribute{
-				Description: "List of the names of blob stores that are members of this group",
+			"members": schema.SetAttribute{
+				Description: "Set of the names of blob stores that are members of this group",
 				ElementType: types.StringType,
 				Required:    false,
 				Optional:    false,

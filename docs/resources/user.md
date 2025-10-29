@@ -54,11 +54,8 @@ resource "sonatyperepo_user" "saml_admin" {
 				
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
 - `last_name` (String) The last name of the user.
-
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
-- `roles` (List of String) The list of roles assigned to this User.
-				
-This allows local roles to be manually assigned to Users (in addition to local users) that are mastered in external Authentication systems such as CROWD, LDAP or SAML.
+- `password` (String, Sensitive) The password for the user.
+- `roles` (Set of String) The list of roles assigned to this User.
 - `status` (String) The user's status.
 				
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
