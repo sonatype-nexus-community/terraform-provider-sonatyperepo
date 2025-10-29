@@ -96,6 +96,22 @@ type SecuritySamlModel struct {
 	EntityId                   types.String `tfsdk:"entity_id"`
 }
 
+func (m *SecuritySamlModel) MapFromApi(api *sonatyperepo.SamlConfigurationXO) {
+	if m.EntityId.IsNull() || m.EntityId.IsUnknown() {
+		m.EntityId = types.StringNull()
+	} else {
+		m.EntityId = types.StringPointerValue(api.EntityId)
+	}
+	m.IdpMetadata = types.StringValue(api.IdpMetadata)
+	m.UsernameAttribute = types.StringValue(api.UsernameAttribute)
+	m.FirstNameAttribute = types.StringPointerValue(api.FirstNameAttribute)
+	m.LastNameAttribute = types.StringPointerValue(api.LastNameAttribute)
+	m.EmailAttribute = types.StringPointerValue(api.EmailAttribute)
+	m.GroupsAttribute = types.StringPointerValue(api.GroupsAttribute)
+	m.ValidateResponseSignature = types.BoolPointerValue(api.ValidateResponseSignature)
+	m.ValidateAssertionSignature = types.BoolPointerValue(api.ValidateAssertionSignature)
+}
+
 func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
 	m.AuthenticationMethod = types.StringValue(api.AuthenticationType)
 	m.Enabled = types.BoolPointerValue(api.Enabled)
