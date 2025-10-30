@@ -29,3 +29,16 @@ Matching Roles based on id will automatically be granted to LDAP or SAML users.
 ### Read-Only
 
 - `last_updated` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing proxy docker repository configuration can be imported as follows.
+#
+# NOTE: The Identifier ROLE_NAME needs to match role name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_role.role_name ROLE_NAME
+```
