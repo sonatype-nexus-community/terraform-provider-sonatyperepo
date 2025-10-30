@@ -6,6 +6,7 @@ ENHANCEMENTS:
 * Resource `sonatyperepo_repository_docker_group` now supports import [GH-126] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_repository_docker_hosted` now supports import [GH-126] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_repository_docker_proxy` now supports import [GH-126] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_role` now supports import [GH-128] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_system_config_mail` now supports import [GH-119] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_security_realms` now supports import [GH-118] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_security_saml` now supports import [GH-120] (thanks @yfougeray-euphoria)
