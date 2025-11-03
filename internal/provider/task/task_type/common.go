@@ -50,7 +50,7 @@ func (f *BaseTaskType) GetPublicName() string {
 }
 
 func (f *BaseTaskType) GetResourceName() string {
-	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"))
+	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"), "-", "_"))
 }
 
 func (f *BaseTaskType) GetType() common.TaskType {

@@ -32,6 +32,9 @@ import (
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+// --------------------------------------------
+// Docker Repository GC Task
+// --------------------------------------------
 type RepositoryDockerGcTask struct {
 	BaseTaskType
 }
@@ -109,6 +112,88 @@ func (f *RepositoryDockerGcTask) UpdateStateFromApi(state any, api any) any {
 func (f *RepositoryDockerGcTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
 	planModel := (plan).(model.TaskRepositoryDockerGcModel)
 	stateModel := (state).(model.TaskRepositoryDockerGcModel)
+
+	planModel.Id = stateModel.Id
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	return planModel
+}
+
+// --------------------------------------------
+// Docker Repository Upload Purge
+// --------------------------------------------
+type RepositoryDockerUploadPurgeTask struct {
+	BaseTaskType
+}
+
+func NewRepositoryDockerUploadPurgeTaskTask() *RepositoryDockerUploadPurgeTask {
+	return &RepositoryDockerUploadPurgeTask{
+		BaseTaskType: BaseTaskType{
+			publicName: "Docker - Delete incomplete uploads",
+			taskType:   common.TASK_TYPE_REPOSITORY_DOCKER_UPLOAD_PURGE,
+		},
+	}
+}
+
+// --------------------------------------------
+// Docker Repository GC Format Functions
+// --------------------------------------------
+func (f *RepositoryDockerUploadPurgeTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.TaskRepositoryDockerUploadPurgeModel)
+
+	// Call API to Create
+	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+}
+
+func (f *RepositoryDockerUploadPurgeTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.TaskRepositoryDockerUploadPurgeModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
+
+	// Call API to Update
+	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
+}
+
+func (f *RepositoryDockerUploadPurgeTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.TaskRepositoryDockerUploadPurgeModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *RepositoryDockerUploadPurgeTask) GetPropertiesSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"age": schema.Int32Attribute{
+			MarkdownDescription: `Delete incomplete docker uploads that are older than the specified age in hours.`,
+			Optional:            true,
+			Computed:            true,
+			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE),
+		},
+	}
+}
+
+func (f *RepositoryDockerUploadPurgeTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.TaskRepositoryDockerUploadPurgeModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *RepositoryDockerUploadPurgeTask) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.TaskRepositoryDockerUploadPurgeModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
+	apiModel := (api).(v3.CreateTask201Response)
+	stateModel.Id = types.StringValue(apiModel.Id)
+	return stateModel
+}
+
+func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
+	planModel := (plan).(model.TaskRepositoryDockerUploadPurgeModel)
+	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
 
 	planModel.Id = stateModel.Id
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))

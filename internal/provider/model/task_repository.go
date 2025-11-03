@@ -54,3 +54,33 @@ func (m *TaskRepositoryDockerGcModel) ToApiUpdateModel(version common.SystemVers
 	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
 }
+
+// Properties for repository.docker.upload-purge
+// ----------------------------------------
+type TaskPropertiesRepositoryDockerUploadPurge struct {
+	Age types.Int32 `tfsdk:"age" nxrm:"age"`
+}
+
+func (p *TaskPropertiesRepositoryDockerUploadPurge) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	return StructToMap(p)
+}
+
+// Task Repositor Docker Upload Purge
+// ----------------------------------------
+type TaskRepositoryDockerUploadPurgeModel struct {
+	BaseTaskModel
+	Properties TaskPropertiesRepositoryDockerUploadPurge `tfsdk:"properties"`
+}
+
+func (m *TaskRepositoryDockerUploadPurgeModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+	api := m.toApiCreateModel()
+	api.Type = common.TASK_TYPE_REPOSITORY_DOCKER_UPLOAD_PURGE.String()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+func (m *TaskRepositoryDockerUploadPurgeModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+	api := m.toApiUpdateModel()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
