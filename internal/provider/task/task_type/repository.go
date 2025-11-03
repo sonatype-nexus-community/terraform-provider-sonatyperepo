@@ -25,6 +25,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -194,6 +195,109 @@ func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromApi(state any, api any)
 func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
 	planModel := (plan).(model.TaskRepositoryDockerUploadPurgeModel)
 	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
+
+	planModel.Id = stateModel.Id
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	return planModel
+}
+
+// --------------------------------------------
+// Maven Repository Remove Snapshots
+// --------------------------------------------
+type RepositoryMavenRemoveSnapshotsTask struct {
+	BaseTaskType
+}
+
+func NewRepositoryMavenRemoveSnapshotsTask() *RepositoryMavenRemoveSnapshotsTask {
+	return &RepositoryMavenRemoveSnapshotsTask{
+		BaseTaskType: BaseTaskType{
+			publicName: "Maven - Delete SNAPSHOT",
+			taskType:   common.TASK_TYPE_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS,
+		},
+	}
+}
+
+// --------------------------------------------
+// Maven Repository Remove Snapshots Functions
+// --------------------------------------------
+func (f *RepositoryMavenRemoveSnapshotsTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+
+	// Call API to Create
+	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+
+	// Call API to Update
+	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.TaskRepositoryMavenRemoveSnapshotsModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) GetPropertiesSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"repository_name": schema.StringAttribute{
+			Description: "The Maven repository or repository group to remove snapshots from.",
+			Required:    true,
+			Optional:    false,
+		},
+		"minimum_retained": schema.Int32Attribute{
+			MarkdownDescription: `Minimum number of snapshots to keep for one GAV.`,
+			Optional:            true,
+			Computed:            true,
+			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED),
+		},
+		"snapshot_retention_days": schema.Int32Attribute{
+			MarkdownDescription: `Delete all snapshots older than this, provided we still keep the minimum number specified.`,
+			Optional:            true,
+			Computed:            true,
+			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_SNAPSHOT_RETENTION_DAYS),
+		},
+		"remove_if_released": schema.BoolAttribute{
+			MarkdownDescription: `Delete all snapshots that have a corresponding release.`,
+			Optional:            true,
+			Computed:            true,
+			Default:             booldefault.StaticBool(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_REMOVE_IF_RELEASED),
+		},
+		"grace_period_in_days": schema.Int32Attribute{
+			MarkdownDescription: `The grace period during which snapshots with an associated release will not be deleted.`,
+			Optional:            true,
+		},
+	}
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.TaskRepositoryMavenRemoveSnapshotsModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+	apiModel := (api).(v3.CreateTask201Response)
+	stateModel.Id = types.StringValue(apiModel.Id)
+	return stateModel
+}
+
+func (f *RepositoryMavenRemoveSnapshotsTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
+	planModel := (plan).(model.TaskRepositoryMavenRemoveSnapshotsModel)
+	stateModel := (state).(model.TaskRepositoryMavenRemoveSnapshotsModel)
 
 	planModel.Id = stateModel.Id
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))

@@ -84,3 +84,43 @@ func (m *TaskRepositoryDockerUploadPurgeModel) ToApiUpdateModel(version common.S
 	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
 }
+
+// Properties for repository.maven.remove-snapshots
+// ----------------------------------------
+type TaskPropertiesRepositoryMavenRemoveSnapshots struct {
+	RepositoryName        types.String `tfsdk:"repository_name" nxrm:"repositoryName"`
+	MinimumRetained       types.Int32  `tfsdk:"minimum_retained" nxrm:"minimumRetained"`
+	SnapshotRetentionDays types.Int32  `tfsdk:"snapshot_retention_days" nxrm:"snapshotRetentionDays"`
+	RemoveIfReleased      types.Bool   `tfsdk:"remove_if_released" nxrm:"removeIfReleased"`
+	GracePeriodInDays     types.Int32  `tfsdk:"grace_period_in_days" nxrm:"gracePeriodInDays"`
+}
+
+func (p *TaskPropertiesRepositoryMavenRemoveSnapshots) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	properties := StructToMap(p)
+
+	if p.GracePeriodInDays.ValueInt32() == 0 {
+		delete(*properties, "gracePeriodInDays")
+	}
+
+	return properties
+}
+
+// Task Repository Maven Remove Snapshots
+// ----------------------------------------
+type TaskRepositoryMavenRemoveSnapshotsModel struct {
+	BaseTaskModel
+	Properties TaskPropertiesRepositoryMavenRemoveSnapshots `tfsdk:"properties"`
+}
+
+func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+	api := m.toApiCreateModel()
+	api.Type = common.TASK_TYPE_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS.String()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+	api := m.toApiUpdateModel()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
