@@ -239,7 +239,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 	return schema.Schema{
-		Description: fmt.Sprintf("Manage Task of type %s", tt.GetType().String()),
+		Description: fmt.Sprintf("Manage Task '%s' (%s)", tt.GetPublicName(), tt.GetType().String()),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The internal ID of the Task.",

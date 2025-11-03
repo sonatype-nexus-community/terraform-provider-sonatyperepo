@@ -33,7 +33,8 @@ import (
 // BaseTaskType that all task types build from
 // --------------------------------------------
 type BaseTaskType struct {
-	taskType common.TaskType
+	publicName string
+	taskType   common.TaskType
 }
 
 func (f *BaseTaskType) GetApiCreateSuccessResponseCodes() []int {
@@ -42,6 +43,10 @@ func (f *BaseTaskType) GetApiCreateSuccessResponseCodes() []int {
 
 func (f *BaseTaskType) GetKey() string {
 	return f.taskType.String()
+}
+
+func (f *BaseTaskType) GetPublicName() string {
+	return f.publicName
 }
 
 func (f *BaseTaskType) GetResourceName() string {
@@ -60,6 +65,7 @@ type TaskTypeI interface {
 	GetApiCreateSuccessResponseCodes() []int
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]schema.Attribute
+	GetPublicName() string
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
 	GetResourceName() string
 	GetKey() string

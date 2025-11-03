@@ -32,85 +32,83 @@ import (
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type BlobstoreCompactTask struct {
+type RepositoryDockerGcTask struct {
 	BaseTaskType
 }
 
-func NewBlobstoreCompactTask() *BlobstoreCompactTask {
-	return &BlobstoreCompactTask{
+func NewRepositoryDockerGcTask() *RepositoryDockerGcTask {
+	return &RepositoryDockerGcTask{
 		BaseTaskType: BaseTaskType{
-			publicName: "Admin - Compact blob store",
-			taskType:   common.TASK_TYPE_BLOBSTORE_COMPACT,
+			publicName: "Docker - Delete unused manifests and images",
+			taskType:   common.TASK_TYPE_REPOSITORY_DOCKER_GC,
 		},
 	}
 }
 
 // --------------------------------------------
-// Blobstore Compact Format Functions
+// Docker Repository GC Format Functions
 // --------------------------------------------
-func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *RepositoryDockerGcTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
 	// Cast to correct Plan Model Type
-	planModel := (plan).(model.TaskBlobstoreCompactModel)
+	planModel := (plan).(model.TaskRepositoryDockerGcModel)
 
 	// Call API to Create
 	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
-func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+func (f *RepositoryDockerGcTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
-	planModel := (plan).(model.TaskBlobstoreCompactModel)
+	planModel := (plan).(model.TaskRepositoryDockerGcModel)
 
 	// Cast to correct State Model Type
-	stateModel := (state).(model.TaskBlobstoreCompactModel)
+	stateModel := (state).(model.TaskRepositoryDockerGcModel)
 
 	// Call API to Update
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
-	var planModel model.TaskBlobstoreCompactModel
+func (f *RepositoryDockerGcTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.TaskRepositoryDockerGcModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]schema.Attribute {
+func (f *RepositoryDockerGcTask) GetPropertiesSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"blob_store_name": schema.StringAttribute{
-			Description: "The blob store to compact",
+		"deploy_offset": schema.Int32Attribute{
+			MarkdownDescription: `Manifests and images deployed within this period before the task starts will not be deleted.`,
+			Optional:            true,
+			Computed:            true,
+			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET),
+		},
+		"repository_name": schema.StringAttribute{
+			Description: "The Docker repository to clean up.",
 			Required:    true,
 			Optional:    false,
-		},
-		"blobs_older_than": schema.Int32Attribute{
-			MarkdownDescription: `The number of days a blob should kept before permanent deletion (default 0).
-			
-**Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).`,
-			Optional: true,
-			Computed: true,
-			Default:  int32default.StaticInt32(0),
 		},
 	}
 }
 
-func (f *BlobstoreCompactTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
-	var stateModel model.TaskBlobstoreCompactModel
+func (f *RepositoryDockerGcTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.TaskRepositoryDockerGcModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
 
-func (f *BlobstoreCompactTask) UpdatePlanForState(plan any) any {
-	var planModel = (plan).(model.TaskBlobstoreCompactModel)
+func (f *RepositoryDockerGcTask) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.TaskRepositoryDockerGcModel)
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return planModel
 }
 
-func (f *BlobstoreCompactTask) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.TaskBlobstoreCompactModel)
+func (f *RepositoryDockerGcTask) UpdateStateFromApi(state any, api any) any {
+	stateModel := (state).(model.TaskRepositoryDockerGcModel)
 	apiModel := (api).(v3.CreateTask201Response)
 	stateModel.Id = types.StringValue(apiModel.Id)
 	return stateModel
 }
 
-func (f *BlobstoreCompactTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
-	planModel := (plan).(model.TaskBlobstoreCompactModel)
-	stateModel := (state).(model.TaskBlobstoreCompactModel)
+func (f *RepositoryDockerGcTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
+	planModel := (plan).(model.TaskRepositoryDockerGcModel)
+	stateModel := (state).(model.TaskRepositoryDockerGcModel)
 
 	planModel.Id = stateModel.Id
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
