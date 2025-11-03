@@ -2,6 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
+* **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
+* **New Resource:** `sonatyperepo_task_repository_docker_gc` [GH-92]
+
 
 ## 0.8.0 October 18, 2025
 
