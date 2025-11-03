@@ -26,11 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	fieldFrequencySchedule = "frequency.schedule"
-	resourceNameF          = "%s.test_task"
-)
-
 func TestAccTaskRepositoryDockerGcResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
