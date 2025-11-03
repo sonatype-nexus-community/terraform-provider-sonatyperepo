@@ -4,6 +4,7 @@
 
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_repository_docker_gc` [GH-92]
+* **New Resource:** `sonatyperepo_task_repository_docker_upload_purge` [GH-92]
 
 
 ## 0.8.0 October 18, 2025
