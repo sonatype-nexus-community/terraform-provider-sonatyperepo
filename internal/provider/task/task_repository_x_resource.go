@@ -35,3 +35,10 @@ func NewTaskRepositoryDockerUploadPurgeResource() resource.Resource {
 		TaskType: tasktype.NewRepositoryDockerUploadPurgeTaskTask(),
 	}
 }
+
+// NewTaskRepositoryMavenRemoveSnapshotsResource is a helper function to simplify the provider implementation.
+func NewTaskRepositoryMavenRemoveSnapshotsResource() resource.Resource {
+	return &taskResource{
+		TaskType: tasktype.NewRepositoryMavenRemoveSnapshotsTask(),
+	}
+}
