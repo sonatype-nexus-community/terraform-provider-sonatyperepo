@@ -28,3 +28,10 @@ func NewTaskRepositoryDockerGcResource() resource.Resource {
 		TaskType: tasktype.NewRepositoryDockerGcTask(),
 	}
 }
+
+// NewTaskRepositoryDockerUploadPurgeResource is a helper function to simplify the provider implementation.
+func NewTaskRepositoryDockerUploadPurgeResource() resource.Resource {
+	return &taskResource{
+		TaskType: tasktype.NewRepositoryDockerUploadPurgeTaskTask(),
+	}
+}

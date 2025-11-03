@@ -80,3 +80,41 @@ resource "%s" "test_task" {
 		},
 	})
 }
+
+func TestAccTaskRepositoryDockerUploadPurgeResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_task_repository_docker_upload_purge"
+	resourceName := fmt.Sprintf("%s.test_task", resourceType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test_task" {
+  name = "test-repository-docker-upload-purge-%s"
+  enabled = true
+  alert_email = ""
+  notification_condition = "FAILURE"
+  frequency = {
+    schedule = "manual"
+  }
+  properties = {}
+}
+`, resourceType, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-repository-docker-upload-purge-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "alert_email", ""),
+					resource.TestCheckResourceAttr(resourceName, "notification_condition", common.NOTIFICATION_CONDITION_FAILURE),
+					resource.TestCheckResourceAttr(resourceName, "frequency.schedule", common.FREQUENCY_SCHEDULE_MANUAL),
+					resource.TestCheckResourceAttr(resourceName, "properties.age", fmt.Sprintf("%d", common.TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
