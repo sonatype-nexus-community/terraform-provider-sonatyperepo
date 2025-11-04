@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/blob_store"
+	"terraform-provider-sonatyperepo/internal/provider/capability"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/content_selector"
 	"terraform-provider-sonatyperepo/internal/provider/privilege"
@@ -243,6 +244,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreS3Resource,
 		blob_store.NewBlobStoreGoogleCloudResource,
+		capability.NewCapabilityCoreBaseUrlResource,
 		content_selector.NewContentSelectorResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
