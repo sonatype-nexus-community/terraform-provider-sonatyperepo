@@ -371,7 +371,9 @@ func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes
 }
 
 func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) schema.Schema {
-	return schema.Schema{
+	propertiesAttributes := ct.GetPropertiesSchema()
+
+	baseSchema := schema.Schema{
 		MarkdownDescription: ct.GetMarkdownDescription(),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -390,15 +392,20 @@ func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) schema.Schema {
 				Required:    true,
 				Optional:    false,
 			},
-			"properties": schema.SingleNestedAttribute{
-				Description: "Properties specific to this Capability type",
-				Required:    true,
-				Optional:    false,
-				Attributes:  ct.GetPropertiesSchema(),
-			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
 			},
 		},
 	}
+
+	if len(propertiesAttributes) > 0 {
+		baseSchema.Attributes["properties"] = schema.SingleNestedAttribute{
+			Description: "Properties specific to this Capability type",
+			Required:    true,
+			Optional:    false,
+			Attributes:  propertiesAttributes,
+		}
+	}
+
+	return baseSchema
 }

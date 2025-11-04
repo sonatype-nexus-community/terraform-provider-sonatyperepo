@@ -22,6 +22,13 @@ import (
 	capabilitytype "terraform-provider-sonatyperepo/internal/provider/capability/capability_type"
 )
 
+// NewCapabilityAuditResource is a helper function to simplify the provider implementation.
+func NewCapabilityAuditResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewNewAuditCapability(),
+	}
+}
+
 // NewCapabilityCoreBaseUrlResource is a helper function to simplify the provider implementation.
 func NewCapabilityCoreBaseUrlResource() resource.Resource {
 	return &capabilityResource{
