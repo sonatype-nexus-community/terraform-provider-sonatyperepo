@@ -55,4 +55,4 @@ Optional:
 
 Required:
 
-- `repository_name` (String) The Repositories to rebuild browse trees for.
+- `repository_name` (String) The Repository to rebuild browse trees for.

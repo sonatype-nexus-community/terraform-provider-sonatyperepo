@@ -45,6 +45,10 @@ func (f *BaseTaskType) GetKey() string {
 	return f.taskType.String()
 }
 
+func (f *BaseTaskType) GetMarkdownDescription() string {
+	return fmt.Sprintf("Manage Task '%s' (%s)", f.GetPublicName(), f.GetType().String())
+}
+
 func (f *BaseTaskType) GetPublicName() string {
 	return f.publicName
 }
@@ -63,6 +67,7 @@ type TaskTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	GetApiCreateSuccessResponseCodes() []int
+	GetMarkdownDescription() string
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]schema.Attribute
 	GetPublicName() string
