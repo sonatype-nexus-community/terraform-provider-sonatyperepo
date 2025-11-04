@@ -21,12 +21,32 @@ import (
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+// CapabilitiesListModel - used for data source
+// ----------------------------------------
+type CapabilitiesListModel struct {
+	Capabilities []CapabilityModel `tfsdk:"capabilities"`
+}
+
+// CapabilitCommonModel - used for data source and resource
+// ----------------------------------------
+type CapabilitCommonModel struct {
+	Id      types.String `tfsdk:"id"`
+	Notes   types.String `tfsdk:"notes"`
+	Enabled types.Bool   `tfsdk:"enabled"`
+}
+
+// CapabilitiesListModel - used for data source
+// ----------------------------------------
+type CapabilityModel struct {
+	CapabilitCommonModel
+	Type       types.String      `tfsdk:"type"`
+	Properties map[string]string `tfsdk:"properties"`
+}
+
 // Base Capability Model - used for create and update
 // ----------------------------------------
 type BaseCapabilityModel struct {
-	Id          types.String `tfsdk:"id"`
-	Notes       types.String `tfsdk:"notes"`
-	Enabled     types.Bool   `tfsdk:"enabled"`
+	CapabilitCommonModel
 	LastUpdated types.String `tfsdk:"last_updated"`
 }
 

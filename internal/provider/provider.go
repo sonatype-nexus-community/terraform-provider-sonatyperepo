@@ -322,6 +322,7 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 		blob_store.BlobStoreFileDataSource,
 		blob_store.BlobStoreGroupDataSource,
 		blob_store.BlobStoreS3DataSource,
+		capability.CapabilitiesDataSource,
 		content_selector.ContentSelectorDataSource,
 		content_selector.ContentSelectorsDataSource,
 		privilege.PrivilegesDataSource,
