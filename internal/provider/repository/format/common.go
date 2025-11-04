@@ -89,10 +89,8 @@ type RepositoryFormat interface {
 	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
-	
 	DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error
-	
 	GetApiCreateSuccessResponseCodes() []int
 	GetFormatSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)

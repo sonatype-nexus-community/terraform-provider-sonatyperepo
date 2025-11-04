@@ -29,6 +29,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/repository"
 	"terraform-provider-sonatyperepo/internal/provider/role"
 	"terraform-provider-sonatyperepo/internal/provider/system"
+	"terraform-provider-sonatyperepo/internal/provider/task"
 	"terraform-provider-sonatyperepo/internal/provider/user"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -253,6 +254,12 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		system.NewSystemConfigIqConnectionResource,
 		system.NewSecurityRealmsResource,
 		system.NewSecuritySamlResource,
+		task.NewTaskBlobstoreCompactResource,
+		task.NewTaskMalwareRemediatorResource,
+		task.NewTaskRepairRebuildBrowseNodesResource,
+		task.NewTaskRepositoryDockerGcResource,
+		task.NewTaskRepositoryDockerUploadPurgeResource,
+		task.NewTaskRepositoryMavenRemoveSnapshotsResource,
 		user.NewUserResource,
 	}
 }
@@ -268,6 +275,8 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 		privilege.PrivilegesDataSource,
 		repository.RepositoriesDataSource,
 		role.RolesDataSource,
+		task.TaskDataSource,
+		task.TasksDataSource,
 		user.UsersDataSource,
 	}
 }

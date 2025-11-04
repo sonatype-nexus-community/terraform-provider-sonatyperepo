@@ -2,6 +2,15 @@
 
 ## X.Y.Z (UNRELEASED)
 
+* **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
+* **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
+* **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]
+* **New Resource:** `sonatyperepo_task_repository_maven_remove_snapshots` [GH-92]
+* **New Resource:** `sonatyperepo_task_repository_docker_gc` [GH-92]
+* **New Resource:** `sonatyperepo_task_repository_docker_upload_purge` [GH-92]
+
+## 0.9.0 October 30, 2025
+
 ENHANCEMENTS:
 * Resource `sonatyperepo_repository_docker_group` now supports import [GH-126] (thanks @yfougeray-euphoria)
 * Resource `sonatyperepo_repository_docker_hosted` now supports import [GH-126] (thanks @yfougeray-euphoria)
