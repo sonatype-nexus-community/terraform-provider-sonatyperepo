@@ -2,12 +2,16 @@
 
 ## X.Y.Z (UNRELEASED)
 
+FEATURES:
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
 * **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]
 * **New Resource:** `sonatyperepo_task_repository_maven_remove_snapshots` [GH-92]
 * **New Resource:** `sonatyperepo_task_repository_docker_gc` [GH-92]
 * **New Resource:** `sonatyperepo_task_repository_docker_upload_purge` [GH-92]
+
+ENHANCEMENTS:
+* You can now supply a `version_hint` in the Provider configuration to work around scenarios where the `Server` header is stripped from responses. This can be typical when using a reverse proxy or load balancer in front of Sonatype Nexus Repository. [GH-109]
 
 ## 0.9.0 October 30, 2025
 
