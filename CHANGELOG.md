@@ -2,6 +2,7 @@
 
 ## X.Y.Z (UNRELEASED)
 
+* **New Data Source:** `sonatyperepo_capabilities` [GH-157]
 * **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
 
 ## 0.10.0 November 4, 2025
