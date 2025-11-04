@@ -19,6 +19,7 @@ package common
 type CapabilityType string
 
 const (
+	CAPABILITY_TYPE_AUDIT         CapabilityType = "audit"
 	CAPABILITY_TYPE_CORE_BASE_URL CapabilityType = "baseurl"
 )
 
