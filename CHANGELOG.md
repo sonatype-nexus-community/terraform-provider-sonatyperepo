@@ -2,7 +2,7 @@
 
 ## X.Y.Z (UNRELEASED)
 
-_TBC_
+* **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
 
 ## 0.10.0 November 4, 2025
 
