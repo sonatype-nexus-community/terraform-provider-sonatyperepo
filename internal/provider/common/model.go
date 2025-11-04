@@ -37,7 +37,7 @@ type SonatypeDataSourceData struct {
 	NxrmWritable bool
 }
 
-func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics) {
+func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics, versionHint *string) {
 	httpResponse, err := p.Client.StatusAPI.IsWritable(ctx).Execute()
 	if err != nil {
 		HandleApiError(
@@ -51,8 +51,15 @@ func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context,
 
 	if httpResponse.StatusCode == http.StatusOK {
 		p.NxrmWritable = true
-		nxrmVersion := ParseServerHeaderToVersion(httpResponse.Header.Get("server"))
-		tflog.Debug(ctx, fmt.Sprintf("Server Header: %s", nxrmVersion.String()))
+		var nxrmVersion SystemVersion
+
+		if versionHint != nil {
+			nxrmVersion = ParseServerHeaderToVersion(*versionHint)
+			tflog.Debug(ctx, fmt.Sprintf("Version Hint: %s", nxrmVersion.String()))
+		} else {
+			nxrmVersion = ParseServerHeaderToVersion(httpResponse.Header.Get("server"))
+			tflog.Debug(ctx, fmt.Sprintf("Server Header: %s", nxrmVersion.String()))
+		}
 		p.NxrmVersion = nxrmVersion
 	}
 

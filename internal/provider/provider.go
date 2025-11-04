@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/blob_store"
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -32,11 +33,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/task"
 	"terraform-provider-sonatyperepo/internal/provider/user"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -60,6 +63,7 @@ type SonatypeRepoProviderModel struct {
 	Username    types.String `tfsdk:"username"`
 	Password    types.String `tfsdk:"password"`
 	ApiBasePath types.String `tfsdk:"api_base_path"`
+	VersionHint types.String `tfsdk:"version_hint"`
 }
 
 func (p *SonatypeRepoProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -87,6 +91,27 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 				Optional:            true,
 				MarkdownDescription: "Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
 			},
+			"version_hint": schema.StringAttribute{
+				MarkdownDescription: `You can set this to the full version string (e.g. "3.85.0-03 (PRO)" or "3.80.0-06 (OSS)") of Sonatype Nexus Repository that you are connecting to.
+
+> [!NOTE] 
+> You can find the full version string in _Admin -> Support -> System Information_.
+>				
+> By default, this provider will attempt to automatically determine the version of Sonatype Nexus Repository you are connected to - but in some 
+> real world cases, a Load Balancer or such may strip the HTTP Header that contians this information (the _Server_ header).
+
+> [!TIP]
+> If you receive an error such as ` + "`Plan is not supported for Sonatype Nexus Repository Manager: 0.0.0-0 (PRO=false)`" + ` then you should set 
+> this attribute - otherwise, do not supply this attribute.
+			`,
+				Optional: true,
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^(\d+\.\d+\.\d+-\d+\s\((PRO|OSS)\))?$`),
+						`Leave empty, or provide a version string in the format "3.85.0-03 (PRO)".`,
+					),
+				},
+			},
 		},
 		MarkdownDescription: `Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
 		
@@ -109,6 +134,7 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	username := os.Getenv("NXRM_SERVER_USERNAME")
 	password := os.Getenv("NXRM_SERVER_PASSWORD")
 	apiBasePath := "/service/rest"
+	var versionHint *string
 
 	if !config.Url.IsNull() && len(config.Url.ValueString()) > 0 {
 		nxrmUrl = config.Url.ValueString()
@@ -124,6 +150,11 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 
 	if !config.ApiBasePath.IsNull() && len(config.ApiBasePath.ValueString()) > 0 {
 		apiBasePath = config.ApiBasePath.ValueString()
+	}
+
+	if !config.VersionHint.IsNull() && len(config.VersionHint.ValueString()) > 0 {
+		v := fmt.Sprintf("Nexus/%s", config.VersionHint.ValueString())
+		versionHint = &v
 	}
 
 	// Validate Provider Configuration
@@ -181,8 +212,15 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	// Check NXRM is Writable and determine Version
-	ds.CheckWritableAndGetVersion(ctx, &resp.Diagnostics)
-	tflog.Info(ctx, fmt.Sprintf("Determined Sonatype Nexus Repository to be version %s", ds.NxrmVersion.String()))
+	ds.CheckWritableAndGetVersion(ctx, &resp.Diagnostics, versionHint)
+	tflog.Info(ctx, fmt.Sprintf("Detected Sonatype Nexus Repository to be version %s", ds.NxrmVersion.String()))
+
+	if ds.NxrmVersion.OlderThan(3, 79, 1, 0) {
+		resp.Diagnostics.AddWarning(
+			`You are running against Sonatype Nexus Repository version older than 3.79.1`,
+			`This provide has not been validated against versions older than 3.79.1 - things will probably work fine, but proceed with caution.`,
+		)
+	}
 
 	resp.DataSourceData = ds
 	resp.ResourceData = ds
