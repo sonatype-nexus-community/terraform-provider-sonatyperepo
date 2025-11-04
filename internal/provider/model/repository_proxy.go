@@ -57,13 +57,26 @@ func (m *repositoryProxyModel) MapToApi(api *sonatyperepo.ProxyAttributes) {
 }
 
 func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatyperepo.HttpClientAttributes) {
+	if api == nil {
+		return
+	}
+
 	m.AutoBlock = types.BoolValue(api.AutoBlock)
 	m.Blocked = types.BoolValue(api.Blocked)
 
-	if api.Connection != nil {
-		m.Connection.MapFromApi(api.Connection)
+	// Initialize Connection if it's nil
+	if m.Connection == nil {
+		m.Connection = &RepositoryHttpClientConnectionModel{}
 	}
+	
+	// Pass api.Connection which might be nil - the MapFromApi method will handle it
+	m.Connection.MapFromApi(api.Connection)
+
+	// Initialize Authentication if needed and API has authentication data
 	if api.Authentication != nil {
+		if m.Authentication == nil {
+			m.Authentication = &RepositoryHttpClientAuthenticationModel{}
+		}
 		m.Authentication.MapFromApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
 	}
 }
@@ -132,6 +145,18 @@ type RepositoryHttpClientConnectionModel struct {
 }
 
 func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpClientConnectionAttributes) {
+	// Check if api is nil to prevent nil pointer dereference
+	if api == nil {
+		// Set default values
+		m.EnableCircularRedirects = types.BoolValue(false)
+		m.EnableCookies = types.BoolValue(false)
+		m.UseTrustStore = types.BoolValue(false)
+		m.UserAgentSuffix = types.StringNull()
+		m.Retries = types.Int64Null()
+		m.Timeout = types.Int64Null()
+		return
+	}
+
 	m.EnableCircularRedirects = types.BoolPointerValue(api.EnableCircularRedirects)
 	m.EnableCookies = types.BoolPointerValue(api.EnableCookies)
 	m.UseTrustStore = types.BoolPointerValue(api.UseTrustStore)
@@ -139,9 +164,14 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 
 	if api.Retries != nil {
 		m.Retries = types.Int64Value(int64(*api.Retries))
+	} else {
+		m.Retries = types.Int64Null()
 	}
+	
 	if api.Timeout != nil {
 		m.Timeout = types.Int64Value(int64(*api.Timeout))
+	} else {
+		m.Timeout = types.Int64Null()
 	}
 }
 

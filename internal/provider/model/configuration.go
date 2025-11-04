@@ -48,6 +48,23 @@ type EmailConfigurationModel struct {
 	LastUpdated                   types.String `tfsdk:"last_updated"`
 }
 
+func (m *EmailConfigurationModel) MapFromApi(api *sonatyperepo.ApiEmailConfiguration) {
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	m.Host = types.StringPointerValue(api.Host)
+	m.Port = types.Int64Value(int64(api.Port))
+	if api.Username != nil && *api.Username != "" {
+		m.Username = types.StringPointerValue(api.Username)
+	}
+	// Skip password mapping for security reasons
+	m.FromAddress = types.StringPointerValue(api.FromAddress)
+	m.SubjectPrefix = types.StringPointerValue(api.SubjectPrefix)
+	m.StartTLSEnabled = types.BoolPointerValue(api.StartTlsEnabled)
+	m.StartTLSRequired = types.BoolPointerValue(api.StartTlsRequired)
+	m.SSLOnConnectEnabled = types.BoolPointerValue(api.SslOnConnectEnabled)
+	m.SSLServerIdentityCheckEnabled = types.BoolPointerValue(api.SslServerIdentityCheckEnabled)
+	m.NexusTrustStoreEnabled = types.BoolPointerValue(api.NexusTrustStoreEnabled)
+}
+
 type IqConnectionModel struct {
 	Enabled                types.Bool   `tfsdk:"enabled"`
 	Url                    types.String `tfsdk:"url"`
@@ -77,6 +94,22 @@ type SecuritySamlModel struct {
 	ValidateResponseSignature  types.Bool   `tfsdk:"validate_response_signature"`
 	ValidateAssertionSignature types.Bool   `tfsdk:"validate_assertion_signature"`
 	EntityId                   types.String `tfsdk:"entity_id"`
+}
+
+func (m *SecuritySamlModel) MapFromApi(api *sonatyperepo.SamlConfigurationXO) {
+	if m.EntityId.IsNull() || m.EntityId.IsUnknown() {
+		m.EntityId = types.StringNull()
+	} else {
+		m.EntityId = types.StringPointerValue(api.EntityId)
+	}
+	m.IdpMetadata = types.StringValue(api.IdpMetadata)
+	m.UsernameAttribute = types.StringValue(api.UsernameAttribute)
+	m.FirstNameAttribute = types.StringPointerValue(api.FirstNameAttribute)
+	m.LastNameAttribute = types.StringPointerValue(api.LastNameAttribute)
+	m.EmailAttribute = types.StringPointerValue(api.EmailAttribute)
+	m.GroupsAttribute = types.StringPointerValue(api.GroupsAttribute)
+	m.ValidateResponseSignature = types.BoolPointerValue(api.ValidateResponseSignature)
+	m.ValidateAssertionSignature = types.BoolPointerValue(api.ValidateAssertionSignature)
 }
 
 func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {

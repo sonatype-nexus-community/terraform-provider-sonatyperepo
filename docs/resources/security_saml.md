@@ -29,3 +29,16 @@ Configure Sonatype Nexus Repository Security SAML.
 - `last_name_attribute` (String) IdP field mappings for user's family name
 - `validate_assertion_signature` (Boolean) By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.
 - `validate_response_signature` (Boolean) Validate SAML response signature
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing Security SAML configuration can be imported as follows.
+#
+# NOTE: The Identifier (SAML) in below example has no meaning and is just to comply with Terraform syntax.
+
+# Example
+terraform import sonatyperepo_security_saml.saml SAML
+```

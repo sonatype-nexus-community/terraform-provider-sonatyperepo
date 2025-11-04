@@ -18,6 +18,7 @@ package system
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -129,6 +130,57 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 	}
 }
 
+// ImportState imports the resource state.
+func (r *securitySamlResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Info(ctx, "Importing SAML configuration", map[string]interface{}{
+		"import_id": req.ID,
+	})
+
+	// Set up authentication context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		r.Auth,
+	)
+
+	// Get the current SAML configuration from the API
+	httpResponse, err := r.Client.SecurityManagementSAMLAPI.GetSamlConfiguration(ctx).Execute()
+	if err != nil {
+		if httpResponse != nil && httpResponse.StatusCode == 404 {
+			resp.Diagnostics.AddError(
+				"SAML Configuration not found",
+				"No SAML configuration exists to import",
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				"Error Reading SAML Configuration during import",
+				fmt.Sprintf("Unable to read SAML Configuration: %s", err),
+			)
+		}
+		return
+	}
+
+	// Parse the response body to get the SamlConfigurationXO
+	var samlConfig sonatyperepo.SamlConfigurationXO
+	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing SAML Configuration response",
+			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
+		)
+		return
+	}
+
+	var state model.SecuritySamlModel
+	state.MapFromApi(&samlConfig)
+
+	// Set the populated state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	
+	tflog.Info(ctx, "Successfully imported SAML configuration")
+}
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -220,6 +272,19 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 		}
 		return
 	}
+
+	// Parse the response body to get the SamlConfigurationXO
+	var samlConfig sonatyperepo.SamlConfigurationXO
+	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing SAML Configuration response",
+			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
+		)
+		return
+	}
+
+	// Update state with values from API using MapFromApi
+	state.MapFromApi(&samlConfig)
 
 	tflog.Debug(ctx, "Successfully read security SAML configuration from API")
 

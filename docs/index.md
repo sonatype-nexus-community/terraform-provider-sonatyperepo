@@ -13,7 +13,7 @@ The provider needs to be configured with the proper credentials before it can be
 
 ## Compatability
 
-This Provider is tested on Sonatype Nexus Repository Manager versions `3.79.1` through `3.82.0` currently.
+This Provider is tested on Sonatype Nexus Repository Manager versions `3.79.1` through `3.85.0` currently.
 
 Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
 		
@@ -22,10 +22,28 @@ Some resources and features depend on the version of Sonatype Nexus Repository y
 ## Example Usage
 
 ```terraform
+# Simplest Configuration
 provider "sonatyperepo" {
   host     = "https://my-sonatype-nexus-repository.tld:port"
   username = "username"
   password = "password"
+}
+
+# If you run with a base path, you can add it:
+provider "sonatyperepo" {
+  host          = "https://my-sonatype-nexus-repository.tld:port"
+  username      = "username"
+  password      = "password"
+  api_base_path = "/my-custom-base/service/rest"
+}
+
+# If you access via a Load Balancer or service that strips the `Server` header
+# you can provide a hint as to the version of Sonatype Nexus Repository:
+provider "sonatyperepo" {
+  host         = "https://my-sonatype-nexus-repository.tld:port"
+  username     = "username"
+  password     = "password"
+  version_hint = "3.85.0-03 (PRO)"
 }
 ```
 
@@ -41,3 +59,14 @@ provider "sonatyperepo" {
 ### Optional
 
 - `api_base_path` (String) Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.
+- `version_hint` (String) You can set this to the full version string (e.g. "3.85.0-03 (PRO)" or "3.80.0-06 (OSS)") of Sonatype Nexus Repository that you are connecting to.
+
+> [!NOTE] 
+> You can find the full version string in _Admin -> Support -> System Information_.
+>				
+> By default, this provider will attempt to automatically determine the version of Sonatype Nexus Repository you are connected to - but in some 
+> real world cases, a Load Balancer or such may strip the HTTP Header that contians this information (the _Server_ header).
+
+> [!TIP]
+> If you receive an error such as `Plan is not supported for Sonatype Nexus Repository Manager: 0.0.0-0 (PRO=false)` then you should set 
+> this attribute - otherwise, do not supply this attribute.

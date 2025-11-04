@@ -48,6 +48,14 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "1"),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:            resourceNameRole,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"last_updated"},
+				ImportStateId:           fmt.Sprintf("my-test-role-%s", randomString),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
