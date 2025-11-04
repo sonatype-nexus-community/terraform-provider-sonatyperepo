@@ -92,7 +92,7 @@ func (f *RepairRebuildBrowseNodesTask) GetPlanAsModel(ctx context.Context, plan 
 func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"repository_name": schema.StringAttribute{
-			Description: "The Repositories to rebuild browse trees for.",
+			Description: "The Repository to rebuild browse trees for.",
 			Required:    true,
 			Optional:    false,
 		},
