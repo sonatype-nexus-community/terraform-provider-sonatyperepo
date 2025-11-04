@@ -2,6 +2,10 @@
 
 ## X.Y.Z (UNRELEASED)
 
+_TBC_
+
+## 0.10.0 November 4, 2025
+
 FEATURES:
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
