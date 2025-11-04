@@ -123,13 +123,27 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	var config SonatypeRepoProviderModel
 
 	diags := req.Config.Get(ctx, &config)
-
 	resp.Diagnostics.Append(diags...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	nxrmUrl, username, password, apiBasePath, versionHint := p.parseConfig(&config)
+
+	p.validateConfig(resp, nxrmUrl, &config)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ds := p.createClient(nxrmUrl, username, password, apiBasePath)
+
+	p.checkVersion(ctx, &ds, resp, versionHint)
+
+	resp.DataSourceData = ds
+	resp.ResourceData = ds
+}
+
+func (p *SonatypeRepoProvider) parseConfig(config *SonatypeRepoProviderModel) (string, string, string, string, *string) {
 	nxrmUrl := os.Getenv("NXRM_SERVER_URL")
 	username := os.Getenv("NXRM_SERVER_USERNAME")
 	password := os.Getenv("NXRM_SERVER_PASSWORD")
@@ -157,7 +171,10 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 		versionHint = &v
 	}
 
-	// Validate Provider Configuration
+	return nxrmUrl, username, password, apiBasePath, versionHint
+}
+
+func (p *SonatypeRepoProvider) validateConfig(resp *provider.ConfigureResponse, nxrmUrl string, config *SonatypeRepoProviderModel) {
 	if len(nxrmUrl) == 0 {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("url"),
@@ -189,12 +206,9 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 			"Administratrive credentials for your Sonatype Nexus Repository Server are required",
 		)
 	}
+}
 
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Example client configuration for data sources and resources
+func (p *SonatypeRepoProvider) createClient(nxrmUrl, username, password, apiBasePath string) common.SonatypeDataSourceData {
 	configuration := sonatyperepo.NewConfiguration()
 	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
 	configuration.Servers = []sonatyperepo.ServerConfiguration{
@@ -205,13 +219,14 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	client := sonatyperepo.NewAPIClient(configuration)
-	ds := common.SonatypeDataSourceData{
+	return common.SonatypeDataSourceData{
 		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
 		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
 		Client:  client,
 	}
+}
 
-	// Check NXRM is Writable and determine Version
+func (p *SonatypeRepoProvider) checkVersion(ctx context.Context, ds *common.SonatypeDataSourceData, resp *provider.ConfigureResponse, versionHint *string) {
 	ds.CheckWritableAndGetVersion(ctx, &resp.Diagnostics, versionHint)
 	tflog.Info(ctx, fmt.Sprintf("Detected Sonatype Nexus Repository to be version %s", ds.NxrmVersion.String()))
 
@@ -221,9 +236,6 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 			`This provide has not been validated against versions older than 3.79.1 - things will probably work fine, but proceed with caution.`,
 		)
 	}
-
-	resp.DataSourceData = ds
-	resp.ResourceData = ds
 }
 
 func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.Resource {
