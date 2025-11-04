@@ -34,7 +34,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
@@ -80,7 +79,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 	// Request Context
 	ctx = context.WithValue(
 		ctx,
-		sonatyperepo.ContextBasicAuth,
+		v3.ContextBasicAuth,
 		c.Auth,
 	)
 
@@ -127,7 +126,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Set API Context
 	ctx = context.WithValue(
 		ctx,
-		sonatyperepo.ContextBasicAuth,
+		v3.ContextBasicAuth,
 		c.Auth,
 	)
 
@@ -189,7 +188,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	// Request Context
 	ctx = context.WithValue(
 		ctx,
-		sonatyperepo.ContextBasicAuth,
+		v3.ContextBasicAuth,
 		c.Auth,
 	)
 
@@ -277,7 +276,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	// Request Context
 	ctx = context.WithValue(
 		ctx,
-		sonatyperepo.ContextBasicAuth,
+		v3.ContextBasicAuth,
 		c.Auth,
 	)
 
@@ -334,7 +333,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	// Set API Context
 	ctx = context.WithValue(
 		ctx,
-		sonatyperepo.ContextBasicAuth,
+		v3.ContextBasicAuth,
 		c.Auth,
 	)
 

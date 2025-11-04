@@ -17,6 +17,5 @@
 package capability_test
 
 const (
-	fieldFrequencySchedule = "frequency.schedule"
-	resourceNameF          = "%s.test_task"
+	resourceBaseUrl string = "sonatyperepo_capability_base_url"
 )

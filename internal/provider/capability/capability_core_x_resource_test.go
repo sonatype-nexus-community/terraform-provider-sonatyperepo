@@ -28,8 +28,7 @@ import (
 func TestAccCapabilityCoreBaseUrlResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeName := "sonatyperepo_capability_base_url"
-	resourceName := fmt.Sprintf("%s.cap", resourceTypeName)
+	resourceName := fmt.Sprintf("%s.cap", resourceBaseUrl)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -44,7 +43,7 @@ resource "%s" "cap" {
     url = "https://%s.tld"
   }
 }
-`, resourceTypeName, randomString, randomString),
+`, resourceBaseUrl, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-capability-%s", randomString)),
