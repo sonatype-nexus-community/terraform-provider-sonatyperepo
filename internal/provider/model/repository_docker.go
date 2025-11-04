@@ -37,6 +37,9 @@ func (m *dockerHostedStorageModel) MapFromApi(api *sonatyperepo.DockerHostedStor
 	m.WritePolicy = types.StringValue(api.WritePolicy)
 	if api.LatestPolicy != nil {
 		m.LatestPolicy = types.BoolPointerValue(api.LatestPolicy)
+	} else {
+		// Set default value if API doesn't return it
+		m.LatestPolicy = types.BoolValue(false)
 	}
 }
 
@@ -90,14 +93,21 @@ func (m *RepositoryDockerHostedModel) FromApiModel(api sonatyperepo.DockerHosted
 	m.Online = types.BoolValue(api.Online)
 	m.Url = types.StringPointerValue(api.Url)
 
-	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
 	}
 
-	// Storage
 	m.Storage.MapFromApi(&api.Storage)
+
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	} else {
+		m.Component = &RepositoryComponentModel{
+			ProprietaryComponents: types.BoolValue(false),
+		}
+	}
 
 	// Docker Specific
 	m.Docker.MapFromApi(&api.Docker)

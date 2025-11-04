@@ -59,7 +59,7 @@ Optional:
 Optional:
 
 - `cache_foreign_layers` (Boolean) Allow Nexus Repository Manager to download and cache foreign layers
-- `foreign_layer_url_whitelist` (List of String) Foreign Layer URL Whitelist
+- `foreign_layer_url_whitelist` (Set of String) Foreign Layer URL Whitelist
 - `index_type` (String) Type of Docker Index
 - `index_url` (String) Url of Docker Index to use
 
@@ -138,7 +138,7 @@ Required:
 
 Optional:
 
-- `policy_names` (List of String) Components that match any of the applied policies will be deleted
+- `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
 
 
 <a id="nestedatt--replication"></a>
@@ -151,3 +151,16 @@ Required:
 Optional:
 
 - `asset_path_regex` (String) Regular Expression of Asset Paths to pull pre-emptively pull
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing proxy docker repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_docker_proxy.docker REPOSITORY_NAME
+```

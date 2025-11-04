@@ -9,6 +9,42 @@
 * **New Resource:** `sonatyperepo_task_repository_docker_gc` [GH-92]
 * **New Resource:** `sonatyperepo_task_repository_docker_upload_purge` [GH-92]
 
+## 0.9.0 October 30, 2025
+
+ENHANCEMENTS:
+* Resource `sonatyperepo_repository_docker_group` now supports import [GH-126] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_repository_docker_hosted` now supports import [GH-126] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_repository_docker_proxy` now supports import [GH-126] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_role` now supports import [GH-128] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_system_config_mail` now supports import [GH-119] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_security_realms` now supports import [GH-118] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_security_saml` now supports import [GH-120] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_system_anonymous_access` now supports import [GH-117] (thanks @yfougeray-euphoria)
+* Resource `sonatyperepo_user` now supports import [GH-97]
+
+## 0.8.2 October 23, 2025
+
+ENHANCEMENTS:
+* A number of resources have had their schemas updated to use `Set` rather than `List` to avoid unncessary plan changes due to ordering of data. The impacted data sources and resources are:
+  * Data Sources:
+    * `sonatyperepo_blob_store_group`
+    * `sonatyperepo_roles`
+    * `sonatyperepo_users`
+  * Resources:
+    * `sonatyperepo_privilege_*` (i.e. all Privilege resources)
+    * `sonatyperepo_repository_*_hosted` (i.e. all Hosted Repository resources)
+    * `sonatyperepo_repository_*_proxy` (i.e. all Proxy Repository resources)
+    * `sonatyperepo_role`
+    * `sonatyperepo_user`
+
+BUG FIXES:
+* **Bug:** Read for resource `sonatyperepo_user` might return incorrect User breaking state [GH-111]
+* **Bug:** Subsequent plans for `sonatyperepo_role` showed change due to ordering of privileges [GH-112]
+
+## 0.8.1 October 21, 2025
+
+BUG FIXES:
+* **Bug:** Further improve connectivity errors to Sonatype Nexus Repository without the provider crashing [GH-105]
 
 ## 0.8.0 October 18, 2025
 

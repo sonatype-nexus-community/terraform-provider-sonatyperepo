@@ -22,10 +22,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -33,6 +32,12 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+)
+
+// Ensure resource satisfies various resource interfaces.
+var (
+	_ resource.Resource                = &systemConfigMailResource{}
+	_ resource.ResourceWithImportState = &systemConfigMailResource{}
 )
 
 // systemConfigMailResource is the resource implementation.
@@ -114,12 +119,27 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *systemConfigMailResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Since this is a singleton resource (system email configuration),
+	// we don't need to validate the ID - any non-empty string is acceptable
+	if req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Invalid Import ID",
+			"Import ID cannot be empty. Use any non-empty string (e.g., 'system-email-config') to import the system email configuration.",
+		)
+		return
+	}
+
+	// Set the ID to a fixed value since this is a singleton resource
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_updated"), types.StringValue("system-email-config"))...)
+
+	tflog.Info(ctx, fmt.Sprintf("Imported system email configuration with ID: %s", req.ID))
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -216,44 +236,7 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	} else {
 		// Update State
-		state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-		state.Enabled = types.BoolPointerValue(apiResponse.Enabled)
-		if apiResponse.Host != nil {
-			state.Host = types.StringPointerValue(apiResponse.Host)
-		} else {
-			state.Host = types.StringNull()
-		}
-
-		port := apiResponse.Port
-		state.Port = types.Int64Value(int64(port))
-
-		if apiResponse.Username != nil {
-			state.Username = types.StringPointerValue(apiResponse.Username)
-		}
-
-		// Ignore Password
-
-		// if apiResponse.FromAddress != nil {
-		// 	state.FromAddress = types.StringPointerValue(apiResponse.FromAddress)
-		// }
-		// if apiResponse.SubjectPrefix != nil {
-		// 	state.SubjectPrefix = types.StringPointerValue(apiResponse.SubjectPrefix)
-		// }
-		// if apiResponse.StartTlsEnabled != nil {
-		// 	state.StartTLSEnabled = types.BoolPointerValue(apiResponse.StartTlsEnabled)
-		// }
-		// if apiResponse.StartTlsRequired != nil {
-		// 	state.StartTLSRequired = types.BoolPointerValue(apiResponse.StartTlsRequired)
-		// }
-		// if apiResponse.SslOnConnectEnabled != nil {
-		// 	state.SSLOnConnectEnabled = types.BoolPointerValue(apiResponse.SslOnConnectEnabled)
-		// }
-		// if apiResponse.SslServerIdentityCheckEnabled != nil {
-		// 	state.SSLServerIdentityCheckEnabled = types.BoolPointerValue(apiResponse.SslServerIdentityCheckEnabled)
-		// }
-		// if apiResponse.NexusTrustStoreEnabled != nil {
-		// 	state.NexusTrustStoreEnabled = types.BoolPointerValue(apiResponse.NexusTrustStoreEnabled)
-		// }
+		state.MapFromApi(apiResponse)
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		if resp.Diagnostics.HasError() {

@@ -67,7 +67,7 @@ Optional:
 
 Optional:
 
-- `policy_names` (List of String) Components that match any of the applied policies will be deleted
+- `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
 
 
 <a id="nestedatt--component"></a>
@@ -76,3 +76,16 @@ Optional:
 Optional:
 
 - `proprietary_components` (Boolean) Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing hosted docker repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_docker_hosted.docker REPOSITORY_NAME
+```

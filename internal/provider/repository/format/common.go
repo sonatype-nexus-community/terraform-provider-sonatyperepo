@@ -67,6 +67,21 @@ func (f *BaseRepositoryFormat) ValidatePlanForNxrmVersion(plan any, version comm
 	return nil
 }
 
+// DoImportRequest provides a base implementation for repository import
+// This can be overridden by specific formats if needed
+func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// For base implementation, we can't determine the specific repository type
+	// This should be overridden by each format implementation
+	return nil, nil, fmt.Errorf("import not implemented for this repository format")
+}
+
+// ValidateRepositoryForImport validates that the repository matches the expected format and type
+func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// This is a base implementation that can be overridden by specific formats
+	// Each format should implement its own validation logic
+	return nil
+}
+
 // RepositoryFormat that all Repository Formats must implement
 // --------------------------------------------
 type RepositoryFormat interface {
@@ -74,6 +89,8 @@ type RepositoryFormat interface {
 	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
+	DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
+	ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error
 	GetApiCreateSuccessResponseCodes() []int
 	GetFormatSchemaAttributes() map[string]schema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)

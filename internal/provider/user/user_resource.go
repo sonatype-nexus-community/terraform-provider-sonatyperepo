@@ -20,12 +20,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -55,7 +56,7 @@ func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest,
 // Schema defines the schema for the resource.
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Configure the Sonatype IQ Server Connection",
+		Description: "Manage Local and non-Local Users",
 		Attributes: map[string]schema.Attribute{
 			"user_id": schema.StringAttribute{
 				Description: "The userid which is required for login. This value cannot be changed.",
@@ -63,30 +64,40 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:    false,
 			},
 			"first_name": schema.StringAttribute{
-				Description: "The first name of the user.",
-				Required:    true,
-				Optional:    false,
+				MarkdownDescription: `The first name of the user.
+				
+**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				Required: true,
+				Optional: false,
 			},
 			"last_name": schema.StringAttribute{
-				Description: "The last name of the user.",
-				Required:    true,
-				Optional:    false,
+				MarkdownDescription: `The last name of the user.
+
+**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				Required: true,
+				Optional: false,
 			},
 			"email_address": schema.StringAttribute{
-				Description: "The email address associated with the user.",
-				Required:    true,
-				Optional:    false,
+				MarkdownDescription: `The email address associated with the user.
+				
+**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				Required: true,
+				Optional: false,
 			},
 			"password": schema.StringAttribute{
-				Description: "The password for the user.",
-				Required:    true,
-				Optional:    false,
-				Sensitive:   true,
+				MarkdownDescription: `The password for the user.
+				
+**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`,
+				Required:  false,
+				Optional:  true,
+				Sensitive: true,
 			},
 			"status": schema.StringAttribute{
-				Description: "The user's status.",
-				Required:    true,
-				Optional:    false,
+				MarkdownDescription: `The user's status.
+				
+**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				Required: true,
+				Optional: false,
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						common.USER_STATUS_ACTIVE,
@@ -96,14 +107,11 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					),
 				},
 			},
-			"roles": schema.ListAttribute{
+			"roles": schema.SetAttribute{
 				Description: "The list of roles assigned to this User.",
 				Required:    true,
 				Optional:    false,
 				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-				},
 			},
 			"read_only": schema.BoolAttribute{
 				Computed: true,
@@ -144,17 +152,14 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	plan.MapToCreateApi(apiBody)
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating User",
-			fmt.Sprintf("Error creating User: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
+		common.HandleApiError(
+			fmt.Sprintf("Error creating User: %s", plan.UserId.ValueString()),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
-	} else if httpResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Error creating User",
-			fmt.Sprintf("Unexpected Response Code whilst creating User: %d: %s", httpResponse.StatusCode, httpResponse.Status),
-		)
 	}
 
 	// Update State
@@ -185,10 +190,10 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Source(state.Source.ValueString()).Execute()
 
 	if err != nil {
-		if httpResponse.StatusCode == 404 {
+		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
 				"User does not exist",
@@ -206,13 +211,38 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if len(apiResponse) == 0 {
 		resp.Diagnostics.AddError(
 			"No User with requested User ID",
+			fmt.Sprintf("No user found for %s@%s", state.UserId.ValueString(), state.Source.ValueString()),
+		)
+		return
+	}
+
+	var actualUser *sonatyperepo.ApiUser
+	for _, u := range apiResponse {
+		if *u.UserId == state.UserId.ValueString() && *u.Source == state.Source.ValueString() {
+			tflog.Debug(ctx,
+				fmt.Sprintf(
+					"Matched User: %s=%s and %s=%s",
+					*u.UserId,
+					state.UserId.ValueString(),
+					*u.Source,
+					state.Source.ValueString(),
+				),
+			)
+			actualUser = &u
+		}
+	}
+
+	if actualUser == nil {
+		// No user with the exact User ID and Source
+		resp.Diagnostics.AddError(
+			"User does not exist",
 			fmt.Sprintf("No user returned: %s: %s", httpResponse.Status, err),
 		)
 		return
 	}
 
 	// Update State based on Response
-	state.MapFromApi(&apiResponse[0])
+	state.MapFromApi(actualUser)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -316,4 +346,19 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			fmt.Sprintf("Unexpected Response Code whilst removing User: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
+}
+
+// This allows users to import existing Users into Terraform state using the blob store name as the identifier.
+func (r *userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	idParts := strings.Split(req.ID, ",")
+	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected import identifier with format: <user_id>,<source> - e.g. admin,SAML. Got: %q", req.ID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("user_id"), idParts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source"), idParts[1])...)
 }
