@@ -50,6 +50,14 @@ func (rt RepositoryType) String() string {
 	return "unknown"
 }
 
+// Error message constants for repository validation during import
+const (
+	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
+	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
+	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
+	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
+)
+
 // BaseRepositoryFormat that all formats build from
 // --------------------------------------------
 type BaseRepositoryFormat struct{}

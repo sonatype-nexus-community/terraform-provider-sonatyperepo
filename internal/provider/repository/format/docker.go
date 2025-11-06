@@ -42,14 +42,7 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-const (
-	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
-	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
-	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
-	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
-)
-
-type DockerRepositoryFormat struct {
+type DockerRepositoryFormat struct{
 	BaseRepositoryFormat
 }
 
