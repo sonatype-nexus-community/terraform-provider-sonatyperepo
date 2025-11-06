@@ -75,7 +75,7 @@ resource "%s" "cap" {
     quarantine = true
   }
 }
-`, resourceBaseUrl, randomString),
+`, resourceFirewallAuditQuarantine, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-capability-%s", randomString)),
