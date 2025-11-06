@@ -4,14 +4,14 @@ page_title: "sonatyperepo_capability_firewall_audit_and_quarantine Resource - so
 subcategory: ""
 description: |-
   Manage Capability: Firewall Audit and Quarantine
-  NOTE: Requires Sonatype Nexus Repostiory 3.82.0 or later - see Release Notes https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html.
+  NOTE: Requires Sonatype Nexus Repostiory 3.84.0 or later.
 ---
 
 # sonatyperepo_capability_firewall_audit_and_quarantine (Resource)
 
 Manage Capability: Firewall Audit and Quarantine
 		
-**NOTE:** Requires Sonatype Nexus Repostiory 3.82.0 or later - see [Release Notes](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html).
+**NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.
 
 ## Example Usage
 

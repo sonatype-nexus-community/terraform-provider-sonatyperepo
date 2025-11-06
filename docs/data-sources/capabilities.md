@@ -4,14 +4,14 @@ page_title: "sonatyperepo_capabilities Data Source - sonatyperepo"
 subcategory: ""
 description: |-
   Use this data source to get all Capabilities.
-  NOTE: Requires Sonatype Nexus Repostiory 3.82.0 or later - see Release Notes https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html.
+  NOTE: Requires Sonatype Nexus Repostiory 3.84.0 or later.
 ---
 
 # sonatyperepo_capabilities (Data Source)
 
 Use this data source to get all Capabilities.
 		
-**NOTE:** Requires Sonatype Nexus Repostiory 3.82.0 or later - see [Release Notes](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html).
+**NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.
 
 ## Example Usage
 

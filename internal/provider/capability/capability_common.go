@@ -376,7 +376,7 @@ func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) schema.Schema {
 	baseSchema := schema.Schema{
 		MarkdownDescription: ct.GetMarkdownDescription() + `
 		
-**NOTE:** Requires Sonatype Nexus Repostiory 3.82.0 or later - see [Release Notes](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html).`,
+**NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The internal ID of the Capability.",
