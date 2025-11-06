@@ -21,6 +21,7 @@ const (
 	AUTH_SCHEME_SIMPLE                                                     string = "SIMPLE"
 	AUTH_SCHEME_DIGEST_MD5                                                 string = "DIGEST_MD5"
 	AUTH_SCHEME_CRAM_MD5                                                   string = "CRAM_MD5"
+	CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE                              bool   = false
 	CONAN_PROTOCOL_V1                                                      string = "V1"
 	CONAN_PROTOCOL_V2                                                      string = "V2"
 	CONTENT_DISPOSITION_ATTACHMENT                                         string = "ATTACHMENT"

@@ -17,6 +17,7 @@
 package model
 
 import (
+	"strconv"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -57,6 +58,50 @@ func (m *CapabilityCoreBaseUrlModel) ToApiCreateModel(version common.SystemVersi
 }
 
 func (m *CapabilityCoreBaseUrlModel) ToApiUpdateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiUpdateModel()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+// Properties for Core: Outreach Management
+// ----------------------------------------
+type CapabilityPropertiesCoreOutreach struct {
+	AlwaysRemote types.Bool   `tfsdk:"always_remote" nxrm:"alwaysRemote"`
+	OverrideUrl  types.String `tfsdk:"override_url" nxrm:"overrideUrl"`
+}
+
+func (p *CapabilityPropertiesCoreOutreach) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	return StructToMap(p)
+}
+
+// Capability: Core: Outreach Management
+// ----------------------------------------
+type CapabilityCoreOutreachModel struct {
+	BaseCapabilityModel
+	Properties *CapabilityPropertiesCoreOutreach `tfsdk:"properties"`
+}
+
+func (m *CapabilityCoreOutreachModel) FromApiModel(api *v3.CapabilityDTO) {
+	m.Id = types.StringValue(*api.Id)
+	m.Notes = types.StringValue(*api.Notes)
+	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Properties = &CapabilityPropertiesCoreOutreach{}
+	m.Properties.OverrideUrl = types.StringValue((*api.Properties)["overrideUrl"])
+	alwaysRemote, err := strconv.ParseBool((*api.Properties)["alwaysRemote"])
+	if err != nil {
+		alwaysRemote = false
+	}
+	m.Properties.AlwaysRemote = types.BoolValue(alwaysRemote)
+}
+
+func (m *CapabilityCoreOutreachModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiCreateModel()
+	api.Type = common.CAPABILITY_TYPE_OUTREACH.StringPointer()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+func (m *CapabilityCoreOutreachModel) ToApiUpdateModel(version common.SystemVersion) *v3.CapabilityDTO {
 	api := m.toApiUpdateModel()
 	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
