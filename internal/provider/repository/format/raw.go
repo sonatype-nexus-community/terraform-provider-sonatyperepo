@@ -18,8 +18,10 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -78,6 +80,9 @@ func (f *RawRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -115,9 +120,47 @@ func (f *RawRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *RawRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRawHostedModel)
+	var stateModel model.RepositoryRawHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRawHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.RawHostedApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Raw Hosted repositories
+func (f *RawRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Hosted repository
+func (f *RawRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Raw Hosted API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.RawHostedApiRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Raw Hosted repository")
+	}
+
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -137,6 +180,9 @@ func (f *RawRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -174,9 +220,47 @@ func (f *RawRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *RawRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRawProxyModel)
+	var stateModel model.RepositoryRawProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRawProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.RawProxyApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Raw Proxy repositories
+func (f *RawRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Proxy repository
+func (f *RawRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Raw Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.RawProxyApiRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Raw Proxy repository")
+	}
+
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -196,6 +280,9 @@ func (f *RawRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -233,9 +320,47 @@ func (f *RawRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *RawRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRawGroupModel)
+	var stateModel model.RepositoryRawGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRawGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.RawGroupApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Raw Group repositories
+func (f *RawRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRawGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Group repository
+func (f *RawRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Raw Group API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.RawGroupApiRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Raw Group repository")
+	}
+
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
