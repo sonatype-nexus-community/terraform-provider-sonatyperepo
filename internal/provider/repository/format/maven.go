@@ -52,6 +52,14 @@ type MavenRepositoryFormatGroup struct {
 	MavenRepositoryFormat
 }
 
+// Error message constants for validation
+const (
+	errFormatNil          = "repository format is nil, expected '%s'"
+	errFormatMismatch     = "repository format is '%s', expected '%s'"
+	errTypeNil            = "repository type is nil, expected '%s'"
+	errTypeMismatch       = "repository type is '%s', expected '%s'"
+)
+
 // --------------------------------------------
 // Generic Maven Format Functions
 // --------------------------------------------
@@ -145,7 +153,7 @@ func (f *MavenRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData
 	}
 
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	// Note: Maven repositories may return "maven2" from the API
@@ -153,16 +161,16 @@ func (f *MavenRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	// Accept both "maven" and "maven2" as valid Maven formats
 	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil
@@ -251,7 +259,7 @@ func (f *MavenRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData 
 
 	// Validate format (case-insensitive)
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	// Note: Maven repositories may return "maven2" from the API
@@ -259,16 +267,16 @@ func (f *MavenRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData 
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	// Accept both "maven" and "maven2" as valid Maven formats
 	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil
@@ -354,7 +362,7 @@ func (f *MavenRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData 
 	}
 
 	if apiRepo.Format == nil {
-		return fmt.Errorf("repository format is nil, expected '%s'", expectedFormat)
+		return fmt.Errorf(errFormatNil, expectedFormat)
 	}
 	// Convert both to lowercase for comparison
 	// Note: Maven repositories may return "maven2" from the API
@@ -362,16 +370,16 @@ func (f *MavenRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData 
 	expectedFormatLower := strings.ToLower(expectedFormat)
 	// Accept both "maven" and "maven2" as valid Maven formats
 	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf("repository format is '%s', expected '%s'", *apiRepo.Format, expectedFormat)
+		return fmt.Errorf(errFormatMismatch, *apiRepo.Format, expectedFormat)
 	}
 
 	// Validate type
 	expectedTypeStr := expectedType.String()
 	if apiRepo.Type == nil {
-		return fmt.Errorf("repository type is nil, expected '%s'", expectedTypeStr)
+		return fmt.Errorf(errTypeNil, expectedTypeStr)
 	}
 	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf("repository type is '%s', expected '%s'", *apiRepo.Type, expectedTypeStr)
+		return fmt.Errorf(errTypeMismatch, *apiRepo.Type, expectedTypeStr)
 	}
 
 	return nil
