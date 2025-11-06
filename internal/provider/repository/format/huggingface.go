@@ -18,7 +18,9 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -102,7 +104,51 @@ func (f *HuggingFaceRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *HuggingFaceRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryHuggingFaceProxyModel)
+	var stateModel model.RepositoryHuggingFaceProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHuggingFaceProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for HuggingFace Proxy repositories
+func (f *HuggingFaceRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetHuggingfaceProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a HuggingFace Proxy repository
+func (f *HuggingFaceRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to HuggingFace Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a HuggingFace Proxy repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
