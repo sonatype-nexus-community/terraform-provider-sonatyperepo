@@ -42,3 +42,10 @@ func NewCapabilityFirewallAuditQuarantineResource() resource.Resource {
 		CapabilityType: capabilitytype.NewFirewallAuditQuarantineCapability(),
 	}
 }
+
+// NewCapabilityOutreachResource is a helper function to simplify the provider implementation.
+func NewCapabilityOutreachResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewOutreachCapability(),
+	}
+}
