@@ -21,4 +21,6 @@ const (
 	resourceFirewallAuditQuarantine string = "sonatyperepo_capability_firewall_audit_and_quarantine"
 	resourceUiBranding              string = "sonatyperepo_capability_ui_branding"
 	resourceUiSettings              string = "sonatyperepo_capability_ui_settings"
+	resourceWebhookGlobal           string = "sonatyperepo_capability_webhook_global"
+	resourceWebhookRepository       string = "sonatyperepo_capability_webhook_repository"
 )

@@ -27,10 +27,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	resourceNameF = "%s.cap"
+)
+
 func TestAccCapabilityCoreBaseUrlResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceName := fmt.Sprintf("%s.cap", resourceBaseUrl)
+	resourceName := fmt.Sprintf(resourceNameF, resourceBaseUrl)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -73,7 +77,7 @@ resource "%s" "cap" {
 func TestAccCapabilityFirewallAuditQuarantineResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceName := fmt.Sprintf("%s.cap", resourceFirewallAuditQuarantine)
+	resourceName := fmt.Sprintf(resourceNameF, resourceFirewallAuditQuarantine)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -118,7 +122,7 @@ resource "%s" "cap" {
 func TestAccCapabilityUiBrandingResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceName := fmt.Sprintf("%s.cap", resourceUiBranding)
+	resourceName := fmt.Sprintf(resourceNameF, resourceUiBranding)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -153,6 +157,106 @@ resource "%s" "cap" {
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.header_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.header_html", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCapabilityWebhookGlobalResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf(resourceNameF, resourceWebhookGlobal)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.84.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 83,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  enabled = true
+  notes   = "example-notes-%s"
+  properties = {
+    names = [
+      "repository"
+    ]
+    url    = "https://%s.tld"
+    secret = "super-secret-key-%s"
+  }
+}
+`, resourceWebhookGlobal, randomString, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("example-notes-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "repository"),
+					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCapabilityWebhookRepositoryResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf(resourceNameF, resourceWebhookRepository)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.84.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 83,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  enabled = true
+  notes   = "example-notes-%s"
+  properties = {
+    names = [
+      "asset"
+    ]
+    url    = "https://%s.tld"
+    secret = "super-secret-key-%s"
+	repository = "maven-central"
+  }
+}
+`, resourceWebhookRepository, randomString, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("example-notes-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "asset"),
+					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
