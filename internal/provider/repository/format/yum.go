@@ -18,8 +18,10 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -81,6 +83,9 @@ func (f *YumRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -118,9 +123,59 @@ func (f *YumRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumHostedModel)
+	var stateModel model.RepositoryYumHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.YumHostedApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Hosted repositories
+func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Hosted repository
+func (f *YumRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to YUM Hosted API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.YumHostedApiRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a YUM Hosted repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
+	normalizeFormat := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, "_", "")
+		s = strings.ReplaceAll(s, "-", "")
+		return s
+	}
+	actualFormat := normalizeFormat(*apiRepo.Format)
+	expectedFormatNorm := normalizeFormat(expectedFormat)
+	if actualFormat != expectedFormatNorm {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -140,6 +195,9 @@ func (f *YumRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -177,9 +235,59 @@ func (f *YumRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumProxyModel)
+	var stateModel model.RepositoryYumProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Proxy repositories
+func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Proxy repository
+func (f *YumRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to YUM Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a YUM Proxy repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
+	normalizeFormat := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, "_", "")
+		s = strings.ReplaceAll(s, "-", "")
+		return s
+	}
+	actualFormat := normalizeFormat(*apiRepo.Format)
+	expectedFormatNorm := normalizeFormat(expectedFormat)
+	if actualFormat != expectedFormatNorm {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -199,6 +307,9 @@ func (f *YumRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -236,9 +347,59 @@ func (f *YumRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumGroupModel)
+	var stateModel model.RepositoryYumGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Group repositories
+func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Group repository
+func (f *YumRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to YUM Group API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a YUM Group repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
+	normalizeFormat := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, "_", "")
+		s = strings.ReplaceAll(s, "-", "")
+		return s
+	}
+	actualFormat := normalizeFormat(*apiRepo.Format)
+	expectedFormatNorm := normalizeFormat(expectedFormat)
+	if actualFormat != expectedFormatNorm {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
