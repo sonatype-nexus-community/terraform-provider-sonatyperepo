@@ -48,7 +48,14 @@ func (m *RepositoryP2ProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRep
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 }
 
