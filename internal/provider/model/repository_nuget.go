@@ -83,10 +83,21 @@ func (m *RepositoryNugetProxyModel) FromApiModel(api sonatyperepo.NugetProxyApiR
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// Nuget Specific
+	// nuget_proxy is required for NuGet proxy repositories, so always populate it
+	if m.NugetProxy == nil {
+		m.NugetProxy = &NugetProxyModel{}
+	}
 	m.NugetProxy.MapFromApi(api.NugetProxy)
 }
 
