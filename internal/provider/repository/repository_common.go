@@ -194,7 +194,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Update State from Response
-	r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
+	stateModel = r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateModel)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -307,12 +307,13 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	maxAttempts := 3
 	success := false
 
-	for !success && attempts < maxAttempts {
+	for !success && attempts <= maxAttempts {
 		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName.ValueString(), r.Client, ctx)
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
 			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempts))
+			time.Sleep(5 * time.Second)
 			attempts++
 			continue
 		}
@@ -333,16 +334,23 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempts),
-				fmt.Sprintf("Error response: %s", httpResponse.Status),
-			)
+			tflog.Warn(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d/%d): %s",
+				r.RepositoryFormat.GetKey(), r.RepositoryType.String(), attempts, maxAttempts, httpResponse.Status))
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(3 * time.Second)
 			attempts++
 		} else {
 			success = true
 		}
+	}
+
+	// Check if deletion was successful after all retry attempts
+	if !success {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete %s %s Repository after %d attempts", r.RepositoryFormat.GetKey(), r.RepositoryType.String(), maxAttempts),
+			fmt.Sprintf("Repository '%s' could not be deleted. This may be due to dependencies (e.g., group membership, routing rules) or internal Nexus state issues. Please check Nexus logs and ensure the repository is not referenced by other resources.", repositoryName.ValueString()),
+		)
+		return
 	}
 }
 
@@ -449,6 +457,9 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 			"name": schema.StringAttribute{
 				Description: "Name of the Repository",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"url": schema.StringAttribute{
 				Description: "URL to access the Repository",
