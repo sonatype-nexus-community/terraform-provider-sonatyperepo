@@ -13,6 +13,13 @@ on:
     workflow_run:
       workflows: ["Test (Untrusted)"]
       types: [completed]
+    workflow_dispatch:
+      inputs:
+        branch:
+          description: 'Branch to run tests against'
+          required: true
+          default: 'main'
+          type: string
 
 env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
@@ -25,11 +32,13 @@ permissions:
 
 jobs:
     sonatype:
-        if: ${{ github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
         name: Sonatype Scan
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+              with:
+                ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
               
             - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
               with:
@@ -53,7 +62,7 @@ jobs:
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
-        if: ${{ github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
         name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         needs: 
             - sonatype
@@ -96,6 +105,8 @@ jobs:
                 
             - name: Checkout Source
               uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+              with:
+                ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
 
             - name: Download & Unpack Sonatype Nexus Repository Manager
               run: |
