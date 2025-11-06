@@ -18,6 +18,7 @@ package capability_test
 
 const (
 	resourceBaseUrl                 string = "sonatyperepo_capability_base_url"
+	resourceCustomS3Regions         string = "sonatyperepo_capability_custom_s3_regions"
 	resourceFirewallAuditQuarantine string = "sonatyperepo_capability_firewall_audit_and_quarantine"
 	resourceUiBranding              string = "sonatyperepo_capability_ui_branding"
 	resourceUiSettings              string = "sonatyperepo_capability_ui_settings"
