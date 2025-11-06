@@ -55,7 +55,9 @@ func (d *capabilitiesDataSource) Metadata(_ context.Context, req datasource.Meta
 // Schema defines the schema for the data source.
 func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Use this data source to get all Capabilities",
+		Description: `Use this data source to get all Capabilities.
+		
+**NOTE:** Requires Sonatype Nexus Repostiory 3.82.0 or later - see [Release Notes](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html).`,
 		Attributes: map[string]schema.Attribute{
 			"capabilities": schema.ListNestedAttribute{
 				Computed: true,

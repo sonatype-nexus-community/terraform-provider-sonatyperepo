@@ -4,11 +4,14 @@ page_title: "sonatyperepo_capability_base_url Resource - sonatyperepo"
 subcategory: ""
 description: |-
   Manage Capability: Base URL
+  NOTE: Requires Sonatype Nexus Repostiory 3.82.0 or later - see Release Notes https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html.
 ---
 
 # sonatyperepo_capability_base_url (Resource)
 
 Manage Capability: Base URL
+		
+**NOTE:** Requires Sonatype Nexus Repostiory 3.82.0 or later - see [Release Notes](https://help.sonatype.com/en/sonatype-nexus-repository-3-82-0-release-notes.html).
 
 ## Example Usage
 
