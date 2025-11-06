@@ -250,6 +250,8 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		capability.NewCapabilityOutreachResource,
 		capability.NewCapabilityUiBrandingResource,
 		capability.NewCapabilityUiSettingsResource,
+		capability.NewCapabilityWebhookGlobalResource,
+		capability.NewCapabilityWebhookRepositoryResource,
 		content_selector.NewContentSelectorResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
