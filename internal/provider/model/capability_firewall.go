@@ -40,14 +40,14 @@ func (p *CapabilityPropertiesFirewallAuditQuarantine) GetFilteredPropertiesAsMap
 // ----------------------------------------
 type CapabilityFirewallAuditQuarantineModel struct {
 	BaseCapabilityModel
-	Properties CapabilityPropertiesFirewallAuditQuarantine `tfsdk:"properties" nxrm:"properties"`
+	Properties *CapabilityPropertiesFirewallAuditQuarantine `tfsdk:"properties" nxrm:"properties"`
 }
 
 func (m *CapabilityFirewallAuditQuarantineModel) FromApiModel(api *v3.CapabilityDTO) {
 	m.Id = types.StringValue(*api.Id)
 	m.Notes = types.StringValue(*api.Notes)
 	m.Enabled = types.BoolValue(*api.Enabled)
-	m.Properties = CapabilityPropertiesFirewallAuditQuarantine{}
+	m.Properties = &CapabilityPropertiesFirewallAuditQuarantine{}
 
 	quarantine, err := strconv.ParseBool((*api.Properties)["quarantine"])
 	if err != nil {

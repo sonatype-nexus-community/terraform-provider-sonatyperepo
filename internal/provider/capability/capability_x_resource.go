@@ -35,3 +35,10 @@ func NewCapabilityCoreBaseUrlResource() resource.Resource {
 		CapabilityType: capabilitytype.NewCoreBaseUrlCapability(),
 	}
 }
+
+// NewCapabilityFirewallAuditQuarantineResource is a helper function to simplify the provider implementation.
+func NewCapabilityFirewallAuditQuarantineResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewFirewallAuditQuarantineCapability(),
+	}
+}

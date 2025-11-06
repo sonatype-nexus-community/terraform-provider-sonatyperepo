@@ -246,6 +246,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		blob_store.NewBlobStoreGoogleCloudResource,
 		capability.NewCapabilityAuditResource,
 		capability.NewCapabilityCoreBaseUrlResource,
+		capability.NewCapabilityFirewallAuditQuarantineResource,
 		content_selector.NewContentSelectorResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
