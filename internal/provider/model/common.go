@@ -20,6 +20,9 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func ParseBool(value string, defaultValue bool) bool {
@@ -96,6 +99,20 @@ func fieldValueToString(v reflect.Value) string {
 		}
 		return fieldValueToString(v.Elem())
 	case reflect.Struct:
+		// Handle types.Set
+		if v.CanInterface() {
+			if set, ok := v.Interface().(types.Set); ok {
+				elements := set.Elements()
+				var strs []string
+				for _, elem := range elements {
+					if strVal, ok := elem.(types.String); ok {
+						strs = append(strs, strVal.ValueString())
+					}
+				}
+				return strings.Join(strs, ",")
+			}
+		}
+
 		// Handle Terraform types (types.String, types.Int32, etc.)
 		if v.CanInterface() {
 			// Check for ValueString() method (types.String)

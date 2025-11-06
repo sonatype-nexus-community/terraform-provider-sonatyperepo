@@ -20,16 +20,22 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-// BaseCapabilityType that all task types build from
+// --------------------------------------------
+// BaseCapabilityType that all capability types build from
 // --------------------------------------------
 type BaseCapabilityType struct {
 	capabilityType common.CapabilityType
@@ -60,6 +66,7 @@ func (ct *BaseCapabilityType) GetType() common.CapabilityType {
 	return ct.capabilityType
 }
 
+// --------------------------------------------
 // CapabilityTypeI that all Capability Types must implement
 // --------------------------------------------
 type CapabilityTypeI interface {
@@ -77,4 +84,53 @@ type CapabilityTypeI interface {
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 	UpdateStateFromPlanForUpdate(plan any, state any) any
+}
+
+// --------------------------------------------
+// Helper method to generate schema for Webhook Capabilities
+// --------------------------------------------
+func getPropertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]schema.Attribute {
+	defaultProps := map[string]schema.Attribute{
+		"names": schema.SetAttribute{
+			Description: "Event types which trigger this Webhook.",
+			Required:    true,
+			ElementType: types.StringType,
+			Validators: []validator.Set{
+				setvalidator.SizeBetween(1, 2),
+				setvalidator.ValueStringsAre(
+					stringvalidator.OneOf(permissibleEventTypes...),
+				),
+			},
+		},
+		"secret": schema.StringAttribute{
+			Description: "Key to use for HMAC payload digest.",
+			Optional:    true,
+			Sensitive:   true,
+		},
+		"url": schema.StringAttribute{
+			Description: "Send a HTTP POST request to this URL.",
+			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(
+					regexp.MustCompile(`^https?://[^\s]+$`),
+					"Must be a valid http:// or https:// URL",
+				),
+			},
+		},
+	}
+
+	if includeRepository {
+		defaultProps["repository"] = schema.StringAttribute{
+			Description: "Repository to discriminate events from.",
+			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.RegexMatches(
+					regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
+					"Must be a valid repository name",
+				),
+			},
+		}
+	}
+
+	return defaultProps
 }

@@ -63,3 +63,17 @@ func NewCapabilityUiSettingsResource() resource.Resource {
 		CapabilityType: capabilitytype.NewUiSettingsCapability(),
 	}
 }
+
+// NewCapabilityWebhookRepositoryResource is a helper function to simplify the provider implementation.
+func NewCapabilityWebhookRepositoryResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewWebhookRepositoryCapability(),
+	}
+}
+
+// NewCapabilityWebhookGlobalResource is a helper function to simplify the provider implementation.
+func NewCapabilityWebhookGlobalResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewWebhookGlobalCapability(),
+	}
+}

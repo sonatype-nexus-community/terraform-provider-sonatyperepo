@@ -25,6 +25,8 @@ const (
 	CAPABILITY_TYPE_OUTREACH                  CapabilityType = "OutreachManagementCapability"
 	CAPABILITY_TYPE_UI_BRANDING               CapabilityType = "rapture.branding"
 	CAPABILITY_TYPE_UI_SETTINGS               CapabilityType = "rapture.settings"
+	CAPABILITY_TYPE_WEBHOOK_GLOBAL            CapabilityType = "webhook.global"
+	CAPABILITY_TYPE_WEBHOOK_REPOSITORY        CapabilityType = "webhook.repository"
 )
 
 func (ct CapabilityType) String() string {
@@ -34,4 +36,31 @@ func (ct CapabilityType) String() string {
 func (ct CapabilityType) StringPointer() *string {
 	str := ct.String()
 	return &str
+}
+
+type WebhookEventType string
+
+func (wet WebhookEventType) String() string {
+	return string(wet)
+}
+
+const (
+	WEBHOOK_EVENT_TYPE_ASSET      WebhookEventType = "asset"
+	WEBHOOK_EVENT_TYPE_AUDIT      WebhookEventType = "audit"
+	WEBHOOK_EVENT_TYPE_COMPONENT  WebhookEventType = "component"
+	WEBHOOK_EVENT_TYPE_REPOSITORY WebhookEventType = "repository"
+)
+
+func AllGlobalWebHookEventTypes() []string {
+	return []string{
+		WEBHOOK_EVENT_TYPE_AUDIT.String(),
+		WEBHOOK_EVENT_TYPE_REPOSITORY.String(),
+	}
+}
+
+func AllRepositoryWebHookEventTypes() []string {
+	return []string{
+		WEBHOOK_EVENT_TYPE_ASSET.String(),
+		WEBHOOK_EVENT_TYPE_COMPONENT.String(),
+	}
 }
