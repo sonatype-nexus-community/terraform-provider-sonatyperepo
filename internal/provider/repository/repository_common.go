@@ -24,12 +24,10 @@ import (
 	"reflect"
 	"slices"
 	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -50,8 +48,6 @@ const (
 	REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL  = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s"
 	REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s - %s"
 	REPOSITORY_ERROR_DID_NOT_EXIST             = "%s %s Repository did not exist to %s"
-	REPOSITORY_ERROR_IMPORT_VALIDATION         = "Repository validation failed during import: %s"
-	IMPORT_ERROR                               = "Import Error"
 )
 
 // Generic to all Repository Resources
@@ -350,20 +346,10 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-// ImportState implements resource import functionality
+// ImportState imports the resource by name.
 func (r *repositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// The ID for import is the repository name
+	// The import ID is the repository name
 	repositoryName := req.ID
-
-	if repositoryName == "" {
-		resp.Diagnostics.AddError(
-			IMPORT_ERROR,
-			"Repository name cannot be empty. Please provide the repository name as the import ID.",
-		)
-		return
-	}
-
-	tflog.Info(ctx, fmt.Sprintf("Importing %s %s Repository: %s", r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName))
 
 	// Set API Context
 	ctx = context.WithValue(
@@ -372,19 +358,20 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 		r.Auth,
 	)
 
-	// Use the format-specific import method to retrieve repository data
+	// Call format-specific import request to fetch repository data from API
 	apiResponse, httpResponse, err := r.RepositoryFormat.DoImportRequest(repositoryName, r.Client, ctx)
 
-	// Handle any errors
+	// Handle errors
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.Diagnostics.AddError(
-				IMPORT_ERROR,
-				fmt.Sprintf("Repository '%s' does not exist on the server", repositoryName),
+				fmt.Sprintf("Repository '%s' not found", repositoryName),
+				fmt.Sprintf("The %s %s repository '%s' does not exist or you do not have permission to access it.", 
+					r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
 			)
 		} else {
 			common.HandleApiError(
-				fmt.Sprintf("Error importing %s %s Repository '%s'", r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
+				fmt.Sprintf("Error importing %s %s repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -393,66 +380,25 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 
-	// Validate that the repository matches the expected format and type
-	if validationErr := r.RepositoryFormat.ValidateRepositoryForImport(apiResponse, r.RepositoryFormat.GetKey(), r.RepositoryType); validationErr != nil {
+	// Validate that the imported repository matches the expected format and type
+	if err := r.RepositoryFormat.ValidateRepositoryForImport(apiResponse, r.RepositoryFormat.GetKey(), r.RepositoryType); err != nil {
 		resp.Diagnostics.AddError(
-			"Import Validation Error",
-			fmt.Sprintf(REPOSITORY_ERROR_IMPORT_VALIDATION, validationErr.Error()),
+			"Invalid repository type for import",
+			fmt.Sprintf("The repository '%s' exists but is not a %s %s repository: %s",
+				repositoryName, r.RepositoryFormat.GetKey(), r.RepositoryType.String(), err.Error()),
 		)
 		return
 	}
 
-	// Create an empty state model by getting the zero value of the appropriate model type
-	// We need to create an empty state differently since ImportStateRequest doesn't have State
-	var emptyState any
-	switch r.RepositoryType {
-	case format.REPO_TYPE_HOSTED:
-		switch r.RepositoryFormat.GetKey() {
-		case common.REPO_FORMAT_DOCKER:
-			emptyState = model.RepositoryDockerHostedModel{}
-		default:
-			// Add other hosted formats as needed
-			emptyState = model.RepositoryHostedModel{}
-		}
-	case format.REPO_TYPE_PROXY:
-		switch r.RepositoryFormat.GetKey() {
-		case common.REPO_FORMAT_DOCKER:
-			emptyState = model.RepositoryDockerProxyModel{}
-		default:
-			// Add other proxy formats as needed
-			emptyState = model.RepositoryProxyModel{}
-		}
-	case format.REPO_TYPE_GROUP:
-		switch r.RepositoryFormat.GetKey() {
-		case common.REPO_FORMAT_DOCKER:
-			emptyState = model.RepositoryDockerroupModel{}
-		default:
-			// Add other group formats as needed
-			emptyState = model.RepositoryGroupDeployModel{}
-		}
-	default:
-		resp.Diagnostics.AddError(
-			IMPORT_ERROR, 
-			fmt.Sprintf("Unknown repository type: %s", r.RepositoryType.String()),
-		)
-		return
-	}
-
-	// Map the API response to the state model
-	stateModel := r.RepositoryFormat.UpdateStateFromApi(emptyState, apiResponse)
+	// UpdateStateFromApi expects an empty instance of the proper model type and returns a populated one
+	// Pass nil as the first parameter - UpdateStateFromApi will create the proper model type
+	stateModel := r.RepositoryFormat.UpdateStateFromApi(nil, apiResponse)
+	
+	// Update plan for state (sets last_updated timestamp)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
-	// Set the ID attribute (name) in the state
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), repositoryName)...)
-
-	// Set the complete state
+	// Set the state
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	tflog.Info(ctx, fmt.Sprintf("Successfully imported %s %s Repository: %s", r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName))
 }
 
 func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {

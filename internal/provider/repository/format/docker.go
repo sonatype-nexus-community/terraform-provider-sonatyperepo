@@ -281,7 +281,11 @@ func (f *DockerRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryDockerProxyModel)
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.DockerProxyApiRepository))
 	return stateModel
 }
