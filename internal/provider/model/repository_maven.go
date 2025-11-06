@@ -50,6 +50,12 @@ func (m *RepositoryMavenHostedModel) FromApiModel(api sonatyperepo.MavenHostedAp
 	// Storage
 	m.Storage.MapFromApi(&api.Storage)
 
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
+
 	// Maven Specific
 	m.Maven = repositoryMavenSpecificModel{}
 	m.Maven.mapFromApi(&api.Maven)
@@ -108,7 +114,14 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// Maven Specific
