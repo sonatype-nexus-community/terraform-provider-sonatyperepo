@@ -29,6 +29,9 @@ import (
 
 const (
 	resourceNameF = "%s.cap"
+	notesFString  = "example-notes-%s"
+	propertiesUrl = "properties.url"
+	urlFString    = "https://%s.tld"
 )
 
 func TestAccCapabilityCoreBaseUrlResource(t *testing.T) {
@@ -64,9 +67,9 @@ resource "%s" "cap" {
 `, resourceBaseUrl, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("test-capability-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -108,7 +111,7 @@ resource "%s" "cap" {
 `, resourceFirewallAuditQuarantine, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("test-capability-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
 					resource.TestCheckResourceAttr(resourceName, "properties.quarantine", "true"),
@@ -153,7 +156,7 @@ resource "%s" "cap" {
 `, resourceUiBranding, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("example-notes-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.header_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.header_html", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
@@ -201,10 +204,10 @@ resource "%s" "cap" {
 `, resourceWebhookGlobal, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("example-notes-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "repository"),
-					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
 				),
 			},
@@ -251,10 +254,10 @@ resource "%s" "cap" {
 `, resourceWebhookRepository, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("example-notes-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "asset"),
-					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
 				),
