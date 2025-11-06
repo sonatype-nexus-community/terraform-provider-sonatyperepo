@@ -18,8 +18,10 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -76,6 +78,9 @@ func (f *PyPiRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -111,9 +116,53 @@ func (f *PyPiRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *PyPiRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryPyPiHostedModel)
+	var stateModel model.RepositoryPyPiHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for PyPI Hosted repositories
+func (f *PyPiRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Hosted repository
+func (f *PyPiRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to PyPI Hosted API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiHostedRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a PyPI Hosted repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -133,6 +182,9 @@ func (f *PyPiRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -170,9 +222,47 @@ func (f *PyPiRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *PyPiRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryPyPiProxyModel)
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.PyPiProxyApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for PyPI Proxy repositories
+func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Proxy repository
+func (f *PyPiRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to PyPI Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.PyPiProxyApiRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a PyPI Proxy repository")
+	}
+
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -192,6 +282,9 @@ func (f *PyPiRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -227,9 +320,53 @@ func (f *PyPiRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *PyPiRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryPyPiGroupModel)
+	var stateModel model.RepositoryPyPiGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupDeployRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for PyPI Group repositories
+func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Group repository
+func (f *PyPiRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to PyPI Group API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupDeployRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a PyPI Group repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
