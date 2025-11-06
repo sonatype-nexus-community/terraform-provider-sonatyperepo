@@ -3,7 +3,9 @@
 ## X.Y.Z (UNRELEASED)
 
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
+* **New Resource:** `sonatyperepo_capability_audit` [GH-159]
 * **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
+* **New Resource:** `sonatyperepo_capability_firewall_audit_and_quarantine` [GH-163]
 
 ## 0.10.0 November 4, 2025
 
