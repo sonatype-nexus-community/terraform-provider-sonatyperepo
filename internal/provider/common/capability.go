@@ -19,8 +19,9 @@ package common
 type CapabilityType string
 
 const (
-	CAPABILITY_TYPE_AUDIT         CapabilityType = "audit"
-	CAPABILITY_TYPE_CORE_BASE_URL CapabilityType = "baseurl"
+	CAPABILITY_TYPE_AUDIT                     CapabilityType = "audit"
+	CAPABILITY_TYPE_CORE_BASE_URL             CapabilityType = "baseurl"
+	CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE CapabilityType = "firewall.audit"
 )
 
 func (ct CapabilityType) String() string {

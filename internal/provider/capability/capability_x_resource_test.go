@@ -55,3 +55,36 @@ resource "%s" "cap" {
 		},
 	})
 }
+
+func TestAccCapabilityFirewallAuditQuarantineResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("%s.cap", resourceFirewallAuditQuarantine)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  notes = "test-capability-%s"
+  enabled = true
+  properties = {
+    repository = "maven-central"
+    quarantine = true
+  }
+}
+`, resourceBaseUrl, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-capability-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
+					resource.TestCheckResourceAttr(resourceName, "properties.quarantine", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

@@ -17,5 +17,6 @@
 package capability_test
 
 const (
-	resourceBaseUrl string = "sonatyperepo_capability_base_url"
+	resourceBaseUrl                 string = "sonatyperepo_capability_base_url"
+	resourceFirewallAuditQuarantine string = "sonatyperepo_capability_firewall_audit_and_quarantine"
 )
