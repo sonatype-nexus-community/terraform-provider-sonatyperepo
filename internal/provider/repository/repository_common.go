@@ -303,55 +303,62 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	attempts := 1
-	maxAttempts := 3
-	success := false
-
-	for !success && attempts <= maxAttempts {
-		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName.ValueString(), r.Client, ctx)
-
-		// Trap 500 Error as they occur when Repo is not in appropriate internal state
-		if httpResponse.StatusCode == http.StatusInternalServerError {
-			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempts))
-			time.Sleep(5 * time.Second)
-			attempts++
-			continue
-		}
-
-		if err != nil {
-			if httpResponse.StatusCode == http.StatusNotFound {
-				resp.State.RemoveResource(ctx)
-				resp.Diagnostics.AddWarning(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
-					fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
-				)
-			} else {
-				resp.Diagnostics.AddError(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
-					fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
-				)
-			}
-			return
-		}
-		if httpResponse.StatusCode != http.StatusNoContent {
-			tflog.Warn(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d/%d): %s",
-				r.RepositoryFormat.GetKey(), r.RepositoryType.String(), attempts, maxAttempts, httpResponse.Status))
-
-			time.Sleep(3 * time.Second)
-			attempts++
-		} else {
-			success = true
-		}
+	// Attempt deletion with retries
+	success := r.attemptDeleteWithRetries(ctx, repositoryName.ValueString(), resp)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	// Check if deletion was successful after all retry attempts
 	if !success {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete %s %s Repository after %d attempts", r.RepositoryFormat.GetKey(), r.RepositoryType.String(), maxAttempts),
+			fmt.Sprintf("Failed to delete %s %s Repository after 3 attempts", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			fmt.Sprintf("Repository '%s' could not be deleted. This may be due to dependencies (e.g., group membership, routing rules) or internal Nexus state issues. Please check Nexus logs and ensure the repository is not referenced by other resources.", repositoryName.ValueString()),
+		)
+	}
+}
+
+func (r *repositoryResource) attemptDeleteWithRetries(ctx context.Context, repositoryName string, resp *resource.DeleteResponse) bool {
+	maxAttempts := 3
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName, r.Client, ctx)
+
+		// Trap 500 Error as they occur when Repo is not in appropriate internal state
+		if httpResponse.StatusCode == http.StatusInternalServerError {
+			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempt))
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		if err != nil {
+			r.handleDeleteError(ctx, httpResponse, err, resp)
+			return false
+		}
+
+		if httpResponse.StatusCode == http.StatusNoContent {
+			return true
+		}
+
+		tflog.Warn(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d/%d): %s",
+			r.RepositoryFormat.GetKey(), r.RepositoryType.String(), attempt, maxAttempts, httpResponse.Status))
+		time.Sleep(5 * time.Second)
+	}
+	return false
+}
+
+func (r *repositoryResource) handleDeleteError(ctx context.Context, httpResponse *http.Response, err error, resp *resource.DeleteResponse) {
+	if httpResponse.StatusCode == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		resp.Diagnostics.AddWarning(
+			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
+			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 		)
 		return
 	}
+	resp.Diagnostics.AddError(
+		fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
+		fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+	)
 }
 
 // ImportState imports the resource by name.
