@@ -18,7 +18,9 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -106,9 +108,53 @@ func (f *HelmRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *HelmRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryHelmHostedModel)
+	var stateModel model.RepositoryHelmHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHelmHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Helm Hosted repositories
+func (f *HelmRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetHelmHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Helm Hosted repository
+func (f *HelmRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Helm Hosted API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiHostedRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Helm Hosted repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -163,7 +209,51 @@ func (f *HelmRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *HelmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryHelmProxyModel)
+	var stateModel model.RepositoryHelmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHelmProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Helm Proxy repositories
+func (f *HelmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetHelmProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Helm Proxy repository
+func (f *HelmRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Helm Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Helm Proxy repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
