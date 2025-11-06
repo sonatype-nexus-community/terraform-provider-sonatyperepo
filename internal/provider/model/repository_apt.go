@@ -29,7 +29,7 @@ import (
 type RepositoryAptHostedModel struct {
 	RepositoryHostedModel
 	Apt        aptSpecificHostedModel `tfsdk:"apt"`
-	AptSigning aptSigningModel        `tfsdk:"apt_signing"`
+	AptSigning *aptSigningModel       `tfsdk:"apt_signing"`
 }
 
 type aptSpecificHostedModel struct {
@@ -81,7 +81,10 @@ func (m *RepositoryAptHostedModel) FromApiModel(api sonatyperepo.AptHostedApiRep
 
 	// APT Specific
 	m.Apt.MapFromApi(&api.Apt)
-	m.AptSigning.MapFromApi(&api.AptSigning)
+	if api.AptSigning != (sonatyperepo.AptSigningRepositoriesAttributes{}) {
+		m.AptSigning = &aptSigningModel{}
+		m.AptSigning.MapFromApi(&api.AptSigning)
+	}
 }
 
 func (m *RepositoryAptHostedModel) ToApiCreateModel() sonatyperepo.AptHostedRepositoryApiRequest {
@@ -104,7 +107,9 @@ func (m *RepositoryAptHostedModel) ToApiCreateModel() sonatyperepo.AptHostedRepo
 
 	// APT
 	m.Apt.MapToApi(&apiModel.Apt)
-	m.AptSigning.MapToApi(&apiModel.AptSigning)
+	if m.AptSigning != nil {
+		m.AptSigning.MapToApi(&apiModel.AptSigning)
+	}
 
 	return apiModel
 }
@@ -155,7 +160,14 @@ func (m *RepositoryAptProxyModel) FromApiModel(api sonatyperepo.AptProxyApiRepos
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// APT Specific
