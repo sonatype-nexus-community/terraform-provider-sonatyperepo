@@ -18,7 +18,9 @@ package format
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -106,9 +108,53 @@ func (f *GoRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *GoRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryGoProxyModel)
+	var stateModel model.RepositoryGoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryGoProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Go Proxy repositories
+func (f *GoRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Go Proxy repository
+func (f *GoRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Go Proxy API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Go Proxy repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
 
 // --------------------------------------------
@@ -163,7 +209,51 @@ func (f *GoRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *GoRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryGoGroupModel)
+	var stateModel model.RepositoryGoGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryGoGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Go Group repositories
+func (f *GoRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// ValidateRepositoryForImport validates that the imported repository is indeed a Go Group repository
+func (f *GoRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Cast to Go Group API Repository
+	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
+	if !ok {
+		return fmt.Errorf("repository data is not a Go Group repository")
+	}
+
+	if apiRepo.Format == nil {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+	// Case-insensitive format comparison
+	actualFormat := strings.ToLower(*apiRepo.Format)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
+	}
+
+	// Validate type
+	expectedTypeStr := expectedType.String()
+	if apiRepo.Type == nil {
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+	if *apiRepo.Type != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
+	}
+
+	return nil
 }
