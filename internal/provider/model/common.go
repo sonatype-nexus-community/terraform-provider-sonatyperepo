@@ -22,6 +22,24 @@ import (
 	"strconv"
 )
 
+func ParseBool(value string, defaultValue bool) bool {
+	val, err := strconv.ParseBool(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return val
+}
+
+func ParseInt32(value string, defaultValue int32) int32 {
+	val, err := strconv.ParseInt(value, 10, 32)
+	if err != nil {
+		return defaultValue
+	}
+
+	return int32(val)
+}
+
 // StructToMap converts any struct to a map[string]string using reflection
 // It uses the "tfsdk" tag to determine key names and handles type conversions
 func StructToMap(v interface{}) *map[string]string {

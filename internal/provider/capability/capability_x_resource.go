@@ -49,3 +49,17 @@ func NewCapabilityOutreachResource() resource.Resource {
 		CapabilityType: capabilitytype.NewOutreachCapability(),
 	}
 }
+
+// NewCapabilityUiBrandingResource is a helper function to simplify the provider implementation.
+func NewCapabilityUiBrandingResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewUiBrandingCapability(),
+	}
+}
+
+// NewCapabilityUiSettingsResource is a helper function to simplify the provider implementation.
+func NewCapabilityUiSettingsResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewUiSettingsCapability(),
+	}
+}

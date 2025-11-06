@@ -17,7 +17,6 @@
 package model
 
 import (
-	"strconv"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -48,13 +47,10 @@ func (m *CapabilityFirewallAuditQuarantineModel) FromApiModel(api *v3.Capability
 	m.Notes = types.StringValue(*api.Notes)
 	m.Enabled = types.BoolValue(*api.Enabled)
 	m.Properties = &CapabilityPropertiesFirewallAuditQuarantine{}
-
-	quarantine, err := strconv.ParseBool((*api.Properties)["quarantine"])
-	if err != nil {
-		quarantine = false
-	}
-
-	m.Properties.Quarantine = types.BoolValue(quarantine)
+	m.Properties.Quarantine = types.BoolValue(ParseBool(
+		(*api.Properties)["quarantine"],
+		common.CAPABILITY_FIREWALL_AUDIT_QUARANTINE_DEFAULT_QUARANTINE,
+	))
 	m.Properties.Repository = types.StringValue((*api.Properties)["repository"])
 }
 

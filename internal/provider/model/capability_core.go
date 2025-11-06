@@ -17,7 +17,6 @@
 package model
 
 import (
-	"strconv"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -87,11 +86,10 @@ func (m *CapabilityCoreOutreachModel) FromApiModel(api *v3.CapabilityDTO) {
 	m.Enabled = types.BoolValue(*api.Enabled)
 	m.Properties = &CapabilityPropertiesCoreOutreach{}
 	m.Properties.OverrideUrl = types.StringValue((*api.Properties)["overrideUrl"])
-	alwaysRemote, err := strconv.ParseBool((*api.Properties)["alwaysRemote"])
-	if err != nil {
-		alwaysRemote = false
-	}
-	m.Properties.AlwaysRemote = types.BoolValue(alwaysRemote)
+	m.Properties.AlwaysRemote = types.BoolValue(ParseBool(
+		(*api.Properties)["alwaysRemote"],
+		common.CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE,
+	))
 }
 
 func (m *CapabilityCoreOutreachModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
