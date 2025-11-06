@@ -21,7 +21,7 @@ type CapabilityType string
 const (
 	CAPABILITY_TYPE_AUDIT                     CapabilityType = "audit"
 	CAPABILITY_TYPE_CORE_BASE_URL             CapabilityType = "baseurl"
-	CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE CapabilityType = "firewall.audit.quarantine"
+	CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE CapabilityType = "firewall.audit"
 	CAPABILITY_TYPE_OUTREACH                  CapabilityType = "OutreachManagementCapability"
 )
 
