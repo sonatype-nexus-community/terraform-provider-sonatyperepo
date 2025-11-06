@@ -62,6 +62,44 @@ func (m *CapabilityCoreBaseUrlModel) ToApiUpdateModel(version common.SystemVersi
 	return api
 }
 
+// Properties for Core: Default Role
+// ----------------------------------------
+type CapabilityPropertiesCoreDefaultRole struct {
+	Role types.String `tfsdk:"role" nxrm:"role"`
+}
+
+func (p *CapabilityPropertiesCoreDefaultRole) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	return StructToMap(p)
+}
+
+// Capability: Core: Default Role
+// ----------------------------------------
+type CapabilityCoreDefaultRoleModel struct {
+	BaseCapabilityModel
+	Properties *CapabilityPropertiesCoreDefaultRole `tfsdk:"properties"`
+}
+
+func (m *CapabilityCoreDefaultRoleModel) FromApiModel(api *v3.CapabilityDTO) {
+	m.Id = types.StringValue(*api.Id)
+	m.Notes = types.StringValue(*api.Notes)
+	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Properties = &CapabilityPropertiesCoreDefaultRole{}
+	m.Properties.Role = types.StringValue((*api.Properties)["role"])
+}
+
+func (m *CapabilityCoreDefaultRoleModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiCreateModel()
+	api.Type = common.CAPABILITY_TYPE_DEFAULT_ROLE.StringPointer()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+func (m *CapabilityCoreDefaultRoleModel) ToApiUpdateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiUpdateModel()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
 // Properties for Core: Outreach Management
 // ----------------------------------------
 type CapabilityPropertiesCoreOutreach struct {

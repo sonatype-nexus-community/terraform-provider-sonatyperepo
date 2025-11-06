@@ -247,6 +247,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		capability.NewCapabilityAuditResource,
 		capability.NewCapabilityCoreBaseUrlResource,
 		capability.NewCapabilityCustomS3RegionsResource,
+		capability.NewCapabilityDefaultRoleResource,
 		capability.NewCapabilityFirewallAuditQuarantineResource,
 		capability.NewCapabilityOutreachResource,
 		capability.NewCapabilityUiBrandingResource,

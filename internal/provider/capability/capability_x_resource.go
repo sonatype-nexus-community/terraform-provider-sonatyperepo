@@ -43,6 +43,13 @@ func NewCapabilityCustomS3RegionsResource() resource.Resource {
 	}
 }
 
+// NewCapabilityDefaultRoleResource is a helper function to simplify the provider implementation.
+func NewCapabilityDefaultRoleResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewDefaultRoleCapability(),
+	}
+}
+
 // NewCapabilityFirewallAuditQuarantineResource is a helper function to simplify the provider implementation.
 func NewCapabilityFirewallAuditQuarantineResource() resource.Resource {
 	return &capabilityResource{
