@@ -9,10 +9,11 @@
 * **New Resource:** `sonatyperepo_capability_outreach_management` [GH-166]
 * **New Resource:** `sonatyperepo_capability_ui_branding` [GH-168]
 * **New Resource:** `sonatyperepo_capability_ui_settings` [GH-169]
+* **New Resource:** `sonatyperepo_capability_webhook_global` [GH-183]
+* **New Resource:** `sonatyperepo_capability_webhook_repository` [GH-184]
 
 ## 0.10.0 November 4, 2025
 
-FEATURES:
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
 * **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]
