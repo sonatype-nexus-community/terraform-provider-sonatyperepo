@@ -6,6 +6,7 @@
 * **New Resource:** `sonatyperepo_capability_audit` [GH-159]
 * **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
 * **New Resource:** `sonatyperepo_capability_custom_s3_regions` [GH-186]
+* **New Resource:** `sonatyperepo_capability_default_role` [GH-188]
 * **New Resource:** `sonatyperepo_capability_firewall_audit_and_quarantine` [GH-163]
 * **New Resource:** `sonatyperepo_capability_outreach_management` [GH-166]
 * **New Resource:** `sonatyperepo_capability_ui_branding` [GH-168]
