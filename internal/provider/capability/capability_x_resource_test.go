@@ -60,7 +60,7 @@ resource "%s" "cap" {
 `, resourceBaseUrl, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-capability-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("test-capability-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.url", fmt.Sprintf("https://%s.tld", randomString)),
 				),
@@ -104,7 +104,7 @@ resource "%s" "cap" {
 `, resourceFirewallAuditQuarantine, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-capability-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf("test-capability-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
 					resource.TestCheckResourceAttr(resourceName, "properties.quarantine", "true"),
