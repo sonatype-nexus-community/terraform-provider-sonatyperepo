@@ -289,11 +289,11 @@ func (m *SecurityUserTokenModel) MapFromApi(api *sonatyperepo.UserTokensApiModel
 
 func (m *SecurityUserTokenModel) MapToApi(api *sonatyperepo.UserTokensApiModel) {
 	api.Enabled = m.Enabled.ValueBoolPointer()
-	// Set ExpirationDays to 1 by default if not specified, to satisfy API's minimum value requirement
+	// Set ExpirationDays to default value if not specified, to satisfy API's minimum value requirement
 	if !m.ExpirationDays.IsNull() && !m.ExpirationDays.IsUnknown() {
 		api.ExpirationDays = m.ExpirationDays.ValueInt32Pointer()
 	} else {
-		defaultValue := int32(1)
+		defaultValue := common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS
 		api.ExpirationDays = &defaultValue
 	}
 	api.ExpirationEnabled = m.ExpirationEnabled.ValueBoolPointer()

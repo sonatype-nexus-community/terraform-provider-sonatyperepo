@@ -106,7 +106,7 @@ func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.R
 
 	// Map API response to state
 	var state model.SecurityUserTokenModel
-	state.ID = types.StringValue("user-tokens")
+	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 	state.MapFromApi(apiResponse)
 	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 

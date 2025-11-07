@@ -114,7 +114,7 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 		if httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature during import.",
+				common.ERROR_MESSAGE_UNAUTHORIZED+" during import.",
 			)
 		} else {
 			errorBody, _ := io.ReadAll(httpResponse.Body)
@@ -128,7 +128,7 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 
 	// Create the state model with the current API values
 	var state model.SecurityUserTokenModel
-	state.ID = types.StringValue("user-tokens")
+	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 	state.MapFromApi(apiResponse)
 	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
@@ -170,7 +170,7 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 		if httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errorBody, _ := io.ReadAll(httpResponse.Body)
@@ -183,7 +183,7 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	if httpResponse.StatusCode == http.StatusOK {
-		plan.ID = types.StringValue("user-tokens")
+		plan.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 		plan.MapFromApi(apiResponse)
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		diags := resp.State.Set(ctx, plan)
@@ -225,7 +225,7 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 		if httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errorBody, _ := io.ReadAll(httpResponse.Body)
@@ -236,7 +236,7 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 		}
 		return
 	} else {
-		state.ID = types.StringValue("user-tokens")
+		state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 		state.MapFromApi(apiResponse)
 	}
 
@@ -274,7 +274,7 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 		if httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errorBody, _ := io.ReadAll(httpResponse.Body)
@@ -287,7 +287,7 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	if httpResponse.StatusCode == http.StatusOK {
-		plan.ID = types.StringValue("user-tokens")
+		plan.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 		plan.MapFromApi(apiResponse)
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
@@ -323,7 +323,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 	)
 
 	// Instead of deleting, we disable the user token feature
-	defaultExpirationDays := int32(1)
+	defaultExpirationDays := common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS
 	payload := sonatyperepo.UserTokensApiModel{
 		Enabled:        common.NewFalse(),
 		ExpirationDays: &defaultExpirationDays,
@@ -336,7 +336,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 		if httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errorBody, _ := io.ReadAll(httpResponse.Body)
