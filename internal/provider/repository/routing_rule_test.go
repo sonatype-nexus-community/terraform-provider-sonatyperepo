@@ -27,6 +27,10 @@ import (
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
+const (
+	matchersCount = "matchers.#"
+)
+
 func TestAccRoutingRuleResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := "sonatyperepo_routing_rule.test"
@@ -42,7 +46,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", "BLOCK"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
 				),
 			},
@@ -62,7 +66,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", "ALLOW"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, matchersCount, "2"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.1", "^/org/test/.*"),
 				),
@@ -85,7 +89,7 @@ func TestAccRoutingRuleResourceMinimal(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("minimal-routing-rule-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceName, "mode", "BLOCK"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
