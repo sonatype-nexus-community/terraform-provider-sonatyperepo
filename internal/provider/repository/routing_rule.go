@@ -226,7 +226,7 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// Handle API response
 	if err != nil {
-		if apiResponse != nil && apiResponse.StatusCode == 404 {
+		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			common.HandleApiWarning(
 				"Routing rule to update did not exist",
