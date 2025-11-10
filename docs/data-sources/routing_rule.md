@@ -23,5 +23,5 @@ Use this data source to get a single routing rule by name
 
 - `description` (String) The description of the routing rule
 - `last_updated` (String) Timestamp of last update
-- `matchers` (List of String) Regular expressions used to identify request paths
+- `matchers` (Set of String) Regular expressions used to identify request paths
 - `mode` (String) The mode of the routing rule (ALLOW or BLOCK)

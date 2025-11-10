@@ -43,7 +43,7 @@ resource "sonatyperepo_routing_rule" "allow_approved" {
 ### Required
 
 - `description` (String) Description of the routing rule (required by Nexus API)
-- `matchers` (List of String) Regular expressions used to identify request paths that are allowed or blocked (depending on mode)
+- `matchers` (Set of String) Regular expressions used to identify request paths that are allowed or blocked (depending on mode)
 - `mode` (String) Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK
 - `name` (String) Name of the routing rule
 
@@ -58,7 +58,7 @@ Import is supported using the following syntax:
 ```shell
 # Existing routing rule configuration can be imported as follows.
 #
-# NOTE: The Identifier ROUTING_RULE_NAME needs to match routing rule name in your sonatype nexus repository instance.
+# NOTE: The Identifier ROUTING_RULE_NAME needs to match routing rule name in your Sonatype Nexus Repository instance.
 
 # Example
 terraform import sonatyperepo_routing_rule.block_example ROUTING_RULE_NAME
