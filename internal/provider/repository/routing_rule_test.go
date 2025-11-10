@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"terraform-provider-sonatyperepo/internal/provider/repository"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
@@ -45,7 +46,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test routing rule"),
-					resource.TestCheckResourceAttr(resourceName, "mode", "BLOCK"),
+					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
 				),
@@ -65,7 +66,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated test routing rule"),
-					resource.TestCheckResourceAttr(resourceName, "mode", "ALLOW"),
+					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeAllow),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "2"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
 					resource.TestCheckResourceAttr(resourceName, "matchers.1", "^/org/test/.*"),
@@ -88,7 +89,7 @@ func TestAccRoutingRuleResourceMinimal(t *testing.T) {
 				Config: getTestAccRoutingRuleResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("minimal-routing-rule-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "mode", "BLOCK"),
+					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
 				),
 			},
@@ -117,10 +118,10 @@ func getTestAccRoutingRuleResourceConfig(randomString string) string {
 resource "sonatyperepo_routing_rule" "test" {
   name        = "test-routing-rule-%s"
   description = "Test routing rule"
-  mode        = "BLOCK"
+  mode        = "%s"
   matchers    = ["^/com/example/.*"]
 }
-`, randomString)
+`, randomString, repository.RoutingRuleModeBlock)
 }
 
 func getTestAccRoutingRuleResourceConfigUpdated(randomString string) string {
@@ -128,10 +129,10 @@ func getTestAccRoutingRuleResourceConfigUpdated(randomString string) string {
 resource "sonatyperepo_routing_rule" "test" {
   name        = "test-routing-rule-%s"
   description = "Updated test routing rule"
-  mode        = "ALLOW"
+  mode        = "%s"
   matchers    = ["^/com/example/.*", "^/org/test/.*"]
 }
-`, randomString)
+`, randomString, repository.RoutingRuleModeAllow)
 }
 
 func getTestAccRoutingRuleResourceMinimalConfig(randomString string) string {
@@ -139,10 +140,10 @@ func getTestAccRoutingRuleResourceMinimalConfig(randomString string) string {
 resource "sonatyperepo_routing_rule" "minimal" {
   name        = "minimal-routing-rule-%s"
   description = "Minimal routing rule"
-  mode        = "BLOCK"
+  mode        = "%s"
   matchers    = ["^/com/minimal/.*"]
 }
-`, randomString)
+`, randomString, repository.RoutingRuleModeBlock)
 }
 
 func getTestAccRoutingRuleResourceInvalidModeConfig(randomString string) string {

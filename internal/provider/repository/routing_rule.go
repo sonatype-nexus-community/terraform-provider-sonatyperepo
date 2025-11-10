@@ -40,6 +40,13 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
+const (
+	// RoutingRuleModeAllow represents the ALLOW mode for routing rules
+	RoutingRuleModeAllow = "ALLOW"
+	// RoutingRuleModeBlock represents the BLOCK mode for routing rules
+	RoutingRuleModeBlock = "BLOCK"
+)
+
 // routingRuleResource is the resource implementation.
 type routingRuleResource struct {
 	common.BaseResource
@@ -82,7 +89,7 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Description: "Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("ALLOW", "BLOCK"),
+					stringvalidator.OneOf(RoutingRuleModeAllow, RoutingRuleModeBlock),
 				},
 			},
 			"matchers": schema.ListAttribute{
