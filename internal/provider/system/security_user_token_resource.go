@@ -19,7 +19,6 @@ package system
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -117,10 +116,11 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 				common.ERROR_MESSAGE_UNAUTHORIZED+" during import.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error importing User Token settings",
-				"Could not read User Token settings during import, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -173,10 +173,11 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error creating User Token settings",
-				"Could not create User Token settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -192,9 +193,11 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Failed to create User Token settings",
-			fmt.Sprintf("Unable to create User Token settings: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -228,17 +231,18 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error reading User Token settings",
-				"Could not read User Token settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
-	} else {
-		state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
-		state.MapFromApi(apiResponse)
 	}
+
+	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
+	state.MapFromApi(apiResponse)
 
 	// Set refreshed state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -277,10 +281,11 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error updating User Token settings",
-				"Could not update User Token settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -297,9 +302,11 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Failed to update User Token settings",
-			fmt.Sprintf("Unable to update User Token settings: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -339,19 +346,22 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error disabling User Token settings",
-				"Could not disable User Token settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Failed to disable User Token settings",
-			fmt.Sprintf("Unable to disable User Token settings: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 }
