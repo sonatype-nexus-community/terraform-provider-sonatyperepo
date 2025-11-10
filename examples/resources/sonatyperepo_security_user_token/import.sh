@@ -1,4 +1,4 @@
-# Existing User Token configuration can be imported as follows.
+# Existing User Tokens configuration can be imported as follows.
 #
 # NOTE: The Identifier (USER_TOKENS) in below example has no meaning and is just to comply with Terraform syntax.
 
