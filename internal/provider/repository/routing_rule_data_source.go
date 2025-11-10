@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -61,6 +63,9 @@ func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaR
 			"name": schema.StringAttribute{
 				Description: "The name of the routing rule",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "The description of the routing rule",
@@ -94,11 +99,6 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	if data.Name.IsNull() {
-		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")
-		return
-	}
-
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
@@ -109,20 +109,32 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	state := model.RoutingRuleModel{}
 	if err != nil {
-		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning(
+		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
+			common.HandleApiWarning(
 				"No routing rule with supplied name",
-				fmt.Sprintf("No routing rule with supplied name: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error finding routing rule",
-				fmt.Sprintf("Error finding routing rule with supplied name: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 			return
 		}
 	} else if httpResponse.StatusCode == http.StatusOK {
 		state.MapFromApi(routingRuleResponse)
+	} else {
+		common.HandleApiError(
+			"Unexpected response when reading routing rule",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
+		return
 	}
 
 	// Set state

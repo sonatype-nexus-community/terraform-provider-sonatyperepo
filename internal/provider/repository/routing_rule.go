@@ -19,7 +19,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"regexp"
 	"time"
@@ -127,16 +126,18 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 		r.Auth,
 	)
 
-	requestPayload := buildRoutingRulePayload(plan)
+	requestPayload := sonatyperepo.RoutingRuleXO{}
+	plan.MapToApi(&requestPayload)
 
 	apiResponse, err := r.Client.RoutingRulesAPI.CreateRoutingRule(ctx).Body(requestPayload).Execute()
 
 	// Handle Error
 	if err != nil {
-		errorBody, _ := io.ReadAll(apiResponse.Body)
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error creating routing rule",
-			"Could not create routing rule, unexpected error: "+apiResponse.Status+": "+string(errorBody),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -151,9 +152,11 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Failed to create routing rule",
-			fmt.Sprintf("Unable to create routing rule: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -181,15 +184,17 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 
-		resp.Diagnostics.AddError(
-			"Error Reading routing rule",
-			"Unable to read routing rule: "+err.Error(),
+		common.HandleApiError(
+			"Error reading routing rule",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
 
 	// Update state from API response
-	updateStateFromRoutingRuleAPI(&state, routingRule)
+	state.MapFromApi(routingRule)
 
 	// Set refreshed state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -215,21 +220,26 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
 
 	// Build request payload and make API call
-	requestPayload := buildRoutingRulePayload(plan)
+	requestPayload := sonatyperepo.RoutingRuleXO{}
+	plan.MapToApi(&requestPayload)
 	apiResponse, err := r.Client.RoutingRulesAPI.UpdateRoutingRule(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
 
 	// Handle API response
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"Routing rule to update did not exist",
-				fmt.Sprintf("Unable to update routing rule: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Updating routing rule",
-				fmt.Sprintf("Unable to update routing rule: %s", err.Error()),
+			common.HandleApiError(
+				"Error updating routing rule",
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -265,23 +275,29 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"Routing rule to delete did not exist",
-				fmt.Sprintf("Routing rule was already deleted: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Deleting routing rule",
-				fmt.Sprintf("Unable to delete routing rule: %s", err.Error()),
+			common.HandleApiError(
+				"Error deleting routing rule",
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Failed to delete routing rule",
-			fmt.Sprintf("Unable to delete routing rule: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -291,52 +307,4 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 func (r *routingRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to name attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
-}
-
-// Helper functions
-
-// buildRoutingRulePayload creates the API request payload from the model
-func buildRoutingRulePayload(plan model.RoutingRuleModel) sonatyperepo.RoutingRuleXO {
-	requestPayload := sonatyperepo.RoutingRuleXO{}
-
-	name := plan.Name.ValueString()
-	requestPayload.Name = &name
-
-	description := plan.Description.ValueString()
-	requestPayload.Description = &description
-
-	mode := plan.Mode.ValueString()
-	requestPayload.Mode = &mode
-
-	// Convert matchers from types.Set to []string
-	var matchers []string
-	plan.Matchers.ElementsAs(context.Background(), &matchers, false)
-	requestPayload.Matchers = matchers
-
-	return requestPayload
-}
-
-// updateStateFromRoutingRuleAPI updates the state model from the API response
-func updateStateFromRoutingRuleAPI(state *model.RoutingRuleModel, routingRule *sonatyperepo.RoutingRuleXO) {
-	if routingRule.Name != nil {
-		state.Name = types.StringValue(*routingRule.Name)
-	}
-
-	if routingRule.Description != nil {
-		state.Description = types.StringValue(*routingRule.Description)
-	} else {
-		state.Description = types.StringNull()
-	}
-
-	if routingRule.Mode != nil {
-		state.Mode = types.StringValue(*routingRule.Mode)
-	}
-
-	// Convert matchers from []string to types.Set
-	if routingRule.Matchers != nil {
-		matchers, _ := types.SetValueFrom(context.Background(), types.StringType, routingRule.Matchers)
-		state.Matchers = matchers
-	} else {
-		state.Matchers = types.SetNull(types.StringType)
-	}
 }

@@ -73,7 +73,7 @@ func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.Schema
 							Description: "The mode of the routing rule (ALLOW or BLOCK)",
 							Computed:    true,
 						},
-						"matchers": schema.ListAttribute{
+						"matchers": schema.SetAttribute{
 							Description: "Regular expressions used to identify request paths",
 							Computed:    true,
 							ElementType: types.StringType,
@@ -101,9 +101,11 @@ func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	routingRulesResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRules(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Unable to list routing rules",
-			fmt.Sprintf("Unable to read routing rules: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

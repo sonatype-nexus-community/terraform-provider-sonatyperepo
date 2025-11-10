@@ -51,3 +51,15 @@ func (m *RoutingRuleModel) MapFromApi(api *sonatyperepo.RoutingRuleXO) {
 		m.Matchers = types.SetNull(types.StringType)
 	}
 }
+
+// MapToApi maps model to API request payload
+func (m *RoutingRuleModel) MapToApi(api *sonatyperepo.RoutingRuleXO) {
+	api.Name = m.Name.ValueStringPointer()
+	api.Description = m.Description.ValueStringPointer()
+	api.Mode = m.Mode.ValueStringPointer()
+
+	// Convert matchers from types.Set to []string
+	var matchers []string
+	m.Matchers.ElementsAs(context.Background(), &matchers, false)
+	api.Matchers = matchers
+}
