@@ -29,7 +29,8 @@ import (
 )
 
 const (
-	matchersCount = "matchers.#"
+	matchersCount   = "matchers.#"
+	matchersSetElem = "matchers.*"
 )
 
 func TestAccRoutingRuleResource(t *testing.T) {
@@ -48,7 +49,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "Test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/com/example/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, matchersSetElem, "^/com/example/.*"),
 				),
 			},
 			// ImportState testing
@@ -68,8 +69,8 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeAllow),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "2"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/com/example/.*"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/org/test/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, matchersSetElem, "^/com/example/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, matchersSetElem, "^/org/test/.*"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
