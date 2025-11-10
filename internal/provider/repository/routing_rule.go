@@ -245,7 +245,7 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if apiResponse.StatusCode == http.StatusNoContent || apiResponse.StatusCode == http.StatusOK {
+	if apiResponse.StatusCode == http.StatusNoContent {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	}
