@@ -50,7 +50,7 @@ type securityUserTokenDataSource struct {
 
 // Metadata returns the data source type name.
 func (d *securityUserTokenDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_security_user_token"
+	resp.TypeName = req.ProviderTypeName + "_security_user_tokens"
 }
 
 // Schema defines the schema for the data source.

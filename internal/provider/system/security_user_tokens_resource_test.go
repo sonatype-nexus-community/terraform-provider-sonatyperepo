@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	resourceTypeSecurityUserToken = "sonatyperepo_security_user_token"
-	resourceNameSecurityUserToken = "sonatyperepo_security_user_token.test"
+	resourceTypeSecurityUserToken = "sonatyperepo_security_user_tokens"
+	resourceNameSecurityUserToken = "sonatyperepo_security_user_tokens.test"
 )
 
 func TestAccSecurityUserTokenResource(t *testing.T) {
