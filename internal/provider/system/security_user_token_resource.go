@@ -49,7 +49,7 @@ func NewSecurityUserTokenResource() resource.Resource {
 
 // Metadata returns the resource type name.
 func (r *securityUserTokenResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_security_user_token"
+	resp.TypeName = req.ProviderTypeName + "_security_user_tokens"
 }
 
 // Schema defines the schema for the resource.
