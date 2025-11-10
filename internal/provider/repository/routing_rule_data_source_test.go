@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"terraform-provider-sonatyperepo/internal/provider/repository"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
@@ -42,12 +43,12 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 					// Check resource attributes
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test routing rule for data source"),
-					resource.TestCheckResourceAttr(resourceName, "mode", "BLOCK"),
+					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "2"),
 					// Check data source attributes match resource
 					resource.TestCheckResourceAttr(dataSourceName, "name", routingRuleName),
 					resource.TestCheckResourceAttr(dataSourceName, "description", "Test routing rule for data source"),
-					resource.TestCheckResourceAttr(dataSourceName, "mode", "BLOCK"),
+					resource.TestCheckResourceAttr(dataSourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(dataSourceName, matchersCount, "2"),
 					resource.TestCheckResourceAttr(dataSourceName, "matchers.0", "^/com/example/.*"),
 					resource.TestCheckResourceAttr(dataSourceName, "matchers.1", "^/org/example/.*"),
@@ -81,14 +82,14 @@ func getTestAccRoutingRuleDataSourceConfig(randomString string) string {
 resource "sonatyperepo_routing_rule" "test" {
   name        = "test-routing-rule-ds-%s"
   description = "Test routing rule for data source"
-  mode        = "BLOCK"
+  mode        = "%s"
   matchers    = ["^/com/example/.*", "^/org/example/.*"]
 }
 
 data "sonatyperepo_routing_rule" "test" {
   name = sonatyperepo_routing_rule.test.name
 }
-`, randomString)
+`, randomString, repository.RoutingRuleModeBlock)
 }
 
 func getTestAccRoutingRulesDataSourceConfig(randomString string) string {
@@ -96,14 +97,14 @@ func getTestAccRoutingRulesDataSourceConfig(randomString string) string {
 resource "sonatyperepo_routing_rule" "test1" {
   name        = "test-routing-rule-ds1-%s"
   description = "Test routing rule 1"
-  mode        = "BLOCK"
+  mode        = "%s"
   matchers    = ["^/com/test1/.*"]
 }
 
 resource "sonatyperepo_routing_rule" "test2" {
   name        = "test-routing-rule-ds2-%s"
   description = "Test routing rule 2"
-  mode        = "ALLOW"
+  mode        = "%s"
   matchers    = ["^/com/test2/.*"]
 }
 
@@ -113,5 +114,5 @@ data "sonatyperepo_routing_rules" "test" {
     sonatyperepo_routing_rule.test2
   ]
 }
-`, randomString, randomString)
+`, randomString, repository.RoutingRuleModeBlock, randomString, repository.RoutingRuleModeAllow)
 }
