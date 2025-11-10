@@ -142,7 +142,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	if apiResponse.StatusCode == http.StatusCreated || apiResponse.StatusCode == http.StatusNoContent {
+	if apiResponse.StatusCode == http.StatusNoContent {
 		// Set LastUpdated
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
