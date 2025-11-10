@@ -25,6 +25,7 @@ const (
 	CAPABILITY_TYPE_DEFAULT_ROLE              CapabilityType = "defaultrole"
 	CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE CapabilityType = "firewall.audit"
 	CAPABILITY_TYPE_OUTREACH                  CapabilityType = "OutreachManagementCapability"
+	CAPABILITY_TYPE_RUT_AUTH                  CapabilityType = "rutauth"
 	CAPABILITY_TYPE_UI_BRANDING               CapabilityType = "rapture.branding"
 	CAPABILITY_TYPE_UI_SETTINGS               CapabilityType = "rapture.settings"
 	CAPABILITY_TYPE_WEBHOOK_GLOBAL            CapabilityType = "webhook.global"
