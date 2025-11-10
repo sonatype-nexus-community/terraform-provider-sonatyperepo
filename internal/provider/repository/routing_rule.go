@@ -179,7 +179,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 	routingRule, httpResponse, err := r.Client.RoutingRulesAPI.GetRoutingRule(ctx, state.Name.ValueString()).Execute()
 	if err != nil {
 		// Check if this is a 404 error
-		if httpResponse != nil && httpResponse.StatusCode == 404 {
+		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			return
 		}
