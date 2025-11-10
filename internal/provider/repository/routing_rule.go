@@ -273,7 +273,7 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	// Handle Error(s)
 	if err != nil {
-		if apiResponse != nil && apiResponse.StatusCode == 404 {
+		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			// Resource already deleted, nothing to do
 			common.HandleApiWarning(
 				"Routing rule to delete did not exist",
