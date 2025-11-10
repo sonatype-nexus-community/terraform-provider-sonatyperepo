@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -92,10 +93,13 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 					stringvalidator.OneOf(RoutingRuleModeAllow, RoutingRuleModeBlock),
 				},
 			},
-			"matchers": schema.ListAttribute{
+			"matchers": schema.SetAttribute{
 				Description: "Regular expressions used to identify request paths that are allowed or blocked (depending on mode)",
 				Required:    true,
 				ElementType: types.StringType,
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
@@ -113,15 +117,6 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
-		return
-	}
-
-	// Validate matchers
-	if len(plan.Matchers) == 0 {
-		resp.Diagnostics.AddError(
-			"Invalid routing rule configuration",
-			"At least one matcher must be specified",
-		)
 		return
 	}
 
@@ -214,12 +209,6 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
-		return
-	}
-
-	// Validate matchers
-	if len(plan.Matchers) == 0 {
-		resp.Diagnostics.AddError("Invalid routing rule configuration", "At least one matcher must be specified")
 		return
 	}
 
@@ -319,11 +308,9 @@ func buildRoutingRulePayload(plan model.RoutingRuleModel) sonatyperepo.RoutingRu
 	mode := plan.Mode.ValueString()
 	requestPayload.Mode = &mode
 
-	// Convert matchers from []types.String to []string
-	matchers := make([]string, len(plan.Matchers))
-	for i, matcher := range plan.Matchers {
-		matchers[i] = matcher.ValueString()
-	}
+	// Convert matchers from types.Set to []string
+	var matchers []string
+	plan.Matchers.ElementsAs(context.Background(), &matchers, false)
 	requestPayload.Matchers = matchers
 
 	return requestPayload
@@ -345,11 +332,11 @@ func updateStateFromRoutingRuleAPI(state *model.RoutingRuleModel, routingRule *s
 		state.Mode = types.StringValue(*routingRule.Mode)
 	}
 
-	// Convert matchers from []string to []types.String
+	// Convert matchers from []string to types.Set
 	if routingRule.Matchers != nil {
-		state.Matchers = make([]types.String, len(routingRule.Matchers))
-		for i, matcher := range routingRule.Matchers {
-			state.Matchers[i] = types.StringValue(matcher)
-		}
+		matchers, _ := types.SetValueFrom(context.Background(), types.StringType, routingRule.Matchers)
+		state.Matchers = matchers
+	} else {
+		state.Matchers = types.SetNull(types.StringType)
 	}
 }

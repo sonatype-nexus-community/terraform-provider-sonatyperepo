@@ -48,7 +48,7 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "Test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeBlock),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "1"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/com/example/.*"),
 				),
 			},
 			// ImportState testing
@@ -68,8 +68,8 @@ func TestAccRoutingRuleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated test routing rule"),
 					resource.TestCheckResourceAttr(resourceName, "mode", repository.RoutingRuleModeAllow),
 					resource.TestCheckResourceAttr(resourceName, matchersCount, "2"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.0", "^/com/example/.*"),
-					resource.TestCheckResourceAttr(resourceName, "matchers.1", "^/org/test/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/com/example/.*"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "matchers.*", "^/org/test/.*"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

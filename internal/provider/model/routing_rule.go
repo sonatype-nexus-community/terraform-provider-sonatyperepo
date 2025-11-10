@@ -17,6 +17,8 @@
 package model
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -29,11 +31,11 @@ type RoutingRulesModel struct {
 
 // RoutingRuleModel represents the Terraform model for a routing rule (used by data source)
 type RoutingRuleModel struct {
-	Name        types.String   `tfsdk:"name"`
-	Description types.String   `tfsdk:"description"`
-	Mode        types.String   `tfsdk:"mode"`
-	Matchers    []types.String `tfsdk:"matchers"`
-	LastUpdated types.String   `tfsdk:"last_updated"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Mode        types.String `tfsdk:"mode"`
+	Matchers    types.Set    `tfsdk:"matchers"`
+	LastUpdated types.String `tfsdk:"last_updated"`
 }
 
 // MapFromApi maps API response to model
@@ -43,9 +45,9 @@ func (m *RoutingRuleModel) MapFromApi(api *sonatyperepo.RoutingRuleXO) {
 	m.Mode = types.StringPointerValue(api.Mode)
 
 	if api.Matchers != nil {
-		m.Matchers = make([]types.String, len(api.Matchers))
-		for i, matcher := range api.Matchers {
-			m.Matchers[i] = types.StringValue(matcher)
-		}
+		matchers, _ := types.SetValueFrom(context.Background(), types.StringType, api.Matchers)
+		m.Matchers = matchers
+	} else {
+		m.Matchers = types.SetNull(types.StringType)
 	}
 }

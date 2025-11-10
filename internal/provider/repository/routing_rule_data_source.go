@@ -70,7 +70,7 @@ func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaR
 				Description: "The mode of the routing rule (ALLOW or BLOCK)",
 				Computed:    true,
 			},
-			"matchers": schema.ListAttribute{
+			"matchers": schema.SetAttribute{
 				Description: "Regular expressions used to identify request paths",
 				Computed:    true,
 				ElementType: types.StringType,
