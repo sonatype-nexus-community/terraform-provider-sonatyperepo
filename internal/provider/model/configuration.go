@@ -272,7 +272,6 @@ func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerX
 }
 
 type SecurityUserTokenModel struct {
-	ID                types.String `tfsdk:"id"`
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	ExpirationDays    types.Int32  `tfsdk:"expiration_days"`
 	ExpirationEnabled types.Bool   `tfsdk:"expiration_enabled"`

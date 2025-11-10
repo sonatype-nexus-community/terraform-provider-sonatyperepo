@@ -56,21 +56,17 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 	resp.Schema = schema.Schema{
 		Description: "Manage User Token Configuration",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Resource identifier (always 'user-tokens' for this singleton resource)",
-				Computed:    true,
-			},
 			"enabled": schema.BoolAttribute{
 				Description: "Whether or not User Tokens feature is enabled",
 				Optional:    true,
 				Computed:    true,
-				Default:     booldefault.StaticBool(false),
+				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
 			},
 			"expiration_days": schema.Int32Attribute{
 				Description: "Set user token expiration days (1-999)",
 				Optional:    true,
 				Computed:    true,
-				Default:     int32default.StaticInt32(1),
+				Default:     int32default.StaticInt32(common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS),
 				Validators: []validator.Int32{
 					int32validator.Between(1, 999),
 				},
@@ -79,13 +75,13 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 				Description: "Enable user tokens expiration",
 				Optional:    true,
 				Computed:    true,
-				Default:     booldefault.StaticBool(false),
+				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
 			},
 			"protect_content": schema.BoolAttribute{
 				Description: "Additionally require user tokens for repository authentication",
 				Optional:    true,
 				Computed:    true,
-				Default:     booldefault.StaticBool(false),
+				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
@@ -109,26 +105,18 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 	// Read current user token settings from the API
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusForbidden {
-			resp.Diagnostics.AddError(
-				"Unauthorized",
-				common.ERROR_MESSAGE_UNAUTHORIZED+" during import.",
-			)
-		} else {
-			common.HandleApiError(
-				"Error importing User Token settings",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
+		common.HandleApiError(
+			"Error importing User Token settings",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
 		return
 	}
 
 	// Create the state model with the current API values
 	var state model.SecurityUserTokenModel
-	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 	state.MapFromApi(apiResponse)
 	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
@@ -166,39 +154,21 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.SetServiceStatus(ctx).Body(payload).Execute()
 
 	// Handle Error
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusForbidden {
-			resp.Diagnostics.AddError(
-				"Unauthorized",
-				common.ERROR_MESSAGE_UNAUTHORIZED,
-			)
-		} else {
-			common.HandleApiError(
-				"Error creating User Token settings",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
-		return
-	}
-
-	if httpResponse.StatusCode == http.StatusOK {
-		plan.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
-		plan.MapFromApi(apiResponse)
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-		diags := resp.State.Set(ctx, plan)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		common.HandleApiError(
-			"Failed to create User Token settings",
+			"Error creating User Token settings",
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
 		)
+		return
+	}
+
+	plan.MapFromApi(apiResponse)
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	diags := resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 }
@@ -224,24 +194,16 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 	// Read API Call
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusForbidden {
-			resp.Diagnostics.AddError(
-				"Unauthorized",
-				common.ERROR_MESSAGE_UNAUTHORIZED,
-			)
-		} else {
-			common.HandleApiError(
-				"Error reading User Token settings",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
+		common.HandleApiError(
+			"Error reading User Token settings",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
 		return
 	}
 
-	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 	state.MapFromApi(apiResponse)
 
 	// Set refreshed state
@@ -274,40 +236,22 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.SetServiceStatus(ctx).Body(payload).Execute()
 
 	// Handle Error
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusForbidden {
-			resp.Diagnostics.AddError(
-				"Unauthorized",
-				common.ERROR_MESSAGE_UNAUTHORIZED,
-			)
-		} else {
-			common.HandleApiError(
-				"Error updating User Token settings",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
-		return
-	}
-
-	if httpResponse.StatusCode == http.StatusOK {
-		plan.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
-		plan.MapFromApi(apiResponse)
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-
-		diags := resp.State.Set(ctx, plan)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		common.HandleApiError(
-			"Failed to update User Token settings",
+			"Error updating User Token settings",
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
 		)
+		return
+	}
+
+	plan.MapFromApi(apiResponse)
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	diags := resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 }
@@ -339,26 +283,9 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 	_, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.SetServiceStatus(ctx).Body(payload).Execute()
 
 	// Handle Error
-	if err != nil {
-		if httpResponse.StatusCode == http.StatusForbidden {
-			resp.Diagnostics.AddError(
-				"Unauthorized",
-				common.ERROR_MESSAGE_UNAUTHORIZED,
-			)
-		} else {
-			common.HandleApiError(
-				"Error disabling User Token settings",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
-		return
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		common.HandleApiError(
-			"Failed to disable User Token settings",
+			"Error disabling User Token settings",
 			&err,
 			httpResponse,
 			&resp.Diagnostics,

@@ -58,10 +58,6 @@ func (d *securityUserTokenDataSource) Schema(_ context.Context, req datasource.S
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get the current User Token configuration",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Data source identifier (always 'user-tokens' for this singleton resource)",
-				Computed:    true,
-			},
 			"enabled": schema.BoolAttribute{
 				Description: "Whether or not User Tokens feature is enabled",
 				Computed:    true,
@@ -106,7 +102,6 @@ func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.R
 
 	// Map API response to state
 	var state model.SecurityUserTokenModel
-	state.ID = types.StringValue(common.SECURITY_USER_TOKEN_ID)
 	state.MapFromApi(apiResponse)
 	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
