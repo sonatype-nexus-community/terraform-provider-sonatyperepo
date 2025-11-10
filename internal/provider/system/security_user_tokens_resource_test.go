@@ -46,9 +46,10 @@ func TestAccSecurityUserTokenResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:      resourceNameSecurityUserToken,
-					ImportState:       true,
-					ImportStateVerify: true,
+					ResourceName:                         resourceNameSecurityUserToken,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "enabled",
 					// Ignore last_updated since it will be different after import
 					ImportStateVerifyIgnore: []string{"last_updated"},
 					ImportStateId:           "user-tokens", // Can be any string for this singleton resource
@@ -131,25 +132,28 @@ func TestAccSecurityUserTokenResourceImport(t *testing.T) {
 				},
 				// Test import with different import IDs (all should work for singleton resource)
 				{
-					ResourceName:            resourceNameSecurityUserToken,
-					ImportState:             true,
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"last_updated"},
-					ImportStateId:           "user-tokens",
+					ResourceName:                         resourceNameSecurityUserToken,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "enabled",
+					ImportStateVerifyIgnore:              []string{"last_updated"},
+					ImportStateId:                        "user-tokens",
 				},
 				{
-					ResourceName:            resourceNameSecurityUserToken,
-					ImportState:             true,
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"last_updated"},
-					ImportStateId:           "import",
+					ResourceName:                         resourceNameSecurityUserToken,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "enabled",
+					ImportStateVerifyIgnore:              []string{"last_updated"},
+					ImportStateId:                        "import",
 				},
 				{
-					ResourceName:            resourceNameSecurityUserToken,
-					ImportState:             true,
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"last_updated"},
-					ImportStateId:           "any-string-works",
+					ResourceName:                         resourceNameSecurityUserToken,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "enabled",
+					ImportStateVerifyIgnore:              []string{"last_updated"},
+					ImportStateId:                        "any-string-works",
 				},
 			},
 		})

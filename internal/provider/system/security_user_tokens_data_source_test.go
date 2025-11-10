@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	dataSourceTypeSecurityUserToken = "sonatyperepo_security_user_token"
-	dataSourceNameSecurityUserToken = "data.sonatyperepo_security_user_token.test"
+	dataSourceTypeSecurityUserToken = "sonatyperepo_security_user_tokens"
+	dataSourceNameSecurityUserToken = "data.sonatyperepo_security_user_tokens.test"
 )
 
 func TestAccSecurityUserTokenDataSource(t *testing.T) {
