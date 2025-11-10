@@ -212,6 +212,49 @@ resource "%s" "cap" {
 	})
 }
 
+func TestAccCapabilitySecurityRutAuthResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf(resourceNameF, resourceSecurityRutAuth)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.84.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 83,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  enabled = true
+  notes   = "example-notes-%s"
+  properties = {
+    http_header    = "TESTING 1 2 3 %s"
+  }
+}
+`, resourceSecurityRutAuth, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "properties.http_header", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccCapabilityUiBrandingResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)

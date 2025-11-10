@@ -71,6 +71,13 @@ func NewCapabilityUiBrandingResource() resource.Resource {
 	}
 }
 
+// NewCapabilitySecurityRutAuthResource is a helper function to simplify the provider implementation.
+func NewCapabilitySecurityRutAuthResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewRutAuthCapability(),
+	}
+}
+
 // NewCapabilityUiSettingsResource is a helper function to simplify the provider implementation.
 func NewCapabilityUiSettingsResource() resource.Resource {
 	return &capabilityResource{
