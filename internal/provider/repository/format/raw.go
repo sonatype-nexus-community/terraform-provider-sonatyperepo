@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -139,30 +137,6 @@ func (f *RawRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Hosted repository
-func (f *RawRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Raw Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.RawHostedApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Raw Hosted repository")
-	}
-
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // PROXY Raw Format Functions
 // --------------------------------------------
@@ -239,30 +213,6 @@ func (f *RawRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Proxy repository
-func (f *RawRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Raw Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.RawProxyApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Raw Proxy repository")
-	}
-
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GORUP Raw Format Functions
 // --------------------------------------------
@@ -337,30 +287,6 @@ func (f *RawRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a Raw Group repository
-func (f *RawRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Raw Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.RawGroupApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Raw Group repository")
-	}
-
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------
