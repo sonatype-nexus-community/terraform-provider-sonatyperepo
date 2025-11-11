@@ -199,7 +199,7 @@ func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyAp
 	} else {
 		// Set default values when API doesn't provide replication data
 		m.Replication = &RepositoryReplicationModel{
-			PreemptivePullEnabled: types.BoolValue(false),
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
 			AssetPathRegex:        types.StringNull(),
 		}
 	}
