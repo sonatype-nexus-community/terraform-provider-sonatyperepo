@@ -4,6 +4,34 @@
 
 _TBC_
 
+## 0.11.1 November 11, 2025
+
+BUG FIXES:
+* Fixed issue with import for `sonatyperepo_repository_*_proxy` resources [GH-153] (thanks @yfougeray-euphoria)
+
+## 0.11.0 November 11, 2025
+
+FEATURES:
+* **New Data Source:** `sonatyperepo_capabilities` [GH-157]
+* **New Data Source:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Data Source:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
+* **New Data Source:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
+* **New Resource:** `sonatyperepo_capability_audit` [GH-159]
+* **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
+* **New Resource:** `sonatyperepo_capability_custom_s3_regions` [GH-186]
+* **New Resource:** `sonatyperepo_capability_default_role` [GH-188]
+* **New Resource:** `sonatyperepo_capability_firewall_audit_and_quarantine` [GH-163]
+* **New Resource:** `sonatyperepo_capability_healthcheck` [GH-163]
+* **New Resource:** `sonatyperepo_capability_outreach_management` [GH-166]
+* **New Resource:** `sonatyperepo_capability_rut_auth` [GH-195]
+* **New Resource:** `sonatyperepo_capability_storage_settings` [GH-194]
+* **New Resource:** `sonatyperepo_capability_ui_branding` [GH-168]
+* **New Resource:** `sonatyperepo_capability_ui_settings` [GH-169]
+* **New Resource:** `sonatyperepo_capability_webhook_global` [GH-183]
+* **New Resource:** `sonatyperepo_capability_webhook_repository` [GH-184]
+* **New Resource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Resource:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
+
 ## 0.10.0 November 4, 2025
 
 FEATURES:
