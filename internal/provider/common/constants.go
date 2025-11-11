@@ -96,6 +96,11 @@ const (
 	WRITE_POLICY_ALLOW                                                     string = "ALLOW"
 	WRITE_POLICY_ALLOW_ONCE                                                string = "ALLOW_ONCE"
 	WRITE_POLICY_DENY                                                      string = "DENY"
+	SECURITY_USER_TOKEN_DEFAULT_ENABLED                                    bool   = false
+	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS                            int32  = 1
+	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED                         bool   = false
+	SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT                            bool   = false
+	ERROR_MESSAGE_UNAUTHORIZED                                             string = "Your user is unauthorized to access this resource or feature."
 )
 
 func NewFalse() *bool {
