@@ -270,3 +270,31 @@ func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerX
 	updateModel.Id = model.Id.ValueStringPointer()
 	return &updateModel
 }
+
+type SecurityUserTokenModel struct {
+	Enabled           types.Bool   `tfsdk:"enabled"`
+	ExpirationDays    types.Int32  `tfsdk:"expiration_days"`
+	ExpirationEnabled types.Bool   `tfsdk:"expiration_enabled"`
+	ProtectContent    types.Bool   `tfsdk:"protect_content"`
+	LastUpdated       types.String `tfsdk:"last_updated"`
+}
+
+func (m *SecurityUserTokenModel) MapFromApi(api *sonatyperepo.UserTokensApiModel) {
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	m.ExpirationDays = types.Int32PointerValue(api.ExpirationDays)
+	m.ExpirationEnabled = types.BoolPointerValue(api.ExpirationEnabled)
+	m.ProtectContent = types.BoolPointerValue(api.ProtectContent)
+}
+
+func (m *SecurityUserTokenModel) MapToApi(api *sonatyperepo.UserTokensApiModel) {
+	api.Enabled = m.Enabled.ValueBoolPointer()
+	// Set ExpirationDays to default value if not specified, to satisfy API's minimum value requirement
+	if !m.ExpirationDays.IsNull() && !m.ExpirationDays.IsUnknown() {
+		api.ExpirationDays = m.ExpirationDays.ValueInt32Pointer()
+	} else {
+		defaultValue := common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS
+		api.ExpirationDays = &defaultValue
+	}
+	api.ExpirationEnabled = m.ExpirationEnabled.ValueBoolPointer()
+	api.ProtectContent = m.ProtectContent.ValueBoolPointer()
+}
