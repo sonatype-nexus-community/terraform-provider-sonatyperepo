@@ -27,13 +27,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testResourceNameFormat = "%s.repo"
+
 func TestAccRepositoryGoResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceTypeGroup := "sonatyperepo_repository_go_group"
 	resourceTypeProxy := "sonatyperepo_repository_go_proxy"
-	resourceGroupName := fmt.Sprintf("%s.repo", resourceTypeGroup)
-	resourceProxyName := fmt.Sprintf("%s.repo", resourceTypeProxy)
+	resourceGroupName := fmt.Sprintf(testResourceNameFormat, resourceTypeGroup)
+	resourceProxyName := fmt.Sprintf(testResourceNameFormat, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -152,7 +154,7 @@ resource "%s" "repo" {
 func TestAccRepositoryGoProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceType := "sonatyperepo_repository_go_proxy"
-	resourceName := fmt.Sprintf("%s.repo", resourceType)
+	resourceName := fmt.Sprintf(testResourceNameFormat, resourceType)
 	repoName := fmt.Sprintf("go-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -205,7 +207,7 @@ func TestAccRepositoryGoGroupImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceType := "sonatyperepo_repository_go_group"
 	resourceTypeProxy := "sonatyperepo_repository_go_proxy"
-	resourceName := fmt.Sprintf("%s.repo", resourceType)
+	resourceName := fmt.Sprintf(testResourceNameFormat, resourceType)
 	repoName := fmt.Sprintf("go-group-import-%s", randomString)
 	memberName := fmt.Sprintf("go-proxy-member-%s", randomString)
 

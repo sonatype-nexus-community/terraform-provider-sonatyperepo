@@ -18,9 +18,7 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -127,36 +125,6 @@ func (f *GoRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClie
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Go Proxy repository
-func (f *GoRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Go Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Go Proxy repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GORUP Go Format Functions
 // --------------------------------------------
@@ -226,34 +194,4 @@ func (f *GoRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClie
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a Go Group repository
-func (f *GoRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Go Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Go Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
