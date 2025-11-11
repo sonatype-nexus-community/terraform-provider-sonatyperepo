@@ -3,9 +3,9 @@
 ## X.Y.Z (UNRELEASED)
 
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
-* **New Datasource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
-* **New Datasource:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
-* **New Datasource:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
+* **New Data Source:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Data Source:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
+* **New Data Source:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
 * **New Resource:** `sonatyperepo_capability_audit` [GH-159]
 * **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
 * **New Resource:** `sonatyperepo_capability_custom_s3_regions` [GH-186]
