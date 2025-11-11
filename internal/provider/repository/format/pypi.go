@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -135,36 +133,6 @@ func (f *PyPiRepositoryFormatHosted) DoImportRequest(repositoryName string, apiC
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Hosted repository
-func (f *PyPiRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to PyPI Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiHostedRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a PyPI Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // PROXY PyPi Format Functions
 // --------------------------------------------
@@ -241,30 +209,6 @@ func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCl
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Proxy repository
-func (f *PyPiRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to PyPI Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.PyPiProxyApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a PyPI Proxy repository")
-	}
-
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GORUP PyPi Format Functions
 // --------------------------------------------
@@ -337,36 +281,6 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a PyPI Group repository
-func (f *PyPiRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to PyPI Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupDeployRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a PyPI Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------
