@@ -21,6 +21,7 @@ const (
 	resourceCustomS3Regions         string = "sonatyperepo_capability_custom_s3_regions"
 	resourceDefaultRole             string = "sonatyperepo_capability_default_role"
 	resourceFirewallAuditQuarantine string = "sonatyperepo_capability_firewall_audit_and_quarantine"
+	resourceHealthcheck             string = "sonatyperepo_capability_healthcheck"
 	resourceSecurityRutAuth         string = "sonatyperepo_capability_rut_auth"
 	resourceStorageSettings         string = "sonatyperepo_capability_storage_settings"
 	resourceUiBranding              string = "sonatyperepo_capability_ui_branding"
