@@ -284,6 +284,9 @@ type RepositoryReplicationModel struct {
 }
 
 func (m *RepositoryReplicationModel) MapFromApi(api *sonatyperepo.ReplicationAttributes) {
+	if (!api.PreemptivePullEnabled) {
+		return
+	}
 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
 	m.AssetPathRegex = types.StringPointerValue(api.AssetPathRegex)
 }

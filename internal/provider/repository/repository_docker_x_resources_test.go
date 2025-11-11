@@ -254,3 +254,60 @@ func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
 		},
 	})
 }
+
+func TestAccRepositoryDockerProxyImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_docker_proxy"
+	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
+	repoName := fmt.Sprintf("docker-proxy-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://registry-1.docker.io"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+  docker = {
+    force_basic_auth = true
+    v1_enabled = false
+  }
+  docker_proxy = {}
+}
+`, resourceType, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
