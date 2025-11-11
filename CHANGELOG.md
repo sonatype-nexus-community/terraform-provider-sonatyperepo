@@ -2,6 +2,10 @@
 
 ## X.Y.Z (UNRELEASED)
 
+_TBC_
+
+## 0.11.0 November 11, 2025
+
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
 * **New Data Source:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
 * **New Data Source:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
