@@ -27,8 +27,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &BaseResource{}
-	_ resource.ResourceWithConfigure = &BaseResource{}
+	_ resource.Resource                = &BaseResource{}
+	_ resource.ResourceWithConfigure   = &BaseResource{}
+	_ resource.ResourceWithImportState = &BaseResource{}
 )
 
 // applicationResource is the resource implementation.
@@ -38,6 +39,11 @@ type BaseResource struct {
 	Client       *sonatyperepo.APIClient
 	NxrmVersion  SystemVersion
 	NxrmWritable bool
+}
+
+// ImportState implements resource.ResourceWithImportState.
+func (r *BaseResource) ImportState(context.Context, resource.ImportStateRequest, *resource.ImportStateResponse) {
+	panic("unimplemented")
 }
 
 // Create implements resource.Resource.
