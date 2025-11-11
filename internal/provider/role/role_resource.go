@@ -116,15 +116,19 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, httpResponse, err := r.Client.SecurityManagementRolesAPI.Create(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error creating Role",
-			fmt.Sprintf("Error creating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Error creating Role",
-			fmt.Sprintf("Unexpected Response Code whilst creating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Creation of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -160,14 +164,18 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Role does not exist",
-				fmt.Sprintf("Unable to read Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiWarning(
+				"Role to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Role",
-				fmt.Sprintf("Unable to read Role: %s: %s", httpResponse.Status, err),
+			common.HandleApiError(
+				"Error reading Role",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -209,15 +217,19 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	httpResponse, err := r.Client.SecurityManagementRolesAPI.Update(ctx, state.Id.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error updating Role",
-			fmt.Sprintf("Error updating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error updating Role",
-			fmt.Sprintf("Unexpected Response Code whilst updating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Update of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -250,15 +262,19 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Handle Error
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error removing Role",
-			fmt.Sprintf("Error removing Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error removing Role",
-			fmt.Sprintf("Unexpected Response Code whilst removing Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Removal of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

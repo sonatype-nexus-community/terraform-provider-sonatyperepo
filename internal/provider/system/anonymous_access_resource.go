@@ -19,7 +19,6 @@ package system
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -94,10 +93,11 @@ func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req res
 				"Your user is unauthorized to access this resource or feature during import.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error importing Anonymous Access settings",
-				"Could not read Anonymous Access settings during import, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -154,10 +154,11 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error updating Anonymous Access settings",
-				"Could not update Anonymous Access settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -171,11 +172,12 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
-			"Failed to update Anonymous Access settings",
-			fmt.Sprintf("Unable to update Anonymous Access settings: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Update of Anonymous Access settings was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
-		return
 	}
 }
 
@@ -207,10 +209,11 @@ func (r *anonymousAccessSystemResource) Read(ctx context.Context, req resource.R
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error reading Anonymous Access settings",
-				"Could not read Anonymous Access settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -260,10 +263,11 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error updating Anonymous Access settings",
-				"Could not update Anonymous Access settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -324,10 +328,11 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			errorBody, _ := io.ReadAll(httpResponse.Body)
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error removing Anonymous Access settings",
-				"Could not remove Anonymous Access settings, unexpected error: "+httpResponse.Status+": "+string(errorBody),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

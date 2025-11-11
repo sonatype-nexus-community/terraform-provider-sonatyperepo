@@ -153,10 +153,11 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		errorBody, _ := io.ReadAll(apiResponse.Body)
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error creating cleanup policy",
-			"Could not create cleanup policy, unexpected error: "+apiResponse.Status+": "+string(errorBody),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -171,11 +172,12 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
-			"Failed to create cleanup policy",
-			fmt.Sprintf("Unable to create cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		common.HandleApiError(
+			"Creation of cleanup policy was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
-		return
 	}
 }
 
@@ -195,16 +197,24 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 	// Fetch cleanup policy from API
 	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
 	if err != nil {
-		// Check if this is a 404 error by attempting to get the HTTP response
-		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
-		if httpResponse != nil && httpResponse.StatusCode == 404 {
-			resp.State.RemoveResource(ctx)
-			return
-		}
+	// Check if this is a 404 error by attempting to get the HTTP response
+	httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
+	if httpResponse != nil && httpResponse.StatusCode == 404 {
+	resp.State.RemoveResource(ctx)
+	common.HandleApiWarning(
+	  "Cleanup policy to read did not exist",
+				&err,
+	  httpResponse,
+	 &resp.Diagnostics,
+	)
+	 return
+	}
 
-		resp.Diagnostics.AddError(
-			"Error Reading cleanup policy",
-			"Unable to read cleanup policy: "+err.Error(),
+		common.HandleApiError(
+			"Error reading cleanup policy",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -282,23 +292,29 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"Cleanup policy to delete did not exist",
-				fmt.Sprintf("Cleanup policy was already deleted: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Deleting cleanup policy",
-				fmt.Sprintf("Unable to delete cleanup policy: %s", err.Error()),
+			common.HandleApiError(
+				"Error deleting cleanup policy",
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Failed to delete cleanup policy",
-			fmt.Sprintf("Unable to delete cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		common.HandleApiError(
+			"Deletion of cleanup policy was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -451,14 +467,18 @@ func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name str
 func (r *cleanupPolicyResource) handleUpdateError(resp *resource.UpdateResponse, apiResponse *http.Response, err error) {
 	if apiResponse != nil && apiResponse.StatusCode == 404 {
 		resp.State.RemoveResource(context.Background())
-		resp.Diagnostics.AddWarning(
+		common.HandleApiWarning(
 			"Cleanup policy to update did not exist",
-			fmt.Sprintf("Unable to update cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 	} else {
-		resp.Diagnostics.AddError(
-			"Error Updating cleanup policy",
-			fmt.Sprintf("Unable to update cleanup policy: %s", err.Error()),
+		common.HandleApiError(
+			"Error updating cleanup policy",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

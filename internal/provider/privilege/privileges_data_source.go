@@ -111,9 +111,11 @@ func (d *privilegesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetAllPrivileges(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Privileges",
-			fmt.Sprintf("Unable to read Privileges: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Unable to list privileges",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
