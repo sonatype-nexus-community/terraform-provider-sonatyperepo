@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_ruby_gems_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy RUBY_GEMS Repositories
+  Manage Proxy RUBYGEMS Repositories
 ---
 
 # sonatyperepo_repository_ruby_gems_proxy (Resource)
 
-Manage Proxy RUBY_GEMS Repositories
+Manage Proxy RUBYGEMS Repositories
 
 
 

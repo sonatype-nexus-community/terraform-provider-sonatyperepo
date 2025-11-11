@@ -18,9 +18,7 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -57,7 +55,8 @@ func (f *RubyGemsRepositoryFormat) GetKey() string {
 }
 
 func (f *RubyGemsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	// Override to maintain backward compatibility with resource name containing underscore
+	return getResourceName("ruby_gems", repoType)
 }
 
 // --------------------------------------------
@@ -134,42 +133,6 @@ func (f *RubyGemsRepositoryFormatHosted) DoImportRequest(repositoryName string, 
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a RubyGems Hosted repository
-func (f *RubyGemsRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to RubyGems Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiHostedRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a RubyGems Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // PROXY RubyGems Format Functions
 // --------------------------------------------
@@ -244,42 +207,6 @@ func (f *RubyGemsRepositoryFormatProxy) DoImportRequest(repositoryName string, a
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a RubyGems Proxy repository
-func (f *RubyGemsRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to RubyGems Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a RubyGems Proxy repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GORUP RubyGems Format Functions
 // --------------------------------------------
@@ -352,40 +279,4 @@ func (f *RubyGemsRepositoryFormatGroup) DoImportRequest(repositoryName string, a
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a RubyGems Group repository
-func (f *RubyGemsRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to RubyGems Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a RubyGems Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }

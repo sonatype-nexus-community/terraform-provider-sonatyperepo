@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_ruby_gems_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted RUBY_GEMS Repositories
+  Manage Hosted RUBYGEMS Repositories
 ---
 
 # sonatyperepo_repository_ruby_gems_hosted (Resource)
 
-Manage Hosted RUBY_GEMS Repositories
+Manage Hosted RUBYGEMS Repositories
 
 
 
