@@ -139,9 +139,6 @@ type RepositoryFormat interface {
 	GetResourceName(repoType RepositoryType) string
 	GetKey() string
 	UpdatePlanForState(plan any) any
-	// UpdateStateFromApi updates the state model from API response data.
-	// IMPORTANT: state parameter may be nil (during import operations).
-	// Implementations MUST check for nil and create a new model instance if needed.
 	UpdateStateFromApi(state any, api any) any
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 }
