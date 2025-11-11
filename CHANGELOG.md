@@ -4,8 +4,14 @@
 
 _TBC_
 
+## 0.11.1 November 11, 2025
+
+BUG FIXES:
+* Fixed issue with import for `sonatyperepo_repository_*_proxy` resources [GH-153] (thanks @yfougeray-euphoria)
+
 ## 0.11.0 November 11, 2025
 
+FEATURES:
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
 * **New Data Source:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
 * **New Data Source:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
@@ -28,6 +34,7 @@ _TBC_
 
 ## 0.10.0 November 4, 2025
 
+FEATURES:
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
 * **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]
