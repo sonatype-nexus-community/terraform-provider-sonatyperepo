@@ -255,6 +255,51 @@ resource "%s" "cap" {
 	})
 }
 
+func TestAccCapabilityHealthcheckResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf(resourceNameF, resourceHealthcheck)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.84.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 83,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  notes = "example-notes-%s"
+  enabled = true
+  properties = {
+    configured_for_all_proxies = false
+    use_nexus_truststore       = true
+  }
+}
+`, resourceHealthcheck, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "properties.configured_for_all_proxies", "false"),
+					resource.TestCheckResourceAttr(resourceName, "properties.use_nexus_truststore", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccCapabilitySecurityRutAuthResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)

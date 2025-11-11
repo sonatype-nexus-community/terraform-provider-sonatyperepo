@@ -22,6 +22,8 @@ const (
 	AUTH_SCHEME_DIGEST_MD5                                                 string = "DIGEST_MD5"
 	AUTH_SCHEME_CRAM_MD5                                                   string = "CRAM_MD5"
 	CAPABILITY_FIREWALL_AUDIT_QUARANTINE_DEFAULT_QUARANTINE                bool   = false
+	CAPABILITY_HEALTHCHECK_DEFAULT_CONFIGURED_FOR_ALL                      bool   = true
+	CAPABILITY_HEALTHCHECK_DEFAULT_USE_NEXUS_TRUSTSTORE                    bool   = false
 	CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE                              bool   = false
 	CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL           int32  = 12
 	CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_ENABLED                          bool   = false

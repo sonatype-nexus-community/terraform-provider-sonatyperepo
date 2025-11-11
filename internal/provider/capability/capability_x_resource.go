@@ -64,6 +64,13 @@ func NewCapabilityFirewallAuditQuarantineResource() resource.Resource {
 	}
 }
 
+// NewCapabilityHealthcheckResource is a helper function to simplify the provider implementation.
+func NewCapabilityHealthcheckResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewHealthcheckCapability(),
+	}
+}
+
 // NewCapabilityOutreachResource is a helper function to simplify the provider implementation.
 func NewCapabilityOutreachResource() resource.Resource {
 	return &capabilityResource{
