@@ -118,11 +118,13 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	blobStore, _, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	blobStore, httpResponse, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Blob Stores",
-			err.Error(),
+		common.HandleApiError(
+			common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE,
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

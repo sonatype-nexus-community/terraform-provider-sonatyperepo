@@ -103,15 +103,19 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 	httpResponse, err := r.Client.ContentSelectorsAPI.CreateContentSelector(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error creating Content Selector",
-			fmt.Sprintf("Error creating Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error creating Content Selector",
-			fmt.Sprintf("Unexpected Response Code whilst creating Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Creation of Content Selector was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -147,14 +151,18 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Content Selector does not exist",
-				fmt.Sprintf("Unable to read Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiWarning(
+				"Content Selector to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Content Selector",
-				fmt.Sprintf("Unable to read Content Selector: %s: %s", httpResponse.Status, err),
+			common.HandleApiError(
+				"Error reading Content Selector",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -196,15 +204,19 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 	httpResponse, err := r.Client.ContentSelectorsAPI.UpdateContentSelector(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error updating Content Selector",
-			fmt.Sprintf("Error updating Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error updating Content Selector",
-			fmt.Sprintf("Unexpected Response Code whilst updating Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Update of Content Selector was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -237,15 +249,19 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 
 	// Handle Error
 	if err != nil {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error removing Content Selector",
-			fmt.Sprintf("Error removing Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error removing Content Selector",
-			fmt.Sprintf("Unexpected Response Code whilst removing Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Removal of Content Selector was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

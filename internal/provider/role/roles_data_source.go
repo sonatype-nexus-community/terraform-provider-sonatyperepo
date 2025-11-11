@@ -117,9 +117,11 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	rolesResponse, httpResponse, err := d.Client.SecurityManagementRolesAPI.GetRoles(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Roles",
-			fmt.Sprintf("Unable to read Roles: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Unable to list roles",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

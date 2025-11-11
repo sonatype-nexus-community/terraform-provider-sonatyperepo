@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"regexp"
 	"time"
@@ -194,10 +193,11 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
 
 	if err != nil {
-		errorBody, _ := io.ReadAll(apiResponse.Body)
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			"Error creating Google Cloud Storage Blob Store",
-			"Could not create Google Cloud Storage Blob Store, unexpected error: "+apiResponse.Status+": "+string(errorBody),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -212,9 +212,11 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	} else {
-		resp.Diagnostics.AddError(
-			"Failed to create Google Cloud Storage Blob Store",
-			fmt.Sprintf("Unable to create Google Cloud Storage Blob Store: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		common.HandleApiError(
+			"Creation of Google Cloud Storage Blob Store was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 	}
 }
@@ -234,10 +236,18 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
+			common.HandleApiWarning(
+				"Google Cloud Storage Blob Store to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Google Cloud Storage Blob Store",
-				fmt.Sprintf("Unable to read Google Cloud Storage Blob Store: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiError(
+				"Error reading Google Cloud Storage Blob Store",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -274,14 +284,18 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 	if err != nil {
 		if apiResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"Google Cloud Storage Blob Store to update did not exist",
-				fmt.Sprintf("Unable to update Google Cloud Storage Blob Store: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Updating Google Cloud Storage Blob Store",
-				fmt.Sprintf("Unable to update Google Cloud Storage Blob Store: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			common.HandleApiError(
+				"Error updating Google Cloud Storage Blob Store",
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

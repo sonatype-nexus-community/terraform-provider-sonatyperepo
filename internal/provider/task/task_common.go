@@ -211,22 +211,28 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				resp.Diagnostics.AddWarning(
+				common.HandleApiWarning(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
-					fmt.Sprintf(TASK_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			} else {
-				resp.Diagnostics.AddError(
+				common.HandleApiError(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
-					fmt.Sprintf(TASK_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			}
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.GetType().String(), attempts),
-				fmt.Sprintf("Error response: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 
 			time.Sleep(1 * time.Second)

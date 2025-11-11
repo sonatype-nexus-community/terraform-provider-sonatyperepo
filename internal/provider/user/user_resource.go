@@ -195,14 +195,18 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"User does not exist",
-				fmt.Sprintf("Unable to read User: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiWarning(
+				"User to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading User",
-				fmt.Sprintf("Unable to read User: %s: %s", httpResponse.Status, err),
+			common.HandleApiError(
+				"Error reading User",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

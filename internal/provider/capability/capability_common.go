@@ -303,22 +303,28 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				resp.Diagnostics.AddWarning(
+				common.HandleApiWarning(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
-					fmt.Sprintf(CAPABILITY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			} else {
-				resp.Diagnostics.AddError(
+				common.HandleApiError(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
-					fmt.Sprintf(CAPABILITY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			}
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				fmt.Sprintf("Unexpected response when deleting %s Capability (attempt %d)", c.CapabilityType.GetType().String(), attempts),
-				fmt.Sprintf("Error response: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 
 			time.Sleep(1 * time.Second)
