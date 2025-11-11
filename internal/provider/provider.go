@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/blob_store"
+	"terraform-provider-sonatyperepo/internal/provider/capability"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/content_selector"
 	"terraform-provider-sonatyperepo/internal/provider/privilege"
@@ -243,6 +244,19 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreS3Resource,
 		blob_store.NewBlobStoreGoogleCloudResource,
+		capability.NewCapabilityAuditResource,
+		capability.NewCapabilityCoreBaseUrlResource,
+		capability.NewCapabilityCoreStorageSettingsResource,
+		capability.NewCapabilityCustomS3RegionsResource,
+		capability.NewCapabilityDefaultRoleResource,
+		capability.NewCapabilityFirewallAuditQuarantineResource,
+		capability.NewCapabilityHealthcheckResource,
+		capability.NewCapabilityOutreachResource,
+		capability.NewCapabilitySecurityRutAuthResource,
+		capability.NewCapabilityUiBrandingResource,
+		capability.NewCapabilityUiSettingsResource,
+		capability.NewCapabilityWebhookGlobalResource,
+		capability.NewCapabilityWebhookRepositoryResource,
 		content_selector.NewContentSelectorResource,
 		privilege.NewApplicationPrivilegeResource,
 		privilege.NewRepositoryAdminPrivilegeResource,
@@ -296,6 +310,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryYumHostedResource,
 		repository.NewRepositoryYumProxyResource,
 		repository.NewCleanupPolicyResource,
+		repository.NewRoutingRuleResource,
 		role.NewRoleResource,
 		system.NewAnonymousAccessSystemResource,
 		system.NewSystemConfigProductLicenseResource,
@@ -304,6 +319,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		system.NewSystemConfigIqConnectionResource,
 		system.NewSecurityRealmsResource,
 		system.NewSecuritySamlResource,
+		system.NewSecurityUserTokenResource,
 		task.NewTaskBlobstoreCompactResource,
 		task.NewTaskMalwareRemediatorResource,
 		task.NewTaskRepairRebuildBrowseNodesResource,
@@ -320,11 +336,15 @@ func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasou
 		blob_store.BlobStoreFileDataSource,
 		blob_store.BlobStoreGroupDataSource,
 		blob_store.BlobStoreS3DataSource,
+		capability.CapabilitiesDataSource,
 		content_selector.ContentSelectorDataSource,
 		content_selector.ContentSelectorsDataSource,
 		privilege.PrivilegesDataSource,
 		repository.RepositoriesDataSource,
+		repository.RoutingRuleDataSource,
+		repository.RoutingRulesDataSource,
 		role.RolesDataSource,
+		system.SecurityUserTokenDataSource,
 		task.TaskDataSource,
 		task.TasksDataSource,
 		user.UsersDataSource,
