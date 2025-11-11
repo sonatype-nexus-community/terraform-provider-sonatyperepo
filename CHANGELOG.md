@@ -7,6 +7,9 @@ _TBC_
 ## 0.10.0 November 4, 2025
 
 FEATURES:
+* **New Datasource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Datasource:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
+* **New Resource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
 * **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]
