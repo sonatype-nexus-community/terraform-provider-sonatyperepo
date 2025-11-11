@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -89,6 +87,16 @@ func (f *AptRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateAptHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Hosted repositories
+func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getAptSchemaAttributes(false))
@@ -113,52 +121,27 @@ func (f *AptRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 
 func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 	var stateModel model.RepositoryAptHostedModel
+	var preserveAptSigning bool
+	var existingKeyPair types.String
+	var existingPassphrase types.String
 	// During import, state might be nil, so we create a new model
 	if state != nil {
 		stateModel = (state).(model.RepositoryAptHostedModel)
+		// Check if apt_signing was in the plan/state (either field is not null)
+		preserveAptSigning = stateModel.AptSigning != nil && (!stateModel.AptSigning.KeyPair.IsNull() || !stateModel.AptSigning.Passphrase.IsNull())
+		if preserveAptSigning {
+			// Preserve apt_signing values (API doesn't return sensitive passphrase)
+			existingKeyPair = stateModel.AptSigning.KeyPair
+			existingPassphrase = stateModel.AptSigning.Passphrase
+		}
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.AptHostedApiRepository))
+	// Restore apt_signing from plan/state if it was provided (API doesn't return sensitive passphrase)
+	if preserveAptSigning {
+		stateModel.AptSigning.KeyPair = existingKeyPair
+		stateModel.AptSigning.Passphrase = existingPassphrase
+	}
 	return stateModel
-}
-
-// DoImportRequest implements the import functionality for APT Hosted repositories
-func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptHostedRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed an APT Hosted repository
-func (f *AptRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to APT Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.AptHostedApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not an APT Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------
@@ -192,6 +175,16 @@ func (f *AptRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateAptProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Proxy repositories
+func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *AptRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getAptSchemaAttributes(true))
@@ -222,46 +215,6 @@ func (f *AptRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.AptProxyApiRepository))
 	return stateModel
-}
-
-// DoImportRequest implements the import functionality for APT Proxy repositories
-func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed an APT Proxy repository
-func (f *AptRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to APT Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.AptProxyApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not an APT Proxy repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------
