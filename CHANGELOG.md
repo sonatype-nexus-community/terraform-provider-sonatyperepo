@@ -3,6 +3,9 @@
 ## X.Y.Z (UNRELEASED)
 
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
+* **New Datasource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Datasource:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
+* **New Datasource:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
 * **New Resource:** `sonatyperepo_capability_audit` [GH-159]
 * **New Resource:** `sonatyperepo_capability_base_url` [GH-156]
 * **New Resource:** `sonatyperepo_capability_custom_s3_regions` [GH-186]
@@ -14,6 +17,8 @@
 * **New Resource:** `sonatyperepo_capability_ui_settings` [GH-169]
 * **New Resource:** `sonatyperepo_capability_webhook_global` [GH-183]
 * **New Resource:** `sonatyperepo_capability_webhook_repository` [GH-184]
+* **New Resource:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
+* **New Resource:** `sonatyperepo_user_tokens` [GH-151] (thanks @yfougeray-euphoria)
 
 ## 0.10.0 November 4, 2025
 
