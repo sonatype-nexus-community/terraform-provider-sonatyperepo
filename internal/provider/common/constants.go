@@ -23,6 +23,7 @@ const (
 	AUTH_SCHEME_CRAM_MD5                                                   string = "CRAM_MD5"
 	CAPABILITY_FIREWALL_AUDIT_QUARANTINE_DEFAULT_QUARANTINE                bool   = false
 	CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE                              bool   = false
+	CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL           int32  = 12
 	CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_ENABLED                          bool   = false
 	CAPABILITY_UI_BRANDING_DEFAULT_HEADER_ENABLED                          bool   = false
 	CAPABILITY_UI_BRANDING_DEFAULT_HEADER_HTML                             string = ""
