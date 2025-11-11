@@ -1,0 +1,1 @@
+data "sonatyperepo_capabilities" "capabilities" {}

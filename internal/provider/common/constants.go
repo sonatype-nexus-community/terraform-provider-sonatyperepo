@@ -21,12 +21,29 @@ const (
 	AUTH_SCHEME_SIMPLE                                                     string = "SIMPLE"
 	AUTH_SCHEME_DIGEST_MD5                                                 string = "DIGEST_MD5"
 	AUTH_SCHEME_CRAM_MD5                                                   string = "CRAM_MD5"
+	CAPABILITY_FIREWALL_AUDIT_QUARANTINE_DEFAULT_QUARANTINE                bool   = false
+	CAPABILITY_HEALTHCHECK_DEFAULT_CONFIGURED_FOR_ALL                      bool   = true
+	CAPABILITY_HEALTHCHECK_DEFAULT_USE_NEXUS_TRUSTSTORE                    bool   = false
+	CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE                              bool   = false
+	CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL           int32  = 12
+	CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_ENABLED                          bool   = false
+	CAPABILITY_UI_BRANDING_DEFAULT_HEADER_ENABLED                          bool   = false
+	CAPABILITY_UI_BRANDING_DEFAULT_HEADER_HTML                             string = ""
+	CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_HTML                             string = ""
+	CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED                           bool   = false
+	CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT                    int32  = 180
+	CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT                         int32  = 60
+	CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT                         int32  = 30
+	CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS               int32  = 60
+	CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED           int32  = 5
+	CAPABILITY_UI_SETTINGS_DEFAULT_TITLE                                   string = "Sonatype Nexus Repository"
 	CONAN_PROTOCOL_V1                                                      string = "V1"
 	CONAN_PROTOCOL_V2                                                      string = "V2"
 	CONTENT_DISPOSITION_ATTACHMENT                                         string = "ATTACHMENT"
 	CONTENT_DISPOSITION_INLINE                                             string = "INLINE"
 	DEFAULT_ANONYMOUS_USERNAME                                             string = "anonymous"
 	DEFAULT_BLOB_STORE_NAME                                                string = "default"
+	DEFAULT_PROXY_PREEMPTIVE_PULL                                          bool   = false
 	DEFAULT_HTTP_CONNECTION_RETRIES                                        int64  = 0
 	DEFAULT_HTTP_CONNECTION_TIMEOUT                                        int64  = 60
 	DEFAULT_REALM_NAME                                                     string = "NexusAuthorizingRealm"
@@ -96,6 +113,11 @@ const (
 	WRITE_POLICY_ALLOW                                                     string = "ALLOW"
 	WRITE_POLICY_ALLOW_ONCE                                                string = "ALLOW_ONCE"
 	WRITE_POLICY_DENY                                                      string = "DENY"
+	SECURITY_USER_TOKEN_DEFAULT_ENABLED                                    bool   = false
+	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS                            int32  = 1
+	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED                         bool   = false
+	SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT                            bool   = false
+	ERROR_MESSAGE_UNAUTHORIZED                                             string = "Your user is unauthorized to access this resource or feature."
 )
 
 func NewFalse() *bool {
