@@ -33,6 +33,11 @@ It is helpful when submitting Pull Requests to confirm whether you have been abl
 
 Some Acceptance Tests cannot be run in parallel against a single Sonatype Nexus Repository Manager. These are isolated and only run when `TF_ACC_SINGLE_HIT=1` is also set.
 
+## Standardised Development Patterns
+
+- **Context Management**: See [Centralized API Context Management](./contributing/CONTEXT_MANAGEMENT.md)
+- **Error Handling**: See [Centralized Error Handling](./contributing/ERROR_HANDLING.md)
+
 ## Sign off your commits
 
 Please sign off your commits, to show that you agree to publish your changes under the current terms and licenses of the project, and to indicate agreement with [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
