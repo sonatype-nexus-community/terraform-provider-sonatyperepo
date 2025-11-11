@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -142,42 +140,6 @@ func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Hosted repository
-func (f *YumRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to YUM Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.YumHostedApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a YUM Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // PROXY YUM Format Functions
 // --------------------------------------------
@@ -254,42 +216,6 @@ func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Proxy repository
-func (f *YumRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to YUM Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a YUM Proxy repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GORUP YUM Format Functions
 // --------------------------------------------
@@ -364,42 +290,6 @@ func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a YUM Group repository
-func (f *YumRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to YUM Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a YUM Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Normalize format strings for comparison (lowercase, remove underscores and hyphens)
-	normalizeFormat := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, "-", "")
-		return s
-	}
-	actualFormat := normalizeFormat(*apiRepo.Format)
-	expectedFormatNorm := normalizeFormat(expectedFormat)
-	if actualFormat != expectedFormatNorm {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------

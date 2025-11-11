@@ -114,7 +114,7 @@ func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRe
 	} else {
 		// Set default values when API doesn't provide replication data
 		m.Replication = &RepositoryReplicationModel{
-			PreemptivePullEnabled: types.BoolValue(false),
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
 			AssetPathRegex:        types.StringNull(),
 		}
 	}
