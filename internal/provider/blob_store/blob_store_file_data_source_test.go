@@ -18,6 +18,7 @@ package blob_store_test
 
 import (
 	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -42,7 +43,7 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
 					name = "this-will-not-exist"
 				}`,
-				ExpectError: regexp.MustCompile("Error: Unable to Read Blob Stores"),
+				ExpectError: regexp.MustCompile("Error: " + common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE),
 			},
 		},
 	})

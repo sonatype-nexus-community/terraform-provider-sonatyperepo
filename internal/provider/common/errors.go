@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package blob_store
+package common
 
-// Blob Store Types.
 const (
-	BLOB_STORE_TYPE_FILE         string = "file"
-	BLOB_STORE_TYPE_S3           string = "s3"
-	BLOB_STORE_TYPE_GOOGLE_CLOUD string = "gc_storage"
+	ERROR_UNABLE_TO_READ_BLOB_STORE_FILE string = "Unable to read blob store file"
 )
