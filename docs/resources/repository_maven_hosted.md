@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_maven_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted MAVEN Repositories
+  Manage Hosted MAVEN2 Repositories
 ---
 
 # sonatyperepo_repository_maven_hosted (Resource)
 
-Manage Hosted MAVEN Repositories
+Manage Hosted MAVEN2 Repositories
 
 
 
@@ -66,3 +66,16 @@ Optional:
 Optional:
 
 - `proprietary_components` (Boolean) Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing hosted maven repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_maven_hosted.example REPOSITORY_NAME
+```

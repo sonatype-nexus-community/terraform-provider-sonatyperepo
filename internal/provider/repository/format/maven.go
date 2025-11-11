@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -60,7 +58,8 @@ func (f *MavenRepositoryFormat) GetKey() string {
 }
 
 func (f *MavenRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	// Override to use "maven" instead of "maven2" for resource names
+	return getResourceName("maven", repoType)
 }
 
 // --------------------------------------------
@@ -92,6 +91,16 @@ func (f *MavenRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 
 	// Call API to Create
 	return apiClient.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+// DoImportRequest implements the import functionality for Maven Hosted repositories
+func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 func (f *MavenRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
@@ -126,48 +135,6 @@ func (f *MavenRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any
 	return stateModel
 }
 
-// DoImportRequest implements the import functionality for Maven Hosted repositories
-func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenHostedRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a Maven Hosted repository
-func (f *MavenRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Maven Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.MavenHostedApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Maven Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	// Note: Maven repositories may return "maven2" from the API
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	// Accept both "maven" and "maven2" as valid Maven formats
-	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // PROXY Maven Format Functions
 // --------------------------------------------
@@ -197,6 +164,16 @@ func (f *MavenRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 
 	// Call API to Create
 	return apiClient.RepositoryManagementAPI.UpdateMavenProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+// DoImportRequest implements the import functionality for Maven Proxy repositories
+func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 func (f *MavenRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
@@ -231,49 +208,6 @@ func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
-// DoImportRequest implements the import functionality for Maven Proxy repositories
-func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a Maven Proxy repository
-func (f *MavenRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Maven Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.MavenProxyApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Maven Proxy repository")
-	}
-
-	// Validate format (case-insensitive)
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	// Note: Maven repositories may return "maven2" from the API
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	// Accept both "maven" and "maven2" as valid Maven formats
-	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 // --------------------------------------------
 // GROUP Maven Format Functions
 // --------------------------------------------
@@ -305,6 +239,16 @@ func (f *MavenRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateMavenGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for Maven Group repositories
+func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	return getCommonGroupSchemaAttributes(false)
 }
@@ -333,48 +277,6 @@ func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
-}
-
-// DoImportRequest implements the import functionality for Maven Group repositories
-func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenGroupRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a Maven Group repository
-func (f *MavenRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Maven Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiGroupRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Maven Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	// Note: Maven repositories may return "maven2" from the API
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	// Accept both "maven" and "maven2" as valid Maven formats
-	if actualFormat != expectedFormatLower && actualFormat != "maven2" && expectedFormatLower != "maven2" {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }
 
 // --------------------------------------------
