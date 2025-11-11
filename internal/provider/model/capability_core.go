@@ -142,3 +142,43 @@ func (m *CapabilityCoreOutreachModel) ToApiUpdateModel(version common.SystemVers
 	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
 	return api
 }
+
+// Properties for Core: Storage Settings
+// ----------------------------------------
+type CapabilityPropertiesCoreStorageSettings struct {
+	LastDownloadedInterval types.Int32 `tfsdk:"last_downloaded_interval" nxrm:"lastDownloadedInterval"`
+}
+
+func (p *CapabilityPropertiesCoreStorageSettings) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	return StructToMap(p)
+}
+
+// Capability: Core: Storage Settings
+// ----------------------------------------
+type CapabilityCoreStorageSettingsModel struct {
+	BaseCapabilityModel
+	Properties *CapabilityPropertiesCoreStorageSettings `tfsdk:"properties"`
+}
+
+func (m *CapabilityCoreStorageSettingsModel) FromApiModel(api *v3.CapabilityDTO) {
+	m.Id = types.StringValue(*api.Id)
+	m.Notes = types.StringValue(*api.Notes)
+	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Properties = &CapabilityPropertiesCoreStorageSettings{}
+	m.Properties.LastDownloadedInterval = types.Int32Value(
+		ParseInt32((*api.Properties)["lastDownloadedInterval"], common.CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL),
+	)
+}
+
+func (m *CapabilityCoreStorageSettingsModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiCreateModel()
+	api.Type = common.CAPABILITY_TYPE_CORE_STORAGE_SETTINGS.StringPointer()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}
+
+func (m *CapabilityCoreStorageSettingsModel) ToApiUpdateModel(version common.SystemVersion) *v3.CapabilityDTO {
+	api := m.toApiUpdateModel()
+	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	return api
+}

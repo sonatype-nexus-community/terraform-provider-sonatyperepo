@@ -36,6 +36,13 @@ func NewCapabilityCoreBaseUrlResource() resource.Resource {
 	}
 }
 
+// NewCapabilityCoreStorageSettingsResource is a helper function to simplify the provider implementation.
+func NewCapabilityCoreStorageSettingsResource() resource.Resource {
+	return &capabilityResource{
+		CapabilityType: capabilitytype.NewCoreStorageSettingsCapability(),
+	}
+}
+
 // NewCapabilityCustomS3RegionsResource is a helper function to simplify the provider implementation.
 func NewCapabilityCustomS3RegionsResource() resource.Resource {
 	return &capabilityResource{

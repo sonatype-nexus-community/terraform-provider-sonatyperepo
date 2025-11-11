@@ -22,6 +22,7 @@ const (
 	resourceDefaultRole             string = "sonatyperepo_capability_default_role"
 	resourceFirewallAuditQuarantine string = "sonatyperepo_capability_firewall_audit_and_quarantine"
 	resourceSecurityRutAuth         string = "sonatyperepo_capability_rut_auth"
+	resourceStorageSettings         string = "sonatyperepo_capability_storage_settings"
 	resourceUiBranding              string = "sonatyperepo_capability_ui_branding"
 	resourceUiSettings              string = "sonatyperepo_capability_ui_settings"
 	resourceWebhookGlobal           string = "sonatyperepo_capability_webhook_global"
