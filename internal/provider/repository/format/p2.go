@@ -18,9 +18,7 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -124,34 +122,4 @@ func (f *P2RepositoryFormatProxy) DoImportRequest(repositoryName string, apiClie
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// ValidateRepositoryForImport validates that the imported repository is indeed a P2 Proxy repository
-func (f *P2RepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to P2 Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.SimpleApiProxyRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a P2 Proxy repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Case-insensitive format comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
 }

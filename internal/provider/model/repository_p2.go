@@ -17,6 +17,8 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -53,7 +55,7 @@ func (m *RepositoryP2ProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRep
 	} else {
 		// Set default values when API doesn't provide replication data
 		m.Replication = &RepositoryReplicationModel{
-			PreemptivePullEnabled: types.BoolValue(false),
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
 			AssetPathRegex:        types.StringNull(),
 		}
 	}
