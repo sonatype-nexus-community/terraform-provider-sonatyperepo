@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
@@ -50,6 +51,14 @@ func (rt RepositoryType) String() string {
 	return "unknown"
 }
 
+// Error message constants for repository validation during import
+const (
+	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
+	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
+	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
+	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
+)
+
 // BaseRepositoryFormat that all formats build from
 // --------------------------------------------
 type BaseRepositoryFormat struct{}
@@ -76,9 +85,41 @@ func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient 
 }
 
 // ValidateRepositoryForImport validates that the repository matches the expected format and type
+// This base implementation uses reflection to extract Format and Type fields from the API repository struct
 func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// This is a base implementation that can be overridden by specific formats
-	// Each format should implement its own validation logic
+	// Use reflection to get Format and Type fields from the repository data
+	v := reflect.ValueOf(repositoryData)
+
+	// Get Format field
+	formatField := v.FieldByName("Format")
+	if !formatField.IsValid() || formatField.IsNil() {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+
+	// Extract the string value from the *string
+	formatPtr := formatField.Interface().(*string)
+	actualFormat := strings.ToLower(*formatPtr)
+	expectedFormatLower := strings.ToLower(expectedFormat)
+
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, *formatPtr, expectedFormat)
+	}
+
+	// Get Type field
+	typeField := v.FieldByName("Type")
+	if !typeField.IsValid() || typeField.IsNil() {
+		expectedTypeStr := expectedType.String()
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+
+	// Extract the string value from the *string
+	typePtr := typeField.Interface().(*string)
+	expectedTypeStr := expectedType.String()
+
+	if *typePtr != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, *typePtr, expectedTypeStr)
+	}
+
 	return nil
 }
 

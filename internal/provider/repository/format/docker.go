@@ -18,10 +18,8 @@ package format
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
-	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
@@ -42,14 +40,7 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-const (
-	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
-	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
-	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
-	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
-)
-
-type DockerRepositoryFormat struct {
+type DockerRepositoryFormat struct{
 	BaseRepositoryFormat
 }
 
@@ -117,36 +108,6 @@ func (f *DockerRepositoryFormatHosted) DoImportRequest(repositoryName string, ap
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Docker Hosted repository
-func (f *DockerRepositoryFormatHosted) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Docker Hosted API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.DockerHostedApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Docker Hosted repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 func (f *DockerRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
@@ -170,7 +131,11 @@ func (f *DockerRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *DockerRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryDockerHostedModel)
+	var stateModel model.RepositoryDockerHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.DockerHostedApiRepository))
 	return stateModel
 }
@@ -226,37 +191,6 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Docker Proxy repository
-func (f *DockerRepositoryFormatProxy) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Docker Proxy API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.DockerProxyApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Docker Proxy repository")
-	}
-
-	// Validate format (case-insensitive)
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
@@ -281,7 +215,11 @@ func (f *DockerRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryDockerProxyModel)
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.DockerProxyApiRepository))
 	return stateModel
 }
@@ -337,36 +275,6 @@ func (f *DockerRepositoryFormatGroup) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-// ValidateRepositoryForImport validates that the imported repository is indeed a Docker Group repository
-func (f *DockerRepositoryFormatGroup) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// Cast to Docker Group API Repository
-	apiRepo, ok := repositoryData.(sonatyperepo.DockerGroupApiRepository)
-	if !ok {
-		return fmt.Errorf("repository data is not a Docker Group repository")
-	}
-
-	if apiRepo.Format == nil {
-		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
-	}
-	// Convert both to lowercase for comparison
-	actualFormat := strings.ToLower(*apiRepo.Format)
-	expectedFormatLower := strings.ToLower(expectedFormat)
-	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *apiRepo.Format, expectedFormat)
-	}
-
-	// Validate type
-	expectedTypeStr := expectedType.String()
-	if apiRepo.Type == nil {
-		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
-	}
-	if *apiRepo.Type != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *apiRepo.Type, expectedTypeStr)
-	}
-
-	return nil
-}
-
 func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonGroupSchemaAttributes(true)
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
@@ -390,7 +298,11 @@ func (f *DockerRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *DockerRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryDockerroupModel)
+	var stateModel model.RepositoryDockerroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.DockerGroupApiRepository))
 	return stateModel
 }
