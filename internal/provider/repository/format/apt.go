@@ -87,6 +87,16 @@ func (f *AptRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateAptHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Hosted repositories
+func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getAptSchemaAttributes(false))
@@ -110,8 +120,27 @@ func (f *AptRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryAptHostedModel)
+	var stateModel model.RepositoryAptHostedModel
+	var preserveAptSigning bool
+	var existingKeyPair types.String
+	var existingPassphrase types.String
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryAptHostedModel)
+		// Check if apt_signing was in the plan/state (either field is not null)
+		preserveAptSigning = stateModel.AptSigning != nil && (!stateModel.AptSigning.KeyPair.IsNull() || !stateModel.AptSigning.Passphrase.IsNull())
+		if preserveAptSigning {
+			// Preserve apt_signing values (API doesn't return sensitive passphrase)
+			existingKeyPair = stateModel.AptSigning.KeyPair
+			existingPassphrase = stateModel.AptSigning.Passphrase
+		}
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.AptHostedApiRepository))
+	// Restore apt_signing from plan/state if it was provided (API doesn't return sensitive passphrase)
+	if preserveAptSigning {
+		stateModel.AptSigning.KeyPair = existingKeyPair
+		stateModel.AptSigning.Passphrase = existingPassphrase
+	}
 	return stateModel
 }
 
@@ -146,6 +175,16 @@ func (f *AptRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateAptProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Proxy repositories
+func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *AptRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getAptSchemaAttributes(true))
@@ -169,7 +208,11 @@ func (f *AptRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *AptRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryAptProxyModel)
+	var stateModel model.RepositoryAptProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryAptProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.AptProxyApiRepository))
 	return stateModel
 }
