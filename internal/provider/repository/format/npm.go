@@ -76,6 +76,9 @@ func (f *NpmRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -113,9 +116,23 @@ func (f *NpmRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *NpmRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryNpmHostedModel)
+	var stateModel model.RepositoryNpmHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for NPM Hosted repositories
+func (f *NpmRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -133,8 +150,14 @@ func (f *NpmRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyper
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryNpmProxyModel)
 
+	// Get the repository name
+	repoName := stateModel.Name.ValueString()
+
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repoName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -172,9 +195,23 @@ func (f *NpmRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryNpmProxyModel)
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.NpmProxyApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for NPM Proxy repositories
+func (f *NpmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -194,6 +231,9 @@ func (f *NpmRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -229,9 +269,23 @@ func (f *NpmRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *NpmRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryNpmGroupModel)
+	var stateModel model.RepositoryNpmGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupDeployRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for NPM Group repositories
+func (f *NpmRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
