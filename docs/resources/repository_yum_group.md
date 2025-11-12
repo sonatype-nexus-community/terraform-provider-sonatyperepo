@@ -64,3 +64,16 @@ Optional:
 
 - `key_pair` (String) PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)
 - `passphrase` (String, Sensitive) Passphrase to access PGP signing key
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing group yum repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_yum_group.example REPOSITORY_NAME
+```
