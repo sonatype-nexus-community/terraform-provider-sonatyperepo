@@ -4,6 +4,7 @@
 
 ENHANCEMENTS:
 * `sonatyperepo_repository_apt_*` resources now support import [GH-146] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_conda_*` resources now support import [GH-147] (thanks @yfougeray-euphoria)
 * `sonatyperepo_repository_maven_*` resources now support import [GH-138] (thanks @yfougeray-euphoria)
 
 
