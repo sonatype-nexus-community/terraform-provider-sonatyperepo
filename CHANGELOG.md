@@ -11,6 +11,7 @@ ENHANCEMENTS:
 * `sonatyperepo_repository_npm_*` resources now support import [GH-139] (thanks @yfougeray-euphoria)
 * `sonatyperepo_repository_nuget_*` resources now support import [GH-140] (thanks @yfougeray-euphoria)
 * `sonatyperepo_repository_p2_proxy` resource now support import [GH-150] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_pypi_*` resources now support import [GH-141] (thanks @yfougeray-euphoria)
 
 ## 0.11.1 November 11, 2025
 
