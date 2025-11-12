@@ -58,7 +58,8 @@ func (f *MavenRepositoryFormat) GetKey() string {
 }
 
 func (f *MavenRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	// Override to use "maven" instead of "maven2" for resource names
+	return getResourceName("maven", repoType)
 }
 
 // --------------------------------------------
@@ -92,6 +93,16 @@ func (f *MavenRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateMavenHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for Maven Hosted repositories
+func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *MavenRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
@@ -115,7 +126,11 @@ func (f *MavenRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *MavenRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryMavenHostedModel)
+	var stateModel model.RepositoryMavenHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.MavenHostedApiRepository))
 	return stateModel
 }
@@ -151,6 +166,16 @@ func (f *MavenRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateMavenProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for Maven Proxy repositories
+func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *MavenRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
@@ -174,7 +199,11 @@ func (f *MavenRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryMavenProxyModel)
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.MavenProxyApiRepository))
 	return stateModel
 }
@@ -210,6 +239,16 @@ func (f *MavenRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateMavenGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for Maven Group repositories
+func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetMavenGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
 	return getCommonGroupSchemaAttributes(false)
 }
@@ -231,7 +270,11 @@ func (f *MavenRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryMavenGroupModel)
+	var stateModel model.RepositoryMavenGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
 }
