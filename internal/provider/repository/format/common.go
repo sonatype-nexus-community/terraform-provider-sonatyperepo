@@ -92,32 +92,50 @@ func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, e
 
 	// Get Format field
 	formatField := v.FieldByName("Format")
-	if !formatField.IsValid() || formatField.IsNil() {
+	if !formatField.IsValid() {
 		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
 	}
 
-	// Extract the string value from the *string
-	formatPtr := formatField.Interface().(*string)
-	actualFormat := strings.ToLower(*formatPtr)
-	expectedFormatLower := strings.ToLower(expectedFormat)
+	// Handle both *string and string types
+	var actualFormat string
+	if formatField.Kind() == reflect.Ptr {
+		if formatField.IsNil() {
+			return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+		}
+		formatPtr := formatField.Interface().(*string)
+		actualFormat = strings.ToLower(*formatPtr)
+	} else {
+		actualFormat = strings.ToLower(formatField.Interface().(string))
+	}
 
+	expectedFormatLower := strings.ToLower(expectedFormat)
 	if actualFormat != expectedFormatLower {
-		return fmt.Errorf(errRepositoryFormatMismatch, *formatPtr, expectedFormat)
+		return fmt.Errorf(errRepositoryFormatMismatch, actualFormat, expectedFormat)
 	}
 
 	// Get Type field
 	typeField := v.FieldByName("Type")
-	if !typeField.IsValid() || typeField.IsNil() {
+	if !typeField.IsValid() {
 		expectedTypeStr := expectedType.String()
 		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
 	}
 
-	// Extract the string value from the *string
-	typePtr := typeField.Interface().(*string)
-	expectedTypeStr := expectedType.String()
+	// Handle both *string and string types
+	var actualType string
+	if typeField.Kind() == reflect.Ptr {
+		if typeField.IsNil() {
+			expectedTypeStr := expectedType.String()
+			return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+		}
+		typePtr := typeField.Interface().(*string)
+		actualType = *typePtr
+	} else {
+		actualType = typeField.Interface().(string)
+	}
 
-	if *typePtr != expectedTypeStr {
-		return fmt.Errorf(errRepositoryTypeMismatch, *typePtr, expectedTypeStr)
+	expectedTypeStr := expectedType.String()
+	if actualType != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, actualType, expectedTypeStr)
 	}
 
 	return nil
