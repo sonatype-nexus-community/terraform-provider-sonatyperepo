@@ -2,7 +2,9 @@
 
 ## X.Y.Z (UNRELEASED)
 
-_TBC_
+ENHANCEMENTS:
+* `sonatyperepo_repository_maven_*` resources now support import [GH-138] (thanks @yfougeray-euphoria)
+
 
 ## 0.11.1 November 11, 2025
 
