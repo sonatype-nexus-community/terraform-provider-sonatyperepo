@@ -103,6 +103,10 @@ func (f *CondaRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 
 func (f *CondaRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	var stateModel model.RepositoryCondaProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCondaProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
 }
