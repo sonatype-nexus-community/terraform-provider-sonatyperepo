@@ -67,6 +67,9 @@ func (f *P2RepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatypere
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetP2ProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -102,7 +105,21 @@ func (f *P2RepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *P2RepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryP2ProxyModel)
+	var stateModel model.RepositoryP2ProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryP2ProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for P2 Proxy repositories
+func (f *P2RepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetP2ProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }

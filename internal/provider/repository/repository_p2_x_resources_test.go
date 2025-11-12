@@ -106,3 +106,55 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+func TestAccRepositoryP2ProxyImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_p2_proxy"
+	resourceName := fmt.Sprintf("%s.repo", resourceType)
+	repoName := fmt.Sprintf("p2-proxy-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://download.eclipse.org/releases/2025-06"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceType, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}

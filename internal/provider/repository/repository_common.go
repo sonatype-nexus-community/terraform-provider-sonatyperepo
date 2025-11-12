@@ -381,7 +381,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Repository '%s' not found", repositoryName),
-				fmt.Sprintf("The %s %s repository '%s' does not exist or you do not have permission to access it.", 
+				fmt.Sprintf("The %s %s repository '%s' does not exist or you do not have permission to access it.",
 					r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
 			)
 		} else {
@@ -408,7 +408,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	// UpdateStateFromApi expects an empty instance of the proper model type and returns a populated one
 	// Pass nil as the first parameter - UpdateStateFromApi will create the proper model type
 	stateModel := r.RepositoryFormat.UpdateStateFromApi(nil, apiResponse)
-	
+
 	// Update plan for state (sets last_updated timestamp)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
