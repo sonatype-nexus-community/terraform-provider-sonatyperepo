@@ -192,7 +192,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Fetch cleanup policy from API
 	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
@@ -249,7 +249,7 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Build request payload and make API call
 	requestPayload := buildRequestPayload(plan)

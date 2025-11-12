@@ -173,7 +173,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Fetch routing rule from API
 	routingRule, httpResponse, err := r.Client.RoutingRulesAPI.GetRoutingRule(ctx, state.Name.ValueString()).Execute()
@@ -223,7 +223,7 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Build request payload and make API call
 	requestPayload := sonatyperepo.RoutingRuleXO{}

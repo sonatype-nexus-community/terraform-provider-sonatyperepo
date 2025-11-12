@@ -97,7 +97,7 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 // For security realms, we use a static ID since this is a singleton resource.
 func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Read current configuration from the API
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
@@ -220,7 +220,7 @@ func (r *securityRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.GetAuthContext(ctx)
 
 	// Read API Call - GetActiveRealms returns []string directly
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()

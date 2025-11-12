@@ -28,8 +28,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -107,11 +105,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.GetAuthContext(ctx)
 
 	if data.Name.IsNull() {
 		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")

@@ -77,11 +77,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.GetAuthContext(ctx)
 
 	// Make API requet
 	capabilityCreateResponse, httpResponse, err := c.CapabilityType.DoCreateRequest(plan, c.Client, ctx, c.NxrmVersion)
@@ -124,11 +120,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.GetAuthContext(ctx)
 
 	// Make API Request
 	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
@@ -186,11 +178,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.GetAuthContext(ctx)
 
 	// Make API requet
 	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
@@ -274,11 +262,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.GetAuthContext(ctx)
 
 	// Make API request
 	capabilityId, shouldReturn := getCapabilityIdFromState(state, &resp.Diagnostics)
@@ -336,12 +320,8 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context.Context) (*v3.CapabilityDTO, *http.Response, error) {
-	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	// Ensure API Context has authentication
+	ctx = c.GetAuthContext(ctx)
 
 	// Make API Request
 	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List(ctx).Execute()

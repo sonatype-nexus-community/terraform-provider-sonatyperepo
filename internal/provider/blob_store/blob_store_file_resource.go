@@ -99,11 +99,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	request_payload := sonatyperepo.FileBlobStoreApiCreateRequest{
 		Name: plan.Name.ValueStringPointer(),
@@ -159,11 +155,7 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	// Read API Call
 	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
@@ -224,11 +216,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	// Update API Call
 	request_payload := sonatyperepo.FileBlobStoreApiUpdateRequest{

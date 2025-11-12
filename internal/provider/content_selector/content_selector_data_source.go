@@ -27,8 +27,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -94,11 +92,7 @@ func (d *contentSelectorDataSource) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.GetAuthContext(ctx)
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelector(ctx, data.Name.ValueString()).Execute()
 
