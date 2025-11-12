@@ -171,3 +171,153 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+func TestAccRepositoryNugetHostedImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_nuget_hosted"
+	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
+	repoName := fmt.Sprintf("nuget-hosted-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+    write_policy = "ALLOW_ONCE"
+  }
+}
+`, resourceType, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
+
+func TestAccRepositoryNugetProxyImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_nuget_proxy"
+	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
+	repoName := fmt.Sprintf("nuget-proxy-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://api.nuget.org/v3/index.json"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+  nuget_proxy = {
+    nuget_version = "V2"
+  }
+}
+`, resourceType, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
+
+func TestAccRepositoryNugetGroupImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_nuget_group"
+	resourceTypeHosted := "sonatyperepo_repository_nuget_hosted"
+	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
+	repoName := fmt.Sprintf("nuget-group-import-%s", randomString)
+	memberName := fmt.Sprintf("nuget-hosted-member-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "member" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+    write_policy = "ALLOW"
+  }
+}
+
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  group = {
+    member_names = ["%s"]
+  }
+  depends_on = [%s.member]
+}
+`, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
