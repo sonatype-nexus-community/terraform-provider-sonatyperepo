@@ -99,7 +99,7 @@ const (
 	REPO_FORMAT_PYPI                                                       string = "PYPI"
 	REPO_FORMAT_RAW                                                        string = "RAW"
 	REPO_FORMAT_R                                                          string = "R"
-	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBY_GEMS"
+	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBYGEMS"
 	REPO_FORMAT_YUM                                                        string = "YUM"
 	TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET                        int32  = 24
 	TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE                        int32  = 24

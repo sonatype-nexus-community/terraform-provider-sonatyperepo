@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_ruby_gems_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy RUBY_GEMS Repositories
+  Manage Proxy RUBYGEMS Repositories
 ---
 
 # sonatyperepo_repository_ruby_gems_proxy (Resource)
 
-Manage Proxy RUBY_GEMS Repositories
+Manage Proxy RUBYGEMS Repositories
 
 
 
@@ -122,3 +122,16 @@ Required:
 Optional:
 
 - `asset_path_regex` (String) Regular Expression of Asset Paths to pull pre-emptively pull
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing proxy ruby gems repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_ruby_gems_proxy.example REPOSITORY_NAME
+```
