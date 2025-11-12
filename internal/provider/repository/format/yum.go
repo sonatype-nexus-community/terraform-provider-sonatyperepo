@@ -81,6 +81,9 @@ func (f *YumRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -118,9 +121,23 @@ func (f *YumRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumHostedModel)
+	var stateModel model.RepositoryYumHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.YumHostedApiRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Hosted repositories
+func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -140,6 +157,9 @@ func (f *YumRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -177,9 +197,23 @@ func (f *YumRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumProxyModel)
+	var stateModel model.RepositoryYumProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Proxy repositories
+func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -199,6 +233,9 @@ func (f *YumRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -236,9 +273,23 @@ func (f *YumRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryYumGroupModel)
+	var stateModel model.RepositoryYumGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for YUM Group repositories
+func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
