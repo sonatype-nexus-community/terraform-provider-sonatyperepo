@@ -28,8 +28,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -107,22 +105,20 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.GetAuthContext(ctx)
 
 	if data.Name.IsNull() {
 		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")
 		return
 	}
 
-	blobStore, _, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	blobStore, httpResponse, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Blob Stores",
-			err.Error(),
+		common.HandleApiError(
+			common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE,
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

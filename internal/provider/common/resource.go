@@ -98,3 +98,8 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.NxrmVersion = config.NxrmVersion
 	r.NxrmWritable = config.NxrmWritable
 }
+
+// GetAuthContext returns a new context with authentication set up for API calls
+func (r *BaseResource) GetAuthContext(ctx context.Context) context.Context {
+	return WithAuth(ctx, r.Auth)
+}

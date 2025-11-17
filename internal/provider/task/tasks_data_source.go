@@ -94,9 +94,11 @@ func (d *tasksDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	tasksResponse, httpResponse, err := d.Client.TasksAPI.GetTasks(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Tasks",
-			fmt.Sprintf("Unable to read Tasks: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		common.HandleApiError(
+			"Unable to list tasks",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

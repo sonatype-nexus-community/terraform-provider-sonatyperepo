@@ -264,9 +264,11 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
+		common.HandleApiError(
 			fmt.Sprintf("Unexpected response when deleting %s Privilege", r.PrivilegeTypeType.String()),
-			fmt.Sprintf("Error response: %s", httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

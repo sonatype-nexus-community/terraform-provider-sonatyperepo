@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -100,11 +99,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	request_payload := sonatyperepo.FileBlobStoreApiCreateRequest{
 		Name: plan.Name.ValueStringPointer(),
@@ -122,28 +117,30 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		error_body, _ := io.ReadAll(api_response.Body)
-		resp.Diagnostics.AddError(
-			"Error creating Blob Store File",
-			"Could not create Blob Store File, unexpected error: "+api_response.Status+": "+string(error_body),
-		)
-		return
-	}
+	common.HandleApiError(
+	 "Error creating Blob Store File",
+	&err,
+	api_response,
+	 &resp.Diagnostics,
+	)
+	 return
+ 	}
 
-	if api_response.StatusCode == http.StatusNoContent {
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-		diags := resp.State.Set(ctx, plan)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
-		resp.Diagnostics.AddError(
-			"Failed to create Blob Store File",
-			fmt.Sprintf("Unable to create Blob Store File: %d: %s", api_response.StatusCode, api_response.Status),
-		)
-		return
-	}
+ 	if api_response.StatusCode == http.StatusNoContent {
+ 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+ 	diags := resp.State.Set(ctx, plan)
+ 	resp.Diagnostics.Append(diags...)
+ 	if resp.Diagnostics.HasError() {
+ 	return
+ 	}
+ 	} else {
+ 	common.HandleApiError(
+ 	"Creation of Blob Store File was not successful",
+ 	&err,
+ 	 api_response,
+ 	 &resp.Diagnostics,
+ 	 )
+ 	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -158,11 +155,7 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	// Read API Call
 	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
@@ -170,10 +163,18 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
+			common.HandleApiWarning(
+				"Blob Store File to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Blob Store File",
-				fmt.Sprintf("Unable to read Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiError(
+				"Error reading Blob Store File",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -215,11 +216,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.GetAuthContext(ctx)
 
 	// Update API Call
 	request_payload := sonatyperepo.FileBlobStoreApiUpdateRequest{
@@ -240,14 +237,18 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"Blob Store File to update did not exist",
-				fmt.Sprintf("Unable to update Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Updating Blob Store File",
-				fmt.Sprintf("Unable to update Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			common.HandleApiError(
+				"Error updating Blob Store File",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

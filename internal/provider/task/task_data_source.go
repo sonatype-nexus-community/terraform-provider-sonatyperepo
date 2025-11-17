@@ -105,14 +105,18 @@ func (d *taskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state := model.TaskModelSimple{}
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning(
+			common.HandleApiWarning(
 				"No Task with supplied ID",
-				fmt.Sprintf("No Task with supplied ID: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			common.HandleApiError(
 				"Error finding Task",
-				fmt.Sprintf("Error finding Task: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 			return
 		}
