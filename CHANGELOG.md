@@ -4,8 +4,31 @@
 
 _TBC_
 
+## 0.12.0 November 14, 2025
+
+ENHANCEMENTS:
+* `sonatyperepo_repository_apt_*` resources now support import [GH-146] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_conda_*` resources now support import [GH-147] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_go_*` resources now support import [GH-148] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_helm_*` resources now support import [GH-145] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_huggingface_proxy` resource now support import [GH-149] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_maven_*` resources now support import [GH-138] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_npm_*` resources now support import [GH-139] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_nuget_*` resources now support import [GH-140] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_p2_proxy` resource now support import [GH-150] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_pypi_*` resources now support import [GH-141] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_raw_*` resources now support import [GH-142] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_rubygems_*` resources now support import [GH-143] (thanks @yfougeray-euphoria)
+* `sonatyperepo_repository_yum_*` resources now support import [GH-144] (thanks @yfougeray-euphoria)
+
+## 0.11.1 November 11, 2025
+
+BUG FIXES:
+* Fixed issue with import for `sonatyperepo_repository_*_proxy` resources [GH-153] (thanks @yfougeray-euphoria)
+
 ## 0.11.0 November 11, 2025
 
+FEATURES:
 * **New Data Source:** `sonatyperepo_capabilities` [GH-157]
 * **New Data Source:** `sonatyperepo_routing_rule` [GH-152] (thanks @yfougeray-euphoria)
 * **New Data Source:** `sonatyperepo_routing_rules` [GH-152] (thanks @yfougeray-euphoria)
@@ -28,6 +51,7 @@ _TBC_
 
 ## 0.10.0 November 4, 2025
 
+FEATURES:
 * **New Resource:** `sonatyperepo_task_blobstore_compact` [GH-92]
 * **New Resource:** `sonatyperepo_task_malware_remediator` [GH-92]
 * **New Resource:** `sonatyperepo_task_repair_create_browse_nodes` [GH-92]

@@ -50,9 +50,15 @@ func (m *RepositoryMavenHostedModel) FromApiModel(api sonatyperepo.MavenHostedAp
 	// Storage
 	m.Storage.MapFromApi(&api.Storage)
 
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
+
 	// Maven Specific
 	m.Maven = repositoryMavenSpecificModel{}
-	m.Maven.mapFromApi(&api.Maven)
+	m.Maven.MapFromApi(&api.Maven)
 }
 
 func (m *RepositoryMavenHostedModel) ToApiCreateModel() sonatyperepo.MavenHostedRepositoryApiRequest {
@@ -72,7 +78,7 @@ func (m *RepositoryMavenHostedModel) ToApiCreateModel() sonatyperepo.MavenHosted
 	m.Component.MapToApi(apiModel.Component)
 
 	// Maven Specific
-	m.Maven.mapToApi(&apiModel.Maven)
+	m.Maven.MapToApi(&apiModel.Maven)
 
 	return apiModel
 }
@@ -108,11 +114,18 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// Maven Specific
-	m.Maven.mapFromApi(&api.Maven)
+	m.Maven.MapFromApi(&api.Maven)
 }
 
 func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
@@ -140,7 +153,7 @@ func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRe
 	}
 
 	// Maven
-	m.Maven.mapToApi(&apiModel.Maven)
+	m.Maven.MapToApi(&apiModel.Maven)
 
 	return apiModel
 }
@@ -149,13 +162,13 @@ func (m *RepositoryMavenProxyModel) ToApiUpdateModel() sonatyperepo.MavenProxyRe
 	return m.ToApiCreateModel()
 }
 
-func (m *repositoryMavenSpecificModel) mapFromApi(api *sonatyperepo.MavenAttributes) {
+func (m *repositoryMavenSpecificModel) MapFromApi(api *sonatyperepo.MavenAttributes) {
 	m.ContentDisposition = types.StringPointerValue(api.ContentDisposition)
 	m.LayoutPolicy = types.StringPointerValue(api.LayoutPolicy)
 	m.VersionPolicy = types.StringPointerValue(api.VersionPolicy)
 }
 
-func (m *repositoryMavenSpecificModel) mapToApi(api *sonatyperepo.MavenAttributes) {
+func (m *repositoryMavenSpecificModel) MapToApi(api *sonatyperepo.MavenAttributes) {
 	api.ContentDisposition = m.ContentDisposition.ValueStringPointer()
 	api.LayoutPolicy = m.LayoutPolicy.ValueStringPointer()
 	api.VersionPolicy = m.VersionPolicy.ValueStringPointer()

@@ -55,7 +55,8 @@ func (f *RubyGemsRepositoryFormat) GetKey() string {
 }
 
 func (f *RubyGemsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	// Override to maintain backward compatibility with resource name containing underscore
+	return getResourceName("ruby_gems", repoType)
 }
 
 // --------------------------------------------
@@ -75,6 +76,9 @@ func (f *RubyGemsRepositoryFormatHosted) DoReadRequest(state any, apiClient *son
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -110,9 +114,23 @@ func (f *RubyGemsRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *RubyGemsRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRubyGemsHostedModel)
+	var stateModel model.RepositoryRubyGemsHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRubyGemsHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for RubyGems Hosted repositories
+func (f *RubyGemsRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -132,6 +150,9 @@ func (f *RubyGemsRepositoryFormatProxy) DoReadRequest(state any, apiClient *sona
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -167,9 +188,23 @@ func (f *RubyGemsRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *RubyGemsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositorRubyGemsProxyModel)
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for RubyGems Proxy repositories
+func (f *RubyGemsRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }
 
 // --------------------------------------------
@@ -189,6 +224,9 @@ func (f *RubyGemsRepositoryFormatGroup) DoReadRequest(state any, apiClient *sona
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -224,7 +262,21 @@ func (f *RubyGemsRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 }
 
 func (f *RubyGemsRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRubyGemsGroupModel)
+	var stateModel model.RepositoryRubyGemsGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRubyGemsGroupModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
+}
+
+// DoImportRequest implements the import functionality for RubyGems Group repositories
+func (f *RubyGemsRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
 }

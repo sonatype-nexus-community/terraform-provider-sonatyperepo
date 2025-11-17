@@ -43,6 +43,7 @@ const (
 	CONTENT_DISPOSITION_INLINE                                             string = "INLINE"
 	DEFAULT_ANONYMOUS_USERNAME                                             string = "anonymous"
 	DEFAULT_BLOB_STORE_NAME                                                string = "default"
+	DEFAULT_PROXY_PREEMPTIVE_PULL                                          bool   = false
 	DEFAULT_HTTP_CONNECTION_RETRIES                                        int64  = 0
 	DEFAULT_HTTP_CONNECTION_TIMEOUT                                        int64  = 60
 	DEFAULT_REALM_NAME                                                     string = "NexusAuthorizingRealm"
@@ -91,14 +92,14 @@ const (
 	REPO_FORMAT_GO                                                         string = "GO"
 	REPO_FORMAT_HELM                                                       string = "HELM"
 	REPO_FORMAT_HUGGING_FACE                                               string = "HUGGINGFACE"
-	REPO_FORMAT_MAVEN                                                      string = "MAVEN"
+	REPO_FORMAT_MAVEN                                                      string = "MAVEN2"
 	REPO_FORMAT_NPM                                                        string = "NPM"
 	REPO_FORMAT_NUGET                                                      string = "NUGET"
 	REPO_FORMAT_P2                                                         string = "P2"
 	REPO_FORMAT_PYPI                                                       string = "PYPI"
 	REPO_FORMAT_RAW                                                        string = "RAW"
 	REPO_FORMAT_R                                                          string = "R"
-	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBY_GEMS"
+	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBYGEMS"
 	REPO_FORMAT_YUM                                                        string = "YUM"
 	TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET                        int32  = 24
 	TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE                        int32  = 24

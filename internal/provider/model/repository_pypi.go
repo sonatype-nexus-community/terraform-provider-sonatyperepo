@@ -30,18 +30,7 @@ type RepositoryPyPiHostedModel struct {
 }
 
 func (m *RepositoryPyPiHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-	m.Name = types.StringPointerValue(api.Name)
-	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
-
-	// Cleanup
-	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = NewRepositoryCleanupModel()
-		mapCleanupFromApi(api.Cleanup, m.Cleanup)
-	}
-
-	// Storage
-	m.Storage.MapFromApi(&api.Storage)
+	m.mapSimpleApiHostedRepository(api)
 }
 
 func (m *RepositoryPyPiHostedModel) ToApiCreateModel() sonatyperepo.PypiHostedRepositoryApiRequest {
@@ -94,10 +83,21 @@ func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRep
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// PyPi
+	// pypi is required for PyPi proxy repositories, so always populate it
+	if m.PyPi == nil {
+		m.PyPi = &ProxyRemoveQuarrantiedModel{}
+	}
 	m.PyPi.MapFromPyPiApi(&api.Pypi)
 }
 

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_ruby_gems_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group RUBY_GEMS Repositories
+  Manage Group RUBYGEMS Repositories
 ---
 
 # sonatyperepo_repository_ruby_gems_group (Resource)
 
-Manage Group RUBY_GEMS Repositories
+Manage Group RUBYGEMS Repositories
 
 
 
@@ -54,3 +54,16 @@ Required:
 Optional:
 
 - `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing group ruby gems repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_ruby_gems_group.example REPOSITORY_NAME
+```

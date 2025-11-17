@@ -54,3 +54,16 @@ Required:
 Optional:
 
 - `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing group nuget repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_nuget_group.example REPOSITORY_NAME
+```

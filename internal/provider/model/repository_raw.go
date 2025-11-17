@@ -48,6 +48,9 @@ func (m *RepositoryRawHostedModel) FromApiModel(api sonatyperepo.RawHostedApiRep
 		m.Component = &RepositoryComponentModel{}
 		m.Component.MapFromApi(api.Component)
 	}
+
+	// Raw Specific
+	m.Raw.MapFromApi(&api.Raw)
 }
 
 func (m *RepositoryRawHostedModel) ToApiCreateModel() sonatyperepo.RawHostedRepositoryApiRequest {
@@ -104,7 +107,14 @@ func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepos
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// Raw Specific

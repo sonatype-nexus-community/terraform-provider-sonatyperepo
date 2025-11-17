@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
@@ -50,6 +51,14 @@ func (rt RepositoryType) String() string {
 	return "unknown"
 }
 
+// Error message constants for repository validation during import
+const (
+	errRepositoryFormatNil      = "repository format is nil, expected '%s'"
+	errRepositoryFormatMismatch = "repository format is '%s', expected '%s'"
+	errRepositoryTypeNil        = "repository type is nil, expected '%s'"
+	errRepositoryTypeMismatch   = "repository type is '%s', expected '%s'"
+)
+
 // BaseRepositoryFormat that all formats build from
 // --------------------------------------------
 type BaseRepositoryFormat struct{}
@@ -76,9 +85,59 @@ func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient 
 }
 
 // ValidateRepositoryForImport validates that the repository matches the expected format and type
+// This base implementation uses reflection to extract Format and Type fields from the API repository struct
 func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
-	// This is a base implementation that can be overridden by specific formats
-	// Each format should implement its own validation logic
+	// Use reflection to get Format and Type fields from the repository data
+	v := reflect.ValueOf(repositoryData)
+
+	// Get Format field
+	formatField := v.FieldByName("Format")
+	if !formatField.IsValid() {
+		return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+	}
+
+	// Handle both *string and string types
+	var actualFormat string
+	if formatField.Kind() == reflect.Ptr {
+		if formatField.IsNil() {
+			return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
+		}
+		formatPtr := formatField.Interface().(*string)
+		actualFormat = strings.ToLower(*formatPtr)
+	} else {
+		actualFormat = strings.ToLower(formatField.Interface().(string))
+	}
+
+	expectedFormatLower := strings.ToLower(expectedFormat)
+	if actualFormat != expectedFormatLower {
+		return fmt.Errorf(errRepositoryFormatMismatch, actualFormat, expectedFormat)
+	}
+
+	// Get Type field
+	typeField := v.FieldByName("Type")
+	if !typeField.IsValid() {
+		expectedTypeStr := expectedType.String()
+		return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+	}
+
+	// Handle both *string and string types
+	var actualType string
+	if typeField.Kind() == reflect.Ptr {
+		if typeField.IsNil() {
+			expectedTypeStr := expectedType.String()
+			return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)
+		}
+		typePtr := typeField.Interface().(*string)
+		actualType = *typePtr
+	} else {
+		actualType = typeField.Interface().(string)
+	}
+
+	expectedTypeStr := expectedType.String()
+	if actualType != expectedTypeStr {
+		return fmt.Errorf(errRepositoryTypeMismatch, actualType, expectedTypeStr)
+	}
+
 	return nil
 }
 
@@ -98,6 +157,9 @@ type RepositoryFormat interface {
 	GetResourceName(repoType RepositoryType) string
 	GetKey() string
 	UpdatePlanForState(plan any) any
+	// UpdateStateFromApi updates the state model from API response data.
+	// IMPORTANT: state parameter may be nil (during import operations).
+	// Implementations MUST check for nil and create a new model instance if needed.
 	UpdateStateFromApi(state any, api any) any
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 }
