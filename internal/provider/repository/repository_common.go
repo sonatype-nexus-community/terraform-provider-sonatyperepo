@@ -19,6 +19,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"maps"
 	"net/http"
 	"reflect"
@@ -102,7 +103,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
@@ -111,7 +112,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
@@ -126,14 +127,14 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -176,14 +177,14 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -224,14 +225,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
 				&err,
 				httpResponse,
@@ -248,14 +249,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -385,7 +386,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 					r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf("Error importing %s %s repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 				&err,
 				httpResponse,

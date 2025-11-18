@@ -19,6 +19,7 @@ package system
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -106,7 +107,7 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error importing User Token settings",
 			&err,
 			httpResponse,
@@ -155,7 +156,7 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating User Token settings",
 			&err,
 			httpResponse,
@@ -195,7 +196,7 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error reading User Token settings",
 			&err,
 			httpResponse,
@@ -237,7 +238,7 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating User Token settings",
 			&err,
 			httpResponse,
@@ -284,7 +285,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error disabling User Token settings",
 			&err,
 			httpResponse,

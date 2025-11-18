@@ -19,6 +19,7 @@ package task
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"reflect"
 	"slices"
@@ -89,7 +90,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating %s Task", t.TaskType.GetType().String()),
 			&err,
 			httpResponse,
@@ -98,7 +99,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	if !slices.Contains(t.TaskType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.GetType().String()),
 			&err,
 			httpResponse,
@@ -141,14 +142,14 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
 				&err,
 				httpResponse,
@@ -211,14 +212,14 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				common.HandleApiWarning(
+				sharederr.HandleAPIWarning(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
-				common.HandleApiError(
+				sharederr.HandleAPIError(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
 					&err,
 					httpResponse,
@@ -228,7 +229,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.GetType().String(), attempts),
 				&err,
 				httpResponse,

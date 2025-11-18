@@ -19,6 +19,7 @@ package system
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -93,7 +94,7 @@ func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req res
 				"Your user is unauthorized to access this resource or feature during import.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error importing Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -154,7 +155,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -172,7 +173,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 			return
 		}
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Update of Anonymous Access settings was not successful",
 			&err,
 			httpResponse,
@@ -209,7 +210,7 @@ func (r *anonymousAccessSystemResource) Read(ctx context.Context, req resource.R
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -263,7 +264,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -328,7 +329,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error removing Anonymous Access settings",
 				&err,
 				httpResponse,

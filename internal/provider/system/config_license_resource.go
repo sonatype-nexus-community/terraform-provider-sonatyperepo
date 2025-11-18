@@ -19,6 +19,7 @@ package system
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"os"
 	"time"
@@ -165,7 +166,7 @@ func (r *systemConfigProductLicenseResource) Read(ctx context.Context, req resou
 	apiResponse, httpResponse, err := r.Client.ProductLicensingAPI.GetLicenseStatus(ctx).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error Reading Product License",
 			&err,
 			httpResponse,
@@ -222,7 +223,7 @@ func (r *systemConfigProductLicenseResource) Delete(ctx context.Context, req res
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error removing Product License",
 			&err,
 			httpResponse,
@@ -273,7 +274,7 @@ func (r *systemConfigProductLicenseResource) updateProductLicense(ctx context.Co
 
 	// Handle Error
 	if err != nil || httpReponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error installing Product License",
 			&err,
 			httpReponse,

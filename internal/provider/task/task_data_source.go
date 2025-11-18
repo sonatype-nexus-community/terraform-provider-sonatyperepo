@@ -19,6 +19,7 @@ package task
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -105,14 +106,14 @@ func (d *taskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state := model.TaskModelSimple{}
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"No Task with supplied ID",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error finding Task",
 				&err,
 				httpResponse,

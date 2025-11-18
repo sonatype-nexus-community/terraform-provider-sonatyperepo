@@ -19,6 +19,7 @@ package content_selector
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -99,7 +100,7 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 	httpResponse, err := r.Client.ContentSelectorsAPI.CreateContentSelector(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating Content Selector",
 			&err,
 			httpResponse,
@@ -107,7 +108,7 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Creation of Content Selector was not successful",
 			&err,
 			httpResponse,
@@ -143,14 +144,14 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Content Selector to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Content Selector",
 				&err,
 				httpResponse,
@@ -192,7 +193,7 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 	httpResponse, err := r.Client.ContentSelectorsAPI.UpdateContentSelector(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating Content Selector",
 			&err,
 			httpResponse,
@@ -200,7 +201,7 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Update of Content Selector was not successful",
 			&err,
 			httpResponse,
@@ -233,7 +234,7 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error removing Content Selector",
 			&err,
 			httpResponse,
@@ -241,7 +242,7 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Removal of Content Selector was not successful",
 			&err,
 			httpResponse,

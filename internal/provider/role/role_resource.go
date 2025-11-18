@@ -19,6 +19,7 @@ package role
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -116,7 +117,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, httpResponse, err := r.Client.SecurityManagementRolesAPI.Create(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating Role",
 			&err,
 			httpResponse,
@@ -124,7 +125,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Creation of Role was not successful",
 			&err,
 			httpResponse,
@@ -164,14 +165,14 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Role to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Role",
 				&err,
 				httpResponse,
@@ -217,7 +218,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	httpResponse, err := r.Client.SecurityManagementRolesAPI.Update(ctx, state.Id.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating Role",
 			&err,
 			httpResponse,
@@ -225,7 +226,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Update of Role was not successful",
 			&err,
 			httpResponse,
@@ -262,7 +263,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error removing Role",
 			&err,
 			httpResponse,
@@ -270,7 +271,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Removal of Role was not successful",
 			&err,
 			httpResponse,

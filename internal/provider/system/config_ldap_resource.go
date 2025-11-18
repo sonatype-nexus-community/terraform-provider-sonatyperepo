@@ -19,6 +19,7 @@ package system
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"time"
 
@@ -303,7 +304,7 @@ func (r *systemConfigLdapResource) Create(ctx context.Context, req resource.Crea
 
 	// Handle Error
 	if err != nil || apiResponse.StatusCode != http.StatusCreated {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating LDAP Connection",
 			&err,
 			apiResponse,
@@ -315,7 +316,7 @@ func (r *systemConfigLdapResource) Create(ctx context.Context, req resource.Crea
 	// Id & Order are not known until Create Request - we need to call GET now to obtain that
 	ldapResonse, httpResponse, err := r.Client.SecurityManagementLDAPAPI.GetLdapServer(ctx, plan.Name.ValueString()).Execute()
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating LDAP Connection - connection may be partially created",
 			&err,
 			apiResponse,
@@ -357,14 +358,14 @@ func (r *systemConfigLdapResource) Read(ctx context.Context, req resource.ReadRe
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"LDAP Connection does not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error Reading LDAP Connection",
 				&err,
 				httpResponse,
@@ -413,7 +414,7 @@ func (r *systemConfigLdapResource) Update(ctx context.Context, req resource.Upda
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating LDAP Connection",
 			&err,
 			httpResponse,
@@ -450,7 +451,7 @@ func (r *systemConfigLdapResource) Delete(ctx context.Context, req resource.Dele
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error removing LDAP Connection",
 			&err,
 			httpResponse,

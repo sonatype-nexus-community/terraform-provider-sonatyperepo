@@ -19,6 +19,7 @@ package privilege
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"maps"
 	"net/http"
 	"reflect"
@@ -90,7 +91,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -99,7 +100,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -140,14 +141,14 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
@@ -189,14 +190,14 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
@@ -247,14 +248,14 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
@@ -264,7 +265,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Unexpected response when deleting %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,

@@ -19,6 +19,7 @@ package blob_store
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -114,7 +115,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	blobStore, httpResponse, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE,
 			&err,
 			httpResponse,

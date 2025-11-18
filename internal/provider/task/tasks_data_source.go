@@ -19,6 +19,7 @@ package task
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -94,7 +95,7 @@ func (d *tasksDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	tasksResponse, httpResponse, err := d.Client.TasksAPI.GetTasks(ctx).Execute()
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Unable to list tasks",
 			&err,
 			httpResponse,

@@ -19,6 +19,7 @@ package blob_store
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"time"
 
@@ -286,38 +287,38 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 
 	// Handle Error
 	if err != nil {
-	common.HandleApiError(
-	 "Error creating S3 Blob Store",
-	&err,
-	apiResponse,
-	 &resp.Diagnostics,
-	)
-	 return
- 	}
+		sharederr.HandleAPIError(
+			"Error creating S3 Blob Store",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
+		)
+		return
+	}
 
 	if apiResponse.StatusCode == http.StatusCreated {
-	// Set LastUpdated
-	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+		// Set LastUpdated
+		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	// Inject some defaults that are not in the API response
-	plan.Type = types.StringValue(BLOB_STORE_TYPE_S3)
-	if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-	plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
-	}
+		// Inject some defaults that are not in the API response
+		plan.Type = types.StringValue(BLOB_STORE_TYPE_S3)
+		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
+			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
+		}
 
-	diags := resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-	return
-	}
+		diags := resp.State.Set(ctx, plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	} else {
-	common.HandleApiError(
-	"Creation of S3 Blob Store was not successful",
-	&err,
-	 apiResponse,
-	 &resp.Diagnostics,
-	 )
- 	}
+		sharederr.HandleAPIError(
+			"Creation of S3 Blob Store was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
+		)
+	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -340,14 +341,14 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"S3 Blob Store to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading S3 Blob Store",
 				&err,
 				httpResponse,
@@ -512,14 +513,14 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		if api_response.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"S3 Blob Store to update did not exist",
 				&err,
 				api_response,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating S3 Blob Store",
 				&err,
 				api_response,

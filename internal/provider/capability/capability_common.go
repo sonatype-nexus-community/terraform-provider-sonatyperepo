@@ -19,6 +19,7 @@ package capability
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"reflect"
 	"slices"
@@ -84,7 +85,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating %s Capability", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -93,7 +94,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	if !slices.Contains(c.CapabilityType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Creation of %s Capability was not successful", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -133,14 +134,14 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
@@ -152,7 +153,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		common.HandleApiWarning(
+		sharederr.HandleAPIWarning(
 			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 			&err,
 			httpResponse,
@@ -191,14 +192,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
@@ -215,14 +216,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
@@ -234,7 +235,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		common.HandleApiWarning(
+		sharederr.HandleAPIWarning(
 			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 			&err,
 			httpResponse,
@@ -287,14 +288,14 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				common.HandleApiWarning(
+				sharederr.HandleAPIWarning(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
-				common.HandleApiError(
+				sharederr.HandleAPIError(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
 					&err,
 					httpResponse,
@@ -304,7 +305,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf("Unexpected response when deleting %s Capability (attempt %d)", c.CapabilityType.GetType().String(), attempts),
 				&err,
 				httpResponse,

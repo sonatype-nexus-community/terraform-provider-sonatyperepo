@@ -19,6 +19,7 @@ package privilege
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -111,7 +112,7 @@ func (d *privilegesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetAllPrivileges(ctx).Execute()
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Unable to list privileges",
 			&err,
 			httpResponse,

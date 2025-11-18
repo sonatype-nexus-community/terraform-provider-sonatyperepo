@@ -19,6 +19,7 @@ package blob_store
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"regexp"
 	"time"
@@ -193,7 +194,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating Google Cloud Storage Blob Store",
 			&err,
 			apiResponse,
@@ -212,7 +213,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Creation of Google Cloud Storage Blob Store was not successful",
 			&err,
 			apiResponse,
@@ -236,14 +237,14 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Google Cloud Storage Blob Store to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Google Cloud Storage Blob Store",
 				&err,
 				httpResponse,
@@ -284,14 +285,14 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 	if err != nil {
 		if apiResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Google Cloud Storage Blob Store to update did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Google Cloud Storage Blob Store",
 				&err,
 				apiResponse,
@@ -450,7 +451,7 @@ func (r *blobStoreGoogleCloudResource) setBucketConfigurationFromResponse(state 
 	} else {
 		state.BucketConfiguration.Bucket.Prefix = types.StringValue("")
 	}
-	
+
 	// Set bucket region if provided
 	if apiResponse.BucketConfiguration.Bucket.Region != nil {
 		state.BucketConfiguration.Bucket.Region = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Region)
@@ -484,7 +485,7 @@ func (r *blobStoreGoogleCloudResource) setAuthenticationFromResponse(state *mode
 	}
 
 	state.BucketConfiguration.Authentication.AuthenticationMethod = types.StringValue(apiResponse.BucketConfiguration.BucketSecurity.AuthenticationMethod)
-	
+
 	// Note: We don't read back the account key for security reasons - it's write-only
 	// The account key will remain in state from the configuration but won't be updated from the API response
 }

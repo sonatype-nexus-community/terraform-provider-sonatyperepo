@@ -19,6 +19,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -110,14 +111,14 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 	state := model.RoutingRuleModel{}
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"No routing rule with supplied name",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error finding routing rule",
 				&err,
 				httpResponse,
@@ -128,7 +129,7 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 	} else if httpResponse.StatusCode == http.StatusOK {
 		state.MapFromApi(routingRuleResponse)
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Unexpected response when reading routing rule",
 			&err,
 			httpResponse,

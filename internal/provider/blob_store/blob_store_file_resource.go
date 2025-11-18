@@ -19,6 +19,7 @@ package blob_store
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"time"
 
@@ -117,30 +118,30 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-	common.HandleApiError(
-	 "Error creating Blob Store File",
-	&err,
-	api_response,
-	 &resp.Diagnostics,
-	)
-	 return
- 	}
+		sharederr.HandleAPIError(
+			"Error creating Blob Store File",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+		return
+	}
 
- 	if api_response.StatusCode == http.StatusNoContent {
- 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
- 	diags := resp.State.Set(ctx, plan)
- 	resp.Diagnostics.Append(diags...)
- 	if resp.Diagnostics.HasError() {
- 	return
- 	}
- 	} else {
- 	common.HandleApiError(
- 	"Creation of Blob Store File was not successful",
- 	&err,
- 	 api_response,
- 	 &resp.Diagnostics,
- 	 )
- 	}
+	if api_response.StatusCode == http.StatusNoContent {
+		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+		diags := resp.State.Set(ctx, plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		sharederr.HandleAPIError(
+			"Creation of Blob Store File was not successful",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -163,14 +164,14 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Blob Store File to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Blob Store File",
 				&err,
 				httpResponse,
@@ -237,14 +238,14 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Blob Store File to update did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Blob Store File",
 				&err,
 				httpResponse,

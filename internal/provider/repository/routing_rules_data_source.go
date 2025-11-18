@@ -19,6 +19,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -101,7 +102,7 @@ func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	routingRulesResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRules(ctx).Execute()
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Unable to list routing rules",
 			&err,
 			httpResponse,

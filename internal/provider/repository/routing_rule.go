@@ -19,6 +19,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"regexp"
 	"time"
@@ -133,7 +134,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating routing rule",
 			&err,
 			apiResponse,
@@ -152,7 +153,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 			return
 		}
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Failed to create routing rule",
 			&err,
 			apiResponse,
@@ -181,7 +182,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 		// Check if this is a 404 error
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule not found",
 				&err,
 				httpResponse,
@@ -190,7 +191,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error reading routing rule",
 			&err,
 			httpResponse,
@@ -234,14 +235,14 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule to update did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating routing rule",
 				&err,
 				apiResponse,
@@ -281,14 +282,14 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			// Resource already deleted, nothing to do
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule to delete did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error deleting routing rule",
 				&err,
 				apiResponse,
@@ -299,7 +300,7 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Failed to delete routing rule",
 			&err,
 			apiResponse,

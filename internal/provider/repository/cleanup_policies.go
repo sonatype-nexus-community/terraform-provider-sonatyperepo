@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"io"
 	"net/http"
 	"regexp"
@@ -153,7 +154,7 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating cleanup policy",
 			&err,
 			apiResponse,
@@ -172,7 +173,7 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Creation of cleanup policy was not successful",
 			&err,
 			apiResponse,
@@ -197,20 +198,20 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 	// Fetch cleanup policy from API
 	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
 	if err != nil {
-	// Check if this is a 404 error by attempting to get the HTTP response
-	httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
-	if httpResponse != nil && httpResponse.StatusCode == 404 {
-	resp.State.RemoveResource(ctx)
-	common.HandleApiWarning(
-	  "Cleanup policy to read did not exist",
+		// Check if this is a 404 error by attempting to get the HTTP response
+		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
+		if httpResponse != nil && httpResponse.StatusCode == 404 {
+			resp.State.RemoveResource(ctx)
+			sharederr.HandleAPIWarning(
+				"Cleanup policy to read did not exist",
 				&err,
-	  httpResponse,
-	 &resp.Diagnostics,
-	)
-	 return
-	}
+				httpResponse,
+				&resp.Diagnostics,
+			)
+			return
+		}
 
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error reading cleanup policy",
 			&err,
 			httpResponse,
@@ -292,14 +293,14 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Cleanup policy to delete did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error deleting cleanup policy",
 				&err,
 				apiResponse,
@@ -310,7 +311,7 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Deletion of cleanup policy was not successful",
 			&err,
 			apiResponse,
@@ -467,14 +468,14 @@ func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name str
 func (r *cleanupPolicyResource) handleUpdateError(resp *resource.UpdateResponse, apiResponse *http.Response, err error) {
 	if apiResponse != nil && apiResponse.StatusCode == 404 {
 		resp.State.RemoveResource(context.Background())
-		common.HandleApiWarning(
+		sharederr.HandleAPIWarning(
 			"Cleanup policy to update did not exist",
 			&err,
 			apiResponse,
 			&resp.Diagnostics,
 		)
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating cleanup policy",
 			&err,
 			apiResponse,

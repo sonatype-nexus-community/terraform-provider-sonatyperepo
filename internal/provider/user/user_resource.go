@@ -19,6 +19,7 @@ package user
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -153,7 +154,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating User: %s", plan.UserId.ValueString()),
 			&err,
 			httpResponse,
@@ -195,14 +196,14 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"User to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading User",
 				&err,
 				httpResponse,
