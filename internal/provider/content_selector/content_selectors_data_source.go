@@ -21,8 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 )
@@ -50,16 +52,16 @@ func (d *contentSelectorsDataSource) Metadata(_ context.Context, req datasource.
 
 // Schema defines the schema for the data source.
 func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Content Selectors",
-		Attributes: map[string]schema.Attribute{
-			"content_selectors": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"content_selectors": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name":        schema.StringAttribute{Description: "The name of the Content Selector.", Computed: true},
-						"description": schema.StringAttribute{Description: "The description of this Content Selector.", Computed: true},
-						"expression":  schema.StringAttribute{Description: "The Content Selector expression used to identify content.", Computed: true},
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"name":        dsschema.StringAttribute{Description: "The name of the Content Selector.", Computed: true},
+						"description": dsschema.StringAttribute{Description: "The description of this Content Selector.", Computed: true},
+						"expression":  dsschema.StringAttribute{Description: "The Content Selector expression used to identify content.", Computed: true},
 					},
 				},
 			},
@@ -75,9 +77,11 @@ func (d *contentSelectorsDataSource) Read(ctx context.Context, req datasource.Re
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelectors(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
+		sharederr.HandleAPIError(
 			"Unable list Content Selectors",
-			fmt.Sprintf("Unable to read Content Selectors: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

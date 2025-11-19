@@ -21,9 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -52,36 +53,20 @@ func (d *capabilitiesDataSource) Metadata(_ context.Context, req datasource.Meta
 
 // Schema defines the schema for the data source.
 func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: `Use this data source to get all Capabilities.
 		
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
-		Attributes: map[string]schema.Attribute{
-			"capabilities": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"capabilities": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "Internal ID of the Capability.",
-							Required:    true,
-						},
-						"type": schema.StringAttribute{
-							Description: "Type of the Capability.",
-							Required:    true,
-						},
-						"enabled": schema.BoolAttribute{
-							Description: "Whether the Capability is enabled.",
-							Required:    true,
-						},
-						"notes": schema.StringAttribute{
-							Description: "Notes about the configured Capability.",
-							Optional:    true,
-						},
-						"properties": schema.MapAttribute{
-							Description: "Properties of the Capability.",
-							Required:    true,
-							ElementType: types.StringType,
-						},
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"id":         dsschema.StringAttribute{Description: "Internal ID of the Capability.", Computed: true},
+						"type":       dsschema.StringAttribute{Description: "Type of the Capability.", Computed: true},
+						"enabled":    dsschema.BoolAttribute{Description: "Whether the Capability is enabled.", Computed: true},
+						"notes":      dsschema.StringAttribute{Description: "Notes about the configured Capability.", Computed: true},
+						"properties": dsschema.MapAttribute{Description: "Properties of the Capability.", Computed: true, ElementType: types.StringType},
 					},
 				},
 			},
@@ -97,9 +82,11 @@ func (d *capabilitiesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	apiResponse, httpResponse, err := d.Client.CapabilitiesAPI.List(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
+		sharederr.HandleAPIError(
 			"Unable to list Capabilities",
-			fmt.Sprintf("Unable to read Capabilities: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

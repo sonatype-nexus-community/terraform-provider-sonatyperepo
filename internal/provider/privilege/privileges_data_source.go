@@ -19,14 +19,14 @@ package privilege
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -58,17 +58,16 @@ func (d *privilegesDataSource) Metadata(_ context.Context, req datasource.Metada
 
 // Schema defines the schema for the data source.
 func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Privileges",
-		Attributes: map[string]schema.Attribute{
-			"privileges": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"privileges": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"name": dsschema.StringAttribute{
 							Description: "The name of the privilege. This value cannot be changed.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
 								stringvalidator.RegexMatches(
 									regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
@@ -76,19 +75,17 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 								),
 							},
 						},
-						"description": schema.StringAttribute{
+						"description": dsschema.StringAttribute{
 							Description: "Friendly description of this Privilege",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"read_only": schema.BoolAttribute{
+						"read_only": dsschema.BoolAttribute{
 							Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "The email address associated with the user.",
-							Required:    true,
-							Optional:    false,
+						"type": dsschema.StringAttribute{
+							Description: "The privilege type.",
+							Computed:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOf(privilege_type.AllPrivilegeTypes()...),
 							},

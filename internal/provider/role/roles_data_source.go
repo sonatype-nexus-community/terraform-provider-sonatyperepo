@@ -19,12 +19,12 @@ package role
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,50 +55,20 @@ func (d *rolesDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *rolesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Roles",
-		Attributes: map[string]schema.Attribute{
-			"roles": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"roles": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The id of the role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"description": schema.StringAttribute{
-							Description: "The description of this role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"read_only": schema.BoolAttribute{
-							Description: "Indicates whether the role can be changed. The system will ignore any supplied external values.",
-							Required:    true,
-							Optional:    false,
-						},
-						"source": schema.StringAttribute{
-							Description: "The user source which is the origin of this role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"privileges": schema.SetAttribute{
-							Description: "The set of privileges assigned to this role.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
-						"roles": schema.SetAttribute{
-							Description: "The set of roles assigned to this role.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"id":          dsschema.StringAttribute{Description: "The id of the role.", Computed: true},
+						"name":        dsschema.StringAttribute{Description: "The name of the role.", Computed: true},
+						"description": dsschema.StringAttribute{Description: "The description of this role.", Computed: true},
+						"read_only":   dsschema.BoolAttribute{Description: "Indicates whether the role can be changed. The system will ignore any supplied external values.", Computed: true},
+						"source":      dsschema.StringAttribute{Description: "The user source which is the origin of this role.", Computed: true},
+						"privileges":  dsschema.SetAttribute{Description: "The set of privileges assigned to this role.", Computed: true, ElementType: types.StringType},
+						"roles":       dsschema.SetAttribute{Description: "The set of roles assigned to this role.", Computed: true, ElementType: types.StringType},
 					},
 				},
 			},

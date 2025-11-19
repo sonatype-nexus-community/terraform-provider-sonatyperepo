@@ -19,11 +19,11 @@ package task
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -54,28 +54,16 @@ func (d *tasksDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *tasksDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Tasks",
-		Attributes: map[string]schema.Attribute{
-			"tasks": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"tasks": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The name of the Task.",
-							Required:    true,
-							Optional:    false,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the Task.",
-							Required:    true,
-							Optional:    false,
-						},
-						"type": schema.StringAttribute{
-							Description: "The type of Task.",
-							Required:    true,
-							Optional:    false,
-						},
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"id":   dsschema.StringAttribute{Description: "The ID of the Task.", Computed: true},
+						"name": dsschema.StringAttribute{Description: "The name of the Task.", Computed: true},
+						"type": dsschema.StringAttribute{Description: "The type of Task.", Computed: true},
 					},
 				},
 			},

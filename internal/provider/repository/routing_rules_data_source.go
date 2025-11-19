@@ -19,12 +19,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,34 +55,18 @@ func (d *routingRulesDataSource) Metadata(_ context.Context, req datasource.Meta
 
 // Schema defines the schema for the data source.
 func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all routing rules",
-		Attributes: map[string]schema.Attribute{
-			"routing_rules": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"routing_rules": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "The name of the routing rule",
-							Computed:    true,
-						},
-						"description": schema.StringAttribute{
-							Description: "The description of the routing rule",
-							Computed:    true,
-						},
-						"mode": schema.StringAttribute{
-							Description: "The mode of the routing rule (ALLOW or BLOCK)",
-							Computed:    true,
-						},
-						"matchers": schema.SetAttribute{
-							Description: "Regular expressions used to identify request paths",
-							Computed:    true,
-							ElementType: types.StringType,
-						},
-						"last_updated": schema.StringAttribute{
-							Description: "Timestamp of last update",
-							Computed:    true,
-						},
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"name":          dsschema.StringAttribute{Description: "The name of the routing rule", Computed: true},
+						"description":   dsschema.StringAttribute{Description: "The description of the routing rule", Computed: true},
+						"mode":          dsschema.StringAttribute{Description: "The mode of the routing rule (ALLOW or BLOCK)", Computed: true},
+						"matchers":      dsschema.SetAttribute{Description: "Regular expressions used to identify request paths", Computed: true, ElementType: types.StringType},
+						"last_updated":  dsschema.StringAttribute{Description: "Timestamp of last update", Computed: true},
 					},
 				},
 			},

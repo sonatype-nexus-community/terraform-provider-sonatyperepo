@@ -19,15 +19,15 @@ package repository
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -58,30 +58,30 @@ func (d *routingRuleDataSource) Metadata(_ context.Context, req datasource.Metad
 
 // Schema defines the schema for the data source.
 func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a single routing rule by name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"name": dsschema.StringAttribute{
 				Description: "The name of the routing rule",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
-			"description": schema.StringAttribute{
+			"description": dsschema.StringAttribute{
 				Description: "The description of the routing rule",
 				Computed:    true,
 			},
-			"mode": schema.StringAttribute{
+			"mode": dsschema.StringAttribute{
 				Description: "The mode of the routing rule (ALLOW or BLOCK)",
 				Computed:    true,
 			},
-			"matchers": schema.SetAttribute{
+			"matchers": dsschema.SetAttribute{
 				Description: "Regular expressions used to identify request paths",
 				Computed:    true,
 				ElementType: types.StringType,
 			},
-			"last_updated": schema.StringAttribute{
+			"last_updated": dsschema.StringAttribute{
 				Description: "Timestamp of last update",
 				Computed:    true,
 			},

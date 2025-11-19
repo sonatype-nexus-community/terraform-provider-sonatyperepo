@@ -22,10 +22,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -56,61 +57,52 @@ func (d *usersDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *usersDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Users",
-		Attributes: map[string]schema.Attribute{
-			"users": schema.ListNestedAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"users": dsschema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"user_id": schema.StringAttribute{
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"user_id": dsschema.StringAttribute{
 							Description: "The userid which is required for login. This value cannot be changed.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"first_name": schema.StringAttribute{
+						"first_name": dsschema.StringAttribute{
 							Description: "The first name of the user.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"last_name": schema.StringAttribute{
+						"last_name": dsschema.StringAttribute{
 							Description: "The last name of the user.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"email_address": schema.StringAttribute{
+						"email_address": dsschema.StringAttribute{
 							Description: "The email address associated with the user.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"read_only": schema.BoolAttribute{
+						"read_only": dsschema.BoolAttribute{
 							Description: "Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"source": schema.StringAttribute{
+						"source": dsschema.StringAttribute{
 							Description: "The user source which is the origin of this user. This value cannot be changed.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 						},
-						"status": schema.StringAttribute{
+						"status": dsschema.StringAttribute{
 							Description: "The user's status",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
-								stringvalidator.OneOf([]string{"active", "locked", "disabled", "changepassword"}...),
+								stringvalidator.OneOf("active", "locked", "disabled", "changepassword"),
 							},
 						},
-						"roles": schema.SetAttribute{
+						"roles": dsschema.SetAttribute{
 							Description: "The roles which the user has been assigned within Nexus.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 							ElementType: types.StringType,
 						},
-						"external_roles": schema.SetAttribute{
+						"external_roles": dsschema.SetAttribute{
 							Description: "The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.",
-							Required:    true,
-							Optional:    false,
+							Computed:    true,
 							ElementType: types.StringType,
 						},
 					},
@@ -132,9 +124,11 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	usersResponse, httpResponse, err := d.Client.SecurityManagementUsersAPI.GetUsers(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Users",
-			fmt.Sprintf("Unable to read Users: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		sharederr.HandleAPIError(
+			"Unable to list Users",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

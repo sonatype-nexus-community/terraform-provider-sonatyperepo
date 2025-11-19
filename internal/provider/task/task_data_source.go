@@ -19,12 +19,12 @@ package task
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,26 +55,12 @@ func (d *taskDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 // Schema defines the schema for the data source.
 func (d *taskDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a single Task by ID",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    true,
-				Optional:    false,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
+		Attributes: map[string]dsschema.Attribute{
+			"id":   dsschema.StringAttribute{Description: "The ID of the Task.", Required: true},
+			"name": dsschema.StringAttribute{Description: "The name of the Task.", Computed: true},
+			"type": dsschema.StringAttribute{Description: "The type of Task.", Computed: true},
 		},
 	}
 }

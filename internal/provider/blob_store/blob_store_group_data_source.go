@@ -22,14 +22,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -55,52 +55,24 @@ func (d *groupBlobStoreDataSource) Metadata(_ context.Context, req datasource.Me
 
 // Schema defines the schema for the data source.
 func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store Group",
-				Required:    true,
-			},
-			"members": schema.SetAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"name":         tfschema.DataSourceOptionalString("Name of the Blob Store Group"),
+			"fill_policy":  tfschema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
+			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
+			"members": dsschema.SetAttribute{
 				Description: "Set of the names of blob stores that are members of this group",
 				ElementType: types.StringType,
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
-					},
+			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
+				"Soft Quota for this Blob Store",
+				map[string]dsschema.Attribute{
+					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
+					"limit": tfschema.DataSourceComputedInt64("Quota limit"),
 				},
-			},
-			"fill_policy": schema.StringAttribute{
-				Description: "Defines how writes are made to the member Blob Stores",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-				// Validators: []validator.String{
-				// 	stringvalidator.OneOf("roundRobin", "writeToFirst"),
-				// },
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
 		},
 	}
 }
@@ -116,22 +88,20 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.GetAuthContext(ctx)
 
 	if data.Name.IsNull() {
 		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")
 		return
 	}
 
-	api_response, _, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	api_response, httpResponse, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Group Blob Store",
-			err.Error(),
+		sharederr.HandleAPIError(
+			"Unable to read group blob store",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
