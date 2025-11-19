@@ -4,6 +4,11 @@
 
 _TBC_
 
+## 0.12.1 November 19, 2025
+
+BUG FIXES:
+* Fixed regression that immpacted all `sonatyperepo_repository_*_proxy` resources where replication was not enabled [GH-206]
+
 ## 0.12.0 November 14, 2025
 
 ENHANCEMENTS:
