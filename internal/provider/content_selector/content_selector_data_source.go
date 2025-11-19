@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 )
@@ -55,23 +55,9 @@ func (d *contentSelectorDataSource) Schema(_ context.Context, req datasource.Sch
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a single Content Selector by name",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the Content Selector.",
-				Required:    true,
-				Optional:    false,
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this Content Selector.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"expression": schema.StringAttribute{
-				Description: "The Content Selector expression used to identify content.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
+			"name":        tfschema.RequiredString("The name of the Content Selector."),
+			"description": tfschema.ComputedString("The description of this Content Selector."),
+			"expression":  tfschema.ComputedString("The Content Selector expression used to identify content."),
 		},
 	}
 }

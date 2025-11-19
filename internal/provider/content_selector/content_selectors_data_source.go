@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 )
@@ -58,21 +57,9 @@ func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.Sc
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "The name of the Content Selector.",
-							Required:    true,
-							Optional:    false,
-						},
-						"description": schema.StringAttribute{
-							Description: "The description of this Content Selector.",
-							Required:    true,
-							Optional:    false,
-						},
-						"expression": schema.StringAttribute{
-							Description: "The Content Selector expression used to identify content.",
-							Required:    true,
-							Optional:    false,
-						},
+						"name":        schema.StringAttribute{Description: "The name of the Content Selector.", Computed: true},
+						"description": schema.StringAttribute{Description: "The description of this Content Selector.", Computed: true},
+						"expression":  schema.StringAttribute{Description: "The Content Selector expression used to identify content.", Computed: true},
 					},
 				},
 			},

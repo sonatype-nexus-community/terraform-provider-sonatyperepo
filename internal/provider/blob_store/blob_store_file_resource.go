@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"time"
 
@@ -27,11 +26,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // blobStoreFileResource is the resource implementation.
@@ -54,35 +53,13 @@ func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
-			"path": schema.StringAttribute{
-				Description: "The Path on disk of this File Blob Store",
-				Required:    true,
-				Optional:    false,
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    true,
-						Optional:    false,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    true,
-					},
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name": tfschema.RequiredString("Name of the Blob Store"),
+			"path": tfschema.RequiredString("The Path on disk of this File Blob Store"),
+			"soft_quota": tfschema.OptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
+				"type":  tfschema.RequiredString("Soft Quota type"),
+				"limit": tfschema.OptionalInt64("Quota limit"),
+			}),
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

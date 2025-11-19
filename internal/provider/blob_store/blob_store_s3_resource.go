@@ -20,16 +20,15 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -59,10 +58,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
+			"name": tfschema.RequiredString("Name of the Blob Store"),
 			"type": schema.StringAttribute{
 				Description: fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
 				Required:    false,
@@ -78,11 +74,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 				Required:    false,
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    true,
-						Optional:    false,
-					},
+					"type": tfschema.RequiredString("Soft Quota type"),
 					"limit": schema.Int64Attribute{
 						Description: "Quota limit",
 						Required:    false,
@@ -100,16 +92,8 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required:    true,
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
-							"region": schema.StringAttribute{
-								Description: "The AWS region to create a new S3 bucket in or an existing S3 bucket's region",
-								Required:    true,
-								Optional:    false,
-							},
-							"name": schema.StringAttribute{
-								Description: "The name of the S3 bucket",
-								Required:    true,
-								Optional:    false,
-							},
+							"region": tfschema.RequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
+							"name":   tfschema.RequiredString("The name of the S3 bucket"),
 							"prefix": schema.StringAttribute{
 								Description: "The S3 blob store (i.e S3 object) key prefix",
 								Required:    false,
@@ -124,20 +108,12 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required:    false,
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
-							"encryption_type": schema.StringAttribute{
-								Description: "The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'",
-								Required:    false,
-								Optional:    true,
-								Validators: []validator.String{
-									stringvalidator.OneOf("s3ManagedEncryption", "kmsManagedEncryption"),
-								},
-							},
-							"encryption_key": schema.StringAttribute{
-								Description: "The encryption key",
-								Required:    false,
-								Optional:    true,
-								Sensitive:   true,
-							},
+							"encryption_type": tfschema.StringEnum(
+								"The type of S3 server side encryption to use",
+								"s3ManagedEncryption",
+								"kmsManagedEncryption",
+							),
+							"encryption_key": tfschema.OptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
 						},
 					},
 					"bucket_security": schema.SingleNestedAttribute{
@@ -145,12 +121,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required:    false,
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
-							"access_key_id": schema.StringAttribute{
-								Description: "An IAM access key ID for granting access to the S3 bucket",
-								Required:    false,
-								Optional:    true,
-								Sensitive:   true,
-							},
+							"access_key_id": tfschema.OptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
 							"secret_access_key": schema.StringAttribute{
 								Description: "The secret access key associated with the specified IAM access key ID",
 								Required:    false,
@@ -160,17 +131,8 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 									stringplanmodifier.UseStateForUnknown(),
 								},
 							},
-							"role": schema.StringAttribute{
-								Description: "An IAM role to assume in order to access the S3 bucket",
-								Required:    false,
-								Optional:    true,
-							},
-							"session_token": schema.StringAttribute{
-								Description: "An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket",
-								Required:    false,
-								Optional:    true,
-								Sensitive:   true,
-							},
+							"role":          tfschema.OptionalString("An IAM role to assume in order to access the S3 bucket"),
+							"session_token": tfschema.OptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
 						},
 					},
 					"advanced_bucket_connection": schema.SingleNestedAttribute{
@@ -178,16 +140,8 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						Required:    false,
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
-							"endpoint": schema.StringAttribute{
-								Description: "A custom endpoint URL for third party object stores using the S3 API",
-								Required:    false,
-								Optional:    true,
-							},
-							"signer_type": schema.StringAttribute{
-								Description: "An API signature version which may be required for third party object stores using the S3 API",
-								Required:    false,
-								Optional:    true,
-							},
+							"endpoint":    tfschema.OptionalString("A custom endpoint URL for third party object stores using the S3 API"),
+							"signer_type": tfschema.OptionalString("An API signature version which may be required for third party object stores using the S3 API"),
 							"force_path_style": schema.BoolAttribute{
 								Description: "Setting this flag will result in path-style access being used for all requests",
 								Required:    false,
@@ -202,9 +156,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

@@ -19,29 +19,27 @@ package repository
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"maps"
 	"net/http"
 	"reflect"
 	"slices"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 )
 
 const (
@@ -419,90 +417,58 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 
 func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
 	storageAttributes := map[string]schema.Attribute{
-		"blob_store_name": schema.StringAttribute{
-			Description: "Name of the Blob Store to use",
-			Required:    true,
-			Optional:    false,
-		},
-		"strict_content_type_validation": schema.BoolAttribute{
-			Description: "Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
-			Required:    true,
-		},
+		"blob_store_name": tfschema.RequiredString("Name of the Blob Store to use"),
+		"strict_content_type_validation": tfschema.RequiredBool(
+			"Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
+		),
 	}
 
 	// Write Policy is only for Hosted Repositories
 	if repoType == format.REPO_TYPE_HOSTED {
-		storageAttributes["write_policy"] = schema.StringAttribute{
-			Description: "Controls if deployments of and updates to assets are allowed",
-			Required:    true,
-			Optional:    false,
-			Validators: []validator.String{
-				stringvalidator.OneOf(
-					common.WRITE_POLICY_ALLOW,
-					common.WRITE_POLICY_ALLOW_ONCE,
-					common.WRITE_POLICY_DENY,
-				),
-			},
+		writePolicyAttr := tfschema.RequiredString("Controls if deployments of and updates to assets are allowed")
+		writePolicyAttr.Validators = []validator.String{
+			stringvalidator.OneOf(
+				common.WRITE_POLICY_ALLOW,
+				common.WRITE_POLICY_ALLOW_ONCE,
+				common.WRITE_POLICY_DENY,
+			),
 		}
+		storageAttributes["write_policy"] = writePolicyAttr
 	}
 
 	// LatestPolicy is only for Docker Hosted Repositories
 	if repoFormat == common.REPO_FORMAT_DOCKER && repoType == format.REPO_TYPE_HOSTED {
-		storageAttributes["latest_policy"] = schema.BoolAttribute{
-			Description: "Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
-			Optional:    true,
-			Computed:    true,
-			Default:     booldefault.StaticBool(false),
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
-		}
+		storageAttributes["latest_policy"] = tfschema.OptionalBoolWithDefault(
+			"Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
+			false,
+		)
+	}
+
+	nameAttr := tfschema.RequiredString("Name of the Repository")
+	nameAttr.PlanModifiers = []planmodifier.String{
+		stringplanmodifier.RequiresReplace(),
+	}
+
+	urlAttr := schema.StringAttribute{
+		Description: "URL to access the Repository",
+		Optional:    true,
+		Computed:    true,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
 	}
 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Repository",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
-			"url": schema.StringAttribute{
-				Description: "URL to access the Repository",
-				Optional:    true,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"online": schema.BoolAttribute{
-				Description: "Whether this Repository is online and accepting incoming requests",
-				Required:    true,
-			},
-			"storage": schema.SingleNestedAttribute{
-				Description: "Storage configuration for this Repository",
-				Required:    true,
-				Optional:    false,
-				Attributes:  storageAttributes,
-			},
-			"cleanup": schema.SingleNestedAttribute{
-				Description: "Repository Cleanup configuration",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"policy_names": schema.SetAttribute{
-						Description: "Set of Cleanup Policies that will apply to this Repository",
-						ElementType: types.StringType,
-						Required:    false,
-						Optional:    true,
-					},
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name":    nameAttr,
+			"url":     urlAttr,
+			"online":  tfschema.RequiredBool("Whether this Repository is online and accepting incoming requests"),
+			"storage": tfschema.RequiredSingleNestedAttribute("Storage configuration for this Repository", storageAttributes),
+			"cleanup": tfschema.OptionalSingleNestedAttribute("Repository Cleanup configuration", map[string]schema.Attribute{
+				"policy_names": tfschema.OptionalStringSet("Set of Cleanup Policies that will apply to this Repository"),
+			}),
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

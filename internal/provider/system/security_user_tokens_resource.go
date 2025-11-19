@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -28,7 +29,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -57,12 +57,7 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 	resp.Schema = schema.Schema{
 		Description: "Manage User Token Configuration",
 		Attributes: map[string]schema.Attribute{
-			"enabled": schema.BoolAttribute{
-				Description: "Whether or not User Tokens feature is enabled",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
-			},
+			"enabled": tfschema.OptionalBoolWithDefault("Whether or not User Tokens feature is enabled", common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
 			"expiration_days": schema.Int32Attribute{
 				Description: "Set user token expiration days (1-999)",
 				Optional:    true,
@@ -72,21 +67,9 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 					int32validator.Between(1, 999),
 				},
 			},
-			"expiration_enabled": schema.BoolAttribute{
-				Description: "Enable user tokens expiration",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
-			},
-			"protect_content": schema.BoolAttribute{
-				Description: "Additionally require user tokens for repository authentication",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"expiration_enabled": tfschema.OptionalBoolWithDefault("Enable user tokens expiration", common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
+			"protect_content": tfschema.OptionalBoolWithDefault("Additionally require user tokens for repository authentication", common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
+			"last_updated": tfschema.ComputedString(""),
 		},
 	}
 }

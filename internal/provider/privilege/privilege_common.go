@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"maps"
 	"net/http"
 	"reflect"
@@ -28,16 +29,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
+
+const privilegeNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 const (
 	PRIVILEGE_ERROR_RESPONSE_PREFIX           = "Error response: "
@@ -278,38 +277,18 @@ func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the privilege. This value cannot be changed.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "Friendly description of this Privilege",
-				Required:    true,
-				Optional:    false,
-			},
-			"read_only": schema.BoolAttribute{
-				Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     booldefault.StaticBool(false),
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     stringdefault.StaticString(privilegeTypeType.String()),
-				Validators: []validator.String{
-					stringvalidator.OneOf(privilegeTypeType.String()),
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name": tfschema.RequiredStringWithRegex(
+				"The name of the privilege. This value cannot be changed.",
+				regexp.MustCompile(privilegeNamePattern),
+				`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
+			),
+			"description": tfschema.RequiredString("Friendly description of this Privilege"),
+			"read_only": tfschema.ComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"type": tfschema.RequiredStringEnum(
+				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
+				privilegeTypeType.String(),
+			),
+			"last_updated": tfschema.ComputedString(""),
 		},
 	}
 }

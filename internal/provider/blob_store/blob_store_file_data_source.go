@@ -19,13 +19,15 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	rsschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -54,42 +56,19 @@ func (d *fileBlobStoreDataSource) Metadata(_ context.Context, req datasource.Met
 
 // Schema defines the schema for the data source.
 func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
-			"path": schema.StringAttribute{
-				Description: "The Path on disk of this File Blob Store",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
-					},
+		Attributes: map[string]dsschema.Attribute{
+			"name": tfschema.RequiredString("Name of the Blob Store"),
+			"path": tfschema.ComputedString("The Path on disk of this File Blob Store"),
+			"soft_quota": tfschema.ComputedOptionalSingleNestedAttribute(
+				"Soft Quota for this Blob Store",
+				map[string]rsschema.Attribute{
+					"type":  tfschema.ComputedString("Soft Quota type"),
+					"limit": tfschema.ComputedInt64("Quota limit"),
 				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

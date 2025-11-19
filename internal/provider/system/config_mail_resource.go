@@ -27,11 +27,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure resource satisfies various resource interfaces.
@@ -60,66 +59,19 @@ func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Configure the System Email Server",
 		Attributes: map[string]schema.Attribute{
-			"enabled": schema.BoolAttribute{
-				Description: "Whether Email Server is enabled",
-				Required:    true,
-			},
-			"host": schema.StringAttribute{
-				Description: "SMTP Server Hostname",
-				Required:    true,
-				Optional:    false,
-			},
-			"port": schema.Int64Attribute{
-				Description: "SMTP Server Port",
-				Required:    true,
-				Optional:    false,
-			},
-			"username": schema.StringAttribute{
-				Description: "Username to use for authentication with SMTP Server",
-				Optional:    true,
-			},
-			"password": schema.StringAttribute{
-				Description: "Password to use for authentication with SMTP Server",
-				Optional:    true,
-				Sensitive:   true,
-			},
-			"from_address": schema.StringAttribute{
-				Description: "From Address to use when sending emails",
-				Required:    true,
-				Optional:    false,
-			},
-			"subject_prefix": schema.StringAttribute{
-				Description: "A prefix to use in Subject Lines for emails that are sent",
-				Optional:    true,
-			},
-			"start_tls_enabled": schema.BoolAttribute{
-				Description: "Enable STARTTLS support for insecure connections",
-				Required:    true,
-				Optional:    false,
-			},
-			"start_tls_required": schema.BoolAttribute{
-				Description: "Require STARTTLS support",
-				Required:    true,
-				Optional:    false,
-			},
-			"ssl_on_connect_enabled": schema.BoolAttribute{
-				Description: "Enable SSL/TLS encryption upon connection",
-				Required:    true,
-				Optional:    false,
-			},
-			"ssl_server_identity_check_enabled": schema.BoolAttribute{
-				Description: "Enable server identity check",
-				Required:    true,
-				Optional:    false,
-			},
-			"nexus_trust_store_enabled": schema.BoolAttribute{
-				Description: "Use certificate connected to the Nexus Repository Truststore",
-				Required:    true,
-				Optional:    false,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"enabled":                          tfschema.RequiredBool("Whether Email Server is enabled"),
+			"host":                             tfschema.RequiredString("SMTP Server Hostname"),
+			"port":                             tfschema.RequiredInt64("SMTP Server Port"),
+			"username":                         tfschema.OptionalString("Username to use for authentication with SMTP Server"),
+			"password":                         tfschema.SensitiveString("Password to use for authentication with SMTP Server"),
+			"from_address":                     tfschema.RequiredString("From Address to use when sending emails"),
+			"subject_prefix":                   tfschema.OptionalString("A prefix to use in Subject Lines for emails that are sent"),
+			"start_tls_enabled":                tfschema.RequiredBool("Enable STARTTLS support for insecure connections"),
+			"start_tls_required":               tfschema.RequiredBool("Require STARTTLS support"),
+			"ssl_on_connect_enabled":           tfschema.RequiredBool("Enable SSL/TLS encryption upon connection"),
+			"ssl_server_identity_check_enabled": tfschema.RequiredBool("Enable server identity check"),
+			"nexus_trust_store_enabled":        tfschema.RequiredBool("Use certificate connected to the Nexus Repository Truststore"),
+			"last_updated":                     tfschema.Timestamp(),
 		},
 	}
 }

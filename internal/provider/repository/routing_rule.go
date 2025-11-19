@@ -20,12 +20,12 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -46,6 +46,7 @@ const (
 	RoutingRuleModeAllow = "ALLOW"
 	// RoutingRuleModeBlock represents the BLOCK mode for routing rules
 	RoutingRuleModeBlock = "BLOCK"
+	routingRuleNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 )
 
 // routingRuleResource is the resource implementation.
@@ -68,31 +69,25 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Use this resource to create and manage routing rules in Sonatype Nexus Repository Manager",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the routing rule",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
+			"name": func() schema.StringAttribute {
+				attr := tfschema.RequiredStringWithRegexAndLength(
+					"Name of the routing rule",
+					regexp.MustCompile(routingRuleNamePattern),
+					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
+					1,
+					255,
+				)
+				attr.PlanModifiers = []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.LengthBetween(1, 255),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "Description of the routing rule (required by Nexus API)",
-				Required:    true,
-			},
-			"mode": schema.StringAttribute{
-				Description: "Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf(RoutingRuleModeAllow, RoutingRuleModeBlock),
-				},
-			},
+				}
+				return attr
+			}(),
+			"description": tfschema.RequiredString("Description of the routing rule (required by Nexus API)"),
+			"mode": tfschema.RequiredStringEnum(
+				"Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
+				RoutingRuleModeAllow,
+				RoutingRuleModeBlock,
+			),
 			"matchers": schema.SetAttribute{
 				Description: "Regular expressions used to identify request paths that are allowed or blocked (depending on mode)",
 				Required:    true,

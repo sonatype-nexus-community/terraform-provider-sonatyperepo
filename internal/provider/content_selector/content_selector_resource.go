@@ -19,21 +19,22 @@ package content_selector
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"net/http"
 	"regexp"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
 )
+
+const contentSelectorNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 // contentSelectorResource is the resource implementation.
 type contentSelectorResource struct {
@@ -55,30 +56,14 @@ func (r *contentSelectorResource) Schema(_ context.Context, _ resource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Manage Content Selectors in Sonatype Nexus Repository",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the Content Selector.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Content Selector name must match pattern `^[a-zA-Z0-9\\-]{1}[a-zA-Z0-9_\\-\\.]*$`",
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this Content Selector.",
-				Required:    true,
-				Optional:    false,
-			},
-			"expression": schema.StringAttribute{
-				Description: "The Content Selector expression used to identify content.",
-				Required:    true,
-				Optional:    false,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name": tfschema.RequiredStringWithRegex(
+				"The name of the Content Selector.",
+				regexp.MustCompile(contentSelectorNamePattern),
+				"Content Selector name must match pattern `^[a-zA-Z0-9\\-]{1}[a-zA-Z0-9_\\-\\.]*$`",
+			),
+			"description": tfschema.RequiredString("The description of this Content Selector."),
+			"expression":  tfschema.RequiredString("The Content Selector expression used to identify content."),
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

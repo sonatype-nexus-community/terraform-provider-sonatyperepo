@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"os"
 	"time"
@@ -27,8 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -61,48 +60,16 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 	resp.Schema = schema.Schema{
 		Description: "Configure and LDAP connection",
 		Attributes: map[string]schema.Attribute{
-			"license_data": schema.StringAttribute{
-				Description: "Base64 encoded license data",
-				Required:    true,
-				Optional:    false,
-				Sensitive:   true,
-			},
-			"contact_company": schema.StringAttribute{
-				Description: "Licensed Company Name",
-				Computed:    true,
-			},
-			"contact_email": schema.StringAttribute{
-				Description: "Licensed Company Contact Email",
-				Computed:    true,
-			},
-			"contact_name": schema.StringAttribute{
-				Description: "Licensed Company Contact Name",
-				Computed:    true,
-			},
-			"effective_date": schema.StringAttribute{
-				Description: "License effective date",
-				Computed:    true,
-			},
-			"expiration_date": schema.StringAttribute{
-				Description: "License expiration date",
-				Computed:    true,
-			},
-			"features": schema.StringAttribute{
-				Description: "Licensed features",
-				Computed:    true,
-			},
-			"fingerprint": schema.StringAttribute{
-				Description: "License fingerprint",
-				Computed:    true,
-			},
-			"license_type": schema.StringAttribute{
-				Description: "License type",
-				Computed:    true,
-			},
-			"licensed_users": schema.StringAttribute{
-				Description: "Licensed User count",
-				Computed:    true,
-			},
+			"license_data": tfschema.SensitiveString("Base64 encoded license data"),
+			"contact_company": tfschema.ComputedString("Licensed Company Name"),
+			"contact_email": tfschema.ComputedString("Licensed Company Contact Email"),
+			"contact_name": tfschema.ComputedString("Licensed Company Contact Name"),
+			"effective_date": tfschema.ComputedString("License effective date"),
+			"expiration_date": tfschema.ComputedString("License expiration date"),
+			"features": tfschema.ComputedString("Licensed features"),
+			"fingerprint": tfschema.ComputedString("License fingerprint"),
+			"license_type": tfschema.ComputedString("License type"),
+			"licensed_users": tfschema.ComputedString("Licensed User count"),
 			"max_repo_components": schema.Int64Attribute{
 				Description: "Licensed Max Repo Components",
 				Computed:    true,
@@ -112,12 +79,7 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 				Computed:    true,
 			},
 			// Meta
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"last_updated": tfschema.Timestamp(),
 		},
 	}
 }

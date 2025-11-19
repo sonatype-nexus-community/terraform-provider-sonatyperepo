@@ -21,18 +21,17 @@ import (
 	"encoding/json"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"io"
 	"net/http"
 	"regexp"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -41,6 +40,8 @@ import (
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
+
+const cleanupPolicyNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 // cleanupPolicyResource is the resource implementation.
 type cleanupPolicyResource struct {
@@ -62,31 +63,24 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = schema.Schema{
 		Description: "Use this resource to create and manage cleanup policies in Sonatype Nexus Repository Manager",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the cleanup policy",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
+			"name": func() schema.StringAttribute {
+				attr := tfschema.RequiredStringWithRegexAndLength(
+					"Name of the cleanup policy",
+					regexp.MustCompile(cleanupPolicyNamePattern),
+					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
+					1,
+					255,
+				)
+				attr.PlanModifiers = []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.LengthBetween(1, 255),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
-					),
-				},
-			},
-			"notes": schema.StringAttribute{
-				Description: "Notes for the cleanup policy",
-				Optional:    true,
-			},
-			"format": schema.StringAttribute{
-				Description: "Repository format that this cleanup policy applies to",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum"),
-				},
-			},
+				}
+				return attr
+			}(),
+			"notes": tfschema.OptionalString("Notes for the cleanup policy"),
+			"format": tfschema.RequiredStringEnum(
+				"Repository format that this cleanup policy applies to",
+				"apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum",
+			),
 			"criteria": schema.SingleNestedAttribute{
 				Description: "Cleanup criteria for this policy - at least one criterion must be specified",
 				Required:    true,
