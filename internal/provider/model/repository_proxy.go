@@ -68,7 +68,7 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 	if m.Connection == nil {
 		m.Connection = &RepositoryHttpClientConnectionModel{}
 	}
-	
+
 	// Pass api.Connection which might be nil - the MapFromApi method will handle it
 	m.Connection.MapFromApi(api.Connection)
 
@@ -167,7 +167,7 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 	} else {
 		m.Retries = types.Int64Null()
 	}
-	
+
 	if api.Timeout != nil {
 		m.Timeout = types.Int64Value(int64(*api.Timeout))
 	} else {
@@ -284,11 +284,13 @@ type RepositoryReplicationModel struct {
 }
 
 func (m *RepositoryReplicationModel) MapFromApi(api *sonatyperepo.ReplicationAttributes) {
-	if (!api.PreemptivePullEnabled) {
-		return
-	}
 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
+	// if !api.PreemptivePullEnabled {
+	// 	m.PreemptivePullEnabled = types.BoolValue(false)
+	// } else {
+	// 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
 	m.AssetPathRegex = types.StringPointerValue(api.AssetPathRegex)
+	// }
 }
 
 func (m *RepositoryReplicationModel) MapToApi(api *sonatyperepo.ReplicationAttributes) {
