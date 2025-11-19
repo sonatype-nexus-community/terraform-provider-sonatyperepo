@@ -26,9 +26,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -59,103 +56,51 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]schema.Attribute{
 			"name": tfschema.ResourceRequiredString("Name of the Blob Store"),
-			"type": schema.StringAttribute{
-				Description: fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
-				Required:    false,
-				Optional:    true,
-				Computed:    true,
-				Default:     stringdefault.StaticString(BLOB_STORE_TYPE_S3),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": tfschema.ResourceRequiredString("Soft Quota type"),
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    true,
-					},
-				},
-			},
-			"bucket_configuration": schema.SingleNestedAttribute{
-				Description: "Bucket Configuration for this Blob Store",
-				Required:    true,
-				Optional:    false,
-				Attributes: map[string]schema.Attribute{
-					"bucket": schema.SingleNestedAttribute{
-						Description: "Main Bucket Configuration for this Blob Store",
-						Required:    true,
-						Optional:    false,
-						Attributes: map[string]schema.Attribute{
-							"region": tfschema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
-							"name":   tfschema.ResourceRequiredString("The name of the S3 bucket"),
-							"prefix": schema.StringAttribute{
-								Description: "The S3 blob store (i.e S3 object) key prefix",
-								Required:    false,
-								Optional:    true,
-								Computed:    true,
-								Default:     stringdefault.StaticString(""),
-							},
-						},
-					},
-					"encryption": schema.SingleNestedAttribute{
-						Description: "Bucket Encryption Configuration for this Blob Store",
-						Required:    false,
-						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"encryption_type": tfschema.ResourceStringEnum(
-								"The type of S3 server side encryption to use",
-								"s3ManagedEncryption",
-								"kmsManagedEncryption",
-							),
-							"encryption_key": tfschema.OptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
-						},
-					},
-					"bucket_security": schema.SingleNestedAttribute{
-						Description: "Bucket Security Configuration for this Blob Store",
-						Required:    false,
-						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"access_key_id": tfschema.OptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
-							"secret_access_key": schema.StringAttribute{
-								Description: "The secret access key associated with the specified IAM access key ID",
-								Required:    false,
-								Optional:    true,
-								Sensitive:   true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
-							},
-							"role":          tfschema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
-							"session_token": tfschema.OptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
-						},
-					},
-					"advanced_bucket_connection": schema.SingleNestedAttribute{
-						Description: "Advanced Connection Configuration for this S3 Blob Store",
-						Required:    false,
-						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"endpoint":    tfschema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
-							"signer_type": tfschema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
-							"force_path_style": schema.BoolAttribute{
-								Description: "Setting this flag will result in path-style access being used for all requests",
-								Required:    false,
-								Optional:    true,
-							},
-							"max_connection_pool_size": schema.Int64Attribute{
-								Description: "Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
-								Required:    false,
-								Optional:    true,
-							},
-						},
-					},
-				},
-			},
+			"type": tfschema.ResourceComputedStringWithDefault(
+				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
+				BLOB_STORE_TYPE_S3,
+			),
+			"soft_quota": tfschema.ResourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
+				"type":  tfschema.ResourceRequiredString("Soft Quota type"),
+				"limit": tfschema.ResourceOptionalInt64("Quota limit"),
+			}),
+			"bucket_configuration": tfschema.ResourceRequiredSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]schema.Attribute{
+				"bucket": tfschema.ResourceRequiredSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]schema.Attribute{
+					"region": tfschema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
+					"name":   tfschema.ResourceRequiredString("The name of the S3 bucket"),
+					"prefix": tfschema.ResourceStringWithDefault(
+						"The S3 blob store (i.e S3 object) key prefix",
+						"",
+					),
+				}),
+				"encryption": tfschema.ResourceOptionalSingleNestedAttribute("Bucket Encryption Configuration for this Blob Store", map[string]schema.Attribute{
+					"encryption_type": tfschema.ResourceStringEnum(
+						"The type of S3 server side encryption to use",
+						"s3ManagedEncryption",
+						"kmsManagedEncryption",
+					),
+					"encryption_key": tfschema.OptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
+				}),
+				"bucket_security": tfschema.ResourceOptionalSingleNestedAttribute("Bucket Security Configuration for this Blob Store", map[string]schema.Attribute{
+					"access_key_id": tfschema.OptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
+					"secret_access_key": tfschema.OptionalSensitiveStringWithLengthAtLeast(
+						"The secret access key associated with the specified IAM access key ID",
+						1,
+					),
+					"role":          tfschema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
+					"session_token": tfschema.OptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
+				}),
+				"advanced_bucket_connection": tfschema.ResourceOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]schema.Attribute{
+					"endpoint":    tfschema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
+					"signer_type": tfschema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
+					"force_path_style": tfschema.ResourceOptionalBool(
+						"Setting this flag will result in path-style access being used for all requests",
+					),
+					"max_connection_pool_size": tfschema.ResourceOptionalInt64(
+						"Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
+					),
+				}),
+			}),
 			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}

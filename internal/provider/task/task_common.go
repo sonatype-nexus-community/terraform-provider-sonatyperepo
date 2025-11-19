@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"reflect"
 	"slices"
@@ -28,7 +29,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -248,94 +248,47 @@ func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: tt.GetMarkdownDescription(),
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The internal ID of the Task.",
-				Computed:    true,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    true,
-				Optional:    false,
-			},
-			"enabled": schema.BoolAttribute{
-				Description: "Indicates if the task is enabled.",
-				Required:    true,
-				Optional:    false,
-			},
-			"alert_email": schema.StringAttribute{
-				Description: "E-mail address for task notifications.",
-				Required:    false,
-				Optional:    true,
-			},
-			"notification_condition": schema.StringAttribute{
-				Description: "The type of Task.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						common.NOTIFICATION_CONDITION_FAILURE, common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
-					),
+			"id":          tfschema.ResourceComputedString("The internal ID of the Task."),
+			"name":        tfschema.ResourceRequiredString("The name of the Task."),
+			"enabled":     tfschema.ResourceRequiredBool("Indicates if the task is enabled."),
+			"alert_email": tfschema.ResourceOptionalString("E-mail address for task notifications."),
+			"notification_condition": tfschema.ResourceRequiredStringEnum(
+				"The type of Task.",
+				common.NOTIFICATION_CONDITION_FAILURE, common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
+			),
+			"frequency": tfschema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.", map[string]schema.Attribute{
+				"schedule": tfschema.ResourceRequiredStringEnum(
+					"Type of Schedule.",
+					common.FREQUENCY_SCHEDULE_MANUAL,
+					common.FREQUENCY_SCHEDULE_ONCE,
+					common.FREQUENCY_SCHEDULE_HOURLY,
+					common.FREQUENCY_SCHEDULE_DAILY,
+					common.FREQUENCY_SCHEDULE_WEEKLY,
+					common.FREQUENCY_SCHEDULE_MONTHLY,
+					common.FREQUENCY_SCHEDULE_CRON,
+				),
+				"start_date": schema.Int32Attribute{
+					Description: "Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
+					Required:    false,
+					Optional:    true,
 				},
-			},
-			"frequency": schema.SingleNestedAttribute{
-				Description: "Frequency Schedule for this Task.",
-				Required:    true,
-				Optional:    false,
-				Attributes: map[string]schema.Attribute{
-					"schedule": schema.StringAttribute{
-						Description: "Type of Schedule.",
-						Required:    true,
-						Optional:    false,
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								common.FREQUENCY_SCHEDULE_MANUAL,
-								common.FREQUENCY_SCHEDULE_ONCE,
-								common.FREQUENCY_SCHEDULE_HOURLY,
-								common.FREQUENCY_SCHEDULE_DAILY,
-								common.FREQUENCY_SCHEDULE_WEEKLY,
-								common.FREQUENCY_SCHEDULE_MONTHLY,
-								common.FREQUENCY_SCHEDULE_CRON,
-							),
-						},
-					},
-					"start_date": schema.Int32Attribute{
-						Description: "Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
-						Required:    false,
-						Optional:    true,
-					},
-					"timezone_offset": schema.StringAttribute{
-						Description: "The offset time zone of the client. Example: -05:00",
-						Required:    false,
-						Optional:    true,
-					},
-					"recurring_days": schema.ListAttribute{
-						MarkdownDescription: `Array with the number of the days the task must run.
+				"timezone_offset": tfschema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
+				"recurring_days": schema.ListAttribute{
+					MarkdownDescription: `Array with the number of the days the task must run.
 
 - For "weekly" schedule allowed values, 1 to 7.
 - For "monthly" schedule allowed values, 1 to 31.`,
-						ElementType: types.Int32Type,
-						Required:    false,
-						Optional:    true,
-						Validators: []validator.List{
-							listvalidator.SizeAtLeast(1),
-						},
-					},
-					"cron_expression": schema.StringAttribute{
-						Description: "Cron expression for the task. Only applies for for \"cron\" schedule.",
-						Required:    false,
-						Optional:    true,
+					ElementType: types.Int32Type,
+					Required:    false,
+					Optional:    true,
+					Validators: []validator.List{
+						listvalidator.SizeAtLeast(1),
 					},
 				},
-			},
-			"properties": schema.SingleNestedAttribute{
-				Description: "Properties specific to this Task type",
-				Required:    true,
-				Optional:    false,
-				Attributes:  tt.GetPropertiesSchema(),
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+				"cron_expression": tfschema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
+			}),
+			"properties":   tfschema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.GetPropertiesSchema()),
+			"last_updated": tfschema.ResourceComputedString(""),
 		},
 	}
 }

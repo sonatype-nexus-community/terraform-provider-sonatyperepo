@@ -28,9 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -68,16 +65,10 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				1,
 				200,
 			),
-			"type": schema.StringAttribute{
-				Description: fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
-				Required:    false,
-				Optional:    true,
-				Computed:    true,
-				Default:     stringdefault.StaticString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"type": tfschema.ResourceComputedStringWithDefault(
+				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
+				BLOB_STORE_TYPE_GOOGLE_CLOUD,
+			),
 			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 		Blocks: map[string]schema.Block{

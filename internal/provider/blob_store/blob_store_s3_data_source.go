@@ -61,10 +61,10 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]dsschema.Attribute{
-			"name":          tfschema.DataSourceOptionalString("Name of the Blob Store"),
-			"type":          tfschema.DataSourceComputedString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3)),
-			"last_updated":  tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
-			"soft_quota":    tfschema.DataSourceComputedSingleNestedAttribute("Soft Quota for this Blob Store", map[string]dsschema.Attribute{"type": tfschema.DataSourceComputedString("Soft Quota type"), "limit": tfschema.DataSourceComputedInt64("Quota limit")}),
+			"name":         tfschema.DataSourceOptionalString("Name of the Blob Store"),
+			"type":         tfschema.DataSourceComputedString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3)),
+			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
+			"soft_quota":   tfschema.DataSourceComputedSingleNestedAttribute("Soft Quota for this Blob Store", map[string]dsschema.Attribute{"type": tfschema.DataSourceComputedString("Soft Quota type"), "limit": tfschema.DataSourceComputedInt64("Quota limit")}),
 			"bucket_configuration": tfschema.DataSourceComputedSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]dsschema.Attribute{
 				"bucket": tfschema.DataSourceComputedSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]dsschema.Attribute{
 					"region": tfschema.DataSourceComputedString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
@@ -84,7 +84,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 				"advanced_bucket_connection": tfschema.DataSourceComputedSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]dsschema.Attribute{
 					"endpoint":                 tfschema.DataSourceComputedString("A custom endpoint URL for third party object stores using the S3 API"),
 					"signer_type":              tfschema.DataSourceComputedString("An API signature version which may be required for third party object stores using the S3 API"),
-					"force_path_style":        dsschema.BoolAttribute{Description: "Setting this flag will result in path-style access being used for all requests", Computed: true},
+					"force_path_style":         dsschema.BoolAttribute{Description: "Setting this flag will result in path-style access being used for all requests", Computed: true},
 					"max_connection_pool_size": tfschema.DataSourceComputedInt64("Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore"),
 				}),
 			}),
