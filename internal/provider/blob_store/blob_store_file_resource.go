@@ -53,13 +53,13 @@ func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]schema.Attribute{
-			"name": tfschema.RequiredString("Name of the Blob Store"),
-			"path": tfschema.RequiredString("The Path on disk of this File Blob Store"),
-			"soft_quota": tfschema.OptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
-				"type":  tfschema.RequiredString("Soft Quota type"),
-				"limit": tfschema.OptionalInt64("Quota limit"),
+			"name": tfschema.ResourceRequiredString("Name of the Blob Store"),
+			"path": tfschema.ResourceRequiredString("The Path on disk of this File Blob Store"),
+			"soft_quota": tfschema.ResourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
+				"type":  tfschema.ResourceRequiredString("Soft Quota type"),
+				"limit": tfschema.ResourceOptionalInt64("Quota limit"),
 			}),
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

@@ -82,8 +82,8 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 				}
 				return attr
 			}(),
-			"description": tfschema.RequiredString("Description of the routing rule (required by Nexus API)"),
-			"mode": tfschema.RequiredStringEnum(
+			"description": tfschema.ResourceRequiredString("Description of the routing rule (required by Nexus API)"),
+			"mode": tfschema.ResourceRequiredStringEnum(
 				"Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
 				RoutingRuleModeAllow,
 				RoutingRuleModeBlock,

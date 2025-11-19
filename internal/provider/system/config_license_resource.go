@@ -60,16 +60,16 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 	resp.Schema = schema.Schema{
 		Description: "Configure and LDAP connection",
 		Attributes: map[string]schema.Attribute{
-			"license_data": tfschema.SensitiveString("Base64 encoded license data"),
-			"contact_company": tfschema.ComputedString("Licensed Company Name"),
-			"contact_email": tfschema.ComputedString("Licensed Company Contact Email"),
-			"contact_name": tfschema.ComputedString("Licensed Company Contact Name"),
-			"effective_date": tfschema.ComputedString("License effective date"),
-			"expiration_date": tfschema.ComputedString("License expiration date"),
-			"features": tfschema.ComputedString("Licensed features"),
-			"fingerprint": tfschema.ComputedString("License fingerprint"),
-			"license_type": tfschema.ComputedString("License type"),
-			"licensed_users": tfschema.ComputedString("Licensed User count"),
+			"license_data": tfschema.ResourceSensitiveString("Base64 encoded license data"),
+			"contact_company": tfschema.ResourceComputedString("Licensed Company Name"),
+			"contact_email": tfschema.ResourceComputedString("Licensed Company Contact Email"),
+			"contact_name": tfschema.ResourceComputedString("Licensed Company Contact Name"),
+			"effective_date": tfschema.ResourceComputedString("License effective date"),
+			"expiration_date": tfschema.ResourceComputedString("License expiration date"),
+			"features": tfschema.ResourceComputedString("Licensed features"),
+			"fingerprint": tfschema.ResourceComputedString("License fingerprint"),
+			"license_type": tfschema.ResourceComputedString("License type"),
+			"licensed_users": tfschema.ResourceComputedString("Licensed User count"),
 			"max_repo_components": schema.Int64Attribute{
 				Description: "Licensed Max Repo Components",
 				Computed:    true,
@@ -79,7 +79,7 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 				Computed:    true,
 			},
 			// Meta
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

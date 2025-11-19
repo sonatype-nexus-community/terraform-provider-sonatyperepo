@@ -61,9 +61,9 @@ func (r *contentSelectorResource) Schema(_ context.Context, _ resource.SchemaReq
 				regexp.MustCompile(contentSelectorNamePattern),
 				"Content Selector name must match pattern `^[a-zA-Z0-9\\-]{1}[a-zA-Z0-9_\\-\\.]*$`",
 			),
-			"description": tfschema.RequiredString("The description of this Content Selector."),
-			"expression":  tfschema.RequiredString("The Content Selector expression used to identify content."),
-			"last_updated": tfschema.Timestamp(),
+			"description": tfschema.ResourceRequiredString("The description of this Content Selector."),
+			"expression":  tfschema.ResourceRequiredString("The Content Selector expression used to identify content."),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

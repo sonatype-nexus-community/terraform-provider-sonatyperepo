@@ -76,8 +76,8 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				}
 				return attr
 			}(),
-			"notes": tfschema.OptionalString("Notes for the cleanup policy"),
-			"format": tfschema.RequiredStringEnum(
+			"notes": tfschema.ResourceOptionalString("Notes for the cleanup policy"),
+			"format": tfschema.ResourceRequiredStringEnum(
 				"Repository format that this cleanup policy applies to",
 				"apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum",
 			),

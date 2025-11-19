@@ -57,7 +57,7 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 	resp.Schema = schema.Schema{
 		Description: "Manage User Token Configuration",
 		Attributes: map[string]schema.Attribute{
-			"enabled": tfschema.OptionalBoolWithDefault("Whether or not User Tokens feature is enabled", common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
+			"enabled": tfschema.ResourceOptionalBoolWithDefault("Whether or not User Tokens feature is enabled", common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
 			"expiration_days": schema.Int32Attribute{
 				Description: "Set user token expiration days (1-999)",
 				Optional:    true,
@@ -67,9 +67,9 @@ func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaR
 					int32validator.Between(1, 999),
 				},
 			},
-			"expiration_enabled": tfschema.OptionalBoolWithDefault("Enable user tokens expiration", common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
-			"protect_content": tfschema.OptionalBoolWithDefault("Additionally require user tokens for repository authentication", common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
-			"last_updated": tfschema.ComputedString(""),
+			"expiration_enabled": tfschema.ResourceOptionalBoolWithDefault("Enable user tokens expiration", common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
+			"protect_content": tfschema.ResourceOptionalBoolWithDefault("Additionally require user tokens for repository authentication", common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
+			"last_updated": tfschema.ResourceComputedString(""),
 		},
 	}
 }

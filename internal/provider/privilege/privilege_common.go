@@ -282,13 +282,13 @@ func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) 
 				regexp.MustCompile(privilegeNamePattern),
 				`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
 			),
-			"description": tfschema.RequiredString("Friendly description of this Privilege"),
-			"read_only": tfschema.ComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
-			"type": tfschema.RequiredStringEnum(
+			"description": tfschema.ResourceRequiredString("Friendly description of this Privilege"),
+			"read_only": tfschema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"type": tfschema.ResourceRequiredStringEnum(
 				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
 				privilegeTypeType.String(),
 			),
-			"last_updated": tfschema.ComputedString(""),
+			"last_updated": tfschema.ResourceComputedString(""),
 		},
 	}
 }

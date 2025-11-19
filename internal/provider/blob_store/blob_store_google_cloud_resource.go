@@ -78,13 +78,13 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 		Blocks: map[string]schema.Block{
 			"soft_quota": schema.SingleNestedBlock{
 				Description: "Soft Quota for this Blob Store",
 				Attributes: map[string]schema.Attribute{
-					"type": tfschema.StringEnum(
+					"type": tfschema.ResourceStringEnum(
 						"Soft Quota type",
 						"spaceUsedQuota",
 						"spaceRemainingQuota",
@@ -112,14 +112,14 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								"The path within your Cloud Storage bucket where blob data should be stored",
 								1024,
 							),
-							"region":     tfschema.OptionalString("The Google Cloud region for the bucket"),
-							"project_id": tfschema.OptionalString("The Google Cloud project id for the bucket"),
+							"region":     tfschema.ResourceOptionalString("The Google Cloud region for the bucket"),
+							"project_id": tfschema.ResourceOptionalString("The Google Cloud project id for the bucket"),
 						},
 					},
 					"authentication": schema.SingleNestedBlock{
 						Description: "Authentication Configuration for Google Cloud Storage",
 						Attributes: map[string]schema.Attribute{
-							"authentication_method": tfschema.StringEnum(
+							"authentication_method": tfschema.ResourceStringEnum(
 								"The type of Google Cloud authentication to use",
 								"accountKey",
 								"applicationDefault",
@@ -133,7 +133,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 					"encryption": schema.SingleNestedBlock{
 						Description: "Encryption Configuration for Google Cloud Storage",
 						Attributes: map[string]schema.Attribute{
-							"encryption_type": tfschema.StringEnum(
+							"encryption_type": tfschema.ResourceStringEnum(
 								"The type of GCP server side encryption to use",
 								"kmsManagedEncryption",
 								"default",

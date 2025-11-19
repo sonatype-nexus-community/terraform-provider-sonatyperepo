@@ -23,7 +23,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	rsschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
@@ -59,16 +58,16 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]dsschema.Attribute{
-			"name": tfschema.RequiredString("Name of the Blob Store"),
-			"path": tfschema.ComputedString("The Path on disk of this File Blob Store"),
-			"soft_quota": tfschema.ComputedOptionalSingleNestedAttribute(
+			"name": tfschema.DataSourceOptionalString("Name of the Blob Store"),
+			"path": tfschema.DataSourceComputedString("The Path on disk of this File Blob Store"),
+			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
-				map[string]rsschema.Attribute{
-					"type":  tfschema.ComputedString("Soft Quota type"),
-					"limit": tfschema.ComputedInt64("Quota limit"),
+				map[string]dsschema.Attribute{
+					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
+					"limit": tfschema.DataSourceComputedInt64("Quota limit"),
 				},
 			),
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

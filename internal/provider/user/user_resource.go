@@ -56,12 +56,12 @@ func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	userIDAttr := tfschema.RequiredString("The userid which is required for login. This value cannot be changed.")
+	userIDAttr := tfschema.ResourceRequiredString("The userid which is required for login. This value cannot be changed.")
 	userIDAttr.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.RequiresReplace(),
 	}
 
-	statusAttr := tfschema.RequiredString("The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.")
+	statusAttr := tfschema.ResourceRequiredString("The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.")
 	statusAttr.Validators = []validator.String{
 		stringvalidator.OneOf(
 			common.USER_STATUS_ACTIVE,
@@ -71,24 +71,24 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		),
 	}
 
-	rolesAttr := tfschema.RequiredStringSet("The list of roles assigned to this User.")
+	rolesAttr := tfschema.ResourceRequiredStringSet("The list of roles assigned to this User.")
 
-	readOnlyAttr := tfschema.ComputedOptionalBool("Whether the user is read-only")
-	sourceAttr := tfschema.ComputedOptionalString("Source system managing this user")
+	readOnlyAttr := tfschema.ResourceComputedOptionalBool("Whether the user is read-only")
+	sourceAttr := tfschema.ResourceComputedOptionalString("Source system managing this user")
 
 	resp.Schema = schema.Schema{
 		Description: "Manage Local and non-Local Users",
 		Attributes: map[string]schema.Attribute{
 			"user_id":      userIDAttr,
-			"first_name":   tfschema.RequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"last_name":    tfschema.RequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"email_address": tfschema.RequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"password":     tfschema.SensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
+			"first_name":   tfschema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"last_name":    tfschema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"email_address": tfschema.ResourceRequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"password":     tfschema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
 			"status":       statusAttr,
 			"roles":        rolesAttr,
 			"read_only":    readOnlyAttr,
 			"source":       sourceAttr,
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

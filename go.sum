@@ -352,14 +352,8 @@ github.com/skeema/knownhosts v1.3.1 h1:X2osQ+RAjK76shCbvhHHHVl3ZlgDm8apHEHFqRjnB
 github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQNxPwTcfiY=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.1 h1:omn8qFJCknWEMFjIx3HOnrfMkQ4pkjYZVrzNOUvKJwI=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.1/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.3.0 h1:CRe2UEQ7IvUS9bB7vChQrmMKkWozSyYbyynHdFHnxwM=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.3.0/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.3.1 h1:aTdzR0ZHoU1Xj5Km7f3+xIcpfMqoBJGvXUfsds3gXbA=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.3.1/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.4.0 h1:1IQt//EhwKGV53es+q6ib6cpyECZwjepQFUwG3Sg1BY=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.4.0/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.4.1 h1:HyCHkfnyDVwaKx/UeLorsJtlPDD+JjWUrgSbd4v6Gj0=
-github.com/sonatype-nexus-community/terraform-provider-shared v0.4.1/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.5.0 h1:rEp5EdarDwuKWC9hG1163Ek9CHF3BKHU9K/WHkbHrFY=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.5.0/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=

@@ -62,31 +62,31 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Configure and LDAP connection",
 		Attributes: map[string]schema.Attribute{
-			"id":   tfschema.ComputedString("Internal LDAP server ID"),
-			"name": tfschema.RequiredString("LDAP connection name"),
-			"protocol": tfschema.StringEnum(
+			"id":   tfschema.ResourceComputedString("Internal LDAP server ID"),
+			"name": tfschema.ResourceRequiredString("LDAP connection name"),
+			"protocol": tfschema.ResourceStringEnum(
 				"LDAP protocol to use",
 				common.PROTOCOL_LDAP,
 				common.PROTOCOL_LDAPS,
 			),
-			"nexus_trust_store_enabled": tfschema.OptionalBoolWithDefault(
+			"nexus_trust_store_enabled": tfschema.ResourceOptionalBoolWithDefault(
 				"Whether to use certificates stored in Nexus Repository Manager's truststore", false),
-			"hostname": tfschema.RequiredString("LDAP server hostname"),
+			"hostname": tfschema.ResourceRequiredString("LDAP server hostname"),
 			"port": schema.Int32Attribute{
 				Description: "LDAP server port",
 				Required:    true,
 			},
-			"search_base": tfschema.RequiredString("LDAP location to be added to the connection URL"),
-			"auth_scheme": tfschema.StringEnum(
+			"search_base": tfschema.ResourceRequiredString("LDAP location to be added to the connection URL"),
+			"auth_scheme": tfschema.ResourceStringEnum(
 				"Authentication scheme used for connecting to LDAP server",
 				common.AUTH_SCHEME_NONE,
 				common.AUTH_SCHEME_SIMPLE,
 				common.AUTH_SCHEME_DIGEST_MD5,
 				common.AUTH_SCHEME_CRAM_MD5,
 			),
-			"auth_username": tfschema.OptionalString("This must be a fully qualified username if simple authentication is used. Required if authScheme other than NONE."),
-			"auth_password": tfschema.SensitiveString("The password to bind with. Required if authScheme other than NONE."),
-			"auth_realm":    tfschema.OptionalString("The SASL realm to bind to. Required if authScheme is CRAM_MD5 or DIGEST_MD5."),
+			"auth_username": tfschema.ResourceOptionalString("This must be a fully qualified username if simple authentication is used. Required if authScheme other than NONE."),
+			"auth_password": tfschema.ResourceSensitiveString("The password to bind with. Required if authScheme other than NONE."),
+			"auth_realm":    tfschema.ResourceOptionalString("The SASL realm to bind to. Required if authScheme is CRAM_MD5 or DIGEST_MD5."),
 			"connection_timeout": schema.Int32Attribute{
 				Description: "How many seconds to wait before timeout",
 				Optional:    true,
@@ -115,34 +115,34 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 				},
 			},
 			// User Mapping
-			"user_base_dn":              tfschema.OptionalString("The relative DN where user objects are found (e.g. ou=people). This value will have the Search base DN value appended to form the full User search base DN."),
-			"user_subtree":              tfschema.OptionalBoolWithDefault("Are users located in structures below the user base DN?", false),
-			"user_object_class":         tfschema.RequiredString("LDAP class for user objects - e.g. inetOrgPerson"),
-			"user_ldap_filter":          tfschema.OptionalString("LDAP search filter to limit user search - e.g. (|(mail=*@example.com)(uid=dom*))"),
-			"user_id_attribute":         tfschema.RequiredString("This is used to find a user given its user ID - e.g. uid"),
-			"user_real_name_attribute":  tfschema.RequiredString("This is used to find a real name given the user ID - e.g. cn"),
-			"user_email_name_attribute": tfschema.RequiredString("This is used to find an email address given the user ID - e.g. mail"),
-			"user_password_attribute":   tfschema.OptionalString("If this field is blank the user will be authenticated against a bind with the LDAP server"),
-			"map_ldap_groups_to_roles":  tfschema.OptionalBoolWithDefault("Denotes whether LDAP assigned roles are used as Nexus Repository Manager roles", false),
+			"user_base_dn":              tfschema.ResourceOptionalString("The relative DN where user objects are found (e.g. ou=people). This value will have the Search base DN value appended to form the full User search base DN."),
+			"user_subtree":              tfschema.ResourceOptionalBoolWithDefault("Are users located in structures below the user base DN?", false),
+			"user_object_class":         tfschema.ResourceRequiredString("LDAP class for user objects - e.g. inetOrgPerson"),
+			"user_ldap_filter":          tfschema.ResourceOptionalString("LDAP search filter to limit user search - e.g. (|(mail=*@example.com)(uid=dom*))"),
+			"user_id_attribute":         tfschema.ResourceRequiredString("This is used to find a user given its user ID - e.g. uid"),
+			"user_real_name_attribute":  tfschema.ResourceRequiredString("This is used to find a real name given the user ID - e.g. cn"),
+			"user_email_name_attribute": tfschema.ResourceRequiredString("This is used to find an email address given the user ID - e.g. mail"),
+			"user_password_attribute":   tfschema.ResourceOptionalString("If this field is blank the user will be authenticated against a bind with the LDAP server"),
+			"map_ldap_groups_to_roles":  tfschema.ResourceOptionalBoolWithDefault("Denotes whether LDAP assigned roles are used as Nexus Repository Manager roles", false),
 			// Group Mapping
-			"group_type": tfschema.StringEnum(
+			"group_type": tfschema.ResourceStringEnum(
 				"Defines a type of groups used: static (a group contains a list of users) or dynamic (a user contains a list of groups). Required if ldapGroupsAsRoles is true.",
 				common.LDAP_GROUP_MAPPING_STATIC,
 				common.LDAP_GROUP_MAPPING_DYNAMIC,
 			),
-			"user_member_of_attribute": tfschema.OptionalString("Set this to the attribute used to store the attribute which holds groups DN in the user object. Required if group_type is DYNAMIC"),
-			"group_base_dn":            tfschema.OptionalString("The relative DN where group objects are found (e.g. ou=Group). This value will have the Search base DN value appended to form the full Group search base DN. e.g. ou=Group"),
-			"group_subtree":            tfschema.OptionalBoolWithDefault("Are groups located in structures below the group base DN?", false),
-			"group_object_class":       tfschema.OptionalString("LDAP class for group objects. Required if groupType is STATIC - e.g. posixGroup"),
-			"group_id_attribute":       tfschema.OptionalString("This field specifies the attribute of the Object class that defines the Group ID. Required if groupType is STATIC - e.g. cn"),
-			"group_member_attribute":   tfschema.OptionalString("LDAP attribute containing the usernames for the group. Required if groupType is STATIC - e.g. memberUid"),
-			"group_member_format":      tfschema.OptionalString("The format of user ID stored in the group member attribute. Required if groupType is STATIC - e.g. uid=${username},ou=people,dc=example,dc=com"),
+			"user_member_of_attribute": tfschema.ResourceOptionalString("Set this to the attribute used to store the attribute which holds groups DN in the user object. Required if group_type is DYNAMIC"),
+			"group_base_dn":            tfschema.ResourceOptionalString("The relative DN where group objects are found (e.g. ou=Group). This value will have the Search base DN value appended to form the full Group search base DN. e.g. ou=Group"),
+			"group_subtree":            tfschema.ResourceOptionalBoolWithDefault("Are groups located in structures below the group base DN?", false),
+			"group_object_class":       tfschema.ResourceOptionalString("LDAP class for group objects. Required if groupType is STATIC - e.g. posixGroup"),
+			"group_id_attribute":       tfschema.ResourceOptionalString("This field specifies the attribute of the Object class that defines the Group ID. Required if groupType is STATIC - e.g. cn"),
+			"group_member_attribute":   tfschema.ResourceOptionalString("LDAP attribute containing the usernames for the group. Required if groupType is STATIC - e.g. memberUid"),
+			"group_member_format":      tfschema.ResourceOptionalString("The format of user ID stored in the group member attribute. Required if groupType is STATIC - e.g. uid=${username},ou=people,dc=example,dc=com"),
 			"order": schema.Int32Attribute{
 				Description: "Order number in which the server is being used when looking for a user - cannot be set during CREATE",
 				Optional:    true,
 			},
 			// Meta
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

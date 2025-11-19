@@ -57,16 +57,16 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 	resp.Schema = schema.Schema{
 		Description: "Configure the Sonatype IQ Server Connection",
 		Attributes: map[string]schema.Attribute{
-			"enabled":                   tfschema.RequiredBool("Whether to use Sonatype Repository Firewall"),
-			"url":                       tfschema.RequiredString("The address of your Sonatype IQ Server"),
-			"nexus_trust_store_enabled": tfschema.RequiredBool("Use certificates stored in the Nexus Repository Manager truststore to connect to Sonatype IQ Server"),
-			"authentication_method": tfschema.StringEnum(
+			"enabled":                   tfschema.ResourceRequiredBool("Whether to use Sonatype Repository Firewall"),
+			"url":                       tfschema.ResourceRequiredString("The address of your Sonatype IQ Server"),
+			"nexus_trust_store_enabled": tfschema.ResourceRequiredBool("Use certificates stored in the Nexus Repository Manager truststore to connect to Sonatype IQ Server"),
+			"authentication_method": tfschema.ResourceStringEnum(
 				"Authentication method for Sonatype IQ Connection",
 				common.IQ_AUTHENTICATON_TYPE_USER,
 				common.IQ_AUTHENTICATON_TYPE_PKI,
 			),
-			"username": tfschema.RequiredString("User with access to Sonatype Repository Firewall"),
-			"password": tfschema.SensitiveString("Credentials for the Sonatype Repository Firewall User"),
+			"username": tfschema.ResourceRequiredString("User with access to Sonatype Repository Firewall"),
+			"password": tfschema.ResourceSensitiveString("Credentials for the Sonatype Repository Firewall User"),
 			"connection_timeout": schema.Int32Attribute{
 				Description: "Seconds to wait for activity before stopping and retrying the connection.",
 				Optional:    true,
@@ -76,10 +76,10 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 					int32validator.Between(1, 3600),
 				},
 			},
-			"properties":             tfschema.OptionalString("Additional properties to configure for Sonatype Repository Firewall"),
-			"show_iq_server_link":    tfschema.RequiredBool("Show Sonatype Repository Firewall link in Browse menu when server is enabled"),
-			"fail_open_mode_enabled": tfschema.RequiredBool("Allow by default when quarantine is enabled and the connection to Sonatype IQ Server fails"),
-			"last_updated":           tfschema.Timestamp(),
+			"properties":             tfschema.ResourceOptionalString("Additional properties to configure for Sonatype Repository Firewall"),
+			"show_iq_server_link":    tfschema.ResourceRequiredBool("Show Sonatype Repository Firewall link in Browse menu when server is enabled"),
+			"fail_open_mode_enabled": tfschema.ResourceRequiredBool("Allow by default when quarantine is enabled and the connection to Sonatype IQ Server fails"),
+			"last_updated":           tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

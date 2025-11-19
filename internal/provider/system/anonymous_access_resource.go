@@ -53,10 +53,10 @@ func (r *anonymousAccessSystemResource) Schema(_ context.Context, _ resource.Sch
 	resp.Schema = schema.Schema{
 		Description: "Manage Anonymous Access",
 		Attributes: map[string]schema.Attribute{
-			"enabled":      tfschema.RequiredBool("Whether or not Anonymous Access is enabled"),
-			"realm_name":   tfschema.RequiredString("The name of the authentication realm for the anonymous account"),
-			"user_id":      tfschema.RequiredString("The username of the anonymous account"),
-			"last_updated": tfschema.Timestamp(),
+			"enabled":      tfschema.ResourceRequiredBool("Whether or not Anonymous Access is enabled"),
+			"realm_name":   tfschema.ResourceRequiredString("The name of the authentication realm for the anonymous account"),
+			"user_id":      tfschema.ResourceRequiredString("The username of the anonymous account"),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

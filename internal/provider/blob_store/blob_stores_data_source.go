@@ -22,7 +22,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	rsschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
@@ -60,21 +59,21 @@ func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRe
 	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get all Blob Stores",
 		Attributes: map[string]dsschema.Attribute{
-			"blob_stores": tfschema.ComputedListNestedAttribute(
+			"blob_stores": tfschema.DataSourceComputedListNestedAttribute(
 				"List of Blob Stores",
 				dsschema.NestedAttributeObject{
-					Attributes: map[string]rsschema.Attribute{
-						"name":          tfschema.RequiredString("Name of the Blob Store"),
-						"type":          tfschema.RequiredString("Blob Store type"),
-						"unavailable":   tfschema.RequiredBool("Whether the Blob Store is unavailable for use"),
-						"blob_count":    tfschema.ComputedInt64("Number of blobs in the Blob Store"),
-						"total_size_in_bytes": tfschema.ComputedInt64("Total size in bytes of the Blob Store"),
-						"available_space_in_bytes": tfschema.ComputedInt64("Available space in bytes for the Blob Store"),
-						"soft_quota": tfschema.OptionalSingleNestedAttribute(
+					Attributes: map[string]dsschema.Attribute{
+						"name":          tfschema.DataSourceOptionalString("Name of the Blob Store"),
+						"type":          tfschema.DataSourceOptionalString("Blob Store type"),
+						"unavailable":   tfschema.DataSourceOptionalBool("Whether the Blob Store is unavailable for use"),
+						"blob_count":    tfschema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
+						"total_size_in_bytes": tfschema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
+						"available_space_in_bytes": tfschema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
+						"soft_quota": tfschema.DataSourceOptionalSingleNestedAttribute(
 							"Soft Quota for this Blob Store",
-							map[string]rsschema.Attribute{
-								"type":  tfschema.RequiredString("Soft Quota type"),
-								"limit": tfschema.ComputedInt64("Quota limit"),
+							map[string]dsschema.Attribute{
+								"type":  tfschema.DataSourceOptionalString("Soft Quota type"),
+								"limit": tfschema.DataSourceComputedInt64("Quota limit"),
 							},
 						),
 					},

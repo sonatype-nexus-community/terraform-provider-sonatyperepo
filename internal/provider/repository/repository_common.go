@@ -417,15 +417,15 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 
 func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
 	storageAttributes := map[string]schema.Attribute{
-		"blob_store_name": tfschema.RequiredString("Name of the Blob Store to use"),
-		"strict_content_type_validation": tfschema.RequiredBool(
+		"blob_store_name": tfschema.ResourceRequiredString("Name of the Blob Store to use"),
+		"strict_content_type_validation": tfschema.ResourceRequiredBool(
 			"Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
 		),
 	}
 
 	// Write Policy is only for Hosted Repositories
 	if repoType == format.REPO_TYPE_HOSTED {
-		writePolicyAttr := tfschema.RequiredString("Controls if deployments of and updates to assets are allowed")
+		writePolicyAttr := tfschema.ResourceRequiredString("Controls if deployments of and updates to assets are allowed")
 		writePolicyAttr.Validators = []validator.String{
 			stringvalidator.OneOf(
 				common.WRITE_POLICY_ALLOW,
@@ -438,13 +438,13 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 
 	// LatestPolicy is only for Docker Hosted Repositories
 	if repoFormat == common.REPO_FORMAT_DOCKER && repoType == format.REPO_TYPE_HOSTED {
-		storageAttributes["latest_policy"] = tfschema.OptionalBoolWithDefault(
+		storageAttributes["latest_policy"] = tfschema.ResourceOptionalBoolWithDefault(
 			"Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
 			false,
 		)
 	}
 
-	nameAttr := tfschema.RequiredString("Name of the Repository")
+	nameAttr := tfschema.ResourceRequiredString("Name of the Repository")
 	nameAttr.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.RequiresReplace(),
 	}
@@ -463,12 +463,12 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 		Attributes: map[string]schema.Attribute{
 			"name":    nameAttr,
 			"url":     urlAttr,
-			"online":  tfschema.RequiredBool("Whether this Repository is online and accepting incoming requests"),
-			"storage": tfschema.RequiredSingleNestedAttribute("Storage configuration for this Repository", storageAttributes),
-			"cleanup": tfschema.OptionalSingleNestedAttribute("Repository Cleanup configuration", map[string]schema.Attribute{
-				"policy_names": tfschema.OptionalStringSet("Set of Cleanup Policies that will apply to this Repository"),
+			"online":  tfschema.ResourceRequiredBool("Whether this Repository is online and accepting incoming requests"),
+			"storage": tfschema.ResourceRequiredSingleNestedAttribute("Storage configuration for this Repository", storageAttributes),
+			"cleanup": tfschema.ResourceOptionalSingleNestedAttribute("Repository Cleanup configuration", map[string]schema.Attribute{
+				"policy_names": tfschema.ResourceOptionalStringSet("Set of Cleanup Policies that will apply to this Repository"),
 			}),
-			"last_updated": tfschema.Timestamp(),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

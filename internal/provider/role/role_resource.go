@@ -53,7 +53,7 @@ func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	idAttr := tfschema.RequiredString("The id of the Role.\n\nThis should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.\nMatching Roles based on id will automatically be granted to LDAP or SAML users.")
+	idAttr := tfschema.ResourceRequiredString("The id of the Role.\n\nThis should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.\nMatching Roles based on id will automatically be granted to LDAP or SAML users.")
 	idAttr.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.RequiresReplace(),
 	}
@@ -62,11 +62,11 @@ func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Description: "Manage Roles in Sonatype Nexus Repository",
 		Attributes: map[string]schema.Attribute{
 			"id":          idAttr,
-			"name":        tfschema.RequiredString("The name of the role."),
-			"description": tfschema.RequiredString("The description of this role."),
-			"privileges":  tfschema.RequiredStringSet("The set of privileges assigned to this role."),
-			"roles":       tfschema.RequiredStringSet("The set of roles assigned to this role."),
-			"last_updated": tfschema.Timestamp(),
+			"name":        tfschema.ResourceRequiredString("The name of the role."),
+			"description": tfschema.ResourceRequiredString("The description of this role."),
+			"privileges":  tfschema.ResourceRequiredStringSet("The set of privileges assigned to this role."),
+			"roles":       tfschema.ResourceRequiredStringSet("The set of roles assigned to this role."),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
