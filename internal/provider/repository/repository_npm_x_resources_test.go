@@ -157,6 +157,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
 					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
 					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
 					resource.TestCheckResourceAttr(resourceProxyName, "npm.remove_quarrantined", "true"),
 
