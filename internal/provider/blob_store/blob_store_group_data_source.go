@@ -58,7 +58,7 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]dsschema.Attribute{
-			"name":         tfschema.DataSourceOptionalString("Name of the Blob Store Group"),
+			"name":         tfschema.DataSourceRequiredString("Name of the Blob Store Group"),
 			"fill_policy":  tfschema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
 			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 			"members": dsschema.SetAttribute{
@@ -66,7 +66,7 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 				ElementType: types.StringType,
 				Computed:    true,
 			},
-			"soft_quota": tfschema.DataSourceComputedOptionalSingleNestedAttribute(
+			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
 				map[string]dsschema.Attribute{
 					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
