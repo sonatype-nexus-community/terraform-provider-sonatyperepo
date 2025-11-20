@@ -95,7 +95,7 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	api_response, httpResponse, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
 		sharederr.HandleAPIError(
 			"Unable to read group blob store",
@@ -110,20 +110,20 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		Name: types.StringValue(data.Name.ValueString()),
 	}
 
-	if api_response.SoftQuota != nil && api_response.SoftQuota.Type != nil {
-		tflog.Debug(ctx, fmt.Sprintf("%v", api_response.SoftQuota))
+	if apiResponse.SoftQuota != nil && apiResponse.SoftQuota.Type != nil {
+		tflog.Debug(ctx, fmt.Sprintf("%v", apiResponse.SoftQuota))
 		state.SoftQuota = &model.BlobStoreSoftQuota{
-			Type:  types.StringValue(*api_response.SoftQuota.Type),
-			Limit: types.Int64Value(*api_response.SoftQuota.Limit),
+			Type:  types.StringValue(*apiResponse.SoftQuota.Type),
+			Limit: types.Int64Value(*apiResponse.SoftQuota.Limit),
 		}
 	}
-	if len(api_response.Members) > 0 {
-		for _, m := range api_response.Members {
+	if len(apiResponse.Members) > 0 {
+		for _, m := range apiResponse.Members {
 			state.Members = append(state.Members, types.StringValue(m))
 		}
 	}
-	if api_response.FillPolicy != nil {
-		state.FillPolicy = types.StringValue(*api_response.FillPolicy)
+	if apiResponse.FillPolicy != nil {
+		state.FillPolicy = types.StringValue(*apiResponse.FillPolicy)
 	}
 
 	// Set state
