@@ -55,7 +55,7 @@ func (d *contentSelectorDataSource) Schema(_ context.Context, req datasource.Sch
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a single Content Selector by name",
 		Attributes: map[string]schema.Attribute{
-			"name":        tfschema.DataSourceOptionalString("The name of the Content Selector."),
+			"name":        tfschema.DataSourceRequiredString("The name of the Content Selector."),
 			"description": tfschema.DataSourceComputedString("The description of this Content Selector."),
 			"expression":  tfschema.DataSourceComputedString("The Content Selector expression used to identify content."),
 		},
