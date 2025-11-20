@@ -77,15 +77,15 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 						},
 						"description": dsschema.StringAttribute{
 							Description: "Friendly description of this Privilege",
-							Computed:    true,
+							Required:    true,
 						},
 						"read_only": dsschema.BoolAttribute{
 							Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
-							Computed:    true,
+							Required:    true,
 						},
 						"type": dsschema.StringAttribute{
 							Description: "The privilege type.",
-							Computed:    true,
+							Required:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOf(privilege_type.AllPrivilegeTypes()...),
 							},
