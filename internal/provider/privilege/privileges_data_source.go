@@ -67,7 +67,7 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 					Attributes: map[string]dsschema.Attribute{
 						"name": dsschema.StringAttribute{
 							Description: "The name of the privilege. This value cannot be changed.",
-							Computed:    true,
+							Required:    true,
 							Validators: []validator.String{
 								stringvalidator.RegexMatches(
 									regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
