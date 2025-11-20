@@ -17,7 +17,7 @@ Use this data source to get a single Task by ID
 
 ### Required
 
-- `id` (String) The name of the Task.
+- `id` (String) The ID of the Task.
 
 ### Read-Only
 

@@ -73,8 +73,8 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 
 	rolesAttr := tfschema.ResourceRequiredStringSet("The list of roles assigned to this User.")
 
-	readOnlyAttr := tfschema.ResourceComputedOptionalBool("Whether the user is read-only")
-	sourceAttr := tfschema.ResourceComputedOptionalString("Source system managing this user")
+	readOnlyAttr := tfschema.ResourceComputedBool("Whether the user is read-only")
+	sourceAttr := tfschema.ResourceComputedString("Source system managing this user")
 
 	resp.Schema = schema.Schema{
 		Description: "Manage Local and non-Local Users",

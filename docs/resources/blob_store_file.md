@@ -26,7 +26,7 @@ Use this data source to get a specific File Blob Store by it's name
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 
 <a id="nestedatt--soft_quota"></a>
 ### Nested Schema for `soft_quota`

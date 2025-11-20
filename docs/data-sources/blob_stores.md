@@ -17,20 +17,17 @@ Use this data source to get all Blob Stores
 
 ### Read-Only
 
-- `blob_stores` (Attributes List) (see [below for nested schema](#nestedatt--blob_stores))
+- `blob_stores` (Attributes List) List of Blob Stores (see [below for nested schema](#nestedatt--blob_stores))
 
 <a id="nestedatt--blob_stores"></a>
 ### Nested Schema for `blob_stores`
 
-Required:
-
-- `name` (String) Name of the Blob Store
-- `type` (String) Blob Store type
-- `unavailable` (Boolean) Whether the Blob Store is unavailable for use
-
 Optional:
 
+- `name` (String) Name of the Blob Store
 - `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--blob_stores--soft_quota))
+- `type` (String) Blob Store type
+- `unavailable` (Boolean) Whether the Blob Store is unavailable for use
 
 Read-Only:
 
@@ -41,7 +38,7 @@ Read-Only:
 <a id="nestedatt--blob_stores--soft_quota"></a>
 ### Nested Schema for `blob_stores.soft_quota`
 
-Required:
+Optional:
 
 - `type` (String) Soft Quota type
 

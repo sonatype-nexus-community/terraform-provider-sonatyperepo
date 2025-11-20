@@ -22,8 +22,8 @@ Use this data source to get all Tasks
 <a id="nestedatt--tasks"></a>
 ### Nested Schema for `tasks`
 
-Required:
+Read-Only:
 
-- `id` (String) The name of the Task.
+- `id` (String) The ID of the Task.
 - `name` (String) The name of the Task.
 - `type` (String) The type of Task.

@@ -449,14 +449,10 @@ func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) 
 		stringplanmodifier.RequiresReplace(),
 	}
 
-	urlAttr := schema.StringAttribute{
-		Description: "URL to access the Repository",
-		Optional:    true,
-		Computed:    true,
-		PlanModifiers: []planmodifier.String{
-			stringplanmodifier.UseStateForUnknown(),
-		},
-	}
+	urlAttr := tfschema.ResourceComputedOptionalStringWithPlanModifier(
+		"URL to access the Repository",
+		stringplanmodifier.UseStateForUnknown(),
+	)
 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),

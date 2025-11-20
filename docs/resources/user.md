@@ -48,31 +48,31 @@ resource "sonatyperepo_user" "saml_admin" {
 ### Required
 
 - `email_address` (String) The email address associated with the user.
-				
+
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
 - `first_name` (String) The first name of the user.
-				
+
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
 - `last_name` (String) The last name of the user.
 
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
 - `roles` (Set of String) The list of roles assigned to this User.
 - `status` (String) The user's status.
-				
+
 **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.
 - `user_id` (String) The userid which is required for login. This value cannot be changed.
 
 ### Optional
 
 - `password` (String, Sensitive) The password for the user.
-				
+
 **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.
 
 ### Read-Only
 
-- `last_updated` (String)
-- `read_only` (Boolean)
-- `source` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
+- `read_only` (Boolean) Whether the user is read-only
+- `source` (String) Source system managing this user
 
 ## Import
 

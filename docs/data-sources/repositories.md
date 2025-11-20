@@ -22,7 +22,7 @@ Use this data source to get all Repositories
 <a id="nestedatt--repositories"></a>
 ### Nested Schema for `repositories`
 
-Required:
+Read-Only:
 
 - `format` (String) Repository format
 - `name` (String) Name of the Repository

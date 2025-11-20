@@ -85,28 +85,13 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Cleanup criteria for this policy - at least one criterion must be specified",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"last_blob_updated": schema.Int64Attribute{
-						Description: "Remove components that haven't been downloaded in this many days",
-						Optional:    true,
-					},
-					"last_downloaded": schema.Int64Attribute{
-						Description: "Remove components that were last downloaded more than this many days ago",
-						Optional:    true,
-					},
-					"release_type": schema.StringAttribute{
-						Description: "Remove components that match this release type (e.g., RELEASES, PRERELEASES)",
-						Optional:    true,
-					},
-					"asset_regex": schema.StringAttribute{
-						Description: "Remove components that have at least one asset name matching this regular expression",
-						Optional:    true,
-					},
+					"last_blob_updated": tfschema.ResourceOptionalInt64("Remove components that haven't been downloaded in this many days"),
+					"last_downloaded":   tfschema.ResourceOptionalInt64("Remove components that were last downloaded more than this many days ago"),
+					"release_type":      tfschema.ResourceOptionalString("Remove components that match this release type (e.g., RELEASES, PRERELEASES)"),
+					"asset_regex":       tfschema.ResourceOptionalString("Remove components that have at least one asset name matching this regular expression"),
 				},
 			},
-			"retain": schema.Int64Attribute{
-				Description: "Minimum number of component versions to retain",
-				Optional:    true,
-			},
+			"retain": tfschema.ResourceOptionalInt64("Minimum number of component versions to retain"),
 			"last_updated": schema.StringAttribute{
 				Computed: true,
 			},

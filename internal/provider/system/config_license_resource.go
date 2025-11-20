@@ -70,14 +70,8 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 			"fingerprint": tfschema.ResourceComputedString("License fingerprint"),
 			"license_type": tfschema.ResourceComputedString("License type"),
 			"licensed_users": tfschema.ResourceComputedString("Licensed User count"),
-			"max_repo_components": schema.Int64Attribute{
-				Description: "Licensed Max Repo Components",
-				Computed:    true,
-			},
-			"max_repo_requests": schema.Int64Attribute{
-				Description: "Licensed Max Repo Requests",
-				Computed:    true,
-			},
+			"max_repo_components": tfschema.ResourceComputedInt64("Licensed Max Repo Components"),
+			"max_repo_requests":   tfschema.ResourceComputedInt64("Licensed Max Repo Requests"),
 			// Meta
 			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},

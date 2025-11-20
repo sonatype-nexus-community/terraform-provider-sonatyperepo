@@ -22,9 +22,9 @@ Manage a Privilege of type repository-view
 - `format` (String) The repository format (i.e 'nuget', 'npm') this privilege will grant access to (or * for all).
 - `name` (String) The name of the privilege. This value cannot be changed.
 - `repository` (String) The name of the repository this privilege will grant access to (or * for all).
+- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.
 
 ### Read-Only
 
 - `last_updated` (String)
 - `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
-- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.

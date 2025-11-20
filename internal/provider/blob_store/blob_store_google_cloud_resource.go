@@ -80,10 +80,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 						"spaceUsedQuota",
 						"spaceRemainingQuota",
 					),
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit in bytes",
-						Optional:    true,
-					},
+					"limit": tfschema.ResourceOptionalInt64("Quota limit in bytes"),
 				},
 			},
 			"bucket_configuration": schema.SingleNestedBlock{
