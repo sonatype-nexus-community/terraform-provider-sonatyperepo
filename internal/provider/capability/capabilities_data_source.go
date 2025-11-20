@@ -62,11 +62,11 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 				Computed: true,
 				NestedObject: dsschema.NestedAttributeObject{
 					Attributes: map[string]dsschema.Attribute{
-						"id":         dsschema.StringAttribute{Description: "Internal ID of the Capability.", Computed: true},
-						"type":       dsschema.StringAttribute{Description: "Type of the Capability.", Computed: true},
-						"enabled":    dsschema.BoolAttribute{Description: "Whether the Capability is enabled.", Computed: true},
+						"id":         dsschema.StringAttribute{Description: "Internal ID of the Capability.", Required: true},
+						"type":       dsschema.StringAttribute{Description: "Type of the Capability.", Required: true},
+						"enabled":    dsschema.BoolAttribute{Description: "Whether the Capability is enabled.", Required: true},
 						"notes":      dsschema.StringAttribute{Description: "Notes about the configured Capability.", Computed: true},
-						"properties": dsschema.MapAttribute{Description: "Properties of the Capability.", Computed: true, ElementType: types.StringType},
+						"properties": dsschema.MapAttribute{Description: "Properties of the Capability.", Required: true, ElementType: types.StringType},
 					},
 				},
 			},

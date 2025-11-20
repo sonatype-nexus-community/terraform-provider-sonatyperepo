@@ -29,10 +29,13 @@ data "sonatyperepo_capabilities" "capabilities" {}
 <a id="nestedatt--capabilities"></a>
 ### Nested Schema for `capabilities`
 
-Read-Only:
+Required:
 
 - `enabled` (Boolean) Whether the Capability is enabled.
 - `id` (String) Internal ID of the Capability.
-- `notes` (String) Notes about the configured Capability.
 - `properties` (Map of String) Properties of the Capability.
 - `type` (String) Type of the Capability.
+
+Read-Only:
+
+- `notes` (String) Notes about the configured Capability.
