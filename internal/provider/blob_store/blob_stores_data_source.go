@@ -63,9 +63,9 @@ func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRe
 				"List of Blob Stores",
 				dsschema.NestedAttributeObject{
 					Attributes: map[string]dsschema.Attribute{
-						"name":                     tfschema.DataSourceOptionalString("Name of the Blob Store"),
-						"type":                     tfschema.DataSourceOptionalString("Blob Store type"),
-						"unavailable":              tfschema.DataSourceOptionalBool("Whether the Blob Store is unavailable for use"),
+						"name":                     tfschema.DataSourceComputedString("Name of the Blob Store"),
+						"type":                     tfschema.DataSourceComputedString("Blob Store type"),
+						"unavailable":              tfschema.DataSourceComputedBool("Whether the Blob Store is unavailable for use"),
 						"blob_count":               tfschema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
 						"total_size_in_bytes":      tfschema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
 						"available_space_in_bytes": tfschema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
