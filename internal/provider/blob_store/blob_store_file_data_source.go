@@ -58,7 +58,7 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 	resp.Schema = dsschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]dsschema.Attribute{
-			"name": tfschema.DataSourceOptionalString("Name of the Blob Store"),
+			"name": tfschema.DataSourceRequiredString("Name of the Blob Store"),
 			"path": tfschema.DataSourceComputedString("The Path on disk of this File Blob Store"),
 			"soft_quota": tfschema.DataSourceComputedOptionalSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
@@ -85,11 +85,6 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	ctx = d.GetAuthContext(ctx)
-
-	if data.Name.IsNull() {
-		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")
-		return
-	}
 
 	blobStore, httpResponse, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
