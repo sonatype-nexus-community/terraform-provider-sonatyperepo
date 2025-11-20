@@ -25,7 +25,6 @@ Use this data source to get all Blob Stores
 Optional:
 
 - `name` (String) Name of the Blob Store
-- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--blob_stores--soft_quota))
 - `type` (String) Blob Store type
 - `unavailable` (Boolean) Whether the Blob Store is unavailable for use
 
@@ -33,15 +32,13 @@ Read-Only:
 
 - `available_space_in_bytes` (Number) Available space in bytes for the Blob Store
 - `blob_count` (Number) Number of blobs in the Blob Store
+- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--blob_stores--soft_quota))
 - `total_size_in_bytes` (Number) Total size in bytes of the Blob Store
 
 <a id="nestedatt--blob_stores--soft_quota"></a>
 ### Nested Schema for `blob_stores.soft_quota`
 
-Optional:
-
-- `type` (String) Soft Quota type
-
 Read-Only:
 
 - `limit` (Number) Quota limit
+- `type` (String) Soft Quota type

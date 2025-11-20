@@ -69,10 +69,10 @@ func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRe
 						"blob_count":               tfschema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
 						"total_size_in_bytes":      tfschema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
 						"available_space_in_bytes": tfschema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
-						"soft_quota": tfschema.DataSourceOptionalSingleNestedAttribute(
+						"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
 							"Soft Quota for this Blob Store",
 							map[string]dsschema.Attribute{
-								"type":  tfschema.DataSourceOptionalString("Soft Quota type"),
+								"type":  tfschema.DataSourceComputedString("Soft Quota type"),
 								"limit": tfschema.DataSourceComputedInt64("Quota limit"),
 							},
 						),
