@@ -18,12 +18,12 @@ Use this data source to get a specific File Blob Store by it's name
 ### Optional
 
 - `name` (String) Name of the Blob Store
+- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 
 ### Read-Only
 
 - `last_updated` (String) The timestamp of when the resource was last updated
 - `path` (String) The Path on disk of this File Blob Store
-- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 
 <a id="nestedatt--soft_quota"></a>
 ### Nested Schema for `soft_quota`

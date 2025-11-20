@@ -18,13 +18,22 @@ Use this data source to get a specific S3 Blob Store by it's name
 ### Optional
 
 - `name` (String) Name of the Blob Store
+- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 
 ### Read-Only
 
 - `bucket_configuration` (Attributes) Bucket Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration))
 - `last_updated` (String) The timestamp of when the resource was last updated
-- `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 - `type` (String) Type of this Blob Store - will always be 's3'
+
+<a id="nestedatt--soft_quota"></a>
+### Nested Schema for `soft_quota`
+
+Read-Only:
+
+- `limit` (Number) Quota limit
+- `type` (String) Soft Quota type
+
 
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
@@ -75,13 +84,3 @@ Read-Only:
 
 - `encryption_key` (String) The encryption key
 - `encryption_type` (String) The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'
-
-
-
-<a id="nestedatt--soft_quota"></a>
-### Nested Schema for `soft_quota`
-
-Read-Only:
-
-- `limit` (Number) Quota limit
-- `type` (String) Soft Quota type

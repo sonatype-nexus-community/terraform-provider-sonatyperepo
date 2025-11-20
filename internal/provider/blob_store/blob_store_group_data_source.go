@@ -66,7 +66,7 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 				ElementType: types.StringType,
 				Computed:    true,
 			},
-			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
+			"soft_quota": tfschema.DataSourceComputedOptionalSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
 				map[string]dsschema.Attribute{
 					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
