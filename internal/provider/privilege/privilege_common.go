@@ -19,6 +19,8 @@ package privilege
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"maps"
 	"net/http"
 	"reflect"
@@ -27,16 +29,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
+
+const privilegeNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 const (
 	PRIVILEGE_ERROR_RESPONSE_PREFIX           = "Error response: "
@@ -90,7 +90,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Error creating %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -99,7 +99,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -140,14 +140,14 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
@@ -189,14 +189,14 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
@@ -247,14 +247,14 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
@@ -264,7 +264,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			fmt.Sprintf("Unexpected response when deleting %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -277,38 +277,18 @@ func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the privilege. This value cannot be changed.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "Friendly description of this Privilege",
-				Required:    true,
-				Optional:    false,
-			},
-			"read_only": schema.BoolAttribute{
-				Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     booldefault.StaticBool(false),
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     stringdefault.StaticString(privilegeTypeType.String()),
-				Validators: []validator.String{
-					stringvalidator.OneOf(privilegeTypeType.String()),
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name": tfschema.RequiredStringWithRegex(
+				"The name of the privilege. This value cannot be changed.",
+				regexp.MustCompile(privilegeNamePattern),
+				`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
+			),
+			"description": tfschema.ResourceRequiredString("Friendly description of this Privilege"),
+			"read_only": tfschema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"type": tfschema.ResourceRequiredStringEnum(
+				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
+				privilegeTypeType.String(),
+			),
+			"last_updated": tfschema.ResourceComputedString(""),
 		},
 	}
 }

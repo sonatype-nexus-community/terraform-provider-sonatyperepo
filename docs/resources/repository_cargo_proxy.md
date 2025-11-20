@@ -34,7 +34,7 @@ Manage Proxy CARGO Repositories
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 
 <a id="nestedatt--cargo"></a>
 ### Nested Schema for `cargo`

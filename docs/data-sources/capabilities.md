@@ -36,6 +36,6 @@ Required:
 - `properties` (Map of String) Properties of the Capability.
 - `type` (String) Type of the Capability.
 
-Optional:
+Read-Only:
 
 - `notes` (String) Notes about the configured Capability.

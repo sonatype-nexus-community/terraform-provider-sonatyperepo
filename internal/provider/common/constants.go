@@ -118,6 +118,7 @@ const (
 	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED                         bool   = false
 	SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT                            bool   = false
 	ERROR_MESSAGE_UNAUTHORIZED                                             string = "Your user is unauthorized to access this resource or feature."
+	ERROR_UNABLE_TO_READ_BLOB_STORE_FILE                                   string = "Unable to read blob store file"
 )
 
 func NewFalse() *bool {

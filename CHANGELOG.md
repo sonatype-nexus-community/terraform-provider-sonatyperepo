@@ -2,7 +2,12 @@
 
 ## X.Y.Z (UNRELEASED)
 
-_TBC_
+ENHANCEMENTS:
+* Refactored common code and patterns into a shared library [GH-208]
+  * Data Source `sonatyperepo_blob_store_file` - `soft_quota` is now read-only to align with similar data sources
+  * Data Source `sonatyperepo_blob_store_s3` - `soft_quota` and `bucket_configuration` are now read-only to align with similar data sources
+  * Data Source `sonatyperepo_blob_stores` - all fields should have been read-only
+* 
 
 ## 0.12.0 November 14, 2025
 

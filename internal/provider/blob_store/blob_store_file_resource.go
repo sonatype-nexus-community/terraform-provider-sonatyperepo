@@ -26,11 +26,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // blobStoreFileResource is the resource implementation.
@@ -53,35 +53,13 @@ func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
-			"path": schema.StringAttribute{
-				Description: "The Path on disk of this File Blob Store",
-				Required:    true,
-				Optional:    false,
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    true,
-						Optional:    false,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    true,
-					},
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"name": tfschema.ResourceRequiredString("Name of the Blob Store"),
+			"path": tfschema.ResourceRequiredString("The Path on disk of this File Blob Store"),
+			"soft_quota": tfschema.ResourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
+				"type":  tfschema.ResourceRequiredString("Soft Quota type"),
+				"limit": tfschema.ResourceOptionalInt64("Quota limit"),
+			}),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -117,30 +95,30 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-	common.HandleApiError(
-	 "Error creating Blob Store File",
-	&err,
-	api_response,
-	 &resp.Diagnostics,
-	)
-	 return
- 	}
+		sharederr.HandleAPIError(
+			"Error creating Blob Store File",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+		return
+	}
 
- 	if api_response.StatusCode == http.StatusNoContent {
- 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
- 	diags := resp.State.Set(ctx, plan)
- 	resp.Diagnostics.Append(diags...)
- 	if resp.Diagnostics.HasError() {
- 	return
- 	}
- 	} else {
- 	common.HandleApiError(
- 	"Creation of Blob Store File was not successful",
- 	&err,
- 	 api_response,
- 	 &resp.Diagnostics,
- 	 )
- 	}
+	if api_response.StatusCode == http.StatusNoContent {
+		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+		diags := resp.State.Set(ctx, plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		sharederr.HandleAPIError(
+			"Creation of Blob Store File was not successful",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -163,14 +141,14 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Blob Store File to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Blob Store File",
 				&err,
 				httpResponse,
@@ -237,14 +215,14 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Blob Store File to update did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Blob Store File",
 				&err,
 				httpResponse,

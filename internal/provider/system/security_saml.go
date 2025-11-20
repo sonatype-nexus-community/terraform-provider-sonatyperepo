@@ -23,11 +23,11 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -85,43 +85,43 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 			},
 			"first_name_attribute": schema.StringAttribute{
 				Description: "IdP field mappings for user's given name",
-				Optional: true,
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"last_name_attribute": schema.StringAttribute{
 				Description: "IdP field mappings for user's family name",
-				Optional: true,
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"email_attribute": schema.StringAttribute{
 				Description: "IdP field mappings for user's email",
-				Optional: true,
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"groups_attribute": schema.StringAttribute{
 				Description: "IdP field mappings for user's groups",
-				Optional: true,
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"validate_response_signature": schema.BoolAttribute{
 				Description: "Validate SAML response signature",
-				Optional: true,
+				Optional:    true,
 			},
 			"validate_assertion_signature": schema.BoolAttribute{
 				Description: "By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.",
-				Optional: true,
+				Optional:    true,
 			},
 			"entity_id": schema.StringAttribute{
 				Description: "SAML Entity ID (typically a URI)",
-				Optional: true,
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -178,7 +178,7 @@ func (r *securitySamlResource) ImportState(ctx context.Context, req resource.Imp
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	
+
 	tflog.Info(ctx, "Successfully imported SAML configuration")
 }
 
@@ -200,15 +200,15 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 	)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
-		IdpMetadata: plan.IdpMetadata.ValueString(),
-		UsernameAttribute: plan.UsernameAttribute.ValueString(),
-		FirstNameAttribute: plan.FirstNameAttribute.ValueStringPointer(),
-		LastNameAttribute: plan.LastNameAttribute.ValueStringPointer(),
-		EmailAttribute: plan.EmailAttribute.ValueStringPointer(),
-		GroupsAttribute: plan.GroupsAttribute.ValueStringPointer(),
-		ValidateResponseSignature: plan.ValidateResponseSignature.ValueBoolPointer(),
+		IdpMetadata:                plan.IdpMetadata.ValueString(),
+		UsernameAttribute:          plan.UsernameAttribute.ValueString(),
+		FirstNameAttribute:         plan.FirstNameAttribute.ValueStringPointer(),
+		LastNameAttribute:          plan.LastNameAttribute.ValueStringPointer(),
+		EmailAttribute:             plan.EmailAttribute.ValueStringPointer(),
+		GroupsAttribute:            plan.GroupsAttribute.ValueStringPointer(),
+		ValidateResponseSignature:  plan.ValidateResponseSignature.ValueBoolPointer(),
 		ValidateAssertionSignature: plan.ValidateAssertionSignature.ValueBoolPointer(),
-		EntityId: plan.EntityId.ValueStringPointer(),
+		EntityId:                   plan.EntityId.ValueStringPointer(),
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Creating security saml configuration with : %v", requestPayload))
@@ -229,7 +229,7 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	tflog.Info(ctx, "Successfully created security saml configuration")
-	
+
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -318,15 +318,15 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 	)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
-		IdpMetadata: plan.IdpMetadata.ValueString(),
-		UsernameAttribute: plan.UsernameAttribute.ValueString(),
-		FirstNameAttribute: plan.FirstNameAttribute.ValueStringPointer(),
-		LastNameAttribute: plan.LastNameAttribute.ValueStringPointer(),
-		EmailAttribute: plan.EmailAttribute.ValueStringPointer(),
-		GroupsAttribute: plan.GroupsAttribute.ValueStringPointer(),
-		ValidateResponseSignature: plan.ValidateResponseSignature.ValueBoolPointer(),
+		IdpMetadata:                plan.IdpMetadata.ValueString(),
+		UsernameAttribute:          plan.UsernameAttribute.ValueString(),
+		FirstNameAttribute:         plan.FirstNameAttribute.ValueStringPointer(),
+		LastNameAttribute:          plan.LastNameAttribute.ValueStringPointer(),
+		EmailAttribute:             plan.EmailAttribute.ValueStringPointer(),
+		GroupsAttribute:            plan.GroupsAttribute.ValueStringPointer(),
+		ValidateResponseSignature:  plan.ValidateResponseSignature.ValueBoolPointer(),
 		ValidateAssertionSignature: plan.ValidateAssertionSignature.ValueBoolPointer(),
-		EntityId: plan.EntityId.ValueStringPointer(),
+		EntityId:                   plan.EntityId.ValueStringPointer(),
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Updating security SAML configuration with : %v", requestPayload))
@@ -348,7 +348,7 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	tflog.Info(ctx, "Successfully updated security SAML configuration")
-	
+
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

@@ -40,7 +40,7 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type DockerRepositoryFormat struct{
+type DockerRepositoryFormat struct {
 	BaseRepositoryFormat
 }
 

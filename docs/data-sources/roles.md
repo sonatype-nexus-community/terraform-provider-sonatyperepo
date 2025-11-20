@@ -22,7 +22,7 @@ Use this data source to get all Roles
 <a id="nestedatt--roles"></a>
 ### Nested Schema for `roles`
 
-Required:
+Read-Only:
 
 - `description` (String) The description of this role.
 - `id` (String) The id of the role.

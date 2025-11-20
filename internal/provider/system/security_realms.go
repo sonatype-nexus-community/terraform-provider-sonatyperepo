@@ -120,10 +120,10 @@ func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.I
 
 	// Convert API response to Terraform state
 	var state model.SecurityRealmsModel
-	
+
 	// Set the ID
 	state.ID = types.StringValue("security_realms")
-	
+
 	// Convert API response to Terraform List
 	if apiResponse != nil {
 		activeElements := make([]attr.Value, len(apiResponse))
@@ -149,7 +149,7 @@ func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.I
 
 	// Set the state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	
+
 	tflog.Info(ctx, "Successfully imported security realms configuration")
 }
 

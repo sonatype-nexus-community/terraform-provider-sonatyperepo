@@ -19,18 +19,18 @@ package repository
 import (
 	"context"
 	"fmt"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -45,6 +45,7 @@ const (
 	RoutingRuleModeAllow = "ALLOW"
 	// RoutingRuleModeBlock represents the BLOCK mode for routing rules
 	RoutingRuleModeBlock = "BLOCK"
+	routingRuleNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 )
 
 // routingRuleResource is the resource implementation.
@@ -67,39 +68,29 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Use this resource to create and manage routing rules in Sonatype Nexus Repository Manager",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the routing rule",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
+			"name": func() schema.StringAttribute {
+				attr := tfschema.RequiredStringWithRegexAndLength(
+					"Name of the routing rule",
+					regexp.MustCompile(routingRuleNamePattern),
+					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
+					1,
+					255,
+				)
+				attr.PlanModifiers = []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.LengthBetween(1, 255),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "Description of the routing rule (required by Nexus API)",
-				Required:    true,
-			},
-			"mode": schema.StringAttribute{
-				Description: "Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf(RoutingRuleModeAllow, RoutingRuleModeBlock),
-				},
-			},
-			"matchers": schema.SetAttribute{
-				Description: "Regular expressions used to identify request paths that are allowed or blocked (depending on mode)",
-				Required:    true,
-				ElementType: types.StringType,
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
-			},
+				}
+				return attr
+			}(),
+			"description": tfschema.ResourceRequiredString("Description of the routing rule (required by Nexus API)"),
+			"mode": tfschema.ResourceRequiredStringEnum(
+				"Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
+				RoutingRuleModeAllow,
+				RoutingRuleModeBlock,
+			),
+			"matchers": tfschema.ResourceRequiredStringSetWithValidator(
+				"Regular expressions used to identify request paths that are allowed or blocked (depending on mode)",
+				setvalidator.SizeAtLeast(1),
+			),
 			"last_updated": schema.StringAttribute{
 				Computed: true,
 			},
@@ -133,7 +124,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating routing rule",
 			&err,
 			apiResponse,
@@ -152,7 +143,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 			return
 		}
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Failed to create routing rule",
 			&err,
 			apiResponse,
@@ -181,7 +172,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 		// Check if this is a 404 error
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule not found",
 				&err,
 				httpResponse,
@@ -190,7 +181,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error reading routing rule",
 			&err,
 			httpResponse,
@@ -234,14 +225,14 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule to update did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating routing rule",
 				&err,
 				apiResponse,
@@ -281,14 +272,14 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			// Resource already deleted, nothing to do
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Routing rule to delete did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error deleting routing rule",
 				&err,
 				apiResponse,
@@ -299,7 +290,7 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Failed to delete routing rule",
 			&err,
 			apiResponse,

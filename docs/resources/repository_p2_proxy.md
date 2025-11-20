@@ -33,7 +33,7 @@ Manage Proxy P2 Repositories
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 
 <a id="nestedatt--http_client"></a>
 ### Nested Schema for `http_client`

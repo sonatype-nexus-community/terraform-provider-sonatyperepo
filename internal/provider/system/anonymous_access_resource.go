@@ -20,16 +20,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
 )
 
 // anonymousAccessSystemResource is the resource implementation.
@@ -52,21 +53,10 @@ func (r *anonymousAccessSystemResource) Schema(_ context.Context, _ resource.Sch
 	resp.Schema = schema.Schema{
 		Description: "Manage Anonymous Access",
 		Attributes: map[string]schema.Attribute{
-			"enabled": schema.BoolAttribute{
-				Description: "Whether or not Anonymous Access is enabled",
-				Required:    true,
-			},
-			"realm_name": schema.StringAttribute{
-				Description: "The name of the authentication realm for the anonymous account",
-				Required:    true,
-			},
-			"user_id": schema.StringAttribute{
-				Description: "The username of the anonymous account",
-				Required:    true,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"enabled":      tfschema.ResourceRequiredBool("Whether or not Anonymous Access is enabled"),
+			"realm_name":   tfschema.ResourceRequiredString("The name of the authentication realm for the anonymous account"),
+			"user_id":      tfschema.ResourceRequiredString("The username of the anonymous account"),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -93,7 +83,7 @@ func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req res
 				"Your user is unauthorized to access this resource or feature during import.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error importing Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -154,7 +144,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -172,7 +162,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 			return
 		}
 	} else {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Update of Anonymous Access settings was not successful",
 			&err,
 			httpResponse,
@@ -209,7 +199,7 @@ func (r *anonymousAccessSystemResource) Read(ctx context.Context, req resource.R
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -263,7 +253,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -328,7 +318,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error removing Anonymous Access settings",
 				&err,
 				httpResponse,

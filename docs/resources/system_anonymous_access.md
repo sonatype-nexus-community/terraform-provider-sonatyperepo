@@ -23,7 +23,7 @@ Manage Anonymous Access
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 
 ## Import
 

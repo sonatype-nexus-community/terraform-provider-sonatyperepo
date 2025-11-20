@@ -20,8 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -32,6 +30,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
 )
 
 // roleResource is the resource implementation.
@@ -51,46 +53,20 @@ func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	idAttr := tfschema.ResourceRequiredString("The id of the Role.\n\nThis should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.\nMatching Roles based on id will automatically be granted to LDAP or SAML users.")
+	idAttr.PlanModifiers = []planmodifier.String{
+		stringplanmodifier.RequiresReplace(),
+	}
+
 	resp.Schema = schema.Schema{
 		Description: "Manage Roles in Sonatype Nexus Repository",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The id of the role.",
-				MarkdownDescription: `The id of the Role.
-
-This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication. 
-Matching Roles based on id will automatically be granted to LDAP or SAML users.`,
-				Required: true,
-				Optional: false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the role.",
-				Required:    true,
-				Optional:    false,
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this role.",
-				Required:    true,
-				Optional:    false,
-			},
-			"privileges": schema.SetAttribute{
-				Description: "The set of privileges assigned to this role.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"roles": schema.SetAttribute{
-				Description: "The set of roles assigned to this role.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"id":          idAttr,
+			"name":        tfschema.ResourceRequiredString("The name of the role."),
+			"description": tfschema.ResourceRequiredString("The description of this role."),
+			"privileges":  tfschema.ResourceRequiredStringSet("The set of privileges assigned to this role."),
+			"roles":       tfschema.ResourceRequiredStringSet("The set of roles assigned to this role."),
+			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -116,7 +92,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, httpResponse, err := r.Client.SecurityManagementRolesAPI.Create(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error creating Role",
 			&err,
 			httpResponse,
@@ -124,7 +100,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Creation of Role was not successful",
 			&err,
 			httpResponse,
@@ -164,14 +140,14 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			sharederr.HandleAPIWarning(
 				"Role to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			sharederr.HandleAPIError(
 				"Error reading Role",
 				&err,
 				httpResponse,
@@ -217,7 +193,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	httpResponse, err := r.Client.SecurityManagementRolesAPI.Update(ctx, state.Id.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error updating Role",
 			&err,
 			httpResponse,
@@ -225,7 +201,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Update of Role was not successful",
 			&err,
 			httpResponse,
@@ -262,7 +238,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Error removing Role",
 			&err,
 			httpResponse,
@@ -270,7 +246,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		sharederr.HandleAPIError(
 			"Removal of Role was not successful",
 			&err,
 			httpResponse,

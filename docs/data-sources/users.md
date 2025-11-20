@@ -22,7 +22,7 @@ Use this data source to get all Users
 <a id="nestedatt--users"></a>
 ### Nested Schema for `users`
 
-Required:
+Read-Only:
 
 - `email_address` (String) The email address associated with the user.
 - `external_roles` (Set of String) The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.
