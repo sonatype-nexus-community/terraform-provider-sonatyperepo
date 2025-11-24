@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -248,4 +249,10 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 			fmt.Sprintf("Unexpected Response Code whilst removing Content Selector: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
+}
+
+// This allows users to import existing Tasks into Terraform state.
+func (r *contentSelectorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the Task ID as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
