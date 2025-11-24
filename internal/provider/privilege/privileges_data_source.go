@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -75,14 +76,8 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 								),
 							},
 						},
-						"description": dsschema.StringAttribute{
-							Description: "Friendly description of this Privilege",
-							Required:    true,
-						},
-						"read_only": dsschema.BoolAttribute{
-							Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
-							Required:    true,
-						},
+						"description": tfschema.DataSourceRequiredString("Friendly description of this Privilege"),
+						"read_only":   tfschema.DataSourceRequiredBool("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system."),
 						"type": dsschema.StringAttribute{
 							Description: "The privilege type.",
 							Required:    true,

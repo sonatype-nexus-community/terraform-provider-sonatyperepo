@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -62,11 +63,11 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 				Computed: true,
 				NestedObject: dsschema.NestedAttributeObject{
 					Attributes: map[string]dsschema.Attribute{
-						"id":         dsschema.StringAttribute{Description: "Internal ID of the Capability.", Required: true},
-						"type":       dsschema.StringAttribute{Description: "Type of the Capability.", Required: true},
-						"enabled":    dsschema.BoolAttribute{Description: "Whether the Capability is enabled.", Required: true},
-						"notes":      dsschema.StringAttribute{Description: "Notes about the configured Capability.", Computed: true},
-						"properties": dsschema.MapAttribute{Description: "Properties of the Capability.", Required: true, ElementType: types.StringType},
+						"id":         tfschema.DataSourceRequiredString("Internal ID of the Capability."),
+						"type":       tfschema.DataSourceRequiredString("Type of the Capability."),
+						"enabled":    tfschema.DataSourceRequiredBool("Whether the Capability is enabled."),
+						"notes":      tfschema.DataSourceComputedString("Notes about the configured Capability."),
+						"properties": tfschema.DataSourceRequiredStringMap("Properties of the Capability."),
 					},
 				},
 			},

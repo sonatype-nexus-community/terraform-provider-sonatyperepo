@@ -24,6 +24,7 @@ import (
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -59,9 +60,9 @@ func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.Sc
 				Computed: true,
 				NestedObject: dsschema.NestedAttributeObject{
 					Attributes: map[string]dsschema.Attribute{
-						"name":        dsschema.StringAttribute{Description: "The name of the Content Selector.", Computed: true},
-						"description": dsschema.StringAttribute{Description: "The description of this Content Selector.", Computed: true},
-						"expression":  dsschema.StringAttribute{Description: "The Content Selector expression used to identify content.", Computed: true},
+						"name":        tfschema.DataSourceComputedString("The name of the Content Selector."),
+						"description": tfschema.DataSourceComputedString("The description of this Content Selector."),
+						"expression":  tfschema.DataSourceComputedString("The Content Selector expression used to identify content."),
 					},
 				},
 			},

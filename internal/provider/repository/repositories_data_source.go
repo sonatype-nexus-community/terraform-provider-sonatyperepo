@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -62,10 +63,10 @@ func (d *repositoriesDataSource) Schema(_ context.Context, req datasource.Schema
 				Computed: true,
 				NestedObject: dsschema.NestedAttributeObject{
 					Attributes: map[string]dsschema.Attribute{
-						"name":   dsschema.StringAttribute{Description: "Name of the Repository", Computed: true},
-						"format": dsschema.StringAttribute{Description: "Repository format", Computed: true},
-						"type":   dsschema.StringAttribute{Description: "Repository type", Computed: true},
-						"url":    dsschema.StringAttribute{Description: "URL to use this Repository", Computed: true},
+						"name":   tfschema.DataSourceComputedString("Name of the Repository"),
+						"format": tfschema.DataSourceComputedString("Repository format"),
+						"type":   tfschema.DataSourceComputedString("Repository type"),
+						"url":    tfschema.DataSourceComputedString("URL to use this Repository"),
 					},
 				},
 			},

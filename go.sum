@@ -356,6 +356,10 @@ github.com/sonatype-nexus-community/terraform-provider-shared v0.6.1 h1:zXICfBoR
 github.com/sonatype-nexus-community/terraform-provider-shared v0.6.1/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.6.2 h1:KFTHfpqqpxZWG1j9VgCl2rGX0j6ZKE3Gn7Zdhwvxjjs=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.6.2/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.6.3 h1:JvAVn6e4VGQdafp9h8QFthOlpgcvHXSZRwLEcu9SV0w=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.6.3/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.6.4 h1:1c/4qp6VQP1UNjleqetHLP9tk4UeVX2yS3P1VdQa4Pg=
+github.com/sonatype-nexus-community/terraform-provider-shared v0.6.4/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
