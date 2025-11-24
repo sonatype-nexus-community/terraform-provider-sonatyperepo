@@ -37,9 +37,6 @@ func (m *dockerHostedStorageModel) MapFromApi(api *sonatyperepo.DockerHostedStor
 	m.WritePolicy = types.StringValue(api.WritePolicy)
 	if api.LatestPolicy != nil {
 		m.LatestPolicy = types.BoolPointerValue(api.LatestPolicy)
-	} else {
-		// Set default value if API doesn't return it
-		m.LatestPolicy = types.BoolValue(false)
 	}
 }
 

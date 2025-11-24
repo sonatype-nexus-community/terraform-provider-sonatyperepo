@@ -40,7 +40,7 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type DockerRepositoryFormat struct{
+type DockerRepositoryFormat struct {
 	BaseRepositoryFormat
 }
 
@@ -84,6 +84,15 @@ func (f *DockerRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonat
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+
+	// Temporary Workaround:
+	// latest_policy not returned from READ API for Docker Hosted
+	if stateModel.Storage.LatestPolicy.IsNull() {
+		apiResponse.Storage.LatestPolicy = common.NewFalse()
+	} else {
+		apiResponse.Storage.LatestPolicy = stateModel.Storage.LatestPolicy.ValueBoolPointer()
+	}
+
 	return *apiResponse, httpResponse, err
 }
 
