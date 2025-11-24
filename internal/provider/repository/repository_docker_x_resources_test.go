@@ -283,7 +283,6 @@ resource "%s" "repo" {
   }
   docker = {
     force_basic_auth = false
-    path_enabled = true
     v1_enabled = false
   }
 }
@@ -297,7 +296,6 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceName, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceName, "storage.write_policy", "ALLOW"),
 					resource.TestCheckResourceAttr(resourceName, "docker.force_basic_auth", "false"),
-					resource.TestCheckResourceAttr(resourceName, "docker.path_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "docker.v1_enabled", "false"),
 				),
 			},
