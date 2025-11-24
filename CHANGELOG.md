@@ -1,6 +1,6 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## X.Y.Z (UNRELEASED)
+## 0.13.0 November 24, 2025
 
 ENHANCEMENTS:
 * `sonatyperepo_content_selector` resources now support import [GH-209]
