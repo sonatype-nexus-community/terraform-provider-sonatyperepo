@@ -5,6 +5,10 @@
 ENHANCEMENTS:
 * `sonatyperepo_content_selector` resources now support import [GH-209]
 
+BUG FIXES:
+* Temporary workaround for `sonatyperepo_repository_docker_hosted` as API does not return `storage.latest_policy` [GH-210]
+
+
 ## 0.12.1 November 19, 2025
 
 BUG FIXES:
