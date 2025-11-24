@@ -69,6 +69,7 @@ resource "%s" "repo" {
   online = true
   storage = {
 	blob_store_name = "default"
+	latest_policy = true
 	strict_content_type_validation = true
 	write_policy = "ALLOW_ONCE"
   }
@@ -145,6 +146,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
 					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceHostedName, "storage.latest_policy", "true"),
 					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
 					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
@@ -250,6 +252,66 @@ func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
 				),
 				// Delete testing automatically occurs in TestCase
+			},
+		},
+	})
+}
+
+func TestAccRepositoryDockerHostedImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_repository_docker_hosted"
+	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
+	repoName := fmt.Sprintf("docker-hosted-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  component = {
+    proprietary_components = true
+  }
+  storage = {
+    blob_store_name = "default"
+    latest_policy                  = true
+    strict_content_type_validation = true
+	write_policy = "ALLOW"
+  }
+  docker = {
+    force_basic_auth = false
+    path_enabled = true
+    v1_enabled = false
+  }
+}
+`, resourceType, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceName, "component.proprietary_components", "true"),
+					resource.TestCheckResourceAttr(resourceName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceName, "storage.latest_policy", "true"),
+					resource.TestCheckResourceAttr(resourceName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceName, "storage.write_policy", "ALLOW"),
+					resource.TestCheckResourceAttr(resourceName, "docker.force_basic_auth", "false"),
+					resource.TestCheckResourceAttr(resourceName, "docker.path_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "docker.v1_enabled", "false"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName: resourceName,
+				ImportState:  true,
+				// Cannot test for valid import state due to API not returning `latest_policy` when reading
+				// Docker Registries
+				//
+				// ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
 			},
 		},
 	})
