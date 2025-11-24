@@ -2,7 +2,8 @@
 
 ## X.Y.Z (UNRELEASED)
 
-_TBC_
+ENHANCEMENTS:
+* `sonatyperepo_content_selector` resources now support import [GH-209]
 
 ## 0.12.1 November 19, 2025
 
