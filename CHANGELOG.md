@@ -1,5 +1,10 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
+## UNRELEASED
+
+BUG FIXES:
+* Fixed "Provider produced inconsistent result after apply" error when `routing_rule` was provided for Maven, PyPi, R or Ruby Gems repositories [GH-216] (thanks @yfougeray-euphoria)
+
 ## 0.13.0 November 24, 2025
 
 ENHANCEMENTS:
