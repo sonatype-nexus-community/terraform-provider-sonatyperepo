@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+_TBC_
+
+## 0.14.0 November 25, 2025
+
 ENHANCEMENTS:
 * HuggingFace now a supported format for `sonatyperepo_cleanup_policy` [GH-218] (thanks @yfougeray-euphoria)
 
