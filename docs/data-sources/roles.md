@@ -17,17 +17,20 @@ Use this data source to get all Roles
 
 ### Read-Only
 
-- `roles` (Attributes List) (see [below for nested schema](#nestedatt--roles))
+- `roles` (Attributes List) List of Roles (see [below for nested schema](#nestedatt--roles))
 
 <a id="nestedatt--roles"></a>
 ### Nested Schema for `roles`
 
-Read-Only:
+Required:
 
 - `description` (String) The description of this role.
 - `id` (String) The id of the role.
 - `name` (String) The name of the role.
+- `source` (String) The user source which is the origin of this role.
+
+Read-Only:
+
 - `privileges` (Set of String) The set of privileges assigned to this role.
 - `read_only` (Boolean) Indicates whether the role can be changed. The system will ignore any supplied external values.
 - `roles` (Set of String) The set of roles assigned to this role.
-- `source` (String) The user source which is the origin of this role.
