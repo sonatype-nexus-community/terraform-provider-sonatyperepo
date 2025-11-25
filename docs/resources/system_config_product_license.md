@@ -34,7 +34,7 @@ resource "sonatyperepo_system_config_product_license" "license" {
 - `expiration_date` (String) License expiration date
 - `features` (String) Licensed features
 - `fingerprint` (String) License fingerprint
-- `last_updated` (String) The timestamp of when the resource was last updated
+- `last_updated` (String) String representation of the date/time the resource was last changed
 - `license_type` (String) License type
 - `licensed_users` (String) Licensed User count
 - `max_repo_components` (Number) Licensed Max Repo Components

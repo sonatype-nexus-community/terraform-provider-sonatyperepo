@@ -19,8 +19,6 @@ package task
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"reflect"
 	"slices"
@@ -31,12 +29,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -90,7 +90,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	// Handle Errors
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s Task", t.TaskType.GetType().String()),
 			&err,
 			httpResponse,
@@ -99,7 +99,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	if !slices.Contains(t.TaskType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.GetType().String()),
 			&err,
 			httpResponse,
@@ -142,14 +142,14 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
 				&err,
 				httpResponse,
@@ -212,14 +212,14 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				sharederr.HandleAPIWarning(
+				errors.HandleAPIWarning(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
-				sharederr.HandleAPIError(
+				errors.HandleAPIError(
 					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
 					&err,
 					httpResponse,
@@ -229,7 +229,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.GetType().String(), attempts),
 				&err,
 				httpResponse,
@@ -244,51 +244,52 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
-	return schema.Schema{
+func getTaskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
+	return tfschema.Schema{
 		MarkdownDescription: tt.GetMarkdownDescription(),
-		Attributes: map[string]schema.Attribute{
-			"id":          tfschema.ResourceComputedString("The internal ID of the Task."),
-			"name":        tfschema.ResourceRequiredString("The name of the Task."),
-			"enabled":     tfschema.ResourceRequiredBool("Indicates if the task is enabled."),
-			"alert_email": tfschema.ResourceOptionalString("E-mail address for task notifications."),
-			"notification_condition": tfschema.ResourceRequiredStringEnum(
+		Attributes: map[string]tfschema.Attribute{
+			"id":          schema.ResourceComputedString("The internal ID of the Task."),
+			"name":        schema.ResourceRequiredString("The name of the Task."),
+			"enabled":     schema.ResourceRequiredBool("Indicates if the task is enabled."),
+			"alert_email": schema.ResourceOptionalString("E-mail address for task notifications."),
+			"notification_condition": schema.ResourceRequiredStringEnum(
 				"The type of Task.",
-				common.NOTIFICATION_CONDITION_FAILURE, common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
+				common.NOTIFICATION_CONDITION_FAILURE,
+				common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
 			),
-			"frequency": tfschema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.", map[string]schema.Attribute{
-				"schedule": tfschema.ResourceRequiredStringEnum(
-					"Type of Schedule.",
-					common.FREQUENCY_SCHEDULE_MANUAL,
-					common.FREQUENCY_SCHEDULE_ONCE,
-					common.FREQUENCY_SCHEDULE_HOURLY,
-					common.FREQUENCY_SCHEDULE_DAILY,
-					common.FREQUENCY_SCHEDULE_WEEKLY,
-					common.FREQUENCY_SCHEDULE_MONTHLY,
-					common.FREQUENCY_SCHEDULE_CRON,
-				),
-				"start_date": schema.Int32Attribute{
-					Description: "Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
-					Required:    false,
-					Optional:    true,
-				},
-				"timezone_offset": tfschema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
-				"recurring_days": schema.ListAttribute{
-					MarkdownDescription: `Array with the number of the days the task must run.
+			"frequency": schema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.",
+				map[string]tfschema.Attribute{
+					"schedule": schema.ResourceRequiredStringEnum(
+						"Type of Schedule.",
+						common.FREQUENCY_SCHEDULE_MANUAL,
+						common.FREQUENCY_SCHEDULE_ONCE,
+						common.FREQUENCY_SCHEDULE_HOURLY,
+						common.FREQUENCY_SCHEDULE_DAILY,
+						common.FREQUENCY_SCHEDULE_WEEKLY,
+						common.FREQUENCY_SCHEDULE_MONTHLY,
+						common.FREQUENCY_SCHEDULE_CRON,
+					),
+					"start_date": schema.ResourceOptionalInt32(
+						"Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
+					),
+					"timezone_offset": schema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
+					"recurring_days": func() tfschema.ListAttribute {
+						thisAttr := schema.ResourceOptionalInt32List(
+							`Array with the number of the days the task must run.
 
 - For "weekly" schedule allowed values, 1 to 7.
 - For "monthly" schedule allowed values, 1 to 31.`,
-					ElementType: types.Int32Type,
-					Required:    false,
-					Optional:    true,
-					Validators: []validator.List{
-						listvalidator.SizeAtLeast(1),
-					},
+						)
+						thisAttr.Validators = []validator.List{
+							listvalidator.SizeAtLeast(1),
+						}
+						return thisAttr
+					}(),
+					"cron_expression": schema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
 				},
-				"cron_expression": tfschema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
-			}),
-			"properties":   tfschema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.GetPropertiesSchema()),
-			"last_updated": tfschema.ResourceComputedString(""),
+			),
+			"properties":   schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.GetPropertiesSchema()),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }

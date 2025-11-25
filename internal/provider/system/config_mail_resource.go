@@ -24,13 +24,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // Ensure resource satisfies various resource interfaces.
@@ -56,22 +58,22 @@ func (r *systemConfigMailResource) Metadata(_ context.Context, req resource.Meta
 
 // Schema defines the schema for the resource.
 func (r *systemConfigMailResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Configure the System Email Server",
-		Attributes: map[string]schema.Attribute{
-			"enabled":                          tfschema.ResourceRequiredBool("Whether Email Server is enabled"),
-			"host":                             tfschema.ResourceRequiredString("SMTP Server Hostname"),
-			"port":                             tfschema.ResourceRequiredInt64("SMTP Server Port"),
-			"username":                         tfschema.ResourceOptionalString("Username to use for authentication with SMTP Server"),
-			"password":                         tfschema.ResourceSensitiveString("Password to use for authentication with SMTP Server"),
-			"from_address":                     tfschema.ResourceRequiredString("From Address to use when sending emails"),
-			"subject_prefix":                   tfschema.ResourceOptionalString("A prefix to use in Subject Lines for emails that are sent"),
-			"start_tls_enabled":                tfschema.ResourceRequiredBool("Enable STARTTLS support for insecure connections"),
-			"start_tls_required":               tfschema.ResourceRequiredBool("Require STARTTLS support"),
-			"ssl_on_connect_enabled":           tfschema.ResourceRequiredBool("Enable SSL/TLS encryption upon connection"),
-			"ssl_server_identity_check_enabled": tfschema.ResourceRequiredBool("Enable server identity check"),
-			"nexus_trust_store_enabled":        tfschema.ResourceRequiredBool("Use certificate connected to the Nexus Repository Truststore"),
-			"last_updated":                     tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+		Attributes: map[string]tfschema.Attribute{
+			"enabled":                           schema.ResourceRequiredBool("Whether Email Server is enabled"),
+			"host":                              schema.ResourceRequiredString("SMTP Server Hostname"),
+			"port":                              schema.ResourceRequiredInt64("SMTP Server Port"),
+			"username":                          schema.ResourceOptionalString("Username to use for authentication with SMTP Server"),
+			"password":                          schema.ResourceSensitiveString("Password to use for authentication with SMTP Server"),
+			"from_address":                      schema.ResourceRequiredString("From Address to use when sending emails"),
+			"subject_prefix":                    schema.ResourceOptionalString("A prefix to use in Subject Lines for emails that are sent"),
+			"start_tls_enabled":                 schema.ResourceRequiredBool("Enable STARTTLS support for insecure connections"),
+			"start_tls_required":                schema.ResourceRequiredBool("Require STARTTLS support"),
+			"ssl_on_connect_enabled":            schema.ResourceRequiredBool("Enable SSL/TLS encryption upon connection"),
+			"ssl_server_identity_check_enabled": schema.ResourceRequiredBool("Enable server identity check"),
+			"nexus_trust_store_enabled":         schema.ResourceRequiredBool("Use certificate connected to the Nexus Repository Truststore"),
+			"last_updated":                      schema.ResourceLastUpdated(),
 		},
 	}
 }

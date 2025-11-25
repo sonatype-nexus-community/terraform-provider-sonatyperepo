@@ -29,15 +29,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // userResource is the resource implementation.
@@ -57,36 +57,29 @@ func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	userIDAttr := tfschema.ResourceRequiredString("The userid which is required for login. This value cannot be changed.")
-	userIDAttr.PlanModifiers = []planmodifier.String{
-		stringplanmodifier.RequiresReplace(),
-	}
-
-	statusAttr := tfschema.ResourceRequiredString("The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.")
-	statusAttr.Validators = []validator.String{
-		stringvalidator.OneOf(
-			common.AllUserStatusTypes()...,
-		),
-	}
-
-	rolesAttr := tfschema.ResourceRequiredStringSet("The list of roles assigned to this User.")
-
-	readOnlyAttr := tfschema.ResourceComputedBool("Whether the user is read-only")
-	sourceAttr := tfschema.ResourceComputedString("Source system managing this user")
-
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Local and non-Local Users",
-		Attributes: map[string]schema.Attribute{
-			"user_id":       userIDAttr,
-			"first_name":    tfschema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"last_name":     tfschema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"email_address": tfschema.ResourceRequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"password":      tfschema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
-			"status":        statusAttr,
-			"roles":         rolesAttr,
-			"read_only":     readOnlyAttr,
-			"source":        sourceAttr,
-			"last_updated":  tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+		Attributes: map[string]tfschema.Attribute{
+			"user_id": schema.ResourceRequiredStringWithPlanModifier(
+				"The userid which is required for login. This value cannot be changed.",
+				[]planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			),
+			"first_name":    schema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"last_name":     schema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"email_address": schema.ResourceRequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"password":      schema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
+			"status": schema.ResourceRequiredStringWithValidators(
+				"The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.",
+				stringvalidator.OneOf(
+					common.AllUserStatusTypes()...,
+				),
+			),
+			"roles":        schema.ResourceRequiredStringSet("The list of roles assigned to this User."),
+			"read_only":    schema.ResourceComputedBool("Whether the user is read-only"),
+			"source":       schema.ResourceComputedString("Source system managing this user"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -112,7 +105,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating User: %s", plan.UserId.ValueString()),
 			&err,
 			httpResponse,
@@ -154,14 +147,14 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"User to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error reading User",
 				&err,
 				httpResponse,

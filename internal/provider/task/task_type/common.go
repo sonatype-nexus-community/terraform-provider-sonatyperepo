@@ -24,7 +24,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -69,7 +69,7 @@ type TaskTypeI interface {
 	GetApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetPropertiesSchema() map[string]schema.Attribute
+	GetPropertiesSchema() map[string]tfschema.Attribute
 	GetPublicName() string
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
 	GetResourceName() string

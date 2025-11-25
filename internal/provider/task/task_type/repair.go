@@ -26,11 +26,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -89,13 +91,9 @@ func (f *RepairRebuildBrowseNodesTask) GetPlanAsModel(ctx context.Context, plan 
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"repository_name": schema.StringAttribute{
-			Description: "The Repository to rebuild browse trees for.",
-			Required:    true,
-			Optional:    false,
-		},
+func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"repository_name": schema.ResourceRequiredString("The Repository to rebuild browse trees for."),
 	}
 }
 

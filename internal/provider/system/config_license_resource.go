@@ -19,15 +19,13 @@ package system
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -38,6 +36,9 @@ import (
 	b64 "encoding/base64"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // systemConfigProductLicenseResource is the resource implementation.
@@ -57,23 +58,22 @@ func (r *systemConfigProductLicenseResource) Metadata(_ context.Context, req res
 
 // Schema defines the schema for the resource.
 func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Configure and LDAP connection",
-		Attributes: map[string]schema.Attribute{
-			"license_data": tfschema.ResourceSensitiveString("Base64 encoded license data"),
-			"contact_company": tfschema.ResourceComputedString("Licensed Company Name"),
-			"contact_email": tfschema.ResourceComputedString("Licensed Company Contact Email"),
-			"contact_name": tfschema.ResourceComputedString("Licensed Company Contact Name"),
-			"effective_date": tfschema.ResourceComputedString("License effective date"),
-			"expiration_date": tfschema.ResourceComputedString("License expiration date"),
-			"features": tfschema.ResourceComputedString("Licensed features"),
-			"fingerprint": tfschema.ResourceComputedString("License fingerprint"),
-			"license_type": tfschema.ResourceComputedString("License type"),
-			"licensed_users": tfschema.ResourceComputedString("Licensed User count"),
-			"max_repo_components": tfschema.ResourceComputedInt64("Licensed Max Repo Components"),
-			"max_repo_requests":   tfschema.ResourceComputedInt64("Licensed Max Repo Requests"),
-			// Meta
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+		Attributes: map[string]tfschema.Attribute{
+			"license_data":        schema.ResourceSensitiveString("Base64 encoded license data"),
+			"contact_company":     schema.ResourceComputedString("Licensed Company Name"),
+			"contact_email":       schema.ResourceComputedString("Licensed Company Contact Email"),
+			"contact_name":        schema.ResourceComputedString("Licensed Company Contact Name"),
+			"effective_date":      schema.ResourceComputedString("License effective date"),
+			"expiration_date":     schema.ResourceComputedString("License expiration date"),
+			"features":            schema.ResourceComputedString("Licensed features"),
+			"fingerprint":         schema.ResourceComputedString("License fingerprint"),
+			"license_type":        schema.ResourceComputedString("License type"),
+			"licensed_users":      schema.ResourceComputedString("Licensed User count"),
+			"max_repo_components": schema.ResourceComputedInt64("Licensed Max Repo Components"),
+			"max_repo_requests":   schema.ResourceComputedInt64("Licensed Max Repo Requests"),
+			"last_updated":        schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -122,7 +122,7 @@ func (r *systemConfigProductLicenseResource) Read(ctx context.Context, req resou
 	apiResponse, httpResponse, err := r.Client.ProductLicensingAPI.GetLicenseStatus(ctx).Execute()
 
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error Reading Product License",
 			&err,
 			httpResponse,
@@ -179,7 +179,7 @@ func (r *systemConfigProductLicenseResource) Delete(ctx context.Context, req res
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error removing Product License",
 			&err,
 			httpResponse,
@@ -230,7 +230,7 @@ func (r *systemConfigProductLicenseResource) updateProductLicense(ctx context.Co
 
 	// Handle Error
 	if err != nil || httpReponse.StatusCode != http.StatusOK {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error installing Product License",
 			&err,
 			httpReponse,

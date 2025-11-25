@@ -24,12 +24,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type BlobstoreCompactTask struct {
@@ -72,21 +73,15 @@ func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Pl
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"blob_store_name": schema.StringAttribute{
-			Description: "The blob store to compact",
-			Required:    true,
-			Optional:    false,
-		},
-		"blobs_older_than": schema.Int32Attribute{
-			MarkdownDescription: `The number of days a blob should kept before permanent deletion (default 0).
+func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"blob_store_name": schema.ResourceRequiredString("The blob store to compact"),
+		"blobs_older_than": schema.ResourceOptionalInt32WithDefault(
+			`The number of days a blob should kept before permanent deletion (default 0).
 			
 **Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).`,
-			Optional: true,
-			Computed: true,
-			Default:  int32default.StaticInt32(0),
-		},
+			0,
+		),
 	}
 }
 

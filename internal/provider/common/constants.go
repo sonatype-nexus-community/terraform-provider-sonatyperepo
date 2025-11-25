@@ -65,6 +65,9 @@ const (
 	HTTP_AUTH_TYPE_USERNAME                                                string = "username"
 	IQ_AUTHENTICATON_TYPE_PKI                                              string = "PKI"
 	IQ_AUTHENTICATON_TYPE_USER                                             string = "USER"
+	IQ_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                  int32  = 30
+	IQ_MIN_CONNECTION_TIMEOUT_SECONDS                                      int32  = 1
+	IQ_MAX_CONNECTION_TIMEOUT_SECONDS                                      int32  = 3600
 	LDAP_GROUP_MAPPING_DYNAMIC                                             string = "DYNAMIC"
 	LDAP_GROUP_MAPPING_STATIC                                              string = "STATIC"
 	LDAP_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                int32  = 30

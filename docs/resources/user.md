@@ -70,7 +70,7 @@ resource "sonatyperepo_user" "saml_admin" {
 
 ### Read-Only
 
-- `last_updated` (String) The timestamp of when the resource was last updated
+- `last_updated` (String) String representation of the date/time the resource was last changed
 - `read_only` (Boolean) Whether the user is read-only
 - `source` (String) Source system managing this user
 
