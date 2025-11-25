@@ -25,11 +25,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type ScriptPrivilegeType struct {
@@ -64,24 +66,17 @@ func (pt *ScriptPrivilegeType) DoUpdateRequest(plan any, state any, apiClient *s
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateScriptPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *ScriptPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"actions": schema.SetAttribute{
-			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
-			Required:    true,
-			Optional:    false,
-			ElementType: types.StringType,
-			Validators: []validator.Set{
+func (pt *ScriptPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"actions": schema.ResourceRequiredStringSetWithValidator(
+			"A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
+			setvalidator.All(
 				setvalidator.ValueStringsAre([]validator.String{
 					stringvalidator.OneOf(BreadAndRunActions()...),
 				}...),
-			},
-		},
-		"script_name": schema.StringAttribute{
-			Description: "The name of a script to give access to.",
-			Required:    true,
-			Optional:    false,
-		},
+			),
+		),
+		"script_name": schema.ResourceRequiredString("The name of a script to give access to."),
 	}
 }
 

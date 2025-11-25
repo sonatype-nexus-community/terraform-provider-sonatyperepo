@@ -25,5 +25,5 @@ Manage a Privilege of type script
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 - `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.

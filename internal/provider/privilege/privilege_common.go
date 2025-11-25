@@ -27,14 +27,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const privilegeNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
@@ -91,7 +91,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Handle Errors
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -100,7 +100,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -141,14 +141,14 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
@@ -190,14 +190,14 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
@@ -248,14 +248,14 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
@@ -265,7 +265,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if httpResponse.StatusCode != http.StatusNoContent {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Unexpected response when deleting %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -274,22 +274,22 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) schema.Schema {
-	return schema.Schema{
+func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfschema.Schema {
+	return tfschema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
-		Attributes: map[string]schema.Attribute{
-			"name": tfschema.ResourceRequiredStringWithRegex(
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredStringWithRegex(
 				"The name of the privilege. This value cannot be changed.",
 				regexp.MustCompile(privilegeNamePattern),
-				`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
+				fmt.Sprintf("Please provide a name that complies with the Regular Expression: `%s`", privilegeNamePattern),
 			),
-			"description": tfschema.ResourceRequiredString("Friendly description of this Privilege"),
-			"read_only":   tfschema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
-			"type": tfschema.ResourceRequiredStringEnum(
+			"description": schema.ResourceRequiredString("Friendly description of this Privilege"),
+			"read_only":   schema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"type": schema.ResourceRequiredStringEnum(
 				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
 				privilegeTypeType.String(),
 			),
-			"last_updated": tfschema.ResourceComputedString(""),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }

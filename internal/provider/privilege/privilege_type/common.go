@@ -25,12 +25,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // PrivilegeTypeType
@@ -168,7 +168,7 @@ type PrivilegeType interface {
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	IsDeprecated() bool
 	GetApiCreateSuccessResponseCodes() []int
-	GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute
+	GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute
 	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
 	GetResourceName(privType PrivilegeTypeType) string
@@ -177,28 +177,17 @@ type PrivilegeType interface {
 }
 
 // Common Schema
-func getSchemaAttributesActionFormatRepository() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"actions": schema.SetAttribute{
-			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
-			Required:    true,
-			Optional:    false,
-			ElementType: types.StringType,
-			Validators: []validator.Set{
-				setvalidator.ValueStringsAre([]validator.String{
+func getSchemaAttributesActionFormatRepository() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"actions": schema.ResourceRequiredStringSetWithValidator(
+			"A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
+			setvalidator.All(
+				setvalidator.ValueStringsAre(
 					stringvalidator.OneOf(BreadActions()...),
-				}...),
-			},
-		},
-		"format": schema.StringAttribute{
-			Description: "The repository format (i.e 'nuget', 'npm') this privilege will grant access to (or * for all).",
-			Required:    true,
-			Optional:    false,
-		},
-		"repository": schema.StringAttribute{
-			Description: "The name of the repository this privilege will grant access to (or * for all).",
-			Required:    true,
-			Optional:    false,
-		},
+				),
+			),
+		),
+		"format":     schema.ResourceRequiredString("The repository format (i.e 'nuget', 'npm') this privilege will grant access to (or * for all)."),
+		"repository": schema.ResourceRequiredString("The name of the repository this privilege will grant access to (or * for all)."),
 	}
 }

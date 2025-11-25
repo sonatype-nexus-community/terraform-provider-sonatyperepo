@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -61,7 +61,7 @@ func (pt *RepositoryViewPrivilegeType) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryViewPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *RepositoryViewPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
+func (pt *RepositoryViewPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return getSchemaAttributesActionFormatRepository()
 }
 

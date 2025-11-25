@@ -23,10 +23,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type RepositoryContentSelectorPrivilegeType struct {
@@ -61,13 +63,9 @@ func (pt *RepositoryContentSelectorPrivilegeType) DoUpdateRequest(plan any, stat
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryContentSelectorPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *RepositoryContentSelectorPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
+func (pt *RepositoryContentSelectorPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	attributes := getSchemaAttributesActionFormatRepository()
-	attributes["content_selector"] = schema.StringAttribute{
-		Description: "The name of a content selector that will be used to grant access to content via this privilege.",
-		Required:    true,
-		Optional:    false,
-	}
+	attributes["content_selector"] = schema.ResourceRequiredString("The name of a content selector that will be used to grant access to content via this privilege.")
 	return attributes
 }
 
