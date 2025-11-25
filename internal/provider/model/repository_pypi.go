@@ -126,6 +126,8 @@ func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepo
 		m.Replication.MapToApi(apiModel.Replication)
 	}
 
+	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
+
 	// PyPi
 	m.PyPi.MapToPyPiApi(apiModel.Pypi)
 

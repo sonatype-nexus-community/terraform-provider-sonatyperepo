@@ -152,6 +152,8 @@ func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRe
 		m.Replication.MapToApi(apiModel.Replication)
 	}
 
+	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
+
 	// Maven
 	m.Maven.MapToApi(&apiModel.Maven)
 
