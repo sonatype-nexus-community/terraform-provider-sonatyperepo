@@ -20,13 +20,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -34,6 +33,8 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -62,70 +63,35 @@ func (r *securitySamlResource) Metadata(_ context.Context, req resource.Metadata
 
 // Schema defines the schema for the resource.
 func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Configure Sonatype Nexus Repository Security SAML.",
-		Attributes: map[string]schema.Attribute{
-			"idp_metadata": schema.StringAttribute{
-				Description: "SAML Identity Provider Metadata XML",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(10),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`(?s)^\s*<.*>\s*$`),
-						"must be valid XML format",
-					),
-				},
-			},
-			"username_attribute": schema.StringAttribute{
-				Description: "IdP field mappings for username",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"first_name_attribute": schema.StringAttribute{
-				Description: "IdP field mappings for user's given name",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"last_name_attribute": schema.StringAttribute{
-				Description: "IdP field mappings for user's family name",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"email_attribute": schema.StringAttribute{
-				Description: "IdP field mappings for user's email",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"groups_attribute": schema.StringAttribute{
-				Description: "IdP field mappings for user's groups",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"validate_response_signature": schema.BoolAttribute{
-				Description: "Validate SAML response signature",
-				Optional:    true,
-			},
-			"validate_assertion_signature": schema.BoolAttribute{
-				Description: "By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.",
-				Optional:    true,
-			},
-			"entity_id": schema.StringAttribute{
-				Description: "SAML Entity ID (typically a URI)",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"idp_metadata": schema.ResourceRequiredStringWithRegexAndLength(
+				"SAML Identity Provider Metadata XML",
+				regexp.MustCompile(`(?s)^\s*<.*>\s*$`),
+				"Must be valid XML",
+				10,
+				math.MaxInt64,
+			),
+			"username_attribute": schema.ResourceRequiredStringWithLengthAtLeast(
+				"IdP field mappings for username",
+				1,
+			),
+			"first_name_attribute": schema.ResourceOptionalStringWithLengthAtLeast(
+				"IdP field mappings for user's given name",
+				1,
+			),
+			"last_name_attribute": schema.ResourceOptionalStringWithLengthAtLeast(
+				"IdP field mappings for user's family name",
+				1,
+			),
+			"email_attribute":             schema.ResourceOptionalStringWithLengthAtLeast("IdP field mappings for user's email", 1),
+			"groups_attribute":            schema.ResourceOptionalStringWithLengthAtLeast("IdP field mappings for user's groups", 1),
+			"validate_response_signature": schema.ResourceOptionalBool("Validate SAML response signature"),
+			"validate_assertion_signature": schema.ResourceOptionalBool(
+				"By default, if a signing key is found in the IdP metadata, then Sonatype Nexus Repository Manager will attempt to validate signatures on the assertions.",
+			),
+			"entity_id": schema.ResourceOptionalStringWithLengthAtLeast("SAML Entity ID (typically a URI)", 1),
 		},
 	}
 }

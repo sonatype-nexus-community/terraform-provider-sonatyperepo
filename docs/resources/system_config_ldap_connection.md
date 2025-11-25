@@ -55,4 +55,4 @@ Configure and LDAP connection
 ### Read-Only
 
 - `id` (String) Internal LDAP server ID
-- `last_updated` (String) The timestamp of when the resource was last updated
+- `last_updated` (String) String representation of the date/time the resource was last changed

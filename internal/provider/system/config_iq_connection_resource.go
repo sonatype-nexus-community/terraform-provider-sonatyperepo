@@ -19,11 +19,12 @@ package system
 import (
 	"context"
 	"fmt"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
+
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -71,7 +72,7 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 				Description: "Seconds to wait for activity before stopping and retrying the connection.",
 				Optional:    true,
 				Computed:    true,
-				Default:     int32default.StaticInt32(defaultConnectionTimeoutSeconds),
+				Default:     int32default.StaticInt32(30),
 				Validators: []validator.Int32{
 					int32validator.Between(1, 3600),
 				},

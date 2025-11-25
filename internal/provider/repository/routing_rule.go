@@ -23,13 +23,10 @@ import (
 	"regexp"
 	"time"
 
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,6 +36,9 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -66,11 +66,11 @@ func (r *routingRuleResource) Metadata(_ context.Context, req resource.MetadataR
 
 // Schema defines the schema for the resource.
 func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this resource to create and manage routing rules in Sonatype Nexus Repository Manager",
-		Attributes: map[string]schema.Attribute{
-			"name": func() schema.StringAttribute {
-				attr := tfschema.ResourceRequiredStringWithRegexAndLength(
+		Attributes: map[string]tfschema.Attribute{
+			"name": func() tfschema.StringAttribute {
+				attr := schema.ResourceRequiredStringWithRegexAndLength(
 					"Name of the routing rule",
 					regexp.MustCompile(routingRuleNamePattern),
 					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
@@ -82,19 +82,17 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 				}
 				return attr
 			}(),
-			"description": tfschema.ResourceRequiredString("Description of the routing rule (required by Nexus API)"),
-			"mode": tfschema.ResourceRequiredStringEnum(
+			"description": schema.ResourceRequiredString("Description of the routing rule (required by Nexus API)"),
+			"mode": schema.ResourceRequiredStringEnum(
 				"Determines what should be done with requests when their path matches any of the matchers. Valid values: ALLOW, BLOCK",
 				RoutingRuleModeAllow,
 				RoutingRuleModeBlock,
 			),
-			"matchers": tfschema.ResourceRequiredStringSetWithValidator(
+			"matchers": schema.ResourceRequiredStringSetWithValidator(
 				"Regular expressions used to identify request paths that are allowed or blocked (depending on mode)",
 				setvalidator.SizeAtLeast(1),
 			),
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -125,7 +123,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Handle Error
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error creating routing rule",
 			&err,
 			apiResponse,
@@ -144,7 +142,7 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 			return
 		}
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Failed to create routing rule",
 			&err,
 			apiResponse,
@@ -173,7 +171,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 		// Check if this is a 404 error
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Routing rule not found",
 				&err,
 				httpResponse,
@@ -182,7 +180,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error reading routing rule",
 			&err,
 			httpResponse,
@@ -226,14 +224,14 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Routing rule to update did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error updating routing rule",
 				&err,
 				apiResponse,
@@ -273,14 +271,14 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == http.StatusNotFound {
 			// Resource already deleted, nothing to do
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Routing rule to delete did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error deleting routing rule",
 				&err,
 				apiResponse,
@@ -291,7 +289,7 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Failed to delete routing rule",
 			&err,
 			apiResponse,

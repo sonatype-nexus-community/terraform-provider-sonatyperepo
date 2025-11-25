@@ -28,7 +28,7 @@ Matching Roles based on id will automatically be granted to LDAP or SAML users.
 
 ### Read-Only
 
-- `last_updated` (String) The timestamp of when the resource was last updated
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 ## Import
 

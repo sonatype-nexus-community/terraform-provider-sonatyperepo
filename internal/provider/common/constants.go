@@ -67,6 +67,11 @@ const (
 	IQ_AUTHENTICATON_TYPE_USER                                             string = "USER"
 	LDAP_GROUP_MAPPING_DYNAMIC                                             string = "DYNAMIC"
 	LDAP_GROUP_MAPPING_STATIC                                              string = "STATIC"
+	LDAP_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                int32  = 30
+	LDAP_MIN_CONNECTION_TIMEOUT_SECONDS                                    int32  = 1
+	LDAP_MAX_CONNECTION_TIMEOUT_SECONDS                                    int32  = 3600
+	LDAP_DEFAULT_CONNECTION_RETRY_SECONDS                                  int32  = 300
+	LDAP_DEFAULT_MAX_CONENCTION_ATTEMPTS                                   int32  = 3
 	MAVEN_CONTENT_DISPOSITION_ATTACHMENT                                   string = "ATTACHMENT"
 	MAVEN_CONTENT_DISPOSITION_INLINE                                       string = "INLINE"
 	MAVEN_LAYOUT_STRICT                                                    string = "STRICT"

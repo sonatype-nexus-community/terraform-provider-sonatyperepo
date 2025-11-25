@@ -22,15 +22,17 @@ import (
 	"net/http"
 	"time"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // anonymousAccessSystemResource is the resource implementation.
@@ -50,13 +52,13 @@ func (r *anonymousAccessSystemResource) Metadata(_ context.Context, req resource
 
 // Schema defines the schema for the resource.
 func (r *anonymousAccessSystemResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Anonymous Access",
-		Attributes: map[string]schema.Attribute{
-			"enabled":      tfschema.ResourceRequiredBool("Whether or not Anonymous Access is enabled"),
-			"realm_name":   tfschema.ResourceRequiredString("The name of the authentication realm for the anonymous account"),
-			"user_id":      tfschema.ResourceRequiredString("The username of the anonymous account"),
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+		Attributes: map[string]tfschema.Attribute{
+			"enabled":      schema.ResourceRequiredBool("Whether or not Anonymous Access is enabled"),
+			"realm_name":   schema.ResourceRequiredString("The name of the authentication realm for the anonymous account"),
+			"user_id":      schema.ResourceRequiredString("The username of the anonymous account"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -83,7 +85,7 @@ func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req res
 				"Your user is unauthorized to access this resource or feature during import.",
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error importing Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -144,7 +146,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -162,7 +164,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 			return
 		}
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Update of Anonymous Access settings was not successful",
 			&err,
 			httpResponse,
@@ -199,7 +201,7 @@ func (r *anonymousAccessSystemResource) Read(ctx context.Context, req resource.R
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error reading Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -253,7 +255,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error updating Anonymous Access settings",
 				&err,
 				httpResponse,
@@ -318,7 +320,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 				"Your user is unauthorized to access this resource or feature.",
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error removing Anonymous Access settings",
 				&err,
 				httpResponse,
