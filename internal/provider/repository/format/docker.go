@@ -24,20 +24,17 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type DockerRepositoryFormat struct {
@@ -108,7 +105,7 @@ func (f *DockerRepositoryFormatHosted) DoImportRequest(repositoryName string, ap
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *DockerRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
 	return additionalAttributes
@@ -191,7 +188,7 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
 	maps.Copy(additionalAttributes, getDockerProxySchemaAttributes())
@@ -275,7 +272,7 @@ func (f *DockerRepositoryFormatGroup) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonGroupSchemaAttributes(true)
 	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
 	return additionalAttributes
@@ -320,83 +317,49 @@ func (f *DockerRepositoryFormatGroup) ValidatePlanForNxrmVersion(plan any, versi
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getDockerSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"docker": schema.SingleNestedAttribute{
-			Description: "Docker specific configuration for this Repository",
-			Required:    true,
-			Optional:    false,
-			Attributes: map[string]schema.Attribute{
-				"force_basic_auth": schema.BoolAttribute{
-					Description: "Whether to force authentication (Docker Bearer Token Realm required if false)",
-					Required:    true,
-				},
-				"http_port": schema.Int32Attribute{
-					Description: "Create an HTTP connector at specified port",
-					Optional:    true,
-				},
-				"https_port": schema.Int32Attribute{
-					Description: "Create an HTTPS connector at specified port",
-					Optional:    true,
-				},
-				"path_enabled": schema.BoolAttribute{
-					Description: "Allows to use repository name in Docker image paths (only supply for Sonatype Nexus Repository Manager >= 3.83.0)",
-					Optional:    true,
-					PlanModifiers: []planmodifier.Bool{
-						boolplanmodifier.UseStateForUnknown(),
-					},
-				},
-				"subdomain": schema.StringAttribute{
-					Description: "Allows to use subdomain",
-					Optional:    true,
-				},
-				"v1_enabled": schema.BoolAttribute{
-					Description: "Whether to allow clients to use the V1 API to interact with this repository",
-					Required:    true,
-				},
+func getDockerSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"docker": schema.ResourceRequiredSingleNestedAttribute(
+			"Docker specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"force_basic_auth": schema.ResourceRequiredBool("Whether to force authentication (Docker Bearer Token Realm required if false)"),
+				"http_port":        schema.ResourceOptionalInt32("Create an HTTP connector at specified port"),
+				"https_port":       schema.ResourceOptionalInt32("Create an HTTPS connector at specified port"),
+				"path_enabled": schema.ResourceOptionalBoolWithPlanModifier(
+					"Allows to use repository name in Docker image paths (only supply for Sonatype Nexus Repository Manager >= 3.83.0)",
+					boolplanmodifier.UseStateForUnknown(),
+				),
+				"subdomain":  schema.ResourceOptionalString("Allows to use subdomain"),
+				"v1_enabled": schema.ResourceRequiredBool("Whether to allow clients to use the V1 API to interact with this repository"),
 			},
-		},
+		),
 	}
 }
 
-func getDockerProxySchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"docker_proxy": schema.SingleNestedAttribute{
-			Description: "Docker Proxy specific configuration for this Repository",
-			Required:    true,
-			Optional:    false,
-			Attributes: map[string]schema.Attribute{
-				"cache_foreign_layers": schema.BoolAttribute{
-					Description: "Allow Nexus Repository Manager to download and cache foreign layers",
-					Optional:    true,
-					Computed:    true,
-					Default:     booldefault.StaticBool(false),
-				},
-				"foreign_layer_url_whitelist": schema.SetAttribute{
-					Description: "Foreign Layer URL Whitelist",
-					Optional:    true,
-					Computed:    true,
-					ElementType: types.StringType,
-					Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
-				},
-				"index_type": schema.StringAttribute{
-					Description: "Type of Docker Index",
-					Optional:    true,
-					Computed:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(
-							common.DOCKER_PROXY_INDEX_TYPE_HUB,
-							common.DOCKER_PROXY_INDEX_TYPE_REGISTRY,
-							common.DOCKER_PROXY_INDEX_TYPE_CUSTOM,
-						),
-					},
-					Default: stringdefault.StaticString(common.DOCKER_PROXY_INDEX_TYPE_REGISTRY),
-				},
-				"index_url": schema.StringAttribute{
-					Description: "Url of Docker Index to use",
-					Optional:    true,
-				},
+func getDockerProxySchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"docker_proxy": schema.ResourceRequiredSingleNestedAttribute(
+			"Docker Proxy specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"cache_foreign_layers": schema.ResourceComputedOptionalBoolWithDefault(
+					"Allow Nexus Repository Manager to download and cache foreign layers",
+					false,
+				),
+				"foreign_layer_url_whitelist": func() tfschema.SetAttribute {
+					thisAttr := schema.ResourceOptionalStringSet("Foreign Layer URL Whitelist")
+					thisAttr.Computed = true
+					thisAttr.Default = setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{}))
+					return thisAttr
+				}(),
+				"index_type": schema.ResourceStringEnumWithDefault(
+					"Type of Docker Index",
+					common.DOCKER_PROXY_INDEX_TYPE_REGISTRY,
+					common.DOCKER_PROXY_INDEX_TYPE_HUB,
+					common.DOCKER_PROXY_INDEX_TYPE_REGISTRY,
+					common.DOCKER_PROXY_INDEX_TYPE_CUSTOM,
+				),
+				"index_url": schema.ResourceOptionalString("Url of Docker Index to use"),
 			},
-		},
+		),
 	}
 }

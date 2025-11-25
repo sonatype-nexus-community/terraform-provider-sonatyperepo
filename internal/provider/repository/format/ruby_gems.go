@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -93,7 +93,7 @@ func (f *RubyGemsRepositoryFormatHosted) DoUpdateRequest(plan any, state any, ap
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RubyGemsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -167,7 +167,7 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RubyGemsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonProxySchemaAttributes()
 }
 
@@ -241,7 +241,7 @@ func (f *RubyGemsRepositoryFormatGroup) DoUpdateRequest(plan any, state any, api
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RubyGemsRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(false)
 }
 

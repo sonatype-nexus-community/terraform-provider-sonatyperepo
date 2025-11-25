@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -85,7 +85,7 @@ func (f *HelmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateHelmHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *HelmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *HelmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -156,7 +156,7 @@ func (f *HelmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateHelmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *HelmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *HelmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonProxySchemaAttributes()
 }
 

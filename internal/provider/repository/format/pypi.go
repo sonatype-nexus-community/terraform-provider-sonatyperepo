@@ -25,11 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type PyPiRepositoryFormat struct {
@@ -93,7 +95,7 @@ func (f *PyPiRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdatePypiHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -167,7 +169,7 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getPyPiSchemaAttributes())
 	return additionalAttributes
@@ -243,7 +245,7 @@ func (f *PyPiRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(true)
 }
 
@@ -286,17 +288,13 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getPyPiSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"pypi": schema.SingleNestedAttribute{
-			Description: "PyPi specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"remove_quarrantined": schema.BoolAttribute{
-					Description: "Remove Quarantined Versions",
-					Required:    true,
-				},
+func getPyPiSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"pypi": schema.ResourceRequiredSingleNestedAttribute(
+			"PyPi specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"remove_quarrantined": schema.ResourceRequiredBool("Remove Quarantined Versions"),
 			},
-		},
+		),
 	}
 }

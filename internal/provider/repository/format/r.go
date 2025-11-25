@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -89,7 +89,7 @@ func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateRHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -146,7 +146,7 @@ func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.RepositoryManagementAPI.UpdateRProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonProxySchemaAttributes()
 }
 
@@ -203,7 +203,7 @@ func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.RepositoryManagementAPI.UpdateRGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(false)
 }
 

@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -81,7 +81,7 @@ func (f *CocoaPodsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, ap
 	return apiClient.RepositoryManagementAPI.UpdateCocoapodsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CocoaPodsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *CocoaPodsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonProxySchemaAttributes()
 }
 

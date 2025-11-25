@@ -25,11 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type NpmRepositoryFormat struct {
@@ -93,9 +95,8 @@ func (f *NpmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateNpmHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
-	// maps.Copy(additionalAttributes, getMavenSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -172,7 +173,7 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getNpmSchemaAttributes())
 	return additionalAttributes
@@ -248,7 +249,7 @@ func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateNpmGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(true)
 }
 
@@ -291,19 +292,13 @@ func (f *NpmRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getNpmSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"npm": schema.SingleNestedAttribute{
-			Description: "NPM specific configuration for this Repository",
-			Required:    false,
-			Optional:    true,
-			Attributes: map[string]schema.Attribute{
-				"remove_quarrantined": schema.BoolAttribute{
-					Description: "Remove Quarantined Versions",
-					Required:    true,
-					Optional:    false,
-				},
+func getNpmSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"npm": schema.ResourceOptionalSingleNestedAttribute(
+			"NPM specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"remove_quarrantined": schema.ResourceRequiredBool("Remove Quarantined Versions"),
 			},
-		},
+		),
 	}
 }

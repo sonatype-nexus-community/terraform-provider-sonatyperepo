@@ -26,14 +26,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type ConanRepositoryFormat struct {
@@ -94,7 +95,7 @@ func (f *ConanRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateConanHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *ConanRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *ConanRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -151,7 +152,7 @@ func (f *ConanRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateConanProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *ConanRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *ConanRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getConanProxySchemaAttributes())
 	return additionalAttributes
@@ -210,7 +211,7 @@ func (f *ConanRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateConanGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *ConanRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *ConanRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(true)
 }
 
@@ -239,23 +240,22 @@ func (f *ConanRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getConanProxySchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"conan": schema.SingleNestedAttribute{
-			Description: "Conan Proxy specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"conan_version": schema.StringAttribute{
-					Description: "Conan protocol version. Cannot be changed once repository is created.",
-					Required:    true,
-					Validators: []validator.String{
+func getConanProxySchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"conan": schema.ResourceRequiredSingleNestedAttribute(
+			"Conan Proxy specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"conan_version": func() tfschema.StringAttribute {
+					thisAttr := schema.ResourceRequiredStringWithValidators(
+						"Conan protocol version. Cannot be changed once repository is created.",
 						stringvalidator.OneOf(common.CONAN_PROTOCOL_V1, common.CONAN_PROTOCOL_V2),
-					},
-					PlanModifiers: []planmodifier.String{
+					)
+					thisAttr.PlanModifiers = []planmodifier.String{
 						stringplanmodifier.UseStateForUnknown(),
-					},
-				},
+					}
+					return thisAttr
+				}(),
 			},
-		},
+		),
 	}
 }

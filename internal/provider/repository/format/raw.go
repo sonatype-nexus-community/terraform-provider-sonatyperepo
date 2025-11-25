@@ -24,14 +24,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type RawRepositoryFormat struct {
@@ -95,7 +95,7 @@ func (f *RawRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateRawHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RawRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
@@ -171,7 +171,7 @@ func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateRawProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RawRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
@@ -247,7 +247,7 @@ func (f *RawRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateRawGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *RawRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonGroupSchemaAttributes(false)
 	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
@@ -292,20 +292,17 @@ func (f *RawRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getRawSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"raw": schema.SingleNestedAttribute{
-			Description: "Raw specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"content_disposition": schema.StringAttribute{
-					Description: "Content Disposition",
-					Required:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(common.CONTENT_DISPOSITION_ATTACHMENT, common.CONTENT_DISPOSITION_INLINE),
-					},
-				},
+func getRawSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"raw": schema.ResourceRequiredSingleNestedAttribute(
+			"Raw specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"content_disposition": schema.ResourceRequiredStringEnum(
+					"Content Disposition",
+					common.CONTENT_DISPOSITION_ATTACHMENT,
+					common.CONTENT_DISPOSITION_INLINE,
+				),
 			},
-		},
+		),
 	}
 }

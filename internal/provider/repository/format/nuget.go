@@ -24,14 +24,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type NugetRepositoryFormat struct {
@@ -95,7 +95,7 @@ func (f *NugetRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateNugetHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NugetRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonHostedSchemaAttributes()
 	return additionalAttributes
 }
@@ -170,7 +170,7 @@ func (f *NugetRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateNugetProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NugetRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getNugetProxySchemaAttributes())
 	return additionalAttributes
@@ -246,7 +246,7 @@ func (f *NugetRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateNugetGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *NugetRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonGroupSchemaAttributes(false)
 }
 
@@ -289,24 +289,18 @@ func (f *NugetRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getNugetProxySchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"nuget_proxy": schema.SingleNestedAttribute{
-			Description: "Nuget specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"nuget_version": schema.StringAttribute{
-					Description: "Nuget Protocol Versions",
-					Required:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(common.NUGET_PROTOCOL_V2, common.NUGET_PROTOCOL_V3),
-					},
-				},
-				"query_cache_item_max_age": schema.Int32Attribute{
-					Description: "How long to cache query results from the proxied repository (in seconds)",
-					Optional:    true,
-				},
+func getNugetProxySchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"nuget_proxy": schema.ResourceRequiredSingleNestedAttribute(
+			"Nuget specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"nuget_version": schema.ResourceRequiredStringEnum(
+					"Nuget Protocol Versions",
+					common.NUGET_PROTOCOL_V2,
+					common.NUGET_PROTOCOL_V3,
+				),
+				"query_cache_item_max_age": schema.ResourceOptionalInt32("How long to cache query results from the proxied repository (in seconds)"),
 			},
-		},
+		),
 	}
 }

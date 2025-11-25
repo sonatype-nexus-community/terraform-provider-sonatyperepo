@@ -25,11 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type CargoRepositoryFormat struct {
@@ -90,7 +92,7 @@ func (f *CargoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *CargoRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonHostedSchemaAttributes()
 }
 
@@ -147,7 +149,7 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *CargoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := getCommonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, getCargoSchemaAttributes())
 	return additionalAttributes
@@ -206,7 +208,7 @@ func (f *CargoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *CargoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttrs := getCommonGroupSchemaAttributes(false)
 	maps.Copy(additionalAttrs, getCargoSchemaAttributes())
 	return additionalAttrs
@@ -237,17 +239,13 @@ func (f *CargoRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getCargoSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"cargo": schema.SingleNestedAttribute{
-			Description: "Cargo specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"require_authentication": schema.BoolAttribute{
-					Description: "Indicates if this repository requires authentication overriding anonymous access.",
-					Required:    true,
-				},
+func getCargoSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"cargo": schema.ResourceRequiredSingleNestedAttribute(
+			"Cargo specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"require_authentication": schema.ResourceRequiredBool("Indicates if this repository requires authentication overriding anonymous access."),
 			},
-		},
+		),
 	}
 }

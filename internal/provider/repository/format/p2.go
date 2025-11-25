@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -84,7 +84,7 @@ func (f *P2RepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateP2ProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *P2RepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
+func (f *P2RepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
 	return getCommonProxySchemaAttributes()
 }
 

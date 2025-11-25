@@ -25,21 +25,22 @@ import (
 	"slices"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -101,7 +102,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Handle Errors
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
@@ -110,7 +111,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
@@ -125,14 +126,14 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -175,14 +176,14 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -223,14 +224,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
 				&err,
 				httpResponse,
@@ -247,14 +248,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
 				&err,
 				httpResponse,
@@ -265,7 +266,6 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(planModel, apiResponse)
-	// stateModel = (r.RepositoryFormat.UpdatePlanForState(stateModel)).(model.RepositoryNpmHostedModel)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 	if resp.Diagnostics.HasError() {
@@ -384,7 +384,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 					r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf("Error importing %s %s repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
 				&err,
 				httpResponse,
@@ -415,56 +415,48 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 }
 
-func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
-	storageAttributes := map[string]schema.Attribute{
-		"blob_store_name": tfschema.ResourceRequiredString("Name of the Blob Store to use"),
-		"strict_content_type_validation": tfschema.ResourceRequiredBool(
+func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) tfschema.Schema {
+	storageAttributes := map[string]tfschema.Attribute{
+		"blob_store_name": schema.ResourceRequiredString("Name of the Blob Store to use"),
+		"strict_content_type_validation": schema.ResourceRequiredBool(
 			"Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format",
 		),
 	}
 
 	// Write Policy is only for Hosted Repositories
 	if repoType == format.REPO_TYPE_HOSTED {
-		writePolicyAttr := tfschema.ResourceRequiredString("Controls if deployments of and updates to assets are allowed")
-		writePolicyAttr.Validators = []validator.String{
-			stringvalidator.OneOf(
-				common.WRITE_POLICY_ALLOW,
-				common.WRITE_POLICY_ALLOW_ONCE,
-				common.WRITE_POLICY_DENY,
-			),
-		}
-		storageAttributes["write_policy"] = writePolicyAttr
+		storageAttributes["write_policy"] = schema.ResourceRequiredStringEnum(
+			"Controls if deployments of and updates to assets are allowed",
+			[]string{common.WRITE_POLICY_ALLOW, common.WRITE_POLICY_ALLOW_ONCE, common.WRITE_POLICY_DENY}...,
+		)
 	}
 
 	// LatestPolicy is only for Docker Hosted Repositories
 	if repoFormat == common.REPO_FORMAT_DOCKER && repoType == format.REPO_TYPE_HOSTED {
-		storageAttributes["latest_policy"] = tfschema.ResourceOptionalBoolWithDefault(
+		storageAttributes["latest_policy"] = schema.ResourceOptionalBoolWithDefault(
 			"Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.",
 			false,
 		)
 	}
-
-	nameAttr := tfschema.ResourceRequiredString("Name of the Repository")
-	nameAttr.PlanModifiers = []planmodifier.String{
-		stringplanmodifier.RequiresReplace(),
-	}
-
-	urlAttr := tfschema.ResourceComputedOptionalStringWithPlanModifier(
-		"URL to access the Repository",
-		stringplanmodifier.UseStateForUnknown(),
-	)
-
-	return schema.Schema{
+	return tfschema.Schema{
 		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),
-		Attributes: map[string]schema.Attribute{
-			"name":    nameAttr,
-			"url":     urlAttr,
-			"online":  tfschema.ResourceRequiredBool("Whether this Repository is online and accepting incoming requests"),
-			"storage": tfschema.ResourceRequiredSingleNestedAttribute("Storage configuration for this Repository", storageAttributes),
-			"cleanup": tfschema.ResourceOptionalSingleNestedAttribute("Repository Cleanup configuration", map[string]schema.Attribute{
-				"policy_names": tfschema.ResourceOptionalStringSet("Set of Cleanup Policies that will apply to this Repository"),
-			}),
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredStringWithPlanModifier(
+				"Name of the Repository",
+				[]planmodifier.String{stringplanmodifier.RequiresReplace()},
+			),
+			"url": schema.ResourceOptionalStringWithPlanModifier(
+				"URL to access the Repository",
+				[]planmodifier.String{stringplanmodifier.UseStateForUnknown()}...,
+			),
+			"online":  schema.ResourceRequiredBool("Whether this Repository is online and accepting incoming requests"),
+			"storage": schema.ResourceRequiredSingleNestedAttribute("Storage configuration for this Repository", storageAttributes),
+			"cleanup": schema.ResourceOptionalSingleNestedAttribute("Repository Cleanup configuration",
+				map[string]tfschema.Attribute{
+					"policy_names": schema.ResourceOptionalStringSet("Set of Cleanup Policies that will apply to this Repository"),
+				},
+			),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
