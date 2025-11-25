@@ -19,10 +19,11 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"time"
+
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -79,16 +80,16 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						"s3ManagedEncryption",
 						"kmsManagedEncryption",
 					),
-					"encryption_key": tfschema.OptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
+					"encryption_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
 				}),
 				"bucket_security": tfschema.ResourceOptionalSingleNestedAttribute("Bucket Security Configuration for this Blob Store", map[string]schema.Attribute{
-					"access_key_id": tfschema.OptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
-					"secret_access_key": tfschema.OptionalSensitiveStringWithLengthAtLeast(
+					"access_key_id": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
+					"secret_access_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast(
 						"The secret access key associated with the specified IAM access key ID",
 						1,
 					),
 					"role":          tfschema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
-					"session_token": tfschema.OptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
+					"session_token": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
 				}),
 				"advanced_bucket_connection": tfschema.ResourceOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]schema.Attribute{
 					"endpoint":    tfschema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),

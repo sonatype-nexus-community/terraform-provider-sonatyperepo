@@ -17,7 +17,7 @@ Use this data source to get all Privileges
 
 ### Read-Only
 
-- `privileges` (Attributes List) (see [below for nested schema](#nestedatt--privileges))
+- `privileges` (Attributes List) List of Privileges (see [below for nested schema](#nestedatt--privileges))
 
 <a id="nestedatt--privileges"></a>
 ### Nested Schema for `privileges`

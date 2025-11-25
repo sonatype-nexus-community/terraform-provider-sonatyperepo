@@ -21,10 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -53,19 +53,19 @@ func (d *contentSelectorsDataSource) Metadata(_ context.Context, req datasource.
 
 // Schema defines the schema for the data source.
 func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Content Selectors",
-		Attributes: map[string]dsschema.Attribute{
-			"content_selectors": dsschema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: dsschema.NestedAttributeObject{
-					Attributes: map[string]dsschema.Attribute{
-						"name":        tfschema.DataSourceComputedString("The name of the Content Selector."),
-						"description": tfschema.DataSourceComputedString("The description of this Content Selector."),
-						"expression":  tfschema.DataSourceComputedString("The Content Selector expression used to identify content."),
+		Attributes: map[string]tfschema.Attribute{
+			"content_selectors": schema.DataSourceComputedListNestedAttribute(
+				"List of Content Selectors",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name":        schema.DataSourceComputedString("The name of the Content Selector."),
+						"description": schema.DataSourceComputedString("The description of this Content Selector."),
+						"expression":  schema.DataSourceComputedString("The Content Selector expression used to identify content."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -78,7 +78,7 @@ func (d *contentSelectorsDataSource) Read(ctx context.Context, req datasource.Re
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelectors(ctx).Execute()
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unable list Content Selectors",
 			&err,
 			httpResponse,

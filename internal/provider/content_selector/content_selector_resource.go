@@ -23,6 +23,9 @@ import (
 	"regexp"
 	"time"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,8 +33,6 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 )
 
 const contentSelectorNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
@@ -56,13 +57,13 @@ func (r *contentSelectorResource) Schema(_ context.Context, _ resource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Manage Content Selectors in Sonatype Nexus Repository",
 		Attributes: map[string]schema.Attribute{
-			"name": tfschema.RequiredStringWithRegex(
+			"name": tfschema.ResourceRequiredStringWithRegex(
 				"The name of the Content Selector.",
 				regexp.MustCompile(contentSelectorNamePattern),
 				"Content Selector name must match pattern `^[a-zA-Z0-9\\-]{1}[a-zA-Z0-9_\\-\\.]*$`",
 			),
-			"description": tfschema.ResourceRequiredString("The description of this Content Selector."),
-			"expression":  tfschema.ResourceRequiredString("The Content Selector expression used to identify content."),
+			"description":  tfschema.ResourceRequiredString("The description of this Content Selector."),
+			"expression":   tfschema.ResourceRequiredString("The Content Selector expression used to identify content."),
 			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}

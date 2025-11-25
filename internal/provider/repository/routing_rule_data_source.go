@@ -21,13 +21,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -58,33 +56,14 @@ func (d *routingRuleDataSource) Metadata(_ context.Context, req datasource.Metad
 
 // Schema defines the schema for the data source.
 func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a single routing rule by name",
-		Attributes: map[string]dsschema.Attribute{
-			"name": dsschema.StringAttribute{
-				Description: "The name of the routing rule",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"description": dsschema.StringAttribute{
-				Description: "The description of the routing rule",
-				Computed:    true,
-			},
-			"mode": dsschema.StringAttribute{
-				Description: "The mode of the routing rule (ALLOW or BLOCK)",
-				Computed:    true,
-			},
-			"matchers": dsschema.SetAttribute{
-				Description: "Regular expressions used to identify request paths",
-				Computed:    true,
-				ElementType: types.StringType,
-			},
-			"last_updated": dsschema.StringAttribute{
-				Description: "Timestamp of last update",
-				Computed:    true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"name":         schema.DataSourceRequiredStringWithLengthAtLeast("The name of the routing rule", 1),
+			"description":  schema.DataSourceComputedString("The description of the routing rule"),
+			"mode":         schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
+			"matchers":     schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
+			"last_updated": schema.DataSourceComputedString("Timestamp of last update"),
 		},
 	}
 }
@@ -111,14 +90,14 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 	state := model.RoutingRuleModel{}
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"No routing rule with supplied name",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error finding routing rule",
 				&err,
 				httpResponse,
@@ -129,7 +108,7 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 	} else if httpResponse.StatusCode == http.StatusOK {
 		state.MapFromApi(routingRuleResponse)
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unexpected response when reading routing rule",
 			&err,
 			httpResponse,

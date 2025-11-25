@@ -19,11 +19,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"regexp"
 	"time"
+
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -44,7 +45,7 @@ const (
 	// RoutingRuleModeAllow represents the ALLOW mode for routing rules
 	RoutingRuleModeAllow = "ALLOW"
 	// RoutingRuleModeBlock represents the BLOCK mode for routing rules
-	RoutingRuleModeBlock = "BLOCK"
+	RoutingRuleModeBlock   = "BLOCK"
 	routingRuleNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 )
 
@@ -69,7 +70,7 @@ func (r *routingRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Use this resource to create and manage routing rules in Sonatype Nexus Repository Manager",
 		Attributes: map[string]schema.Attribute{
 			"name": func() schema.StringAttribute {
-				attr := tfschema.RequiredStringWithRegexAndLength(
+				attr := tfschema.ResourceRequiredStringWithRegexAndLength(
 					"Name of the routing rule",
 					regexp.MustCompile(routingRuleNamePattern),
 					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",

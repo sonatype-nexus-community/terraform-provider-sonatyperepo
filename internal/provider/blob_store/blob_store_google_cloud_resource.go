@@ -19,11 +19,12 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"regexp"
 	"time"
+
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -58,7 +59,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 	resp.Schema = schema.Schema{
 		Description: "Use this resource to create a Google Cloud Storage Blob Store",
 		Attributes: map[string]schema.Attribute{
-			"name": tfschema.RequiredStringWithRegexAndLength(
+			"name": tfschema.ResourceRequiredStringWithRegexAndLength(
 				"Name of the Blob Store",
 				regexp.MustCompile(blobStoreNamePattern),
 				"Name must contain only letters, digits, underscores(_), hyphens(-), and dots(.). May not start with underscore or dot.",
@@ -89,14 +90,14 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 					"bucket": schema.SingleNestedBlock{
 						Description: "Main Bucket Configuration for this Blob Store",
 						Attributes: map[string]schema.Attribute{
-							"name": tfschema.RequiredStringWithRegexAndLength(
+							"name": tfschema.ResourceRequiredStringWithRegexAndLength(
 								"The name of the Google Cloud Storage bucket",
 								regexp.MustCompile(gcsBucketPattern),
 								"Bucket name must contain only lowercase letters, numbers, and hyphens. Must start and end with a letter or number.",
 								3,
 								63,
 							),
-							"prefix": tfschema.OptionalStringWithLengthAtMost(
+							"prefix": tfschema.ResourceOptionalStringWithLengthAtMost(
 								"The path within your Cloud Storage bucket where blob data should be stored",
 								1024,
 							),
@@ -112,7 +113,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								"accountKey",
 								"applicationDefault",
 							),
-							"account_key": tfschema.OptionalSensitiveStringWithLengthAtLeast(
+							"account_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast(
 								"The credentials JSON file content",
 								10,
 							),
@@ -126,7 +127,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 								"kmsManagedEncryption",
 								"default",
 							),
-							"encryption_key": tfschema.OptionalStringWithLengthAtLeast(
+							"encryption_key": tfschema.ResourceOptionalStringWithLengthAtLeast(
 								"CryptoKey ID for KMS encryption",
 								1,
 							),

@@ -21,13 +21,11 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -59,35 +57,27 @@ func (d *privilegesDataSource) Metadata(_ context.Context, req datasource.Metada
 
 // Schema defines the schema for the data source.
 func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Privileges",
-		Attributes: map[string]dsschema.Attribute{
-			"privileges": dsschema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: dsschema.NestedAttributeObject{
-					Attributes: map[string]dsschema.Attribute{
-						"name": dsschema.StringAttribute{
-							Description: "The name of the privilege. This value cannot be changed.",
-							Required:    true,
-							Validators: []validator.String{
-								stringvalidator.RegexMatches(
-									regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-									`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
-								),
-							},
-						},
-						"description": tfschema.DataSourceRequiredString("Friendly description of this Privilege"),
-						"read_only":   tfschema.DataSourceRequiredBool("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system."),
-						"type": dsschema.StringAttribute{
-							Description: "The privilege type.",
-							Required:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOf(privilege_type.AllPrivilegeTypes()...),
-							},
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"privileges": schema.DataSourceComputedListNestedAttribute(
+				"List of Privileges",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name": schema.DataSourceRequiredStringWithRegex(
+							"The name of the privilege. This value cannot be changed.",
+							regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
+							`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
+						),
+						"description": schema.DataSourceRequiredString("Friendly description of this Privilege"),
+						"read_only":   schema.DataSourceRequiredBool("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system."),
+						"type": schema.DataSourceRequiredStringEnum(
+							"The privilege type.",
+							privilege_type.AllPrivilegeTypes()...,
+						),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -104,7 +94,7 @@ func (d *privilegesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetAllPrivileges(ctx).Execute()
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unable to list privileges",
 			&err,
 			httpResponse,

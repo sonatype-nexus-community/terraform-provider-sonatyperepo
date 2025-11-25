@@ -19,8 +19,6 @@ package privilege
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"maps"
 	"net/http"
 	"reflect"
@@ -28,6 +26,9 @@ import (
 	"slices"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
+
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -277,13 +278,13 @@ func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) 
 	return schema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
 		Attributes: map[string]schema.Attribute{
-			"name": tfschema.RequiredStringWithRegex(
+			"name": tfschema.ResourceRequiredStringWithRegex(
 				"The name of the privilege. This value cannot be changed.",
 				regexp.MustCompile(privilegeNamePattern),
 				`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
 			),
 			"description": tfschema.ResourceRequiredString("Friendly description of this Privilege"),
-			"read_only": tfschema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"read_only":   tfschema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
 			"type": tfschema.ResourceRequiredStringEnum(
 				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
 				privilegeTypeType.String(),

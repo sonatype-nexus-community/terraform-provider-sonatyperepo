@@ -20,12 +20,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"io"
 	"net/http"
 	"regexp"
 	"time"
+
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -64,7 +65,7 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Use this resource to create and manage cleanup policies in Sonatype Nexus Repository Manager",
 		Attributes: map[string]schema.Attribute{
 			"name": func() schema.StringAttribute {
-				attr := tfschema.RequiredStringWithRegexAndLength(
+				attr := tfschema.ResourceRequiredStringWithRegexAndLength(
 					"Name of the cleanup policy",
 					regexp.MustCompile(cleanupPolicyNamePattern),
 					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
