@@ -83,7 +83,7 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Repository format that this cleanup policy applies to",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum"),
+					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "huggingface", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum"),
 				},
 			},
 			"criteria": schema.SingleNestedAttribute{
