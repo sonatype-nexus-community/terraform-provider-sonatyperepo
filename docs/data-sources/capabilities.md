@@ -24,7 +24,7 @@ data "sonatyperepo_capabilities" "capabilities" {}
 
 ### Read-Only
 
-- `capabilities` (Attributes List) (see [below for nested schema](#nestedatt--capabilities))
+- `capabilities` (Attributes List) List of Capabilities (see [below for nested schema](#nestedatt--capabilities))
 
 <a id="nestedatt--capabilities"></a>
 ### Nested Schema for `capabilities`

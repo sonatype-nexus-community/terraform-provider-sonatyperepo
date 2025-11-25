@@ -21,10 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,21 +55,21 @@ func (d *routingRulesDataSource) Metadata(_ context.Context, req datasource.Meta
 
 // Schema defines the schema for the data source.
 func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all routing rules",
-		Attributes: map[string]dsschema.Attribute{
-			"routing_rules": dsschema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: dsschema.NestedAttributeObject{
-					Attributes: map[string]dsschema.Attribute{
-						"name":          dsschema.StringAttribute{Description: "The name of the routing rule", Computed: true},
-						"description":   dsschema.StringAttribute{Description: "The description of the routing rule", Computed: true},
-						"mode":          dsschema.StringAttribute{Description: "The mode of the routing rule (ALLOW or BLOCK)", Computed: true},
-						"matchers":      dsschema.SetAttribute{Description: "Regular expressions used to identify request paths", Computed: true, ElementType: types.StringType},
-						"last_updated":  dsschema.StringAttribute{Description: "Timestamp of last update", Computed: true},
+		Attributes: map[string]tfschema.Attribute{
+			"routing_rules": schema.DataSourceComputedListNestedAttribute(
+				"List of Routing Rules",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name":         schema.DataSourceComputedString("The name of the routing rule"),
+						"description":  schema.DataSourceComputedString("The description of the routing rule"),
+						"mode":         schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
+						"matchers":     schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
+						"last_updated": schema.DataSourceComputedString("Timestamp of last update"),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -86,7 +86,7 @@ func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	routingRulesResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRules(ctx).Execute()
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unable to list routing rules",
 			&err,
 			httpResponse,

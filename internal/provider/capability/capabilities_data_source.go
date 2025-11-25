@@ -59,9 +59,9 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 		
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
 		Attributes: map[string]tfschema.Attribute{
-			"capabilities": tfschema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: tfschema.NestedAttributeObject{
+			"capabilities": schema.DataSourceComputedListNestedAttribute(
+				"List of Capabilities",
+				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
 						"id":         schema.DataSourceRequiredString("Internal ID of the Capability."),
 						"type":       schema.DataSourceRequiredString("Type of the Capability."),
@@ -70,7 +70,7 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 						"properties": schema.DataSourceRequiredStringMap("Properties of the Capability."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
