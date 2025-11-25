@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,19 +55,19 @@ func (d *fileBlobStoreDataSource) Metadata(_ context.Context, req datasource.Met
 
 // Schema defines the schema for the data source.
 func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]dsschema.Attribute{
-			"name": tfschema.DataSourceRequiredString("Name of the Blob Store"),
-			"path": tfschema.DataSourceComputedString("The Path on disk of this File Blob Store"),
-			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.DataSourceRequiredString("Name of the Blob Store"),
+			"path": schema.DataSourceComputedString("The Path on disk of this File Blob Store"),
+			"soft_quota": schema.DataSourceComputedOptionalSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
-				map[string]dsschema.Attribute{
-					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
-					"limit": tfschema.DataSourceComputedInt64("Quota limit"),
+				map[string]tfschema.Attribute{
+					"type":  schema.DataSourceComputedString("Soft Quota type"),
+					"limit": schema.DataSourceComputedInt64("Quota limit"),
 				},
 			),
-			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
+			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -75,7 +75,6 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 // Read refreshes the Terraform state with the latest data.
 func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data model.BlobStoreFileModel
-	// var state model.BlobStoreFileModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
