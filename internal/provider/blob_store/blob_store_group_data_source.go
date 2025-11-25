@@ -25,7 +25,7 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -93,7 +93,7 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 
 	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unable to read group blob store",
 			&err,
 			httpResponse,

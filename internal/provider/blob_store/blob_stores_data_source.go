@@ -21,11 +21,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
@@ -56,24 +56,24 @@ func (d *blobStoresDataSource) Metadata(_ context.Context, req datasource.Metada
 
 // Schema defines the schema for the data source.
 func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Blob Stores",
-		Attributes: map[string]dsschema.Attribute{
-			"blob_stores": tfschema.DataSourceComputedListNestedAttribute(
+		Attributes: map[string]tfschema.Attribute{
+			"blob_stores": schema.DataSourceComputedListNestedAttribute(
 				"List of Blob Stores",
-				dsschema.NestedAttributeObject{
-					Attributes: map[string]dsschema.Attribute{
-						"name":                     tfschema.DataSourceComputedString("Name of the Blob Store"),
-						"type":                     tfschema.DataSourceComputedString("Blob Store type"),
-						"unavailable":              tfschema.DataSourceComputedBool("Whether the Blob Store is unavailable for use"),
-						"blob_count":               tfschema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
-						"total_size_in_bytes":      tfschema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
-						"available_space_in_bytes": tfschema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
-						"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name":                     schema.DataSourceComputedString("Name of the Blob Store"),
+						"type":                     schema.DataSourceComputedString("Blob Store type"),
+						"unavailable":              schema.DataSourceComputedBool("Whether the Blob Store is unavailable for use"),
+						"blob_count":               schema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
+						"total_size_in_bytes":      schema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
+						"available_space_in_bytes": schema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
+						"soft_quota": schema.DataSourceComputedSingleNestedAttribute(
 							"Soft Quota for this Blob Store",
-							map[string]dsschema.Attribute{
-								"type":  tfschema.DataSourceComputedString("Soft Quota type"),
-								"limit": tfschema.DataSourceComputedInt64("Quota limit"),
+							map[string]tfschema.Attribute{
+								"type":  schema.DataSourceComputedString("Soft Quota type"),
+								"limit": schema.DataSourceComputedInt64("Quota limit"),
 							},
 						),
 					},
@@ -130,9 +130,6 @@ func (d *blobStoresDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 		tflog.Debug(ctx, fmt.Sprintf("   Appended: %p", state.BlobStores))
 	}
-
-	// For test framework
-	// state.ID = types.StringValue("placeholder")
 
 	// Set state
 	diags := resp.State.Set(ctx, &state)

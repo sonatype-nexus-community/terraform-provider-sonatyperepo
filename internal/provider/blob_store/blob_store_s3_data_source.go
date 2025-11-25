@@ -26,7 +26,7 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -114,14 +114,14 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetS3BlobStore(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf("No S3 BlobStore with name: %s", data.Name.ValueString()),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Unable to S3 Read Blob Store",
 				&err,
 				httpResponse,
