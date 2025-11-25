@@ -24,11 +24,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -71,27 +72,21 @@ func (f *HealthcheckCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.P
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *HealthcheckCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"configured_for_all_proxies": schema.BoolAttribute{
-			Description: `Configure all supported proxy repositories to regularly check with [Sonatype Repository Healthcheck](https://help.sonatype.com/en/repository-health-check.html) for updates by default. Newly added repositories will automatically be configured as well, for as long as this is selected.`,
-			Required:    false,
-			Optional:    true,
-			Computed:    true,
-			Default:     booldefault.StaticBool(common.CAPABILITY_HEALTHCHECK_DEFAULT_CONFIGURED_FOR_ALL),
-		},
-		"use_nexus_truststore": schema.BoolAttribute{
-			Description: `Whether to use Nexus Truststore when communicating with Sonatype Repository Healthcheck.
+func (f *HealthcheckCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"configured_for_all_proxies": schema.ResourceOptionalBoolWithDefault(
+			`Configure all supported proxy repositories to regularly check with [Sonatype Repository Healthcheck](https://help.sonatype.com/en/repository-health-check.html) for updates by default. Newly added repositories will automatically be configured as well, for as long as this is selected.`,
+			common.CAPABILITY_HEALTHCHECK_DEFAULT_CONFIGURED_FOR_ALL,
+		),
+		"use_nexus_truststore": schema.ResourceOptionalBoolWithDefault(
+			`Whether to use Nexus Truststore when communicating with Sonatype Repository Healthcheck.
 			
   The RHC service works by performing calls to the following Sonatype data services depending on the Nexus Repository license agreement in use. 
   Network administrators need to allow these URLs through their network firewall to receive updates. 
   - https://rhc-pro.sonatype.com
   - https://rhc.sonatype.com`,
-			Required: false,
-			Optional: true,
-			Computed: true,
-			Default:  booldefault.StaticBool(common.CAPABILITY_HEALTHCHECK_DEFAULT_USE_NEXUS_TRUSTSTORE),
-		},
+			common.CAPABILITY_HEALTHCHECK_DEFAULT_USE_NEXUS_TRUSTSTORE,
+		),
 	}
 }
 

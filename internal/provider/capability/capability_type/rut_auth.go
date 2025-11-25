@@ -23,13 +23,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -72,16 +72,12 @@ func (f *RutAuthCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan)
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RutAuthCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"http_header": schema.StringAttribute{
-			Description: "Handled HTTP Header should contain the name of the header that is used to source the principal of already authenticated user.",
-			Required:    true,
-			Optional:    false,
-			Validators: []validator.String{
-				stringvalidator.LengthAtLeast(1),
-			},
-		},
+func (f *RutAuthCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"http_header": schema.ResourceRequiredStringWithLengthAtLeast(
+			"Handled HTTP Header should contain the name of the header that is used to source the principal of already authenticated user.",
+			1,
+		),
 	}
 }
 

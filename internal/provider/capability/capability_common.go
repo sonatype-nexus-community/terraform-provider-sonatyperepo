@@ -19,22 +19,24 @@ package capability
 import (
 	"context"
 	"fmt"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 	"net/http"
 	"reflect"
 	"slices"
-	capabilitytype "terraform-provider-sonatyperepo/internal/provider/capability/capability_type"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+
+	capabilitytype "terraform-provider-sonatyperepo/internal/provider/capability/capability_type"
 )
 
 const (
@@ -84,7 +86,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Handle Errors
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s Capability", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -93,7 +95,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	if !slices.Contains(c.CapabilityType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Capability was not successful", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -133,14 +135,14 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
@@ -152,7 +154,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		sharederr.HandleAPIWarning(
+		errors.HandleAPIWarning(
 			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
 			&err,
 			httpResponse,
@@ -191,14 +193,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
@@ -215,14 +217,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
@@ -234,7 +236,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		sharederr.HandleAPIWarning(
+		errors.HandleAPIWarning(
 			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
 			&err,
 			httpResponse,
@@ -287,14 +289,14 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				sharederr.HandleAPIWarning(
+				errors.HandleAPIWarning(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
-				sharederr.HandleAPIError(
+				errors.HandleAPIError(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
 					&err,
 					httpResponse,
@@ -304,7 +306,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				fmt.Sprintf("Unexpected response when deleting %s Capability (attempt %d)", c.CapabilityType.GetType().String(), attempts),
 				&err,
 				httpResponse,
@@ -356,23 +358,23 @@ func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes
 	return capabilityId, false
 }
 
-func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) schema.Schema {
+func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
 	propertiesAttributes := ct.GetPropertiesSchema()
 
-	baseSchema := schema.Schema{
+	baseSchema := tfschema.Schema{
 		MarkdownDescription: ct.GetMarkdownDescription() + `
 		
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
-		Attributes: map[string]schema.Attribute{
-			"id":           tfschema.ResourceComputedString("The internal ID of the Capability."),
-			"notes":        tfschema.ResourceOptionalString("Optional notes about configured capability."),
-			"enabled":      tfschema.ResourceRequiredBool("Whether the Capability is enabled."),
-			"last_updated": tfschema.ResourceComputedString(""),
+		Attributes: map[string]tfschema.Attribute{
+			"id":           schema.ResourceComputedString("The internal ID of the Capability."),
+			"notes":        schema.ResourceOptionalString("Optional notes about configured capability."),
+			"enabled":      schema.ResourceRequiredBool("Whether the Capability is enabled."),
+			"last_updated": schema.ResourceComputedString(""),
 		},
 	}
 
 	if len(propertiesAttributes) > 0 {
-		baseSchema.Attributes["properties"] = tfschema.ResourceRequiredSingleNestedAttribute("Properties specific to this Capability type", propertiesAttributes)
+		baseSchema.Attributes["properties"] = schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Capability type", propertiesAttributes)
 	}
 
 	return baseSchema

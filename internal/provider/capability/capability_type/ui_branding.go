@@ -24,12 +24,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -72,36 +72,24 @@ func (f *UiBrandingCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Pl
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *UiBrandingCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"footer_enabled": schema.BoolAttribute{
-			Description: "Enable branding header HTML snippet.",
-			Optional:    true,
-			Computed:    true,
-			Default: booldefault.StaticBool(
-				common.CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_ENABLED,
-			),
-		},
-		"footer_html": schema.StringAttribute{
-			Description: "An HTML snippet to be included in branding header. Use '$baseUrl' to insert the base URL of the server (e.g. to reference an image).",
-			Optional:    true,
-			Computed:    true,
-			Default:     stringdefault.StaticString(""),
-		},
-		"header_enabled": schema.BoolAttribute{
-			Description: "Enable branding header HTML snippet.",
-			Optional:    true,
-			Computed:    true,
-			Default: booldefault.StaticBool(
-				common.CAPABILITY_UI_BRANDING_DEFAULT_HEADER_ENABLED,
-			),
-		},
-		"header_html": schema.StringAttribute{
-			Description: "An HTML snippet to be included in branding header. Use '$baseUrl' to insert the base URL of the server (e.g. to reference an image).",
-			Optional:    true,
-			Computed:    true,
-			Default:     stringdefault.StaticString(""),
-		},
+func (f *UiBrandingCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"footer_enabled": schema.ResourceComputedOptionalBoolWithDefault(
+			"Enable branding header HTML snippet.",
+			common.CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_ENABLED,
+		),
+		"footer_html": schema.ResourceOptionalStringWithDefaultAndPlanModifier(
+			"An HTML snippet to be included in branding header. Use '$baseUrl' to insert the base URL of the server (e.g. to reference an image).",
+			common.CAPABILITY_UI_BRANDING_DEFAULT_FOOTER_HTML,
+		),
+		"header_enabled": schema.ResourceComputedOptionalBoolWithDefault(
+			"Enable branding header HTML snippet.",
+			common.CAPABILITY_UI_BRANDING_DEFAULT_HEADER_ENABLED,
+		),
+		"header_html": schema.ResourceOptionalStringWithDefaultAndPlanModifier(
+			"An HTML snippet to be included in branding header. Use '$baseUrl' to insert the base URL of the server (e.g. to reference an image).",
+			"",
+		),
 	}
 }
 

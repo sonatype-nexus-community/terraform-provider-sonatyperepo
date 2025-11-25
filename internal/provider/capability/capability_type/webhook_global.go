@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -70,7 +70,7 @@ func (f *WebhookGlobalCapability) GetPlanAsModel(ctx context.Context, plan tfsdk
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *WebhookGlobalCapability) GetPropertiesSchema() map[string]schema.Attribute {
+func (f *WebhookGlobalCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
 	return getPropertiesSchemaForWebhookCapability(common.AllGlobalWebHookEventTypes(), false)
 }
 

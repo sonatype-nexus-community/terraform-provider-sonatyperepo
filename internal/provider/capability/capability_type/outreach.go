@@ -24,14 +24,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -74,24 +73,17 @@ func (f *OutreachCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *OutreachCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"override_url": schema.StringAttribute{
-			Description: "Override external URL for downloading new Outreach content.",
-			Optional:    true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^https?://[^\s]+$`),
-					"Must be a valid http:// or https:// URL",
-				),
-			},
-		},
-		"always_remote": schema.BoolAttribute{
-			Description: "Always check the remote server for updates.",
-			Optional:    true,
-			Computed:    true,
-			Default:     booldefault.StaticBool(common.CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE),
-		},
+func (f *OutreachCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"override_url": schema.ResourceOptionalStringWithRegex(
+			"Override external URL for downloading new Outreach content.",
+			regexp.MustCompile(`^https?://[^\s]+$`),
+			"Must be a valid http:// or https:// URL",
+		),
+		"always_remote": schema.ResourceOptionalBoolWithDefault(
+			"Always check the remote server for updates.",
+			common.CAPABILITY_OUTREACH_DEFAULT_ALWAYS_REMOTE,
+		),
 	}
 }
 

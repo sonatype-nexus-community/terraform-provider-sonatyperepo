@@ -24,13 +24,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -73,72 +72,36 @@ func (f *UiSettingsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Pl
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *UiSettingsCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"title": schema.StringAttribute{
-			Description: "Browser page title.",
-			Optional:    true,
-			Computed:    true,
-			Default: stringdefault.StaticString(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE,
-			),
-		},
-		"debug_allowed": schema.BoolAttribute{
-			Description: "Allow developer debugging.",
-			Optional:    true,
-			Computed:    true,
-			Default: booldefault.StaticBool(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED,
-			),
-		},
-		"status_interval_authenticated": schema.Int32Attribute{
-			Description: "Interval between status requests for authenticated users (seconds).",
-			Optional:    true,
-			Computed:    true,
-			Default: int32default.StaticInt32(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED,
-			),
-		},
-		"status_interval_anonymous": schema.Int32Attribute{
-			Description: "Interval between status requests for anonymous user (seconds).",
-			Optional:    true,
-			Computed:    true,
-			Default: int32default.StaticInt32(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS,
-			),
-		},
-		"session_timeout": schema.Int32Attribute{
-			Description: "Period of inactivity before session times out (minutes). A value of 0 will mean that a session never expires.",
-			Optional:    true,
-			Computed:    true,
-			Default: int32default.StaticInt32(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT,
-			),
-		},
-		"request_timeout": schema.Int32Attribute{
-			Description: "Period of time to keep the connection alive for requests expected to take a normal period of time (seconds).",
-			Optional:    true,
-			Computed:    true,
-			Default: int32default.StaticInt32(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT,
-			),
-		},
-		"long_request_timeout": schema.Int32Attribute{
-			Description: "Period of time to keep the connection alive for requests expected to take an extended period of time (seconds).",
-			Optional:    true,
-			Computed:    true,
-			Default: int32default.StaticInt32(
-				common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT,
-			),
-		},
-		// "search_request_timeout": schema.Int32Attribute{
-		// 	Description: "Search request timeout in milliseconds.",
-		// 	Optional:    true,
-		// 	Computed:    true,
-		// 	Default: int32default.StaticInt32(
-		// 		common.CAPABILITY_UI_SETTINGS_DEFAULT_SEARCH_REQUEST_TIMEOUT,
-		// 	),
-		// },
+func (f *UiSettingsCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"title": schema.ResourceOptionalStringWithDefaultAndPlanModifier(
+			"Browser page title.",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE,
+		),
+		"debug_allowed": schema.ResourceComputedOptionalBoolWithDefault(
+			"Allow developer debugging.",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED,
+		),
+		"status_interval_authenticated": schema.ResourceOptionalInt32WithDefault(
+			"Interval between status requests for authenticated users (seconds).",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED,
+		),
+		"status_interval_anonymous": schema.ResourceOptionalInt32WithDefault(
+			"Interval between status requests for anonymous user (seconds).",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS,
+		),
+		"session_timeout": schema.ResourceOptionalInt32WithDefault(
+			"Period of inactivity before session times out (minutes). A value of 0 will mean that a session never expires.",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT,
+		),
+		"request_timeout": schema.ResourceOptionalInt32WithDefault(
+			"Period of time to keep the connection alive for requests expected to take a normal period of time (seconds).",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT,
+		),
+		"long_request_timeout": schema.ResourceOptionalInt32WithDefault(
+			"Period of time to keep the connection alive for requests expected to take an extended period of time (seconds).",
+			common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT,
+		),
 	}
 }
 

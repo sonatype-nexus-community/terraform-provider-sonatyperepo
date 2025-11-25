@@ -23,12 +23,9 @@ import (
 	"regexp"
 	"time"
 
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -36,6 +33,9 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -56,78 +56,78 @@ func (r *blobStoreGoogleCloudResource) Metadata(_ context.Context, req resource.
 }
 
 func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this resource to create a Google Cloud Storage Blob Store",
-		Attributes: map[string]schema.Attribute{
-			"name": tfschema.ResourceRequiredStringWithRegexAndLength(
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredStringWithRegexAndLength(
 				"Name of the Blob Store",
 				regexp.MustCompile(blobStoreNamePattern),
 				"Name must contain only letters, digits, underscores(_), hyphens(-), and dots(.). May not start with underscore or dot.",
 				1,
 				200,
 			),
-			"type": tfschema.ResourceComputedStringWithDefault(
+			"type": schema.ResourceComputedStringWithDefault(
 				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
 				BLOB_STORE_TYPE_GOOGLE_CLOUD,
 			),
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+			"last_updated": schema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
-		Blocks: map[string]schema.Block{
-			"soft_quota": schema.SingleNestedBlock{
+		Blocks: map[string]tfschema.Block{
+			"soft_quota": tfschema.SingleNestedBlock{
 				Description: "Soft Quota for this Blob Store",
-				Attributes: map[string]schema.Attribute{
-					"type": tfschema.ResourceStringEnum(
+				Attributes: map[string]tfschema.Attribute{
+					"type": schema.ResourceStringEnum(
 						"Soft Quota type",
 						"spaceUsedQuota",
 						"spaceRemainingQuota",
 					),
-					"limit": tfschema.ResourceOptionalInt64("Quota limit in bytes"),
+					"limit": schema.ResourceOptionalInt64("Quota limit in bytes"),
 				},
 			},
-			"bucket_configuration": schema.SingleNestedBlock{
+			"bucket_configuration": tfschema.SingleNestedBlock{
 				Description: "Bucket Configuration for this Google Cloud Storage Blob Store",
-				Blocks: map[string]schema.Block{
-					"bucket": schema.SingleNestedBlock{
+				Blocks: map[string]tfschema.Block{
+					"bucket": tfschema.SingleNestedBlock{
 						Description: "Main Bucket Configuration for this Blob Store",
-						Attributes: map[string]schema.Attribute{
-							"name": tfschema.ResourceRequiredStringWithRegexAndLength(
+						Attributes: map[string]tfschema.Attribute{
+							"name": schema.ResourceRequiredStringWithRegexAndLength(
 								"The name of the Google Cloud Storage bucket",
 								regexp.MustCompile(gcsBucketPattern),
 								"Bucket name must contain only lowercase letters, numbers, and hyphens. Must start and end with a letter or number.",
 								3,
 								63,
 							),
-							"prefix": tfschema.ResourceOptionalStringWithLengthAtMost(
+							"prefix": schema.ResourceOptionalStringWithLengthAtMost(
 								"The path within your Cloud Storage bucket where blob data should be stored",
 								1024,
 							),
-							"region":     tfschema.ResourceOptionalString("The Google Cloud region for the bucket"),
-							"project_id": tfschema.ResourceOptionalString("The Google Cloud project id for the bucket"),
+							"region":     schema.ResourceOptionalString("The Google Cloud region for the bucket"),
+							"project_id": schema.ResourceOptionalString("The Google Cloud project id for the bucket"),
 						},
 					},
-					"authentication": schema.SingleNestedBlock{
+					"authentication": tfschema.SingleNestedBlock{
 						Description: "Authentication Configuration for Google Cloud Storage",
-						Attributes: map[string]schema.Attribute{
-							"authentication_method": tfschema.ResourceStringEnum(
+						Attributes: map[string]tfschema.Attribute{
+							"authentication_method": schema.ResourceStringEnum(
 								"The type of Google Cloud authentication to use",
 								"accountKey",
 								"applicationDefault",
 							),
-							"account_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast(
+							"account_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(
 								"The credentials JSON file content",
 								10,
 							),
 						},
 					},
-					"encryption": schema.SingleNestedBlock{
+					"encryption": tfschema.SingleNestedBlock{
 						Description: "Encryption Configuration for Google Cloud Storage",
-						Attributes: map[string]schema.Attribute{
-							"encryption_type": tfschema.ResourceStringEnum(
+						Attributes: map[string]tfschema.Attribute{
+							"encryption_type": schema.ResourceStringEnum(
 								"The type of GCP server side encryption to use",
 								"kmsManagedEncryption",
 								"default",
 							),
-							"encryption_key": tfschema.ResourceOptionalStringWithLengthAtLeast(
+							"encryption_key": schema.ResourceOptionalStringWithLengthAtLeast(
 								"CryptoKey ID for KMS encryption",
 								1,
 							),
@@ -153,7 +153,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
 
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error creating Google Cloud Storage Blob Store",
 			&err,
 			apiResponse,
@@ -172,7 +172,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 
 		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Creation of Google Cloud Storage Blob Store was not successful",
 			&err,
 			apiResponse,
@@ -196,14 +196,14 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Google Cloud Storage Blob Store to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error reading Google Cloud Storage Blob Store",
 				&err,
 				httpResponse,
@@ -244,14 +244,14 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 	if err != nil {
 		if apiResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Google Cloud Storage Blob Store to update did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error updating Google Cloud Storage Blob Store",
 				&err,
 				apiResponse,

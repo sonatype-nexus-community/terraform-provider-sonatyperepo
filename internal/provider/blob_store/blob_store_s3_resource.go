@@ -22,13 +22,13 @@ import (
 	"net/http"
 	"time"
 
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -53,56 +53,74 @@ func (r *blobStoreS3Resource) Metadata(_ context.Context, req resource.MetadataR
 
 // Schema defines the schema for the resource.
 func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
-		Attributes: map[string]schema.Attribute{
-			"name": tfschema.ResourceRequiredString("Name of the Blob Store"),
-			"type": tfschema.ResourceComputedStringWithDefault(
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredString("Name of the Blob Store"),
+			"type": schema.ResourceComputedStringWithDefault(
 				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
 				BLOB_STORE_TYPE_S3,
 			),
-			"soft_quota": tfschema.ResourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]schema.Attribute{
-				"type":  tfschema.ResourceRequiredString("Soft Quota type"),
-				"limit": tfschema.ResourceOptionalInt64("Quota limit"),
-			}),
-			"bucket_configuration": tfschema.ResourceRequiredSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]schema.Attribute{
-				"bucket": tfschema.ResourceRequiredSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]schema.Attribute{
-					"region": tfschema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
-					"name":   tfschema.ResourceRequiredString("The name of the S3 bucket"),
-					"prefix": tfschema.ResourceStringWithDefault(
-						"The S3 blob store (i.e S3 object) key prefix",
-						"",
+			"soft_quota": schema.ResourceOptionalSingleNestedAttribute(
+				"Soft Quota for this Blob Store",
+				map[string]tfschema.Attribute{
+					"type":  schema.ResourceRequiredString("Soft Quota type"),
+					"limit": schema.ResourceOptionalInt64("Quota limit"),
+				},
+			),
+			"bucket_configuration": schema.ResourceRequiredSingleNestedAttribute(
+				"Bucket Configuration for this Blob Store",
+				map[string]tfschema.Attribute{
+					"bucket": schema.ResourceRequiredSingleNestedAttribute(
+						"Main Bucket Configuration for this Blob Store",
+						map[string]tfschema.Attribute{
+							"region": schema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
+							"name":   schema.ResourceRequiredString("The name of the S3 bucket"),
+							"prefix": schema.ResourceStringWithDefault(
+								"The S3 blob store (i.e S3 object) key prefix",
+								"",
+							),
+						},
 					),
-				}),
-				"encryption": tfschema.ResourceOptionalSingleNestedAttribute("Bucket Encryption Configuration for this Blob Store", map[string]schema.Attribute{
-					"encryption_type": tfschema.ResourceStringEnum(
-						"The type of S3 server side encryption to use",
-						"s3ManagedEncryption",
-						"kmsManagedEncryption",
+					"encryption": schema.ResourceOptionalSingleNestedAttribute(
+						"Bucket Encryption Configuration for this Blob Store",
+						map[string]tfschema.Attribute{
+							"encryption_type": schema.ResourceStringEnum(
+								"The type of S3 server side encryption to use",
+								"s3ManagedEncryption",
+								"kmsManagedEncryption",
+							),
+							"encryption_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
+						},
 					),
-					"encryption_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
-				}),
-				"bucket_security": tfschema.ResourceOptionalSingleNestedAttribute("Bucket Security Configuration for this Blob Store", map[string]schema.Attribute{
-					"access_key_id": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
-					"secret_access_key": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast(
-						"The secret access key associated with the specified IAM access key ID",
-						1,
+					"bucket_security": schema.ResourceOptionalSingleNestedAttribute(
+						"Bucket Security Configuration for this Blob Store",
+						map[string]tfschema.Attribute{
+							"access_key_id": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
+							"secret_access_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(
+								"The secret access key associated with the specified IAM access key ID",
+								1,
+							),
+							"role":          schema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
+							"session_token": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
+						},
 					),
-					"role":          tfschema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
-					"session_token": tfschema.ResourceOptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
-				}),
-				"advanced_bucket_connection": tfschema.ResourceOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]schema.Attribute{
-					"endpoint":    tfschema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
-					"signer_type": tfschema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
-					"force_path_style": tfschema.ResourceOptionalBool(
-						"Setting this flag will result in path-style access being used for all requests",
+					"advanced_bucket_connection": schema.ResourceOptionalSingleNestedAttribute(
+						"Advanced Connection Configuration for this S3 Blob Store",
+						map[string]tfschema.Attribute{
+							"endpoint":    schema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
+							"signer_type": schema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
+							"force_path_style": schema.ResourceOptionalBool(
+								"Setting this flag will result in path-style access being used for all requests",
+							),
+							"max_connection_pool_size": schema.ResourceOptionalInt64(
+								"Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
+							),
+						},
 					),
-					"max_connection_pool_size": tfschema.ResourceOptionalInt64(
-						"Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
-					),
-				}),
-			}),
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+				},
+			),
+			"last_updated": schema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -185,7 +203,7 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 
 	// Handle Error
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error creating S3 Blob Store",
 			&err,
 			apiResponse,
@@ -210,7 +228,7 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 			return
 		}
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Creation of S3 Blob Store was not successful",
 			&err,
 			apiResponse,
@@ -239,14 +257,14 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"S3 Blob Store to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error reading S3 Blob Store",
 				&err,
 				httpResponse,
@@ -411,14 +429,14 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		if api_response.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"S3 Blob Store to update did not exist",
 				&err,
 				api_response,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error updating S3 Blob Store",
 				&err,
 				api_response,
