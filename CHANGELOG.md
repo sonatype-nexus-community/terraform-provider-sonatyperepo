@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+* HuggingFace now a supported format for `sonatyperepo_cleanup_policy` [GH-218] (thanks @yfougeray-euphoria)
+
 BUG FIXES:
 * Fixed "Provider produced inconsistent result after apply" error when `routing_rule` was provided for Maven, PyPi, R or Ruby Gems repositories [GH-216] (thanks @yfougeray-euphoria)
 
