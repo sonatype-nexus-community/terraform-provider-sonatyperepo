@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,22 +55,18 @@ func (d *groupBlobStoreDataSource) Metadata(_ context.Context, req datasource.Me
 
 // Schema defines the schema for the data source.
 func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]dsschema.Attribute{
-			"name":         tfschema.DataSourceRequiredString("Name of the Blob Store Group"),
-			"fill_policy":  tfschema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
-			"last_updated": tfschema.DataSourceComputedString("The timestamp of when the resource was last updated"),
-			"members": dsschema.SetAttribute{
-				Description: "Set of the names of blob stores that are members of this group",
-				ElementType: types.StringType,
-				Computed:    true,
-			},
-			"soft_quota": tfschema.DataSourceComputedSingleNestedAttribute(
+		Attributes: map[string]tfschema.Attribute{
+			"name":         schema.DataSourceRequiredString("Name of the Blob Store Group"),
+			"fill_policy":  schema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
+			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
+			"members":      schema.ResourceComputedStringSet("Set of the names of blob stores that are members of this group"),
+			"soft_quota": schema.DataSourceComputedSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
-				map[string]dsschema.Attribute{
-					"type":  tfschema.DataSourceComputedString("Soft Quota type"),
-					"limit": tfschema.DataSourceComputedInt64("Quota limit"),
+				map[string]tfschema.Attribute{
+					"type":  schema.DataSourceComputedString("Soft Quota type"),
+					"limit": schema.DataSourceComputedInt64("Quota limit"),
 				},
 			),
 		},
