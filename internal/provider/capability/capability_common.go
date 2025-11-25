@@ -369,7 +369,7 @@ func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
 			"id":           schema.ResourceComputedString("The internal ID of the Capability."),
 			"notes":        schema.ResourceOptionalString("Optional notes about configured capability."),
 			"enabled":      schema.ResourceRequiredBool("Whether the Capability is enabled."),
-			"last_updated": schema.ResourceComputedString(""),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 

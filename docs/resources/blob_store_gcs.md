@@ -26,7 +26,7 @@ Use this resource to create a Google Cloud Storage Blob Store
 
 ### Read-Only
 
-- `last_updated` (String) The timestamp of when the resource was last updated
+- `last_updated` (String) String representation of the date/time the resource was last changed
 - `type` (String) Type of this Blob Store - will always be 'gc_storage'
 
 <a id="nestedblock--bucket_configuration"></a>

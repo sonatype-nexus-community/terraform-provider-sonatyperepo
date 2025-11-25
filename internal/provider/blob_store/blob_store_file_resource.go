@@ -63,7 +63,7 @@ func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaReque
 					"limit": schema.ResourceOptionalInt64("Quota limit"),
 				},
 			),
-			"last_updated": schema.ResourceComputedString("The timestamp of when the resource was last updated"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }

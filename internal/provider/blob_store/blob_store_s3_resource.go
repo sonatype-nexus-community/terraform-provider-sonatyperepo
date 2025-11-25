@@ -120,7 +120,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 					),
 				},
 			),
-			"last_updated": schema.ResourceComputedString("The timestamp of when the resource was last updated"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }

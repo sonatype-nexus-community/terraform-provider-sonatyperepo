@@ -25,12 +25,9 @@ import (
 	"regexp"
 	"time"
 
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
-	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -40,6 +37,9 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const cleanupPolicyNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
@@ -61,11 +61,11 @@ func (r *cleanupPolicyResource) Metadata(_ context.Context, req resource.Metadat
 
 // Schema defines the schema for the resource.
 func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this resource to create and manage cleanup policies in Sonatype Nexus Repository Manager",
-		Attributes: map[string]schema.Attribute{
-			"name": func() schema.StringAttribute {
-				attr := tfschema.ResourceRequiredStringWithRegexAndLength(
+		Attributes: map[string]tfschema.Attribute{
+			"name": func() tfschema.StringAttribute {
+				attr := schema.ResourceRequiredStringWithRegexAndLength(
 					"Name of the cleanup policy",
 					regexp.MustCompile(cleanupPolicyNamePattern),
 					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
@@ -77,25 +77,22 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 				}
 				return attr
 			}(),
-			"notes": tfschema.ResourceOptionalString("Notes for the cleanup policy"),
-			"format": tfschema.ResourceRequiredStringEnum(
+			"notes": schema.ResourceOptionalString("Notes for the cleanup policy"),
+			"format": schema.ResourceRequiredStringEnum(
 				"Repository format that this cleanup policy applies to",
 				"apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum",
 			),
-			"criteria": schema.SingleNestedAttribute{
-				Description: "Cleanup criteria for this policy - at least one criterion must be specified",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"last_blob_updated": tfschema.ResourceOptionalInt64("Remove components that haven't been downloaded in this many days"),
-					"last_downloaded":   tfschema.ResourceOptionalInt64("Remove components that were last downloaded more than this many days ago"),
-					"release_type":      tfschema.ResourceOptionalString("Remove components that match this release type (e.g., RELEASES, PRERELEASES)"),
-					"asset_regex":       tfschema.ResourceOptionalString("Remove components that have at least one asset name matching this regular expression"),
+			"criteria": schema.ResourceRequiredSingleNestedAttribute(
+				"Cleanup criteria for this policy - at least one criterion must be specified",
+				map[string]tfschema.Attribute{
+					"last_blob_updated": schema.ResourceOptionalInt64("Remove components that haven't been downloaded in this many days"),
+					"last_downloaded":   schema.ResourceOptionalInt64("Remove components that were last downloaded more than this many days ago"),
+					"release_type":      schema.ResourceOptionalString("Remove components that match this release type (e.g., RELEASES, PRERELEASES)"),
+					"asset_regex":       schema.ResourceOptionalString("Remove components that have at least one asset name matching this regular expression"),
 				},
-			},
-			"retain": tfschema.ResourceOptionalInt64("Minimum number of component versions to retain"),
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"retain":       schema.ResourceOptionalInt64("Minimum number of component versions to retain"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -134,7 +131,7 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error creating cleanup policy",
 			&err,
 			apiResponse,
@@ -153,7 +150,7 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Creation of cleanup policy was not successful",
 			&err,
 			apiResponse,
@@ -182,7 +179,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Cleanup policy to read did not exist",
 				&err,
 				httpResponse,
@@ -191,7 +188,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 			return
 		}
 
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error reading cleanup policy",
 			&err,
 			httpResponse,
@@ -273,14 +270,14 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"Cleanup policy to delete did not exist",
 				&err,
 				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error deleting cleanup policy",
 				&err,
 				apiResponse,
@@ -291,7 +288,7 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Deletion of cleanup policy was not successful",
 			&err,
 			apiResponse,
@@ -448,14 +445,14 @@ func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name str
 func (r *cleanupPolicyResource) handleUpdateError(resp *resource.UpdateResponse, apiResponse *http.Response, err error) {
 	if apiResponse != nil && apiResponse.StatusCode == 404 {
 		resp.State.RemoveResource(context.Background())
-		sharederr.HandleAPIWarning(
+		errors.HandleAPIWarning(
 			"Cleanup policy to update did not exist",
 			&err,
 			apiResponse,
 			&resp.Diagnostics,
 		)
 	} else {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Error updating cleanup policy",
 			&err,
 			apiResponse,

@@ -70,7 +70,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
 				BLOB_STORE_TYPE_GOOGLE_CLOUD,
 			),
-			"last_updated": schema.ResourceComputedString("The timestamp of when the resource was last updated"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 		Blocks: map[string]tfschema.Block{
 			"soft_quota": tfschema.SingleNestedBlock{
