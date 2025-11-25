@@ -17,7 +17,7 @@ Use this data source to get all Tasks
 
 ### Read-Only
 
-- `tasks` (Attributes List) (see [below for nested schema](#nestedatt--tasks))
+- `tasks` (Attributes List) List of Tasks (see [below for nested schema](#nestedatt--tasks))
 
 <a id="nestedatt--tasks"></a>
 ### Nested Schema for `tasks`

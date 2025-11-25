@@ -23,6 +23,9 @@ import (
 	"strings"
 	"time"
 
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -35,8 +38,6 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	tfschema "github.com/sonatype-nexus-community/terraform-provider-shared/schema"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 )
 
 // userResource is the resource implementation.
@@ -64,10 +65,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 	statusAttr := tfschema.ResourceRequiredString("The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.")
 	statusAttr.Validators = []validator.String{
 		stringvalidator.OneOf(
-			common.USER_STATUS_ACTIVE,
-			common.USER_STATUS_LOCKED,
-			common.USER_STATUS_DISABLED,
-			common.USER_STATUS_CHANGE_PASSWORD,
+			common.AllUserStatusTypes()...,
 		),
 	}
 
@@ -79,16 +77,16 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 	resp.Schema = schema.Schema{
 		Description: "Manage Local and non-Local Users",
 		Attributes: map[string]schema.Attribute{
-			"user_id":      userIDAttr,
-			"first_name":   tfschema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"last_name":    tfschema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"user_id":       userIDAttr,
+			"first_name":    tfschema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
+			"last_name":     tfschema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
 			"email_address": tfschema.ResourceRequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"password":     tfschema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
-			"status":       statusAttr,
-			"roles":        rolesAttr,
-			"read_only":    readOnlyAttr,
-			"source":       sourceAttr,
-			"last_updated": tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
+			"password":      tfschema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
+			"status":        statusAttr,
+			"roles":         rolesAttr,
+			"read_only":     readOnlyAttr,
+			"source":        sourceAttr,
+			"last_updated":  tfschema.ResourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }

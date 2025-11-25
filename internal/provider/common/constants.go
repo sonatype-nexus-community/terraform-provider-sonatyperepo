@@ -106,10 +106,6 @@ const (
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED        int32  = 1
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_REMOVE_IF_RELEASED      bool   = false
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_SNAPSHOT_RETENTION_DAYS int32  = 30
-	USER_STATUS_ACTIVE                                                     string = "active"
-	USER_STATUS_LOCKED                                                     string = "locked"
-	USER_STATUS_DISABLED                                                   string = "disabled"
-	USER_STATUS_CHANGE_PASSWORD                                            string = "changepassword"
 	WRITE_POLICY_ALLOW                                                     string = "ALLOW"
 	WRITE_POLICY_ALLOW_ONCE                                                string = "ALLOW_ONCE"
 	WRITE_POLICY_DENY                                                      string = "DENY"

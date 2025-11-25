@@ -22,10 +22,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -56,14 +57,14 @@ func (d *securityUserTokenDataSource) Metadata(_ context.Context, req datasource
 
 // Schema defines the schema for the data source.
 func (d *securityUserTokenDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get the current User Token configuration",
-		Attributes: map[string]dsschema.Attribute{
-			"enabled":             dsschema.BoolAttribute{Description: "Whether or not User Tokens feature is enabled", Computed: true},
-			"expiration_days":     dsschema.Int32Attribute{Description: "User token expiration days (1-999)", Computed: true},
-			"expiration_enabled":  dsschema.BoolAttribute{Description: "Whether user tokens expiration is enabled", Computed: true},
-			"protect_content":     dsschema.BoolAttribute{Description: "Whether user tokens are required for repository authentication", Computed: true},
-			"last_updated":        dsschema.StringAttribute{Description: "The timestamp of when the resource was last updated", Computed: true},
+		Attributes: map[string]tfschema.Attribute{
+			"enabled":            schema.DataSourceComputedBool("Whether or not User Tokens feature is enabled"),
+			"expiration_days":    schema.DataSourceComputedInt32("User token expiration days (1-999)"),
+			"expiration_enabled": schema.DataSourceComputedBool("Whether user tokens expiration is enabled"),
+			"protect_content":    schema.DataSourceComputedBool("Whether user tokens are required for repository authentication"),
+			"last_updated":       schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -80,7 +81,7 @@ func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.R
 	apiResponse, httpResponse, err := d.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
 	if err != nil {
-		sharederr.HandleAPIError(
+		errors.HandleAPIError(
 			"Unable to read User Token settings",
 			&err,
 			httpResponse,

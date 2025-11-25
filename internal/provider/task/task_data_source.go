@@ -22,9 +22,10 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -55,12 +56,12 @@ func (d *taskDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 // Schema defines the schema for the data source.
 func (d *taskDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = dsschema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a single Task by ID",
-		Attributes: map[string]dsschema.Attribute{
-			"id":   dsschema.StringAttribute{Description: "The ID of the Task.", Required: true},
-			"name": dsschema.StringAttribute{Description: "The name of the Task.", Computed: true},
-			"type": dsschema.StringAttribute{Description: "The type of Task.", Computed: true},
+		Attributes: map[string]tfschema.Attribute{
+			"id":   schema.DataSourceRequiredString("The ID of the Task."),
+			"name": schema.DataSourceComputedString("The name of the Task."),
+			"type": schema.DataSourceComputedString("The type of Task."),
 		},
 	}
 }
@@ -92,14 +93,14 @@ func (d *taskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state := model.TaskModelSimple{}
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
-			sharederr.HandleAPIWarning(
+			errors.HandleAPIWarning(
 				"No Task with supplied ID",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			sharederr.HandleAPIError(
+			errors.HandleAPIError(
 				"Error finding Task",
 				&err,
 				httpResponse,
