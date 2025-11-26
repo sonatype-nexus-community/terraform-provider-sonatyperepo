@@ -66,7 +66,7 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				1,
 				200,
 			),
-			"type": schema.ResourceComputedStringWithDefault(
+			"type": schema.ResourceOptionalStringWithDefault(
 				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
 				BLOB_STORE_TYPE_GOOGLE_CLOUD,
 			),

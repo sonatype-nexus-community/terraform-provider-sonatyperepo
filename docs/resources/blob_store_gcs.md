@@ -23,11 +23,11 @@ Use this resource to create a Google Cloud Storage Blob Store
 
 - `bucket_configuration` (Block, Optional) Bucket Configuration for this Google Cloud Storage Blob Store (see [below for nested schema](#nestedblock--bucket_configuration))
 - `soft_quota` (Block, Optional) Soft Quota for this Blob Store (see [below for nested schema](#nestedblock--soft_quota))
+- `type` (String) Type of this Blob Store - will always be 'gc_storage'
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
-- `type` (String) Type of this Blob Store - will always be 'gc_storage'
 
 <a id="nestedblock--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
