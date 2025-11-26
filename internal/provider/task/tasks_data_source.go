@@ -62,9 +62,9 @@ func (d *tasksDataSource) Schema(_ context.Context, req datasource.SchemaRequest
 				"List of Tasks",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"id":   schema.DataSourceComputedString("The ID of the Task."),
-						"name": schema.DataSourceComputedString("The name of the Task."),
-						"type": schema.DataSourceComputedString("The type of Task."),
+						"id":   schema.DataSourceRequiredString("The ID of the Task."),
+						"name": schema.DataSourceRequiredString("The name of the Task."),
+						"type": schema.DataSourceRequiredString("The type of Task."),
 					},
 				},
 			),

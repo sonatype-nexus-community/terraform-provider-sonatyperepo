@@ -64,8 +64,8 @@ func (d *repositoriesDataSource) Schema(_ context.Context, req datasource.Schema
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
 						"name":   schema.DataSourceComputedString("Name of the Repository"),
-						"format": schema.DataSourceComputedString("Repository format"),
-						"type":   schema.DataSourceComputedString("Repository type"),
+						"format": schema.DataSourceRequiredString("Repository format"),
+						"type":   schema.DataSourceRequiredString("Repository type"),
 						"url":    schema.DataSourceComputedString("URL to use this Repository"),
 					},
 				},
