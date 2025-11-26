@@ -61,16 +61,16 @@ func (pt *RepositoryViewPrivilegeType) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryViewPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *RepositoryViewPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+func (pt *RepositoryViewPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return schemaAttributesActionFormatRepository()
 }
 
-func (pt *RepositoryViewPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *RepositoryViewPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeRepositoryViewModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *RepositoryViewPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *RepositoryViewPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeRepositoryViewModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

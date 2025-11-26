@@ -66,7 +66,7 @@ func (pt *ScriptPrivilegeType) DoUpdateRequest(plan any, state any, apiClient *s
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateScriptPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *ScriptPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+func (pt *ScriptPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"actions": schema.ResourceRequiredStringSetWithValidator(
 			"A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
@@ -80,12 +80,12 @@ func (pt *ScriptPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfs
 	}
 }
 
-func (pt *ScriptPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *ScriptPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeScriptModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *ScriptPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *ScriptPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeScriptModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

@@ -55,13 +55,13 @@ type privilegeResource struct {
 
 // Metadata returns the resource type name.
 func (r *privilegeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.GetResourceName(r.PrivilegeTypeType))
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.ResourceName(r.PrivilegeTypeType))
 }
 
 // Schema defines the schema for the resource.
 func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := basePrivilegeSchema(r.PrivilegeTypeType)
-	maps.Copy(schema.Attributes, r.PrivilegeType.GetPrivilegeTypeSchemaAttributes())
+	maps.Copy(schema.Attributes, r.PrivilegeType.PrivilegeTypeSchemaAttributes())
 	if r.PrivilegeType.IsDeprecated() {
 		schema.DeprecationMessage = "Groovy scripting has been disbaled by default since Sonatype Nexus Repository 3.21.2 - see https://help.sonatype.com/en/script-api.html"
 	}
@@ -71,7 +71,7 @@ func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 // Create creates the resource and sets the initial Terraform state.
 func (r *privilegeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := r.PrivilegeType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := r.PrivilegeType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -99,7 +99,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+	if !slices.Contains(r.PrivilegeType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
 			&err,
@@ -118,7 +118,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 // Read refreshes the Terraform state with the latest data.
 func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	stateModel, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -169,11 +169,11 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := r.PrivilegeType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := r.PrivilegeType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -217,7 +217,7 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	state, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors

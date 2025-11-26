@@ -147,11 +147,11 @@ func (f *BasePrivilegeType) DoDeleteRequest(privilegeName string, apiClient *son
 	return apiClient.SecurityManagementPrivilegesAPI.DeletePrivilege(ctx, privilegeName).Execute()
 }
 
-func (f *BasePrivilegeType) GetApiCreateSuccessResponseCodes() []int {
+func (f *BasePrivilegeType) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
 }
 
-func (f *BasePrivilegeType) GetResourceName(privType PrivilegeTypeType) string {
+func (f *BasePrivilegeType) ResourceName(privType PrivilegeTypeType) string {
 	return fmt.Sprintf("privilege_%s", strings.ReplaceAll(privType.String(), "-", "_"))
 }
 
@@ -167,11 +167,11 @@ type PrivilegeType interface {
 	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	IsDeprecated() bool
-	GetApiCreateSuccessResponseCodes() []int
-	GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName(privType PrivilegeTypeType) string
+	ApiCreateSuccessResponseCodes() []int
+	PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	ResourceName(privType PrivilegeTypeType) string
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 }

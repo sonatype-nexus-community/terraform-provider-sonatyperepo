@@ -66,7 +66,7 @@ func (pt *ApplicationPrivilegeType) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateApplicationPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *ApplicationPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+func (pt *ApplicationPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"domain": schema.ResourceRequiredString("The domain (i.e. 'blobstores', 'capabilities' or even '*' for all) that this privilege is granting access to. Note that creating new privileges with a domain is only necessary when using plugins that define their own domain(s)."),
 		"actions": schema.ResourceRequiredStringSetWithValidator(
@@ -80,12 +80,12 @@ func (pt *ApplicationPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[strin
 	}
 }
 
-func (pt *ApplicationPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *ApplicationPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeApplicationModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *ApplicationPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *ApplicationPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeApplicationModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
