@@ -19,17 +19,20 @@ Use this data source to get a specific S3 Blob Store by it's name
 
 - `name` (String) Name of the Blob Store
 
-### Read-Only
+### Optional
 
 - `bucket_configuration` (Attributes) Bucket Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration))
-- `last_updated` (String) The timestamp of when the resource was last updated
 - `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
+
+### Read-Only
+
+- `last_updated` (String) The timestamp of when the resource was last updated
 - `type` (String) Type of this Blob Store - will always be 's3'
 
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
 
-Read-Only:
+Optional:
 
 - `advanced_bucket_connection` (Attributes) Advanced Connection Configuration for this S3 Blob Store (see [below for nested schema](#nestedatt--bucket_configuration--advanced_bucket_connection))
 - `bucket` (Attributes) Main Bucket Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration--bucket))
