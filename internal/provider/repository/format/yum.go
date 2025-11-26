@@ -61,7 +61,7 @@ func (f *YumRepositoryFormat) GetKey() string {
 }
 
 func (f *YumRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -99,8 +99,8 @@ func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *YumRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, yumSchemaAttributes(true))
+	additionalAttributes := getCommonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, getYumSchemaAttributes(true))
 	return additionalAttributes
 }
 
@@ -175,8 +175,8 @@ func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *YumRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getYumSchemaAttributes(false))
 	return additionalAttributes
 }
 
@@ -251,8 +251,8 @@ func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *YumRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
+	additionalAttributes := getCommonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttributes, getYumSchemaAttributes(false))
 	return additionalAttributes
 }
 
@@ -295,7 +295,7 @@ func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func yumSchemaAttributes(isHosted bool) map[string]schema.Attribute {
+func getYumSchemaAttributes(isHosted bool) map[string]schema.Attribute {
 	var attrs = make(map[string]schema.Attribute, 0)
 	if isHosted {
 		attrs["deploy_policy"] = schema.StringAttribute{

@@ -47,7 +47,7 @@ func (f *CocoaPodsRepositoryFormat) GetKey() string {
 }
 
 func (f *CocoaPodsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -82,7 +82,7 @@ func (f *CocoaPodsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, ap
 }
 
 func (f *CocoaPodsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *CocoaPodsRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

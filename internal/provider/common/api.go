@@ -40,7 +40,7 @@ func HandleApiError(message string, err *error, httpResponse *http.Response, res
 		if httpResponse != nil {
 			respDiags.AddError(
 				message,
-				fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, responseBody(httpResponse)),
+				fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 			)
 		} else {
 			respDiags.AddError(
@@ -55,7 +55,7 @@ func HandleApiError(message string, err *error, httpResponse *http.Response, res
 func HandleApiWarning(message string, err *error, httpResponse *http.Response, respDiags *diag.Diagnostics) {
 	respDiags.AddWarning(
 		message,
-		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, responseBody(httpResponse)),
+		fmt.Sprintf("%s: %s: %s", *err, httpResponse.Status, getResponseBody(httpResponse)),
 	)
 }
 
@@ -84,7 +84,7 @@ func handleNetworkError(err error) (bool, string) {
 	return false, ""
 }
 
-func responseBody(httpResponse *http.Response) []byte {
+func getResponseBody(httpResponse *http.Response) []byte {
 	body, _ := io.ReadAll(httpResponse.Body)
 	err := httpResponse.Body.Close()
 	if err != nil {

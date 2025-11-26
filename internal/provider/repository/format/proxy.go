@@ -33,7 +33,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func commonProxySchemaAttributes() map[string]schema.Attribute {
+func getCommonProxySchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"proxy": schema.SingleNestedAttribute{
 			Description: "Proxy specific configuration for this Repository",

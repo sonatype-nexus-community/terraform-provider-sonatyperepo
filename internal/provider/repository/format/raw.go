@@ -58,7 +58,7 @@ func (f *RawRepositoryFormat) GetKey() string {
 }
 
 func (f *RawRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,8 +96,8 @@ func (f *RawRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *RawRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, rawSchemaAttributes())
+	additionalAttributes := getCommonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -172,8 +172,8 @@ func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *RawRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, rawSchemaAttributes())
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -248,8 +248,8 @@ func (f *RawRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *RawRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, rawSchemaAttributes())
+	additionalAttributes := getCommonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttributes, getRawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -292,7 +292,7 @@ func (f *RawRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func rawSchemaAttributes() map[string]schema.Attribute {
+func getRawSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"raw": schema.SingleNestedAttribute{
 			Description: "Raw specific configuration for this Repository",

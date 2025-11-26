@@ -89,7 +89,7 @@ type CapabilityTypeI interface {
 // --------------------------------------------
 // Helper method to generate schema for Webhook Capabilities
 // --------------------------------------------
-func propertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]schema.Attribute {
+func getPropertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]schema.Attribute {
 	defaultProps := map[string]schema.Attribute{
 		"names": schema.SetAttribute{
 			Description: "Event types which trigger this Webhook.",

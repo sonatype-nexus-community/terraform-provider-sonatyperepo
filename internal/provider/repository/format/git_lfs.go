@@ -47,7 +47,7 @@ func (f *GitLfsRepositoryFormat) GetKey() string {
 }
 
 func (f *GitLfsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -82,7 +82,7 @@ func (f *GitLfsRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiC
 }
 
 func (f *GitLfsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonHostedSchemaAttributes()
+	return getCommonHostedSchemaAttributes()
 }
 
 func (f *GitLfsRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

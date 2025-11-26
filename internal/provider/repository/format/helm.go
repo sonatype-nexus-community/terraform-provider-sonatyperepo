@@ -51,7 +51,7 @@ func (f *HelmRepositoryFormat) GetKey() string {
 }
 
 func (f *HelmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -86,7 +86,7 @@ func (f *HelmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *HelmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonHostedSchemaAttributes()
+	return getCommonHostedSchemaAttributes()
 }
 
 func (f *HelmRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -157,7 +157,7 @@ func (f *HelmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *HelmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *HelmRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

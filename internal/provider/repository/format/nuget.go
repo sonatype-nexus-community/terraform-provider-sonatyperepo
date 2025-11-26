@@ -58,7 +58,7 @@ func (f *NugetRepositoryFormat) GetKey() string {
 }
 
 func (f *NugetRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,7 +96,7 @@ func (f *NugetRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 }
 
 func (f *NugetRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonHostedSchemaAttributes()
+	additionalAttributes := getCommonHostedSchemaAttributes()
 	return additionalAttributes
 }
 
@@ -171,8 +171,8 @@ func (f *NugetRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *NugetRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, nugetProxySchemaAttributes())
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getNugetProxySchemaAttributes())
 	return additionalAttributes
 }
 
@@ -247,7 +247,7 @@ func (f *NugetRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *NugetRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonGroupSchemaAttributes(false)
+	return getCommonGroupSchemaAttributes(false)
 }
 
 func (f *NugetRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -289,7 +289,7 @@ func (f *NugetRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func nugetProxySchemaAttributes() map[string]schema.Attribute {
+func getNugetProxySchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"nuget_proxy": schema.SingleNestedAttribute{
 			Description: "Nuget specific configuration for this Repository",

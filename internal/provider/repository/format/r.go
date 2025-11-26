@@ -55,7 +55,7 @@ func (f *RRepositoryFormat) GetKey() string {
 }
 
 func (f *RRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -90,7 +90,7 @@ func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient
 }
 
 func (f *RRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonHostedSchemaAttributes()
+	return getCommonHostedSchemaAttributes()
 }
 
 func (f *RRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -147,7 +147,7 @@ func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient 
 }
 
 func (f *RRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *RRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -204,7 +204,7 @@ func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient 
 }
 
 func (f *RRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonGroupSchemaAttributes(false)
+	return getCommonGroupSchemaAttributes(false)
 }
 
 func (f *RRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

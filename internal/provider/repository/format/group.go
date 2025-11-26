@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func commonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attribute {
+func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attribute {
 	attributes := map[string]schema.Attribute{
 		"member_names": schema.ListAttribute{
 			Description: "Member repositories' names",

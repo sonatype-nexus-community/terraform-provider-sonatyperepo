@@ -47,7 +47,7 @@ func (f *P2RepositoryFormat) GetKey() string {
 }
 
 func (f *P2RepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -85,7 +85,7 @@ func (f *P2RepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 }
 
 func (f *P2RepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *P2RepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

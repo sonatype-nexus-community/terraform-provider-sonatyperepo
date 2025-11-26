@@ -56,7 +56,7 @@ func (f *RubyGemsRepositoryFormat) GetKey() string {
 
 func (f *RubyGemsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
 	// Override to maintain backward compatibility with resource name containing underscore
-	return resourceName("ruby_gems", repoType)
+	return getResourceName("ruby_gems", repoType)
 }
 
 // --------------------------------------------
@@ -94,7 +94,7 @@ func (f *RubyGemsRepositoryFormatHosted) DoUpdateRequest(plan any, state any, ap
 }
 
 func (f *RubyGemsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonHostedSchemaAttributes()
+	return getCommonHostedSchemaAttributes()
 }
 
 func (f *RubyGemsRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -168,7 +168,7 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 }
 
 func (f *RubyGemsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *RubyGemsRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -242,7 +242,7 @@ func (f *RubyGemsRepositoryFormatGroup) DoUpdateRequest(plan any, state any, api
 }
 
 func (f *RubyGemsRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonGroupSchemaAttributes(false)
+	return getCommonGroupSchemaAttributes(false)
 }
 
 func (f *RubyGemsRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

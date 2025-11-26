@@ -47,7 +47,7 @@ func (f *ComposerRepositoryFormat) GetKey() string {
 }
 
 func (f *ComposerRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -82,7 +82,7 @@ func (f *ComposerRepositoryFormat) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *ComposerRepositoryFormat) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonProxySchemaAttributes()
+	return getCommonProxySchemaAttributes()
 }
 
 func (f *ComposerRepositoryFormat) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

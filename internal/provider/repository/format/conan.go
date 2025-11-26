@@ -60,7 +60,7 @@ func (f *ConanRepositoryFormat) GetKey() string {
 }
 
 func (f *ConanRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+	return getResourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -95,7 +95,7 @@ func (f *ConanRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 }
 
 func (f *ConanRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonHostedSchemaAttributes()
+	return getCommonHostedSchemaAttributes()
 }
 
 func (f *ConanRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -152,8 +152,8 @@ func (f *ConanRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *ConanRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, conanProxySchemaAttributes())
+	additionalAttributes := getCommonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, getConanProxySchemaAttributes())
 	return additionalAttributes
 }
 
@@ -211,7 +211,7 @@ func (f *ConanRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *ConanRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return commonGroupSchemaAttributes(true)
+	return getCommonGroupSchemaAttributes(true)
 }
 
 func (f *ConanRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -239,7 +239,7 @@ func (f *ConanRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func conanProxySchemaAttributes() map[string]schema.Attribute {
+func getConanProxySchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"conan": schema.SingleNestedAttribute{
 			Description: "Conan Proxy specific configuration for this Repository",

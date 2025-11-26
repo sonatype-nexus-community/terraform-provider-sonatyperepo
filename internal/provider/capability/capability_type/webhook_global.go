@@ -71,7 +71,7 @@ func (f *WebhookGlobalCapability) GetPlanAsModel(ctx context.Context, plan tfsdk
 }
 
 func (f *WebhookGlobalCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return propertiesSchemaForWebhookCapability(common.AllGlobalWebHookEventTypes(), false)
+	return getPropertiesSchemaForWebhookCapability(common.AllGlobalWebHookEventTypes(), false)
 }
 
 func (f *WebhookGlobalCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
