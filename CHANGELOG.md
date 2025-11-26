@@ -3,11 +3,10 @@
 ## X.Y.Z (UNRELEASED)
 
 ENHANCEMENTS:
-* Refactored common code and patterns into a shared library [GH-208]
-  * Data Source `sonatyperepo_blob_store_file` - `soft_quota` is now read-only to align with similar data sources
-  * Data Source `sonatyperepo_blob_store_s3` - `soft_quota` and `bucket_configuration` are now read-only to align with similar data sources
-  * Data Source `sonatyperepo_blob_stores` - all fields should have been read-only
-* 
+* Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208]
+
+  You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
+
 
 ## 0.12.0 November 14, 2025
 
