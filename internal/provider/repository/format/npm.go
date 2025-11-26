@@ -58,7 +58,7 @@ func (f *NpmRepositoryFormat) GetKey() string {
 }
 
 func (f *NpmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,7 +96,7 @@ func (f *NpmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
+	additionalAttributes := commonHostedSchemaAttributes()
 	return additionalAttributes
 }
 
@@ -174,8 +174,8 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getNpmSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, npmSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -250,7 +250,7 @@ func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+	return commonGroupSchemaAttributes(true)
 }
 
 func (f *NpmRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -292,7 +292,7 @@ func (f *NpmRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getNpmSchemaAttributes() map[string]tfschema.Attribute {
+func npmSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"npm": schema.ResourceOptionalSingleNestedAttribute(
 			"NPM specific configuration for this Repository",

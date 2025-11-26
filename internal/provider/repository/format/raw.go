@@ -58,7 +58,7 @@ func (f *RawRepositoryFormat) GetKey() string {
 }
 
 func (f *RawRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,8 +96,8 @@ func (f *RawRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *RawRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getRawSchemaAttributes())
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -172,8 +172,8 @@ func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *RawRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getRawSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -248,8 +248,8 @@ func (f *RawRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *RawRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, getRawSchemaAttributes())
+	additionalAttributes := commonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -292,7 +292,7 @@ func (f *RawRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getRawSchemaAttributes() map[string]tfschema.Attribute {
+func rawSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"raw": schema.ResourceRequiredSingleNestedAttribute(
 			"Raw specific configuration for this Repository",

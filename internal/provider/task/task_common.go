@@ -59,7 +59,7 @@ func (t *taskResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Set Schema for this Resource
 func (t *taskResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = getTaskSchema(t.TaskType)
+	resp.Schema = taskSchema(t.TaskType)
 }
 
 // This allows users to import existing Tasks into Terraform state.
@@ -244,7 +244,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func getTaskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
+func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
 	return tfschema.Schema{
 		MarkdownDescription: tt.GetMarkdownDescription(),
 		Attributes: map[string]tfschema.Attribute{

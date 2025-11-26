@@ -60,7 +60,7 @@ func (r *privilegeResource) Metadata(_ context.Context, req resource.MetadataReq
 
 // Schema defines the schema for the resource.
 func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := getBasePrivilegeSchema(r.PrivilegeTypeType)
+	schema := basePrivilegeSchema(r.PrivilegeTypeType)
 	maps.Copy(schema.Attributes, r.PrivilegeType.GetPrivilegeTypeSchemaAttributes())
 	if r.PrivilegeType.IsDeprecated() {
 		schema.DeprecationMessage = "Groovy scripting has been disbaled by default since Sonatype Nexus Repository 3.21.2 - see https://help.sonatype.com/en/script-api.html"
@@ -274,7 +274,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfschema.Schema {
+func basePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfschema.Schema {
 	return tfschema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
 		Attributes: map[string]tfschema.Attribute{

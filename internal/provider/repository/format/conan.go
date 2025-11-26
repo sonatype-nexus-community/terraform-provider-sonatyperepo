@@ -61,7 +61,7 @@ func (f *ConanRepositoryFormat) GetKey() string {
 }
 
 func (f *ConanRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,7 +96,7 @@ func (f *ConanRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 }
 
 func (f *ConanRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonHostedSchemaAttributes()
+	return commonHostedSchemaAttributes()
 }
 
 func (f *ConanRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -153,8 +153,8 @@ func (f *ConanRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *ConanRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getConanProxySchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, conanProxySchemaAttributes())
 	return additionalAttributes
 }
 
@@ -212,7 +212,7 @@ func (f *ConanRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *ConanRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+	return commonGroupSchemaAttributes(true)
 }
 
 func (f *ConanRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -240,7 +240,7 @@ func (f *ConanRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getConanProxySchemaAttributes() map[string]tfschema.Attribute {
+func conanProxySchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"conan": schema.ResourceRequiredSingleNestedAttribute(
 			"Conan Proxy specific configuration for this Repository",

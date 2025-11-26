@@ -62,7 +62,7 @@ func (pt *RepositoryViewPrivilegeType) DoUpdateRequest(plan any, state any, apiC
 }
 
 func (pt *RepositoryViewPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
-	return getSchemaAttributesActionFormatRepository()
+	return schemaAttributesActionFormatRepository()
 }
 
 func (pt *RepositoryViewPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

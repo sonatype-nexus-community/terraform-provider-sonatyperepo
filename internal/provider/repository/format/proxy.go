@@ -32,7 +32,7 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func getCommonProxySchemaAttributes() map[string]tfschema.Attribute {
+func commonProxySchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Proxy specific configuration for this Repository",
@@ -54,16 +54,16 @@ func getCommonProxySchemaAttributes() map[string]tfschema.Attribute {
 			map[string]tfschema.Attribute{
 				"blocked":        schema.ResourceRequiredBool("Whether to block outbound connections on the repository"),
 				"auto_block":     schema.ResourceRequiredBool("Whether to auto-block outbound connections if remote peer is detected as unreachable/unresponsive"),
-				"connection":     getCommonProxyConnectionAttribute(),
-				"authentication": getCommonProxyAuthenticationAttribute(),
+				"connection":     commonProxyConnectionAttribute(),
+				"authentication": commonProxyAuthenticationAttribute(),
 			},
 		),
 		"routing_rule": schema.ResourceOptionalString("Routing Rule"),
-		"replication":  getCommonProxyReplicationAttribute(),
+		"replication":  commonProxyReplicationAttribute(),
 	}
 }
 
-func getCommonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
+func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 	thisAttr := schema.ResourceOptionalSingleNestedAttribute(
 		"HTTP Client Connection configuration for this Repository",
 		map[string]tfschema.Attribute{
@@ -122,7 +122,7 @@ func getCommonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 	return thisAttr
 }
 
-func getCommonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
+func commonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
 	return schema.ResourceOptionalSingleNestedAttribute(
 		"Authentication to upstream Repository",
 		map[string]tfschema.Attribute{
@@ -148,7 +148,7 @@ func getCommonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
 	)
 }
 
-func getCommonProxyReplicationAttribute() tfschema.SingleNestedAttribute {
+func commonProxyReplicationAttribute() tfschema.SingleNestedAttribute {
 	thisAttr := schema.ResourceOptionalSingleNestedAttribute(
 		"Replication configuration for this Repository",
 		map[string]tfschema.Attribute{

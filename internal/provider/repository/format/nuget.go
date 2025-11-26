@@ -58,7 +58,7 @@ func (f *NugetRepositoryFormat) GetKey() string {
 }
 
 func (f *NugetRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,7 +96,7 @@ func (f *NugetRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 }
 
 func (f *NugetRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
+	additionalAttributes := commonHostedSchemaAttributes()
 	return additionalAttributes
 }
 
@@ -171,8 +171,8 @@ func (f *NugetRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *NugetRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getNugetProxySchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, nugetProxySchemaAttributes())
 	return additionalAttributes
 }
 
@@ -247,7 +247,7 @@ func (f *NugetRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *NugetRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonGroupSchemaAttributes(false)
+	return commonGroupSchemaAttributes(false)
 }
 
 func (f *NugetRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -289,7 +289,7 @@ func (f *NugetRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getNugetProxySchemaAttributes() map[string]tfschema.Attribute {
+func nugetProxySchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"nuget_proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Nuget specific configuration for this Repository",

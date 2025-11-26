@@ -48,7 +48,7 @@ func TestRepositoryFormatCommonGetResourceName(t *testing.T) {
 		assert.Equal(
 			t,
 			testCase.expectedResult,
-			getResourceName(testCase.repoFormat, testCase.repoType),
+			resourceName(testCase.repoFormat, testCase.repoType),
 			fmt.Sprintf("%d: Resource Name not as expected: %s", i, testCase.expectedResult),
 		)
 	}

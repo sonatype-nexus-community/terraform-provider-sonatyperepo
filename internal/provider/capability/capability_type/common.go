@@ -89,7 +89,7 @@ type CapabilityTypeI interface {
 // --------------------------------------------
 // Helper method to generate schema for Webhook Capabilities
 // --------------------------------------------
-func getPropertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]tfschema.Attribute {
+func propertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]tfschema.Attribute {
 	defaultProps := map[string]tfschema.Attribute{
 		"names": schema.ResourceRequiredStringSetWithValidator(
 			"Event types which trigger this Webhook.",

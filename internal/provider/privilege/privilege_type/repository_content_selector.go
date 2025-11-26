@@ -64,7 +64,7 @@ func (pt *RepositoryContentSelectorPrivilegeType) DoUpdateRequest(plan any, stat
 }
 
 func (pt *RepositoryContentSelectorPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
-	attributes := getSchemaAttributesActionFormatRepository()
+	attributes := schemaAttributesActionFormatRepository()
 	attributes["content_selector"] = schema.ResourceRequiredString("The name of a content selector that will be used to grant access to content via this privilege.")
 	return attributes
 }

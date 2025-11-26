@@ -24,7 +24,7 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]tfschema.Attribute {
+func commonGroupSchemaAttributes(includeDeploy bool) map[string]tfschema.Attribute {
 	attributes := map[string]tfschema.Attribute{
 		"member_names": func() tfschema.ListAttribute {
 			thisAttr := schema.ResourceOptionalStringList("Member repositories' names")

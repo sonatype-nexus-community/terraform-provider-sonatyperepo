@@ -27,7 +27,7 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func getCommonHostedSchemaAttributes() map[string]tfschema.Attribute {
+func commonHostedSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"component": func() tfschema.SingleNestedAttribute {
 			thisAttr := schema.ResourceComputedOptionalSingleNestedAttribute(

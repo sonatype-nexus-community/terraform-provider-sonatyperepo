@@ -58,7 +58,7 @@ func (f *PyPiRepositoryFormat) GetKey() string {
 }
 
 func (f *PyPiRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -96,7 +96,7 @@ func (f *PyPiRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonHostedSchemaAttributes()
+	return commonHostedSchemaAttributes()
 }
 
 func (f *PyPiRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -170,8 +170,8 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getPyPiSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, pyPiSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -246,7 +246,7 @@ func (f *PyPiRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+	return commonGroupSchemaAttributes(true)
 }
 
 func (f *PyPiRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -288,7 +288,7 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getPyPiSchemaAttributes() map[string]tfschema.Attribute {
+func pyPiSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"pypi": schema.ResourceRequiredSingleNestedAttribute(
 			"PyPi specific configuration for this Repository",

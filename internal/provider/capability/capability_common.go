@@ -59,7 +59,7 @@ func (c *capabilityResource) Metadata(_ context.Context, req resource.MetadataRe
 
 // Set Schema for this Resource
 func (c *capabilityResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = getCapabilitySchema(c.CapabilityType)
+	resp.Schema = capabilitySchema(c.CapabilityType)
 }
 
 // This allows import of existing capabilities into Terraform state.
@@ -125,7 +125,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	ctx = c.GetAuthContext(ctx)
 
 	// Make API Request
-	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(stateModel, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -183,7 +183,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	ctx = c.GetAuthContext(ctx)
 
 	// Make API requet
-	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(stateModel, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -267,7 +267,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	ctx = c.GetAuthContext(ctx)
 
 	// Make API request
-	capabilityId, shouldReturn := getCapabilityIdFromState(state, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(state, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -345,7 +345,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	return capability, httpResponse, nil
 }
 
-func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes.StringValue, bool) {
+func capabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes.StringValue, bool) {
 	capabilityIdStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Id").Interface()
 	capabilityId, ok := capabilityIdStructField.(basetypes.StringValue)
 	if !ok {
@@ -358,7 +358,7 @@ func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes
 	return capabilityId, false
 }
 
-func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
+func capabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
 	propertiesAttributes := ct.GetPropertiesSchema()
 
 	baseSchema := tfschema.Schema{

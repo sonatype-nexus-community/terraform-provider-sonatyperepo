@@ -58,7 +58,7 @@ func (f *CargoRepositoryFormat) GetKey() string {
 }
 
 func (f *CargoRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -93,7 +93,7 @@ func (f *CargoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 }
 
 func (f *CargoRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	return getCommonHostedSchemaAttributes()
+	return commonHostedSchemaAttributes()
 }
 
 func (f *CargoRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -150,8 +150,8 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *CargoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getCargoSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, cargoSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -209,8 +209,8 @@ func (f *CargoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *CargoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttrs := getCommonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttrs, getCargoSchemaAttributes())
+	additionalAttrs := commonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttrs, cargoSchemaAttributes())
 	return additionalAttrs
 }
 
@@ -239,7 +239,7 @@ func (f *CargoRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getCargoSchemaAttributes() map[string]tfschema.Attribute {
+func cargoSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"cargo": schema.ResourceRequiredSingleNestedAttribute(
 			"Cargo specific configuration for this Repository",

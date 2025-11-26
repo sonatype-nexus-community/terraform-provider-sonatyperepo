@@ -61,7 +61,7 @@ func (f *DockerRepositoryFormat) GetKey() string {
 }
 
 func (f *DockerRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -106,8 +106,8 @@ func (f *DockerRepositoryFormatHosted) DoImportRequest(repositoryName string, ap
 }
 
 func (f *DockerRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -189,9 +189,9 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 }
 
 func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
-	maps.Copy(additionalAttributes, getDockerProxySchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, dockerSchemaAttributes())
+	maps.Copy(additionalAttributes, dockerProxySchemaAttributes())
 	return additionalAttributes
 }
 
@@ -273,8 +273,8 @@ func (f *DockerRepositoryFormatGroup) DoImportRequest(repositoryName string, api
 }
 
 func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := getCommonGroupSchemaAttributes(true)
-	maps.Copy(additionalAttributes, getDockerSchemaAttributes())
+	additionalAttributes := commonGroupSchemaAttributes(true)
+	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -317,7 +317,7 @@ func (f *DockerRepositoryFormatGroup) ValidatePlanForNxrmVersion(plan any, versi
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getDockerSchemaAttributes() map[string]tfschema.Attribute {
+func dockerSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"docker": schema.ResourceRequiredSingleNestedAttribute(
 			"Docker specific configuration for this Repository",
@@ -336,7 +336,7 @@ func getDockerSchemaAttributes() map[string]tfschema.Attribute {
 	}
 }
 
-func getDockerProxySchemaAttributes() map[string]tfschema.Attribute {
+func dockerProxySchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"docker_proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Docker Proxy specific configuration for this Repository",
