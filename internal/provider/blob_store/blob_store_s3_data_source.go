@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -113,21 +112,12 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetS3BlobStore(ctx, data.Name.ValueString()).Execute()
 	if err != nil {
-		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
-			errors.HandleAPIWarning(
-				fmt.Sprintf("No S3 BlobStore with name: %s", data.Name.ValueString()),
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		} else {
-			errors.HandleAPIError(
-				"Unable to S3 Read Blob Store",
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
+		errors.HandleAPIError(
+			fmt.Sprintf("No S3 BlobStore with name: %s", data.Name.ValueString()),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
 		return
 	}
 
