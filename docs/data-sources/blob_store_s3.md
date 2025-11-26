@@ -23,11 +23,11 @@ Use this data source to get a specific S3 Blob Store by it's name
 
 - `bucket_configuration` (Attributes) Bucket Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration))
 - `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
+- `type` (String) Type of this Blob Store - will always be 's3'
 
 ### Read-Only
 
 - `last_updated` (String) The timestamp of when the resource was last updated
-- `type` (String) Type of this Blob Store - will always be 's3'
 
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
@@ -44,11 +44,11 @@ Optional:
 
 Optional:
 
+- `endpoint` (String) A custom endpoint URL for third party object stores using the S3 API
 - `force_path_style` (Boolean) Setting this flag will result in path-style access being used for all requests
 
 Read-Only:
 
-- `endpoint` (String) A custom endpoint URL for third party object stores using the S3 API
 - `max_connection_pool_size` (Number) Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore
 - `signer_type` (String) An API signature version which may be required for third party object stores using the S3 API
 
@@ -56,7 +56,7 @@ Read-Only:
 <a id="nestedatt--bucket_configuration--bucket"></a>
 ### Nested Schema for `bucket_configuration.bucket`
 
-Read-Only:
+Optional:
 
 - `name` (String) The name of the S3 bucket
 - `prefix` (String) The S3 blob store (i.e S3 object) key prefix
@@ -66,7 +66,7 @@ Read-Only:
 <a id="nestedatt--bucket_configuration--bucket_security"></a>
 ### Nested Schema for `bucket_configuration.bucket_security`
 
-Read-Only:
+Optional:
 
 - `access_key_id` (String) An IAM access key ID for granting access to the S3 bucket
 - `role` (String) An IAM role to assume in order to access the S3 bucket
@@ -77,7 +77,7 @@ Read-Only:
 <a id="nestedatt--bucket_configuration--encryption"></a>
 ### Nested Schema for `bucket_configuration.encryption`
 
-Read-Only:
+Optional:
 
 - `encryption_key` (String) The encryption key
 - `encryption_type` (String) The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'
@@ -87,7 +87,7 @@ Read-Only:
 <a id="nestedatt--soft_quota"></a>
 ### Nested Schema for `soft_quota`
 
-Read-Only:
+Optional:
 
 - `limit` (Number) Quota limit
 - `type` (String) Soft Quota type
