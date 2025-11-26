@@ -21,9 +21,9 @@ Manage a Privilege of type script
 - `description` (String) Friendly description of this Privilege
 - `name` (String) The name of the privilege. This value cannot be changed.
 - `script_name` (String) The name of a script to give access to.
-- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
 - `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
+- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.

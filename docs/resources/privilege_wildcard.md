@@ -20,9 +20,9 @@ Manage a Privilege of type wildcard
 - `description` (String) Friendly description of this Privilege
 - `name` (String) The name of the privilege. This value cannot be changed.
 - `pattern` (String) A colon separated list of parts that create a permission string.
-- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
 - `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
+- `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.
