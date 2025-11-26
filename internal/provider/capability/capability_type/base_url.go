@@ -68,12 +68,12 @@ func (f *BaseUrlCapability) DoUpdateRequest(plan any, capabilityId string, apiCl
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *BaseUrlCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *BaseUrlCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreBaseUrlModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BaseUrlCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *BaseUrlCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"url": schema.ResourceRequiredStringWithRegex(
 			"Reverse proxy base URL",
@@ -83,7 +83,7 @@ func (f *BaseUrlCapability) GetPropertiesSchema() map[string]tfschema.Attribute 
 	}
 }
 
-func (f *BaseUrlCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *BaseUrlCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreBaseUrlModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

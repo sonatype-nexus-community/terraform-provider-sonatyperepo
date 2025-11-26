@@ -65,16 +65,16 @@ func (f *WebhookGlobalCapability) DoUpdateRequest(plan any, capabilityId string,
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *WebhookGlobalCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *WebhookGlobalCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.WebhookGlobalCapabilityModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *WebhookGlobalCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *WebhookGlobalCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return propertiesSchemaForWebhookCapability(common.AllGlobalWebHookEventTypes(), false)
 }
 
-func (f *WebhookGlobalCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *WebhookGlobalCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.WebhookGlobalCapabilityModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

@@ -68,12 +68,12 @@ func (f *CustomS3RegionsCapability) DoUpdateRequest(plan any, capabilityId strin
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *CustomS3RegionsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CustomS3RegionsCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCustomS3RegionsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CustomS3RegionsCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *CustomS3RegionsCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"regions": schema.ResourceRequiredStringSetWithValidator(
 			"Custom S3 Regions.",
@@ -82,7 +82,7 @@ func (f *CustomS3RegionsCapability) GetPropertiesSchema() map[string]tfschema.At
 	}
 }
 
-func (f *CustomS3RegionsCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CustomS3RegionsCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCustomS3RegionsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

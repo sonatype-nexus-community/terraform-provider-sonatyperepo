@@ -67,12 +67,12 @@ func (f *HealthcheckCapability) DoUpdateRequest(plan any, capabilityId string, a
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *HealthcheckCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *HealthcheckCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityHealthcheckModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *HealthcheckCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *HealthcheckCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"configured_for_all_proxies": schema.ResourceOptionalBoolWithDefault(
 			`Configure all supported proxy repositories to regularly check with [Sonatype Repository Healthcheck](https://help.sonatype.com/en/repository-health-check.html) for updates by default. Newly added repositories will automatically be configured as well, for as long as this is selected.`,
@@ -90,7 +90,7 @@ func (f *HealthcheckCapability) GetPropertiesSchema() map[string]tfschema.Attrib
 	}
 }
 
-func (f *HealthcheckCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *HealthcheckCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityHealthcheckModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

@@ -67,12 +67,12 @@ func (f *UiBrandingCapability) DoUpdateRequest(plan any, capabilityId string, ap
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *UiBrandingCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *UiBrandingCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.UiBrandingCapabilityModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *UiBrandingCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *UiBrandingCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"footer_enabled": schema.ResourceComputedOptionalBoolWithDefault(
 			"Enable branding header HTML snippet.",
@@ -93,7 +93,7 @@ func (f *UiBrandingCapability) GetPropertiesSchema() map[string]tfschema.Attribu
 	}
 }
 
-func (f *UiBrandingCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *UiBrandingCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.UiBrandingCapabilityModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

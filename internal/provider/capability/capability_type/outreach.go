@@ -68,12 +68,12 @@ func (f *OutreachCapability) DoUpdateRequest(plan any, capabilityId string, apiC
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *OutreachCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *OutreachCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreOutreachModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *OutreachCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *OutreachCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"override_url": schema.ResourceOptionalStringWithRegex(
 			"Override external URL for downloading new Outreach content.",
@@ -87,7 +87,7 @@ func (f *OutreachCapability) GetPropertiesSchema() map[string]tfschema.Attribute
 	}
 }
 
-func (f *OutreachCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *OutreachCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreOutreachModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

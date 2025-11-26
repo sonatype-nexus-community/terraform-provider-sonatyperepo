@@ -67,12 +67,12 @@ func (f *FirewallAuditQuarantineCapability) DoUpdateRequest(plan any, capability
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *FirewallAuditQuarantineCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *FirewallAuditQuarantineCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityFirewallAuditQuarantineModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *FirewallAuditQuarantineCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *FirewallAuditQuarantineCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"repository": schema.ResourceRequiredString("The repository to be evaluated."),
 		"quarantine": schema.ResourceRequiredBool(`Whether enable Quarantine for this repository. 
@@ -81,7 +81,7 @@ func (f *FirewallAuditQuarantineCapability) GetPropertiesSchema() map[string]tfs
 	}
 }
 
-func (f *FirewallAuditQuarantineCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *FirewallAuditQuarantineCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityFirewallAuditQuarantineModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

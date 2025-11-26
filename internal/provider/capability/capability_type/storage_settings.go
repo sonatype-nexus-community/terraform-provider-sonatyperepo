@@ -67,12 +67,12 @@ func (f *StorageSettingsCapability) DoUpdateRequest(plan any, capabilityId strin
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *StorageSettingsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *StorageSettingsCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreStorageSettingsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *StorageSettingsCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *StorageSettingsCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"last_downloaded_interval": schema.ResourceOptionalInt32WithDefault(
 			"'Last Downloaded' Update Interval (hours)",
@@ -81,7 +81,7 @@ func (f *StorageSettingsCapability) GetPropertiesSchema() map[string]tfschema.At
 	}
 }
 
-func (f *StorageSettingsCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *StorageSettingsCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreStorageSettingsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

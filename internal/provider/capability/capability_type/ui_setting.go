@@ -67,12 +67,12 @@ func (f *UiSettingsCapability) DoUpdateRequest(plan any, capabilityId string, ap
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *UiSettingsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *UiSettingsCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.UiSettingsCapabilityModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *UiSettingsCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *UiSettingsCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"title": schema.ResourceOptionalStringWithDefaultAndPlanModifier(
 			"Browser page title.",
@@ -105,7 +105,7 @@ func (f *UiSettingsCapability) GetPropertiesSchema() map[string]tfschema.Attribu
 	}
 }
 
-func (f *UiSettingsCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *UiSettingsCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.UiSettingsCapabilityModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

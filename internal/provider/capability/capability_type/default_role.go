@@ -67,18 +67,18 @@ func (f *DefaultRoleCapability) DoUpdateRequest(plan any, capabilityId string, a
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *DefaultRoleCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *DefaultRoleCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreDefaultRoleModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *DefaultRoleCapability) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *DefaultRoleCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"role": schema.ResourceRequiredString("The role which is automatically granted to authenticated users"),
 	}
 }
 
-func (f *DefaultRoleCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *DefaultRoleCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreDefaultRoleModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
