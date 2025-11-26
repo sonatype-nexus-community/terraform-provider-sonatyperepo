@@ -73,7 +73,7 @@ func (f *BlobstoreCompactTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan)
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *BlobstoreCompactTask) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"blob_store_name": schema.ResourceRequiredString("The blob store to compact"),
 		"blobs_older_than": schema.ResourceOptionalInt32WithDefault(

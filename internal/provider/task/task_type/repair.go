@@ -91,7 +91,7 @@ func (f *RepairRebuildBrowseNodesTask) PlanAsModel(ctx context.Context, plan tfs
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *RepairRebuildBrowseNodesTask) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"repository_name": schema.ResourceRequiredString("The Repository to rebuild browse trees for."),
 	}

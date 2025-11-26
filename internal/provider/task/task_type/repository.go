@@ -76,7 +76,7 @@ func (f *RepositoryDockerGcTask) PlanAsModel(ctx context.Context, plan tfsdk.Pla
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryDockerGcTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *RepositoryDockerGcTask) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"deploy_offset": schema.ResourceOptionalInt32WithDefault(
 			`Manifests and images deployed within this period before the task starts will not be deleted.`,
@@ -157,7 +157,7 @@ func (f *RepositoryDockerUploadPurgeTask) PlanAsModel(ctx context.Context, plan 
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *RepositoryDockerUploadPurgeTask) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"age": schema.ResourceOptionalInt32WithDefault(
 			`Delete incomplete docker uploads that are older than the specified age in hours.`,
@@ -237,7 +237,7 @@ func (f *RepositoryMavenRemoveSnapshotsTask) PlanAsModel(ctx context.Context, pl
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetPropertiesSchema() map[string]tfschema.Attribute {
+func (f *RepositoryMavenRemoveSnapshotsTask) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"repository_name": schema.ResourceRequiredString("The Maven repository or repository group to remove snapshots from."),
 		"minimum_retained": schema.ResourceOptionalInt32WithDefault(

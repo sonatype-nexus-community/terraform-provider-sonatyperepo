@@ -91,7 +91,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	// Handle Errors
 	if err != nil {
 		errors.HandleAPIError(
-			fmt.Sprintf("Error creating %s Task", t.TaskType.GetType().String()),
+			fmt.Sprintf("Error creating %s Task", t.TaskType.Type().String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -100,7 +100,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	if !slices.Contains(t.TaskType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
-			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.GetType().String()),
+			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.Type().String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -143,14 +143,14 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
+				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
+				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -204,7 +204,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
-			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting Task %s (attempt %d)", t.TaskType.GetType().String(), attempts))
+			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting Task %s (attempt %d)", t.TaskType.Type().String(), attempts))
 			attempts++
 			continue
 		}
@@ -213,14 +213,14 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
 				errors.HandleAPIWarning(
-					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
+					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
 				errors.HandleAPIError(
-					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
+					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
@@ -230,7 +230,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
 			errors.HandleAPIError(
-				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.GetType().String(), attempts),
+				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.Type().String(), attempts),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -246,7 +246,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
 	return tfschema.Schema{
-		MarkdownDescription: tt.GetMarkdownDescription(),
+		MarkdownDescription: tt.MarkdownDescription(),
 		Attributes: map[string]tfschema.Attribute{
 			"id":          schema.ResourceComputedString("The internal ID of the Task."),
 			"name":        schema.ResourceRequiredString("The name of the Task."),
@@ -288,7 +288,7 @@ func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
 					"cron_expression": schema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
 				},
 			),
-			"properties":   schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.GetPropertiesSchema()),
+			"properties":   schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.PropertiesSchema()),
 			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}

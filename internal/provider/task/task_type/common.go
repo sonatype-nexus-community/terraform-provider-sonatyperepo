@@ -45,11 +45,11 @@ func (f *BaseTaskType) Key() string {
 	return f.taskType.String()
 }
 
-func (f *BaseTaskType) GetMarkdownDescription() string {
-	return fmt.Sprintf("Manage Task '%s' (%s)", f.GetPublicName(), f.GetType().String())
+func (f *BaseTaskType) MarkdownDescription() string {
+	return fmt.Sprintf("Manage Task '%s' (%s)", f.PublicName(), f.Type().String())
 }
 
-func (f *BaseTaskType) GetPublicName() string {
+func (f *BaseTaskType) PublicName() string {
 	return f.publicName
 }
 
@@ -57,7 +57,7 @@ func (f *BaseTaskType) ResourceName() string {
 	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.Key()), ".", "_"), "-", "_"))
 }
 
-func (f *BaseTaskType) GetType() common.TaskType {
+func (f *BaseTaskType) Type() common.TaskType {
 	return f.taskType
 }
 
@@ -67,14 +67,14 @@ type TaskTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	ApiCreateSuccessResponseCodes() []int
-	GetMarkdownDescription() string
+	MarkdownDescription() string
 	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetPropertiesSchema() map[string]tfschema.Attribute
-	GetPublicName() string
+	PropertiesSchema() map[string]tfschema.Attribute
+	PublicName() string
 	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
 	ResourceName() string
 	Key() string
-	GetType() common.TaskType
+	Type() common.TaskType
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 	UpdateStateFromPlanForUpdate(plan any, state any) any
