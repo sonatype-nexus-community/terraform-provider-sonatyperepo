@@ -70,7 +70,7 @@ func (c *capabilityResource) ImportState(ctx context.Context, req resource.Impor
 
 func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := c.CapabilityType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := c.CapabilityType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -112,7 +112,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 
 func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	stateModel, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -172,11 +172,11 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 
 func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := c.CapabilityType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := c.CapabilityType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -254,7 +254,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	state, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -359,7 +359,7 @@ func capabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes.St
 }
 
 func capabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
-	propertiesAttributes := ct.GetPropertiesSchema()
+	propertiesAttributes := ct.PropertiesSchema()
 
 	baseSchema := tfschema.Schema{
 		MarkdownDescription: ct.GetMarkdownDescription() + `

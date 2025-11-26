@@ -74,9 +74,9 @@ type CapabilityTypeI interface {
 	DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	GetApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetPropertiesSchema() map[string]tfschema.Attribute
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	PropertiesSchema() map[string]tfschema.Attribute
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
 	GetResourceName() string
 	GetKey() string
 	GetPublicName() string
