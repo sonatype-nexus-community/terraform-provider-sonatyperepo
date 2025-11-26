@@ -60,7 +60,7 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.DataSourceRequiredString("Name of the Blob Store"),
 			"path": schema.DataSourceComputedString("The Path on disk of this File Blob Store"),
-			"soft_quota": schema.DataSourceComputedOptionalSingleNestedAttribute(
+			"soft_quota": schema.DataSourceComputedSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
 				map[string]tfschema.Attribute{
 					"type":  schema.DataSourceComputedString("Soft Quota type"),
