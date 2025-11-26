@@ -53,12 +53,12 @@ type NpmRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic NPM Format Functions
 // --------------------------------------------
-func (f *NpmRepositoryFormat) GetKey() string {
+func (f *NpmRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_NPM
 }
 
-func (f *NpmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *NpmRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -95,17 +95,17 @@ func (f *NpmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateNpmHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NpmRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	return additionalAttributes
 }
 
-func (f *NpmRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNpmHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NpmRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNpmHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -173,18 +173,18 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NpmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, npmSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *NpmRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNpmProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NpmRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNpmProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -249,16 +249,16 @@ func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateNpmGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NpmRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(true)
 }
 
-func (f *NpmRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNpmGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NpmRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NpmRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNpmGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

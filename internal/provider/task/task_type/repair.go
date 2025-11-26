@@ -42,8 +42,8 @@ type BaseRepairTask struct {
 	BaseTaskType
 }
 
-func (f *BaseRepairTask) GetResourceName() string {
-	return fmt.Sprintf("task_repair_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"), "-", "_"))
+func (f *BaseRepairTask) ResourceName() string {
+	return fmt.Sprintf("task_repair_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.Key()), ".", "_"), "-", "_"))
 }
 
 // --------------------------------------------
@@ -86,7 +86,7 @@ func (f *RepairRebuildBrowseNodesTask) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepairRebuildBrowseNodesTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepairCreateBrowseNodesModel
 	return planModel, plan.Get(ctx, &planModel)
 }
@@ -97,7 +97,7 @@ func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]tfschema
 	}
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepairRebuildBrowseNodesTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepairCreateBrowseNodesModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

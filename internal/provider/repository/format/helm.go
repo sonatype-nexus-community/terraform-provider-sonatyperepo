@@ -46,12 +46,12 @@ type HelmRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic Helm Format Functions
 // --------------------------------------------
-func (f *HelmRepositoryFormat) GetKey() string {
+func (f *HelmRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_HELM
 }
 
-func (f *HelmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *HelmRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -85,16 +85,16 @@ func (f *HelmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateHelmHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *HelmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *HelmRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
 
-func (f *HelmRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *HelmRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryHelmHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *HelmRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *HelmRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryHelmHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -156,16 +156,16 @@ func (f *HelmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateHelmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *HelmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *HelmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes()
 }
 
-func (f *HelmRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *HelmRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryHelmProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *HelmRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *HelmRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryHelmProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

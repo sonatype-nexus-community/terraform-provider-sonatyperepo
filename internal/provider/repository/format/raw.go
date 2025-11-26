@@ -53,12 +53,12 @@ type RawRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Raw Format Functions
 // --------------------------------------------
-func (f *RawRepositoryFormat) GetKey() string {
+func (f *RawRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_RAW
 }
 
-func (f *RawRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *RawRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -95,18 +95,18 @@ func (f *RawRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateRawHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RawRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *RawRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRawHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RawRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRawHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -171,18 +171,18 @@ func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateRawProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RawRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *RawRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRawProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RawRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRawProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -247,18 +247,18 @@ func (f *RawRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateRawGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RawRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RawRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonGroupSchemaAttributes(false)
 	maps.Copy(additionalAttributes, rawSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *RawRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRawGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RawRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RawRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRawGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

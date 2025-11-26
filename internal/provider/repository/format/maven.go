@@ -53,11 +53,11 @@ type MavenRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Maven Format Functions
 // --------------------------------------------
-func (f *MavenRepositoryFormat) GetKey() string {
+func (f *MavenRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_MAVEN
 }
 
-func (f *MavenRepositoryFormat) GetResourceName(repoType RepositoryType) string {
+func (f *MavenRepositoryFormat) ResourceName(repoType RepositoryType) string {
 	// Override to use "maven" instead of "maven2" for resource names
 	return resourceName("maven", repoType)
 }
@@ -103,18 +103,18 @@ func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *MavenRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *MavenRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -176,18 +176,18 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *MavenRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *MavenRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -249,16 +249,16 @@ func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *MavenRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(false)
 }
 
-func (f *MavenRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

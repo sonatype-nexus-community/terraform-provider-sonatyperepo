@@ -54,7 +54,7 @@ type capabilityResource struct {
 
 // Metadata returns the resource type name.
 func (c *capabilityResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, c.CapabilityType.GetResourceName())
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, c.CapabilityType.ResourceName())
 }
 
 // Set Schema for this Resource
@@ -94,7 +94,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	if !slices.Contains(c.CapabilityType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+	if !slices.Contains(c.CapabilityType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Capability was not successful", c.CapabilityType.GetType().String()),
 			&err,
@@ -136,14 +136,14 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -155,7 +155,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
 		errors.HandleAPIWarning(
-			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -218,14 +218,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -237,7 +237,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
 		errors.HandleAPIWarning(
-			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,

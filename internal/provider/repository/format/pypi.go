@@ -53,12 +53,12 @@ type PyPiRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic PyPi Format Functions
 // --------------------------------------------
-func (f *PyPiRepositoryFormat) GetKey() string {
+func (f *PyPiRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_PYPI
 }
 
-func (f *PyPiRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *PyPiRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -95,16 +95,16 @@ func (f *PyPiRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdatePypiHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *PyPiRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
 
-func (f *PyPiRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -169,18 +169,18 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, pyPiSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *PyPiRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -245,16 +245,16 @@ func (f *PyPiRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *PyPiRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(true)
 }
 
-func (f *PyPiRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

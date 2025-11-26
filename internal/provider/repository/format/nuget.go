@@ -53,12 +53,12 @@ type NugetRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Nuget Format Functions
 // --------------------------------------------
-func (f *NugetRepositoryFormat) GetKey() string {
+func (f *NugetRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_NUGET
 }
 
-func (f *NugetRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *NugetRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -95,17 +95,17 @@ func (f *NugetRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateNugetHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NugetRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	return additionalAttributes
 }
 
-func (f *NugetRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNugetHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NugetRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNugetHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -170,18 +170,18 @@ func (f *NugetRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateNugetProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NugetRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, nugetProxySchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *NugetRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNugetProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NugetRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNugetProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -246,16 +246,16 @@ func (f *NugetRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateNugetGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *NugetRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *NugetRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(false)
 }
 
-func (f *NugetRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryNugetGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *NugetRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *NugetRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryNugetGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

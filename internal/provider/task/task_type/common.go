@@ -37,11 +37,11 @@ type BaseTaskType struct {
 	taskType   common.TaskType
 }
 
-func (f *BaseTaskType) GetApiCreateSuccessResponseCodes() []int {
+func (f *BaseTaskType) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
 }
 
-func (f *BaseTaskType) GetKey() string {
+func (f *BaseTaskType) Key() string {
 	return f.taskType.String()
 }
 
@@ -53,8 +53,8 @@ func (f *BaseTaskType) GetPublicName() string {
 	return f.publicName
 }
 
-func (f *BaseTaskType) GetResourceName() string {
-	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"), "-", "_"))
+func (f *BaseTaskType) ResourceName() string {
+	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.Key()), ".", "_"), "-", "_"))
 }
 
 func (f *BaseTaskType) GetType() common.TaskType {
@@ -66,14 +66,14 @@ func (f *BaseTaskType) GetType() common.TaskType {
 type TaskTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
-	GetApiCreateSuccessResponseCodes() []int
+	ApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	GetPropertiesSchema() map[string]tfschema.Attribute
 	GetPublicName() string
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName() string
-	GetKey() string
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	ResourceName() string
+	Key() string
 	GetType() common.TaskType
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any

@@ -59,19 +59,19 @@ type repositoryResource struct {
 
 // Metadata returns the resource type name.
 func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.RepositoryFormat.GetResourceName(r.RepositoryType))
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.RepositoryFormat.ResourceName(r.RepositoryType))
 }
 
 // Set Schema for this Resource
 func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := hostedStandardSchema(r.RepositoryFormat.GetKey(), r.RepositoryType)
-	maps.Copy(schema.Attributes, r.RepositoryFormat.GetFormatSchemaAttributes())
+	schema := hostedStandardSchema(r.RepositoryFormat.Key(), r.RepositoryType)
+	maps.Copy(schema.Attributes, r.RepositoryFormat.FormatSchemaAttributes())
 	resp.Schema = schema
 }
 
 func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := r.RepositoryFormat.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := r.RepositoryFormat.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -103,16 +103,16 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	// Handle Errors
 	if err != nil {
 		errors.HandleAPIError(
-			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.Key(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
 		)
 		return
 	}
-	if !slices.Contains(r.RepositoryFormat.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+	if !slices.Contains(r.RepositoryFormat.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
-			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+			fmt.Sprintf("Creation of %s %s Repository was not successful", r.RepositoryFormat.Key(), r.RepositoryType.String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -127,14 +127,14 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -153,7 +153,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	stateModel, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.RepositoryFormat.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -177,14 +177,14 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -203,11 +203,11 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := r.RepositoryFormat.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := r.RepositoryFormat.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.RepositoryFormat.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -225,14 +225,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "update"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -249,14 +249,14 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -275,7 +275,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := r.RepositoryFormat.GetStateAsModel(ctx, req.State)
+	state, diags := r.RepositoryFormat.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -311,7 +311,7 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	// Check if deletion was successful after all retry attempts
 	if !success {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete %s %s Repository after 3 attempts", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+			fmt.Sprintf("Failed to delete %s %s Repository after 3 attempts", r.RepositoryFormat.Key(), r.RepositoryType.String()),
 			fmt.Sprintf("Repository '%s' could not be deleted. This may be due to dependencies (e.g., group membership, routing rules) or internal Nexus state issues. Please check Nexus logs and ensure the repository is not referenced by other resources.", repositoryName.ValueString()),
 		)
 	}
@@ -324,7 +324,7 @@ func (r *repositoryResource) attemptDeleteWithRetries(ctx context.Context, repos
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
-			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.GetKey(), r.RepositoryFormat, attempt))
+			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d)", r.RepositoryFormat.Key(), r.RepositoryFormat, attempt))
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -339,7 +339,7 @@ func (r *repositoryResource) attemptDeleteWithRetries(ctx context.Context, repos
 		}
 
 		tflog.Warn(ctx, fmt.Sprintf("Unexpected response when deleting %s %s Repository (attempt %d/%d): %s",
-			r.RepositoryFormat.GetKey(), r.RepositoryType.String(), attempt, maxAttempts, httpResponse.Status))
+			r.RepositoryFormat.Key(), r.RepositoryType.String(), attempt, maxAttempts, httpResponse.Status))
 		time.Sleep(5 * time.Second)
 	}
 	return false
@@ -349,13 +349,13 @@ func (r *repositoryResource) handleDeleteError(ctx context.Context, httpResponse
 	if httpResponse.StatusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddWarning(
-			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "delete"),
+			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "delete"),
 			fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
 		)
 		return
 	}
 	resp.Diagnostics.AddError(
-		fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.GetKey(), r.RepositoryFormat, "delete"),
+		fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryFormat.Key(), r.RepositoryFormat, "delete"),
 		fmt.Sprintf(REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
 	)
 }
@@ -381,11 +381,11 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Repository '%s' not found", repositoryName),
 				fmt.Sprintf("The %s %s repository '%s' does not exist or you do not have permission to access it.",
-					r.RepositoryFormat.GetKey(), r.RepositoryType.String(), repositoryName),
+					r.RepositoryFormat.Key(), r.RepositoryType.String(), repositoryName),
 			)
 		} else {
 			errors.HandleAPIError(
-				fmt.Sprintf("Error importing %s %s repository", r.RepositoryFormat.GetKey(), r.RepositoryType.String()),
+				fmt.Sprintf("Error importing %s %s repository", r.RepositoryFormat.Key(), r.RepositoryType.String()),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -395,11 +395,11 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	}
 
 	// Validate that the imported repository matches the expected format and type
-	if err := r.RepositoryFormat.ValidateRepositoryForImport(apiResponse, r.RepositoryFormat.GetKey(), r.RepositoryType); err != nil {
+	if err := r.RepositoryFormat.ValidateRepositoryForImport(apiResponse, r.RepositoryFormat.Key(), r.RepositoryType); err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid repository type for import",
 			fmt.Sprintf("The repository '%s' exists but is not a %s %s repository: %s",
-				repositoryName, r.RepositoryFormat.GetKey(), r.RepositoryType.String(), err.Error()),
+				repositoryName, r.RepositoryFormat.Key(), r.RepositoryType.String(), err.Error()),
 		)
 		return
 	}

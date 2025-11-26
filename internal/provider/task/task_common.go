@@ -54,7 +54,7 @@ type taskResource struct {
 
 // Metadata returns the resource type name.
 func (t *taskResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, t.TaskType.GetResourceName())
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, t.TaskType.ResourceName())
 }
 
 // Set Schema for this Resource
@@ -70,7 +70,7 @@ func (r *taskResource) ImportState(ctx context.Context, req resource.ImportState
 
 func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := t.TaskType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := t.TaskType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -98,7 +98,7 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		)
 		return
 	}
-	if !slices.Contains(t.TaskType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+	if !slices.Contains(t.TaskType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.GetType().String()),
 			&err,
@@ -121,11 +121,11 @@ func (t *taskResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := t.TaskType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := t.TaskType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := t.TaskType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := t.TaskType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -168,7 +168,7 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := t.TaskType.GetStateAsModel(ctx, req.State)
+	state, diags := t.TaskType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors

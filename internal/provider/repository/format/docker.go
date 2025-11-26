@@ -56,12 +56,12 @@ type DockerRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Docker Format Functions
 // --------------------------------------------
-func (f *DockerRepositoryFormat) GetKey() string {
+func (f *DockerRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_DOCKER
 }
 
-func (f *DockerRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *DockerRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -105,18 +105,18 @@ func (f *DockerRepositoryFormatHosted) DoImportRequest(repositoryName string, ap
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *DockerRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *DockerRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryDockerHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *DockerRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryDockerHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -188,19 +188,19 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *DockerRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	maps.Copy(additionalAttributes, dockerProxySchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *DockerRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryDockerProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *DockerRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryDockerProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -272,18 +272,18 @@ func (f *DockerRepositoryFormatGroup) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *DockerRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *DockerRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonGroupSchemaAttributes(true)
 	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *DockerRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryDockerroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *DockerRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *DockerRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryDockerroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

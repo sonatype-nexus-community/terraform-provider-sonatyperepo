@@ -50,12 +50,12 @@ type RRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic R(CRAN) Format Functions
 // --------------------------------------------
-func (f *RRepositoryFormat) GetKey() string {
+func (f *RRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_R
 }
 
-func (f *RRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *RRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -89,16 +89,16 @@ func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateRHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
 
-func (f *RRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -146,16 +146,16 @@ func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.RepositoryManagementAPI.UpdateRProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes()
 }
 
-func (f *RRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositorRProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositorRProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -203,16 +203,16 @@ func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.RepositoryManagementAPI.UpdateRGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *RRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(false)
 }
 
-func (f *RRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

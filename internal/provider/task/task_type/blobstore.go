@@ -68,7 +68,7 @@ func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *BlobstoreCompactTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskBlobstoreCompactModel
 	return planModel, plan.Get(ctx, &planModel)
 }
@@ -85,7 +85,7 @@ func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]tfschema.Attribu
 	}
 }
 
-func (f *BlobstoreCompactTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *BlobstoreCompactTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskBlobstoreCompactModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

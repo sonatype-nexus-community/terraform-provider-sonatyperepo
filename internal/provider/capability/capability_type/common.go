@@ -42,11 +42,11 @@ type BaseCapabilityType struct {
 	publicName     string
 }
 
-func (ct *BaseCapabilityType) GetApiCreateSuccessResponseCodes() []int {
+func (ct *BaseCapabilityType) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusOK}
 }
 
-func (ct *BaseCapabilityType) GetKey() string {
+func (ct *BaseCapabilityType) Key() string {
 	return ct.capabilityType.String()
 }
 
@@ -58,7 +58,7 @@ func (ct *BaseCapabilityType) GetPublicName() string {
 	return ct.publicName
 }
 
-func (ct *BaseCapabilityType) GetResourceName() string {
+func (ct *BaseCapabilityType) ResourceName() string {
 	return fmt.Sprintf("capability_%s", common.SanitiseStringForResourceName(ct.GetPublicName()))
 }
 
@@ -72,13 +72,13 @@ func (ct *BaseCapabilityType) GetType() common.CapabilityType {
 type CapabilityTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error)
 	DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
-	GetApiCreateSuccessResponseCodes() []int
+	ApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
 	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
 	PropertiesSchema() map[string]tfschema.Attribute
 	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName() string
-	GetKey() string
+	ResourceName() string
+	Key() string
 	GetPublicName() string
 	GetType() common.CapabilityType
 	UpdatePlanForState(plan any) any

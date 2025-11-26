@@ -71,7 +71,7 @@ func (f *RepositoryDockerGcTask) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryDockerGcTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryDockerGcTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryDockerGcModel
 	return planModel, plan.Get(ctx, &planModel)
 }
@@ -86,7 +86,7 @@ func (f *RepositoryDockerGcTask) GetPropertiesSchema() map[string]tfschema.Attri
 	}
 }
 
-func (f *RepositoryDockerGcTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryDockerGcTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryDockerGcModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -152,7 +152,7 @@ func (f *RepositoryDockerUploadPurgeTask) DoUpdateRequest(plan any, state any, a
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryDockerUploadPurgeTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryDockerUploadPurgeModel
 	return planModel, plan.Get(ctx, &planModel)
 }
@@ -166,7 +166,7 @@ func (f *RepositoryDockerUploadPurgeTask) GetPropertiesSchema() map[string]tfsch
 	}
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryDockerUploadPurgeTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryDockerUploadPurgeModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -232,7 +232,7 @@ func (f *RepositoryMavenRemoveSnapshotsTask) DoUpdateRequest(plan any, state any
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryMavenRemoveSnapshotsTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryMavenRemoveSnapshotsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
@@ -258,7 +258,7 @@ func (f *RepositoryMavenRemoveSnapshotsTask) GetPropertiesSchema() map[string]tf
 	}
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryMavenRemoveSnapshotsTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryMavenRemoveSnapshotsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

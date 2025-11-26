@@ -46,12 +46,12 @@ type GoRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic NPM Format Functions
 // --------------------------------------------
-func (f *GoRepositoryFormat) GetKey() string {
+func (f *GoRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_GO
 }
 
-func (f *GoRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *GoRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -85,16 +85,16 @@ func (f *GoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateGoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *GoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *GoRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes()
 }
 
-func (f *GoRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *GoRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryGoProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *GoRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *GoRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryGoProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -156,16 +156,16 @@ func (f *GoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateGoGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *GoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *GoRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonGroupSchemaAttributes(false)
 }
 
-func (f *GoRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *GoRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryGoGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *GoRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *GoRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryGoGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

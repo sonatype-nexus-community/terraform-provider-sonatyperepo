@@ -53,12 +53,12 @@ type CargoRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Cargo Format Functions
 // --------------------------------------------
-func (f *CargoRepositoryFormat) GetKey() string {
+func (f *CargoRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_CARGO
 }
 
-func (f *CargoRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *CargoRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -92,16 +92,16 @@ func (f *CargoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *CargoRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
 
-func (f *CargoRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositorCargoHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositorCargoHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -149,18 +149,18 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *CargoRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, cargoSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *CargoRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCargoProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCargoProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -208,18 +208,18 @@ func (f *CargoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *CargoRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttrs := commonGroupSchemaAttributes(false)
 	maps.Copy(additionalAttrs, cargoSchemaAttributes())
 	return additionalAttrs
 }
 
-func (f *CargoRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCargoGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCargoGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

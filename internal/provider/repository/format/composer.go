@@ -42,12 +42,12 @@ type ComposerRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic Composer Format Functions
 // --------------------------------------------
-func (f *ComposerRepositoryFormat) GetKey() string {
+func (f *ComposerRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_COMPOSER
 }
 
-func (f *ComposerRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *ComposerRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -81,16 +81,16 @@ func (f *ComposerRepositoryFormat) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateComposerProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *ComposerRepositoryFormat) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *ComposerRepositoryFormat) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes()
 }
 
-func (f *ComposerRepositoryFormat) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *ComposerRepositoryFormat) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryComposerProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *ComposerRepositoryFormat) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *ComposerRepositoryFormat) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryComposerProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

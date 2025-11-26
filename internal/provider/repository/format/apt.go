@@ -49,12 +49,12 @@ type AptRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic APT Format Functions
 // --------------------------------------------
-func (f *AptRepositoryFormat) GetKey() string {
+func (f *AptRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_APT
 }
 
-func (f *AptRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *AptRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -98,18 +98,18 @@ func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *AptRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, aptSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *AptRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryAptHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *AptRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryAptHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -186,18 +186,18 @@ func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *AptRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *AptRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, aptSchemaAttributes(true))
 	return additionalAttributes
 }
 
-func (f *AptRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryAptProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *AptRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryAptProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

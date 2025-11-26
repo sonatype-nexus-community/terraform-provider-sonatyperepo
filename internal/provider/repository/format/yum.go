@@ -54,12 +54,12 @@ type YumRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic YUM Format Functions
 // --------------------------------------------
-func (f *YumRepositoryFormat) GetKey() string {
+func (f *YumRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_YUM
 }
 
-func (f *YumRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return resourceName(f.GetKey(), repoType)
+func (f *YumRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -96,18 +96,18 @@ func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateYumHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *YumRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonHostedSchemaAttributes()
 	maps.Copy(additionalAttributes, yumSchemaAttributes(true))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -172,18 +172,18 @@ func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateYumProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *YumRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonProxySchemaAttributes()
 	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -248,18 +248,18 @@ func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateYumGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]tfschema.Attribute {
+func (f *YumRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonGroupSchemaAttributes(false)
 	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
