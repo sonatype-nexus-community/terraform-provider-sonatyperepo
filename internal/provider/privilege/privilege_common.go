@@ -285,7 +285,7 @@ func basePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfs
 			),
 			"description": schema.ResourceRequiredString("Friendly description of this Privilege"),
 			"read_only":   schema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
-			"type": schema.ResourceRequiredStringEnum(
+			"type": schema.ResourceComputedStringWithDefault(
 				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
 				privilegeTypeType.String(),
 			),
