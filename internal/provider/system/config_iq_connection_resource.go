@@ -59,13 +59,13 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 			"enabled":                   schema.ResourceRequiredBool("Whether to use Sonatype Repository Firewall"),
 			"url":                       schema.ResourceRequiredString("The address of your Sonatype IQ Server"),
 			"nexus_trust_store_enabled": schema.ResourceRequiredBool("Use certificates stored in the Nexus Repository Manager truststore to connect to Sonatype IQ Server"),
-			"authentication_method": schema.ResourceStringEnum(
+			"authentication_method": schema.ResourceRequiredStringEnum(
 				"Authentication method for Sonatype IQ Connection",
 				common.IQ_AUTHENTICATON_TYPE_USER,
 				common.IQ_AUTHENTICATON_TYPE_PKI,
 			),
 			"username": schema.ResourceRequiredString("User with access to Sonatype Repository Firewall"),
-			"password": schema.ResourceSensitiveString("Credentials for the Sonatype Repository Firewall User"),
+			"password": schema.ResourceSensitiveRequiredString("Credentials for the Sonatype Repository Firewall User"),
 			"connection_timeout": schema.ResourceOptionalInt32WithDefaultAndValidator(
 				"Seconds to wait for activity before stopping and retrying the connection.",
 				common.IQ_DEFAULT_CONNECTION_TIMEOUT_SECONDS,

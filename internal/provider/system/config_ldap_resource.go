@@ -60,7 +60,7 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 		Attributes: map[string]tfschema.Attribute{
 			"id":   schema.ResourceComputedString("Internal LDAP server ID"),
 			"name": schema.ResourceRequiredString("LDAP connection name"),
-			"protocol": schema.ResourceStringEnum(
+			"protocol": schema.ResourceRequiredStringEnum(
 				"LDAP protocol to use",
 				common.PROTOCOL_LDAP,
 				common.PROTOCOL_LDAPS,
@@ -70,7 +70,7 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 			"hostname":    schema.ResourceRequiredString("LDAP server hostname"),
 			"port":        schema.ResourceRequiredInt32("LDAP server port"),
 			"search_base": schema.ResourceRequiredString("LDAP location to be added to the connection URL"),
-			"auth_scheme": schema.ResourceStringEnum(
+			"auth_scheme": schema.ResourceRequiredStringEnum(
 				"Authentication scheme used for connecting to LDAP server",
 				common.AUTH_SCHEME_NONE,
 				common.AUTH_SCHEME_SIMPLE,

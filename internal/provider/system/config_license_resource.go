@@ -61,7 +61,7 @@ func (r *systemConfigProductLicenseResource) Schema(_ context.Context, _ resourc
 	resp.Schema = tfschema.Schema{
 		Description: "Configure and LDAP connection",
 		Attributes: map[string]tfschema.Attribute{
-			"license_data":        schema.ResourceSensitiveString("Base64 encoded license data"),
+			"license_data":        schema.ResourceSensitiveRequiredString("Base64 encoded license data"),
 			"contact_company":     schema.ResourceComputedString("Licensed Company Name"),
 			"contact_email":       schema.ResourceComputedString("Licensed Company Contact Email"),
 			"contact_name":        schema.ResourceComputedString("Licensed Company Contact Name"),

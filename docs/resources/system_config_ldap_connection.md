@@ -17,9 +17,11 @@ Configure and LDAP connection
 
 ### Required
 
+- `auth_scheme` (String) Authentication scheme used for connecting to LDAP server
 - `hostname` (String) LDAP server hostname
 - `name` (String) LDAP connection name
 - `port` (Number) LDAP server port
+- `protocol` (String) LDAP protocol to use
 - `search_base` (String) LDAP location to be added to the connection URL
 - `user_email_name_attribute` (String) This is used to find an email address given the user ID - e.g. mail
 - `user_id_attribute` (String) This is used to find a user given its user ID - e.g. uid
@@ -30,7 +32,6 @@ Configure and LDAP connection
 
 - `auth_password` (String, Sensitive) The password to bind with. Required if authScheme other than NONE.
 - `auth_realm` (String) The SASL realm to bind to. Required if authScheme is CRAM_MD5 or DIGEST_MD5.
-- `auth_scheme` (String) Authentication scheme used for connecting to LDAP server
 - `auth_username` (String) This must be a fully qualified username if simple authentication is used. Required if authScheme other than NONE.
 - `connection_retry_delay` (Number) How many seconds to wait before retrying
 - `connection_timeout` (Number) How many seconds to wait before timeout
@@ -45,7 +46,6 @@ Configure and LDAP connection
 - `max_connection_attempts` (Number) How many connection attempts before giving up
 - `nexus_trust_store_enabled` (Boolean) Whether to use certificates stored in Nexus Repository Manager's truststore
 - `order` (Number) Order number in which the server is being used when looking for a user - cannot be set during CREATE
-- `protocol` (String) LDAP protocol to use
 - `user_base_dn` (String) The relative DN where user objects are found (e.g. ou=people). This value will have the Search base DN value appended to form the full User search base DN.
 - `user_ldap_filter` (String) LDAP search filter to limit user search - e.g. (|(mail=*@example.com)(uid=dom*))
 - `user_member_of_attribute` (String) Set this to the attribute used to store the attribute which holds groups DN in the user object. Required if group_type is DYNAMIC

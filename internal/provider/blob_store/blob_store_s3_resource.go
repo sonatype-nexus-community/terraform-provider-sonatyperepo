@@ -57,7 +57,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.ResourceRequiredString("Name of the Blob Store"),
-			"type": schema.ResourceComputedStringWithDefault(
+			"type": schema.ResourceOptionalStringWithDefault(
 				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
 				BLOB_STORE_TYPE_S3,
 			),

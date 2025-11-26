@@ -66,12 +66,22 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					stringplanmodifier.RequiresReplace(),
 				},
 			),
-			"first_name":    schema.ResourceRequiredString("The first name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"last_name":     schema.ResourceRequiredString("The last name of the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"email_address": schema.ResourceRequiredString("The email address associated with the user.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users."),
-			"password":      schema.ResourceSensitiveString("The password for the user.\n\n**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users."),
+			"first_name": schema.ResourceRequiredString(`The first name of the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"last_name": schema.ResourceRequiredString(`The last name of the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"email_address": schema.ResourceRequiredString(`The email address associated with the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"password": schema.ResourceSensitiveString(`The password for the user.
+			
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`),
 			"status": schema.ResourceRequiredStringWithValidators(
-				"The user's status.\n\n**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.",
+				`The user's status.
+				
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
 				stringvalidator.OneOf(
 					common.AllUserStatusTypes()...,
 				),
