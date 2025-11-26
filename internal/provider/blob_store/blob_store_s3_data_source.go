@@ -61,27 +61,27 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 			"name":         schema.DataSourceRequiredString("Name of the Blob Store"),
 			"type":         schema.DataSourceComputedString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3)),
 			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
-			"soft_quota": schema.DataSourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
+			"soft_quota": schema.DataSourceComputedOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
 				"type":  schema.DataSourceComputedString("Soft Quota type"),
 				"limit": schema.DataSourceComputedInt64("Quota limit"),
 			}),
-			"bucket_configuration": schema.DataSourceOptionalSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
-				"bucket": schema.DataSourceOptionalSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
+			"bucket_configuration": schema.DataSourceComputedOptionalSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
+				"bucket": schema.DataSourceComputedOptionalSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
 					"region": schema.DataSourceComputedString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
 					"name":   schema.DataSourceComputedString("The name of the S3 bucket"),
 					"prefix": schema.DataSourceComputedString("The S3 blob store (i.e S3 object) key prefix"),
 				}),
-				"encryption": schema.DataSourceOptionalSingleNestedAttribute("Bucket Encryption Configuration for this Blob Store", map[string]tfschema.Attribute{
+				"encryption": schema.DataSourceComputedOptionalSingleNestedAttribute("Bucket Encryption Configuration for this Blob Store", map[string]tfschema.Attribute{
 					"encryption_type": schema.DataSourceComputedString("The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'"),
 					"encryption_key":  schema.DataSourceComputedString("The encryption key"),
 				}),
-				"bucket_security": schema.DataSourceOptionalSingleNestedAttribute("Bucket Security Configuration for this Blob Store", map[string]tfschema.Attribute{
+				"bucket_security": schema.DataSourceComputedOptionalSingleNestedAttribute("Bucket Security Configuration for this Blob Store", map[string]tfschema.Attribute{
 					"access_key_id":     schema.DataSourceComputedString("An IAM access key ID for granting access to the S3 bucket"),
 					"secret_access_key": schema.DataSourceComputedString("The secret access key associated with the specified IAM access key ID"),
 					"role":              schema.DataSourceComputedString("An IAM role to assume in order to access the S3 bucket"),
 					"session_token":     schema.DataSourceComputedString("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket"),
 				}),
-				"advanced_bucket_connection": schema.DataSourceOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]tfschema.Attribute{
+				"advanced_bucket_connection": schema.DataSourceComputedOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]tfschema.Attribute{
 					"endpoint":                 schema.DataSourceComputedString("A custom endpoint URL for third party object stores using the S3 API"),
 					"signer_type":              schema.DataSourceComputedString("An API signature version which may be required for third party object stores using the S3 API"),
 					"force_path_style":         schema.DataSourceComputedOptionalBool("Setting this flag will result in path-style access being used for all requests"),
