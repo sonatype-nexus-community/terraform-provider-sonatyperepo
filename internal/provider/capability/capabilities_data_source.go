@@ -66,7 +66,7 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 						"id":         schema.DataSourceRequiredString("Internal ID of the Capability."),
 						"type":       schema.DataSourceRequiredString("Type of the Capability."),
 						"enabled":    schema.DataSourceRequiredBool("Whether the Capability is enabled."),
-						"notes":      schema.DataSourceComputedString("Notes about the configured Capability."),
+						"notes":      schema.DataSourceOptionalString("Notes about the configured Capability."),
 						"properties": schema.DataSourceRequiredStringMap("Properties of the Capability."),
 					},
 				},

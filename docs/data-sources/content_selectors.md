@@ -22,7 +22,7 @@ Use this data source to get all Content Selectors
 <a id="nestedatt--content_selectors"></a>
 ### Nested Schema for `content_selectors`
 
-Read-Only:
+Required:
 
 - `description` (String) The description of this Content Selector.
 - `expression` (String) The Content Selector expression used to identify content.

@@ -60,9 +60,9 @@ func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.Sc
 				"List of Content Selectors",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"name":        schema.DataSourceComputedString("The name of the Content Selector."),
-						"description": schema.DataSourceComputedString("The description of this Content Selector."),
-						"expression":  schema.DataSourceComputedString("The Content Selector expression used to identify content."),
+						"name":        schema.DataSourceRequiredString("The name of the Content Selector."),
+						"description": schema.DataSourceRequiredString("The description of this Content Selector."),
+						"expression":  schema.DataSourceRequiredString("The Content Selector expression used to identify content."),
 					},
 				},
 			),
