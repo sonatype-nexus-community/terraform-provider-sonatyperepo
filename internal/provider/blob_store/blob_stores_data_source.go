@@ -63,16 +63,16 @@ func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRe
 				"List of Blob Stores",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"name":                     schema.DataSourceComputedString("Name of the Blob Store"),
-						"type":                     schema.DataSourceComputedString("Blob Store type"),
-						"unavailable":              schema.DataSourceComputedBool("Whether the Blob Store is unavailable for use"),
+						"name":                     schema.DataSourceRequiredString("Name of the Blob Store"),
+						"type":                     schema.DataSourceRequiredString("Blob Store type"),
+						"unavailable":              schema.DataSourceRequiredBool("Whether the Blob Store is unavailable for use"),
 						"blob_count":               schema.DataSourceComputedInt64("Number of blobs in the Blob Store"),
 						"total_size_in_bytes":      schema.DataSourceComputedInt64("Total size in bytes of the Blob Store"),
 						"available_space_in_bytes": schema.DataSourceComputedInt64("Available space in bytes for the Blob Store"),
-						"soft_quota": schema.DataSourceComputedSingleNestedAttribute(
+						"soft_quota": schema.DataSourceOptionalSingleNestedAttribute(
 							"Soft Quota for this Blob Store",
 							map[string]tfschema.Attribute{
-								"type":  schema.DataSourceComputedString("Soft Quota type"),
+								"type":  schema.DataSourceRequiredString("Soft Quota type"),
 								"limit": schema.DataSourceComputedInt64("Quota limit"),
 							},
 						),
