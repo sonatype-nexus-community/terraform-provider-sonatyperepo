@@ -304,7 +304,7 @@ func yumSchemaAttributes(isHosted bool) map[string]tfschema.Attribute {
 						common.DEPLOY_POLICY_PERMISSIVE,
 						common.DEPLOY_POLICY_STRICT,
 					),
-					"repo_data_depth": schema.DataSourceRequiredInt32WithRange(
+					"repo_data_depth": schema.ResourceRequiredInt32WithRange(
 						"Specifies the repository depth where repodata folder(s) are created",
 						0,
 						5,
