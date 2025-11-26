@@ -63,18 +63,18 @@ func (d *usersDataSource) Schema(_ context.Context, req datasource.SchemaRequest
 				"List of Users",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"user_id":       schema.DataSourceComputedString("The userid which is required for login. This value cannot be changed."),
-						"first_name":    schema.DataSourceComputedString("The first name of the user."),
-						"last_name":     schema.DataSourceComputedString("The last name of the user."),
-						"email_address": schema.DataSourceComputedString("The email address associated with the user."),
-						"read_only":     schema.DataSourceComputedBool("Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update."),
-						"source":        schema.DataSourceComputedString("The user source which is the origin of this user. This value cannot be changed."),
-						"status": schema.DataSourceComputedStringWithValidators(
+						"user_id":       schema.DataSourceRequiredString("The userid which is required for login. This value cannot be changed."),
+						"first_name":    schema.DataSourceRequiredString("The first name of the user."),
+						"last_name":     schema.DataSourceRequiredString("The last name of the user."),
+						"email_address": schema.DataSourceRequiredString("The email address associated with the user."),
+						"read_only":     schema.DataSourceRequiredBool("Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update."),
+						"source":        schema.DataSourceRequiredString("The user source which is the origin of this user. This value cannot be changed."),
+						"status": schema.DataSourceRequiredStringWithValidators(
 							"The user's status",
 							stringvalidator.OneOf(common.AllUserStatusTypes()...),
 						),
-						"roles":          schema.DataSourceComputedStringSet("The roles which the user has been assigned within Nexus."),
-						"external_roles": schema.DataSourceComputedStringSet("The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager."),
+						"roles":          schema.DataSourceRequiredStringSet("The roles which the user has been assigned within Nexus."),
+						"external_roles": schema.DataSourceRequiredStringSet("The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager."),
 					},
 				},
 			),
