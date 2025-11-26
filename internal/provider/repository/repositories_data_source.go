@@ -66,7 +66,7 @@ func (d *repositoriesDataSource) Schema(_ context.Context, req datasource.Schema
 						"name":   schema.DataSourceRequiredString("Name of the Repository"),
 						"format": schema.DataSourceRequiredString("Repository format"),
 						"type":   schema.DataSourceRequiredString("Repository type"),
-						"url":    schema.DataSourceComputedString("URL to use this Repository"),
+						"url":    schema.DataSourceRequiredString("URL to use this Repository"),
 					},
 				},
 			),

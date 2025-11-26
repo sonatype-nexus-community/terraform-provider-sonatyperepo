@@ -27,7 +27,4 @@ Required:
 - `format` (String) Repository format
 - `name` (String) Name of the Repository
 - `type` (String) Repository type
-
-Read-Only:
-
 - `url` (String) URL to use this Repository
