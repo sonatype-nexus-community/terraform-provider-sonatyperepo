@@ -64,7 +64,7 @@ func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRe
 
 // Set Schema for this Resource
 func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := getHostedStandardSchema(r.RepositoryFormat.GetKey(), r.RepositoryType)
+	schema := hostedStandardSchema(r.RepositoryFormat.GetKey(), r.RepositoryType)
 	maps.Copy(schema.Attributes, r.RepositoryFormat.GetFormatSchemaAttributes())
 	resp.Schema = schema
 }
@@ -416,7 +416,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 }
 
-func getHostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
+func hostedStandardSchema(repoFormat string, repoType format.RepositoryType) schema.Schema {
 	storageAttributes := map[string]schema.Attribute{
 		"blob_store_name": schema.StringAttribute{
 			Description: "Name of the Blob Store to use",

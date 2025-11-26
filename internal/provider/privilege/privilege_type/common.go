@@ -177,7 +177,7 @@ type PrivilegeType interface {
 }
 
 // Common Schema
-func getSchemaAttributesActionFormatRepository() map[string]schema.Attribute {
+func schemaAttributesActionFormatRepository() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"actions": schema.SetAttribute{
 			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",

@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func getCommonHostedSchemaAttributes() map[string]schema.Attribute {
+func commonHostedSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"component": schema.SingleNestedAttribute{
 			Description: "Component configuration for this Repository",

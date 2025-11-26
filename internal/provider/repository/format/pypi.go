@@ -56,7 +56,7 @@ func (f *PyPiRepositoryFormat) GetKey() string {
 }
 
 func (f *PyPiRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -94,7 +94,7 @@ func (f *PyPiRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonHostedSchemaAttributes()
+	return commonHostedSchemaAttributes()
 }
 
 func (f *PyPiRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -168,8 +168,8 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getPyPiSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, pyPiSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -244,7 +244,7 @@ func (f *PyPiRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+	return commonGroupSchemaAttributes(true)
 }
 
 func (f *PyPiRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -286,7 +286,7 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getPyPiSchemaAttributes() map[string]schema.Attribute {
+func pyPiSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"pypi": schema.SingleNestedAttribute{
 			Description: "PyPi specific configuration for this Repository",

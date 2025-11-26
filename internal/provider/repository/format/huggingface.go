@@ -47,7 +47,7 @@ func (f *HuggingFaceRepositoryFormat) GetKey() string {
 }
 
 func (f *HuggingFaceRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -82,7 +82,7 @@ func (f *HuggingFaceRepositoryFormatProxy) DoUpdateRequest(plan any, state any, 
 }
 
 func (f *HuggingFaceRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+	return commonProxySchemaAttributes()
 }
 
 func (f *HuggingFaceRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

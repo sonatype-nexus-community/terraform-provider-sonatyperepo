@@ -51,7 +51,7 @@ func (f *GoRepositoryFormat) GetKey() string {
 }
 
 func (f *GoRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -86,7 +86,7 @@ func (f *GoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 }
 
 func (f *GoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+	return commonProxySchemaAttributes()
 }
 
 func (f *GoRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -157,7 +157,7 @@ func (f *GoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient
 }
 
 func (f *GoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(false)
+	return commonGroupSchemaAttributes(false)
 }
 
 func (f *GoRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

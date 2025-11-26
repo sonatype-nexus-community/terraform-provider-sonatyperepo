@@ -47,7 +47,7 @@ func (f *CondaRepositoryFormat) GetKey() string {
 }
 
 func (f *CondaRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -82,7 +82,7 @@ func (f *CondaRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *CondaRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+	return commonProxySchemaAttributes()
 }
 
 func (f *CondaRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

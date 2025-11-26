@@ -53,7 +53,7 @@ func (f *AptRepositoryFormat) GetKey() string {
 }
 
 func (f *AptRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -98,8 +98,8 @@ func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 }
 
 func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getAptSchemaAttributes(false))
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, aptSchemaAttributes(false))
 	return additionalAttributes
 }
 
@@ -186,8 +186,8 @@ func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 }
 
 func (f *AptRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getAptSchemaAttributes(true))
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, aptSchemaAttributes(true))
 	return additionalAttributes
 }
 
@@ -220,7 +220,7 @@ func (f *AptRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getAptSchemaAttributes(isProxy bool) map[string]schema.Attribute {
+func aptSchemaAttributes(isProxy bool) map[string]schema.Attribute {
 	aptAttrs := map[string]schema.Attribute{
 		"distribution": schema.StringAttribute{
 			Description: "Distribution to fetch",

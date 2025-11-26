@@ -59,7 +59,7 @@ func (f *MavenRepositoryFormat) GetKey() string {
 
 func (f *MavenRepositoryFormat) GetResourceName(repoType RepositoryType) string {
 	// Override to use "maven" instead of "maven2" for resource names
-	return getResourceName("maven", repoType)
+	return resourceName("maven", repoType)
 }
 
 // --------------------------------------------
@@ -104,8 +104,8 @@ func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, api
 }
 
 func (f *MavenRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -177,8 +177,8 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -250,7 +250,7 @@ func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(false)
+	return commonGroupSchemaAttributes(false)
 }
 
 func (f *MavenRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -282,7 +282,7 @@ func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getMavenSchemaAttributes() map[string]schema.Attribute {
+func mavenSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"maven": schema.SingleNestedAttribute{
 			Description: "Maven specific configuration for this Repository",

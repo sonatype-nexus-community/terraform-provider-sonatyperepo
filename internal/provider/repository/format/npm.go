@@ -56,7 +56,7 @@ func (f *NpmRepositoryFormat) GetKey() string {
 }
 
 func (f *NpmRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+	return resourceName(f.GetKey(), repoType)
 }
 
 // --------------------------------------------
@@ -94,8 +94,8 @@ func (f *NpmRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *NpmRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	// maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+	additionalAttributes := commonHostedSchemaAttributes()
+	// maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -173,8 +173,8 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *NpmRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getNpmSchemaAttributes())
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, npmSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -249,7 +249,7 @@ func (f *NpmRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *NpmRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+	return commonGroupSchemaAttributes(true)
 }
 
 func (f *NpmRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -291,7 +291,7 @@ func (f *NpmRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getNpmSchemaAttributes() map[string]schema.Attribute {
+func npmSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"npm": schema.SingleNestedAttribute{
 			Description: "NPM specific configuration for this Repository",

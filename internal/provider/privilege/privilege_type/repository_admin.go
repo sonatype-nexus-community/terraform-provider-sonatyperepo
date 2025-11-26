@@ -62,7 +62,7 @@ func (pt *RepositoryAdminPrivilegeType) DoUpdateRequest(plan any, state any, api
 }
 
 func (pt *RepositoryAdminPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return getSchemaAttributesActionFormatRepository()
+	return schemaAttributesActionFormatRepository()
 }
 
 func (pt *RepositoryAdminPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
