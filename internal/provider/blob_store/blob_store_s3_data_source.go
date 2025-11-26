@@ -61,11 +61,11 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 			"name":         schema.DataSourceRequiredString("Name of the Blob Store"),
 			"type":         schema.DataSourceComputedString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3)),
 			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
-			"soft_quota": schema.DataSourceComputedSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
+			"soft_quota": schema.DataSourceOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
 				"type":  schema.DataSourceComputedString("Soft Quota type"),
 				"limit": schema.DataSourceComputedInt64("Quota limit"),
 			}),
-			"bucket_configuration": schema.DataSourceComputedSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
+			"bucket_configuration": schema.DataSourceOptionalSingleNestedAttribute("Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
 				"bucket": schema.DataSourceComputedSingleNestedAttribute("Main Bucket Configuration for this Blob Store", map[string]tfschema.Attribute{
 					"region": schema.DataSourceComputedString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
 					"name":   schema.DataSourceComputedString("The name of the S3 bucket"),
