@@ -83,9 +83,9 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 				}),
 				"advanced_bucket_connection": schema.DataSourceComputedOptionalSingleNestedAttribute("Advanced Connection Configuration for this S3 Blob Store", map[string]tfschema.Attribute{
 					"endpoint":                 schema.DataSourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
-					"signer_type":              schema.DataSourceComputedString("An API signature version which may be required for third party object stores using the S3 API"),
-					"force_path_style":         schema.DataSourceComputedOptionalBool("Setting this flag will result in path-style access being used for all requests"),
-					"max_connection_pool_size": schema.DataSourceComputedInt64("Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore"),
+					"signer_type":              schema.DataSourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
+					"force_path_style":         schema.DataSourceOptionalBool("Setting this flag will result in path-style access being used for all requests"),
+					"max_connection_pool_size": schema.DataSourceOptionalInt64("Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore"),
 				}),
 			}),
 		},
