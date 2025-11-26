@@ -70,7 +70,7 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 							`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
 						),
 						"description": schema.DataSourceRequiredString("Friendly description of this Privilege"),
-						"read_only":   schema.DataSourceRequiredBool("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system."),
+						"read_only":   schema.DataSourceComputedBool("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system."),
 						"type": schema.DataSourceRequiredStringEnum(
 							"The privilege type.",
 							privilege_type.AllPrivilegeTypes()...,

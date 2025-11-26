@@ -26,5 +26,8 @@ Required:
 
 - `description` (String) Friendly description of this Privilege
 - `name` (String) The name of the privilege. This value cannot be changed.
-- `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
 - `type` (String) The privilege type.
+
+Read-Only:
+
+- `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
