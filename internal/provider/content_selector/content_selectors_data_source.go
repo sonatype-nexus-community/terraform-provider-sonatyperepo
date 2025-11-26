@@ -74,7 +74,7 @@ func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.Sc
 func (d *contentSelectorsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.ContentSelectorsModel
 
-	ctx = d.GetAuthContext(ctx)
+	ctx = d.AuthContext(ctx)
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelectors(ctx).Execute()
 	if err != nil {

@@ -79,7 +79,7 @@ func (d *capabilitiesDataSource) Schema(_ context.Context, req datasource.Schema
 func (d *capabilitiesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.CapabilitiesListModel
 
-	ctx = d.GetAuthContext(ctx)
+	ctx = d.AuthContext(ctx)
 
 	apiResponse, httpResponse, err := d.Client.CapabilitiesAPI.List(ctx).Execute()
 	if err != nil {

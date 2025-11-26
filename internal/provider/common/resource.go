@@ -100,23 +100,23 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.NxrmWritable = config.NxrmWritable
 }
 
-// GetAuthContext returns a new context with authentication set up for API calls
-func (r *BaseResource) GetAuthContext(ctx context.Context) context.Context {
+// AuthContext returns a new context with authentication set up for API calls
+func (r *BaseResource) AuthContext(ctx context.Context) context.Context {
 	return WithAuth(ctx, r.Auth)
 }
 
-// GetAuth returns the authentication configuration
-func (r *BaseResource) GetAuth() sonatyperepo.BasicAuth {
+// AuthConfig returns the authentication configuration
+func (r *BaseResource) AuthConfig() sonatyperepo.BasicAuth {
 	return r.Auth
 }
 
-// GetBaseURL returns the API base URL
-func (r *BaseResource) GetBaseURL() string {
+// URL returns the API base URL
+func (r *BaseResource) URL() string {
 	return r.BaseUrl
 }
 
-// GetClient returns the API client
-func (r *BaseResource) GetClient() *sonatyperepo.APIClient {
+// APIClient returns the API client
+func (r *BaseResource) APIClient() *sonatyperepo.APIClient {
 	return r.Client
 }
 

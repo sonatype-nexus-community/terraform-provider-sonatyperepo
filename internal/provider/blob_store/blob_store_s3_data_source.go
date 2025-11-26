@@ -104,7 +104,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	ctx = d.GetAuthContext(ctx)
+	ctx = d.AuthContext(ctx)
 
 	if data.Name.IsNull() {
 		resp.Diagnostics.AddError("Name must not be empty.", "Name must be provided.")

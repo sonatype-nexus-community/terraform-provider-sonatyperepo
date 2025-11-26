@@ -138,7 +138,7 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Call API to Create
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := sonatyperepo.S3BlobStoreApiModel{
 		Name: *plan.Name.ValueStringPointer(),
@@ -249,7 +249,7 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
 	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, state.Name.ValueString()).Execute()
@@ -358,7 +358,7 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	requestPayload := sonatyperepo.S3BlobStoreApiModel{

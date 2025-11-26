@@ -93,7 +93,7 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 // ImportState imports the resource state from the remote system.
 // For security realms, we use a static ID since this is a singleton resource.
 func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read current configuration from the API
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
@@ -216,7 +216,7 @@ func (r *securityRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call - GetActiveRealms returns []string directly
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()

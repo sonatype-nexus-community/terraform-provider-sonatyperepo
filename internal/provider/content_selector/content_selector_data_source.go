@@ -80,7 +80,7 @@ func (d *contentSelectorDataSource) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	ctx = d.GetAuthContext(ctx)
+	ctx = d.AuthContext(ctx)
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelector(ctx, data.Name.ValueString()).Execute()
 

@@ -81,7 +81,7 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Call API to Create
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiCreateRequest()
 	plan.MapToApiCreate(apiBody)
 	httpResponse, err := r.Client.ContentSelectorsAPI.CreateContentSelector(ctx).Body(*apiBody).Execute()
@@ -123,7 +123,7 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
 	apiResponse, httpResponse, err := r.Client.ContentSelectorsAPI.GetContentSelector(ctx, state.Name.ValueString()).Execute()
@@ -174,7 +174,7 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Call API to Update
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiUpdateRequest()
 	plan.MapToApiUpdate(apiBody)
 	httpResponse, err := r.Client.ContentSelectorsAPI.UpdateContentSelector(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
@@ -215,7 +215,7 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	httpResponse, err := r.Client.ContentSelectorsAPI.DeleteContentSelector(ctx, state.Name.ValueString()).Execute()
 

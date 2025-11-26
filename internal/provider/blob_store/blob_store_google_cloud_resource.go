@@ -147,7 +147,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "create")
 	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
@@ -189,7 +189,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetBlobStore2(ctx, state.Name.ValueString()).Execute()
 
@@ -236,7 +236,7 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "update")
 	apiResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore2(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
@@ -275,7 +275,7 @@ func (r *blobStoreGoogleCloudResource) Delete(ctx context.Context, req resource.
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
 }
 
