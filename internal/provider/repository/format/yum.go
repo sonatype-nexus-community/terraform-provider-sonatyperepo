@@ -312,21 +312,21 @@ func yumSchemaAttributes(isHosted bool) map[string]tfschema.Attribute {
 				},
 			),
 		}
-	} else {
-		return map[string]tfschema.Attribute{
-			"yum": schema.ResourceOptionalSingleNestedAttribute(
-				"YUM specific configuration for this Repository",
-				map[string]tfschema.Attribute{
-					"key_pair": schema.ResourceOptionalStringWithPlanModifier(
-						"PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
-						stringplanmodifier.UseStateForUnknown(),
-					),
-					"passphrase": schema.ResourceSensitiveOptionalStringWithPlanModifier(
-						"Passphrase to access PGP signing key",
-						stringplanmodifier.UseStateForUnknown(),
-					),
-				},
-			),
-		}
+	}
+
+	return map[string]tfschema.Attribute{
+		"yum": schema.ResourceOptionalSingleNestedAttribute(
+			"YUM specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"key_pair": schema.ResourceOptionalStringWithPlanModifier(
+					"PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
+					stringplanmodifier.UseStateForUnknown(),
+				),
+				"passphrase": schema.ResourceSensitiveOptionalStringWithPlanModifier(
+					"Passphrase to access PGP signing key",
+					stringplanmodifier.UseStateForUnknown(),
+				),
+			},
+		),
 	}
 }
