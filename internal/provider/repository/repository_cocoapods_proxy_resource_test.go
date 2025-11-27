@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -122,4 +123,41 @@ resource "%s" "repo" {
   %s
 }
 `, resourceTypeCocoaPodsProxy, randomString, replicationConfig)
+}
+
+func TestAccRepositoryCocoaPodsProxyInvalidRemoteUrl(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid remote URL (missing protocol)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeCocoaPodsProxy, randomString),
+				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
+			},
+		},
+	})
 }
