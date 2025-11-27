@@ -213,3 +213,29 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+func TestAccRepositoryHuggingFaceProxyInvalidBlobStore(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid blob store name (non-existent)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "hugging_face-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "non-existent-blob-store"
+    strict_content_type_validation = true
+  }
+  hugging_face = {}
+}
+`, "sonatyperepo_repository_hugging_face_proxy", randomString),
+				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+			},
+		},
+	})
+}
+

@@ -357,3 +357,31 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+func TestAccRepositoryNpmHostedInvalidBlobStore(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid blob store name (non-existent)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "npm-hosted-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "non-existent-blob-store"
+    strict_content_type_validation = true
+  }
+  npm = {
+    package_name_normalize = "lowercase"
+  }
+}
+`, "sonatyperepo_repository_npm_hosted", randomString),
+				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+			},
+		},
+	})
+}
+
