@@ -17,37 +17,52 @@
 package content_selector_test
 
 import (
-	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
 func TestAccContentSelectorsDataSource(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	contentSelectorName := fmt.Sprintf("tf-test-cs-list-%s", randomString)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Test 1: Verify content selectors can be listed
+			// Test 1: Create content selector and verify it appears in list
 			{
-				Config: utils_test.ProviderConfig + `data "sonatyperepo_content_selectors" "cses" {
-				}`,
+				Config: getTestAccContentSelectorsDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify list is populated
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.#"),
-				),
-			},
-			// Test 2: Verify response structure and content selector attributes
-			{
-				Config: utils_test.ProviderConfig + `data "sonatyperepo_content_selectors" "cses" {
-				}`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify count is greater than 0
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.#"),
-					// Verify at least one content selector exists with expected attributes
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.name"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.description"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.expression"),
+					// Verify created content selector appears with expected attributes
+					resource.TestCheckTypeSetElemNestedAttrs(
+						"data.sonatyperepo_content_selectors.cses",
+						"content_selectors.*",
+						map[string]string{
+							"name": contentSelectorName,
+						},
+					),
 				),
 			},
 		},
 	})
+}
+
+func getTestAccContentSelectorsDataSourceConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_content_selector" "test" {
+	name        = "tf-test-cs-list-%s"
+	description = "Test content selector for list data source"
+	expression  = "format == \"raw\""
+}
+
+data "sonatyperepo_content_selectors" "cses" {
+	depends_on = [sonatyperepo_content_selector.test]
+}
+`, randomString)
 }
