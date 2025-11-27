@@ -31,6 +31,7 @@ import (
 )
 
 // Ensure the implementation satisfies the expected interfaces.
+//
 var (
 	_ datasource.DataSource              = &contentSelectorsDataSource{}
 	_ datasource.DataSourceWithConfigure = &contentSelectorsDataSource{}

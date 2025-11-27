@@ -17,7 +17,6 @@ package system_test
 
 import (
 	"fmt"
-	"os"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -30,134 +29,128 @@ const (
 )
 
 func TestAccSecurityUserTokenResource(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Create and Read testing
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
-					),
-				},
-				// ImportState testing
-				{
-					ResourceName:                         resourceNameSecurityUserToken,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "enabled",
-					// Ignore last_updated since it will be different after import
-					ImportStateVerifyIgnore: []string{"last_updated"},
-					ImportStateId:           "user-tokens", // Can be any string for this singleton resource
-				},
-				// Delete testing automatically occurs in TestCase
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
+				),
 			},
-		})
-	}
+			// ImportState testing
+			{
+				ResourceName:                         resourceNameSecurityUserToken,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				// Ignore last_updated since it will be different after import
+				ImportStateVerifyIgnore: []string{"last_updated"},
+				ImportStateId:           "user-tokens", // Can be any string for this singleton resource
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
 }
 
 func TestAccSecurityUserTokenResourceUpdate(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Create with initial configuration
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
-					),
-				},
-				// Update expiration days
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 90, true, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
-					),
-				},
-				// Enable protect_content
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 90, true, true),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "true"),
-					),
-				},
-				// Disable expiration
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 90, false, true),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "false"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "true"),
-					),
-				},
-				// Disable the feature entirely
-				{
-					Config: getSecurityUserTokenResourceConfig(false, 90, false, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "false"),
-					),
-				},
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with initial configuration
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
+				),
 			},
-		})
-	}
+			// Update expiration days
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 90, true, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
+				),
+			},
+			// Enable protect_content
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 90, true, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "true"),
+				),
+			},
+			// Disable expiration
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 90, false, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "90"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "true"),
+				),
+			},
+			// Disable the feature entirely
+			{
+				Config: getSecurityUserTokenResourceConfig(false, 90, false, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "false"),
+				),
+			},
+		},
+	})
 }
 
 func TestAccSecurityUserTokenResourceImport(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// First, create a resource
-				{
-					Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
-					),
-				},
-				// Test import with different import IDs (all should work for singleton resource)
-				{
-					ResourceName:                         resourceNameSecurityUserToken,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "enabled",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "user-tokens",
-				},
-				{
-					ResourceName:                         resourceNameSecurityUserToken,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "enabled",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "import",
-				},
-				{
-					ResourceName:                         resourceNameSecurityUserToken,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "enabled",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "any-string-works",
-				},
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// First, create a resource
+			{
+				Config: getSecurityUserTokenResourceConfig(true, 30, true, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "30"),
+				),
 			},
-		})
-	}
+			// Test import with different import IDs (all should work for singleton resource)
+			{
+				ResourceName:                         resourceNameSecurityUserToken,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "user-tokens",
+			},
+			{
+				ResourceName:                         resourceNameSecurityUserToken,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "import",
+			},
+			{
+				ResourceName:                         resourceNameSecurityUserToken,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "any-string-works",
+			},
+		},
+	})
 }
 
 func getSecurityUserTokenResourceConfig(enabled bool, expirationDays int, expirationEnabled bool, protectContent bool) string {

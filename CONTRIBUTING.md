@@ -31,7 +31,9 @@ To run Integration Tests locally, set the following 3 environment variables and 
 
 It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
 
-Some Acceptance Tests cannot be run in parallel against a single Sonatype Nexus Repository Manager. These are isolated and only run when `TF_ACC_SINGLE_HIT=1` is also set.
+Some Acceptance Tests rely on AWS or GCP credentials to be run and be successful (in Sonatype Nexus Repository). These are disabled by default and can be enabled by setting the following environment variables:
+- `TF_ACC_S3_BLOB_STORE=1` to enable S3 blob store tests
+- `TF_ACC_GCP_BLOB_STORE=1` to enable GCP blob store tests
 
 ## Standardised Development Patterns
 

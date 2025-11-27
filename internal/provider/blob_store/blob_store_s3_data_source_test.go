@@ -17,6 +17,7 @@
 package blob_store_test
 
 import (
+	"os"
 	"regexp"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -28,21 +29,40 @@ func TestAccBlobStoreS3DataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
-			// {
-			// 	Config: utils.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
-			// 		name = "default"
-			// 	}`,
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-			// 		resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "soft_quota.%"),
-			// 	),
-			// },
+			// Test 1: Missing required argument
+			{
+				Config:      utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {}`,
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+			// Test 2: Non-existent S3 blob store
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
 					name = "this-will-not-exist"
 				}`,
 				ExpectError: regexp.MustCompile("No S3 BlobStore with name"),
+			},
+		},
+	})
+}
+
+func TestAccBlobStoreS3WithCredentialsDataSource(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			if os.Getenv("TF_ACC_S3_BLOB_STORE") != "1" {
+				t.Skip("S3 blob store tests require AWS credentials - set TF_ACC_S3_BLOB_STORE=1 to enable")
+			}
+		},
+		Steps: []resource.TestStep{
+			// Test 3: Happy path - requires S3 support in test environment
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
+			        name = "my-s3-store"
+			    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_s3.b", "name", "my-s3-store"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_s3.b", "bucket_name"),
+				),
 			},
 		},
 	})

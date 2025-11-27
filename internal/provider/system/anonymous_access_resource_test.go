@@ -17,7 +17,6 @@ package system_test
 
 import (
 	"fmt"
-	"os"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -33,139 +32,133 @@ const (
 )
 
 func TestAccSystemAnonymousAccessResource(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Create and Read testing
-				{
-					Config: getSystemAnonymousAccessResourceConfig(randomString),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						// Verify
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
-					),
-				},
-				// ImportState testing
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					// Ignore last_updated since it will be different after import
-					ImportStateVerifyIgnore: []string{"last_updated"},
-					ImportStateId:           "anonymous_access", // Can be any string for this singleton resource
-				},
-				// Delete testing automatically occurs in TestCase
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: getSystemAnonymousAccessResourceConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
+				),
 			},
-		})
-	}
+			// ImportState testing
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				// Ignore last_updated since it will be different after import
+				ImportStateVerifyIgnore: []string{"last_updated"},
+				ImportStateId:           "anonymous_access", // Can be any string for this singleton resource
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
 }
 
 func TestAccSystemAnonymousAccessResourceImport(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// First, create a resource
-				{
-					Config: getSystemAnonymousAccessResourceConfig(randomString),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
-					),
-				},
-				// Test import with different import IDs (all should work for singleton resource)
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "anonymous_access",
-				},
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "import",
-				},
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "any-string-works",
-				},
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// First, create a resource
+			{
+				Config: getSystemAnonymousAccessResourceConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
+				),
 			},
-		})
-	}
+			// Test import with different import IDs (all should work for singleton resource)
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "anonymous_access",
+			},
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "import",
+			},
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "any-string-works",
+			},
+		},
+	})
 }
 
 func TestAccSystemAnonymousAccessResourceUpdate(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		updatedRandomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	updatedRandomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Create and Read testing
-				{
-					Config: getSystemAnonymousAccessResourceConfig(randomString),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
-					),
-				},
-				// Update and Read testing
-				{
-					Config: getSystemAnonymousAccessResourceConfig(updatedRandomString),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
-					),
-				},
-				// Test import after update
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "post-update-import",
-				},
-				// Test disabling anonymous access
-				{
-					Config: getSystemAnonymousAccessResourceConfigDisabled(updatedRandomString),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "false"),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
-						resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
-					),
-				},
-				// Test import when disabled
-				{
-					ResourceName:                         resourceNameSysAnonymousAccess,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateVerifyIdentifierAttribute: "user_id",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-					ImportStateId:                        "disabled-state-import",
-				},
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: getSystemAnonymousAccessResourceConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, randomString)),
+				),
 			},
-		})
-	}
+			// Update and Read testing
+			{
+				Config: getSystemAnonymousAccessResourceConfig(updatedRandomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
+				),
+			},
+			// Test import after update
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "post-update-import",
+			},
+			// Test disabling anonymous access
+			{
+				Config: getSystemAnonymousAccessResourceConfigDisabled(updatedRandomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "realm_name", common.DEFAULT_REALM_NAME),
+					resource.TestCheckResourceAttr(resourceNameSysAnonymousAccess, "user_id", fmt.Sprintf(anonymousUserIDFormat, updatedRandomString)),
+				),
+			},
+			// Test import when disabled
+			{
+				ResourceName:                         resourceNameSysAnonymousAccess,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "disabled-state-import",
+			},
+		},
+	})
 }
 
 func getSystemAnonymousAccessResourceConfig(randomString string) string {
