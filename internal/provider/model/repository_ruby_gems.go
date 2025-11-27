@@ -117,6 +117,8 @@ func (m *RepositorRubyGemsProxyModel) ToApiCreateModel() sonatyperepo.RubyGemsPr
 		m.Replication.MapToApi(apiModel.Replication)
 	}
 
+	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
+
 	return apiModel
 }
 

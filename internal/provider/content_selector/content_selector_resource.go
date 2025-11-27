@@ -26,6 +26,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -236,4 +237,10 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 			&resp.Diagnostics,
 		)
 	}
+}
+
+// This allows users to import existing Tasks into Terraform state.
+func (r *contentSelectorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the Task ID as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }

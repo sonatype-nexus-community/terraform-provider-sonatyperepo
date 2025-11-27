@@ -61,6 +61,8 @@ Optional:
 
 - `latest_policy` (Boolean) Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.
 
+  **NOTE:** The APIs for Sonatype Nexus Repository do not currently allow for reading this value - hence during import this may result in terraform plan changes as we defualt to false.
+
 
 <a id="nestedatt--cleanup"></a>
 ### Nested Schema for `cleanup`
@@ -85,6 +87,10 @@ Import is supported using the following syntax:
 # Existing hosted docker repository configuration can be imported as follows.
 #
 # NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+#
+# WARNING: `storage.latest_policy` will be set to `false` during import as it cannot be read from the API.
+#
 
 # Example
 terraform import sonatyperepo_repository_docker_hosted.docker REPOSITORY_NAME

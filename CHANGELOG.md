@@ -1,12 +1,34 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## X.Y.Z (UNRELEASED)
+## UNRELEASED
 
 ENHANCEMENTS:
 * Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208]
 
   You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
 
+
+## 0.14.0 November 25, 2025
+
+ENHANCEMENTS:
+* HuggingFace now a supported format for `sonatyperepo_cleanup_policy` [GH-218] (thanks @yfougeray-euphoria)
+
+BUG FIXES:
+* Fixed "Provider produced inconsistent result after apply" error when `routing_rule` was provided for Maven, PyPi, R or Ruby Gems repositories [GH-216] (thanks @yfougeray-euphoria)
+
+## 0.13.0 November 24, 2025
+
+ENHANCEMENTS:
+* `sonatyperepo_content_selector` resources now support import [GH-209]
+
+BUG FIXES:
+* Temporary workaround for `sonatyperepo_repository_docker_hosted` as API does not return `storage.latest_policy` [GH-210]
+
+
+## 0.12.1 November 19, 2025
+
+BUG FIXES:
+* Fixed regression that immpacted all `sonatyperepo_repository_*_proxy` resources where replication was not enabled [GH-206]
 
 ## 0.12.0 November 14, 2025
 

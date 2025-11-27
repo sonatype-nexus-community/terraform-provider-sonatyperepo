@@ -284,11 +284,13 @@ type RepositoryReplicationModel struct {
 }
 
 func (m *RepositoryReplicationModel) MapFromApi(api *sonatyperepo.ReplicationAttributes) {
-	if !api.PreemptivePullEnabled {
-		return
-	}
 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
+	// if !api.PreemptivePullEnabled {
+	// 	m.PreemptivePullEnabled = types.BoolValue(false)
+	// } else {
+	// 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
 	m.AssetPathRegex = types.StringPointerValue(api.AssetPathRegex)
+	// }
 }
 
 func (m *RepositoryReplicationModel) MapToApi(api *sonatyperepo.ReplicationAttributes) {
