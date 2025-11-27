@@ -25,6 +25,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceCapabilities = "data.sonatyperepo_capabilities.caps"
+)
+
 func TestAccCapabilitiesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -46,7 +50,7 @@ func TestAccCapabilitiesDataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_capabilities" "caps" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.#"),
+					resource.TestCheckResourceAttrSet(dataSourceCapabilities, "capabilities.#"),
 				),
 			},
 			// Test 2: Verify response structure and capability attributes
@@ -55,11 +59,11 @@ func TestAccCapabilitiesDataSource(t *testing.T) {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify count is greater than 0
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.#"),
+					resource.TestCheckResourceAttrSet(dataSourceCapabilities, "capabilities.#"),
 					// Verify at least one capability exists with expected attributes
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.id"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.type"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.enabled"),
+					resource.TestCheckResourceAttrSet(dataSourceCapabilities, "capabilities.0.id"),
+					resource.TestCheckResourceAttrSet(dataSourceCapabilities, "capabilities.0.type"),
+					resource.TestCheckResourceAttrSet(dataSourceCapabilities, "capabilities.0.enabled"),
 				),
 			},
 		},

@@ -25,6 +25,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceBlobStoreFile = "data.sonatyperepo_blob_store_file.b"
+)
+
 func TestAccBlobStoreFileDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -40,11 +44,11 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 					name = "default"
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "name", "default"),
-					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "last_updated"),
+					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "name", "default"),
+					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "path", "default"),
+					resource.TestCheckResourceAttrSet(dataSourceBlobStoreFile, "last_updated"),
 					// Soft quota is absent in default config
-					resource.TestCheckNoResourceAttr("data.sonatyperepo_blob_store_file.b", "soft_quota"),
+					resource.TestCheckNoResourceAttr(dataSourceBlobStoreFile, "soft_quota"),
 				),
 			},
 			// Test 3: Non-existent blob store

@@ -23,6 +23,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceBlobStores = "data.sonatyperepo_blob_stores.blob_stores"
+)
+
 func TestAccBlobStoresDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -32,7 +36,7 @@ func TestAccBlobStoresDataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_stores" "blob_stores" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.#"),
+					resource.TestCheckResourceAttrSet(dataSourceBlobStores, "blob_stores.#"),
 				),
 			},
 			// Test 2: Verify response structure and blob store attributes
@@ -41,12 +45,12 @@ func TestAccBlobStoresDataSource(t *testing.T) {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify count is greater than 0
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.#"),
+					resource.TestCheckResourceAttrSet(dataSourceBlobStores, "blob_stores.#"),
 					// Verify at least one blob store exists and has expected attributes
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.0.name"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.0.type"),
+					resource.TestCheckResourceAttrSet(dataSourceBlobStores, "blob_stores.0.name"),
+					resource.TestCheckResourceAttrSet(dataSourceBlobStores, "blob_stores.0.type"),
 					// Verify the default 'file' type blob store exists
-					resource.TestCheckTypeSetElemNestedAttrs("data.sonatyperepo_blob_stores.blob_stores", "blob_stores.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs(dataSourceBlobStores, "blob_stores.*", map[string]string{
 						"name": "default",
 						"type": "File",
 					}),

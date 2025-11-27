@@ -26,6 +26,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceContentSelector = "data.sonatyperepo_content_selector.cs"
+)
+
 func TestAccContentSelectorDataSource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -39,33 +43,33 @@ func TestAccContentSelectorDataSource(t *testing.T) {
 			},
 			// Test 2: Non-existent selector returns empty
 			{
-				Config: getConfigContentSelectorDoesNotExist(randomString),
+				Config: configContentSelectorDoesNotExist(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckNoResourceAttr("data.sonatyperepo_content_selector.cs", "name"),
+					resource.TestCheckNoResourceAttr(dataSourceContentSelector, "name"),
 				),
 			},
 			// Test 3: Happy path - create selector resource and read via data source
 			{
-				Config: getConfigContentSelectorResource(randomString),
+				Config: configContentSelectorResource(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "name"),
-					resource.TestCheckResourceAttr("data.sonatyperepo_content_selector.cs", "name", fmt.Sprintf("tf-test-cs-%s", randomString)),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "description"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "expression"),
+					resource.TestCheckResourceAttrSet(dataSourceContentSelector, "name"),
+					resource.TestCheckResourceAttr(dataSourceContentSelector, "name", fmt.Sprintf("tf-test-cs-%s", randomString)),
+					resource.TestCheckResourceAttrSet(dataSourceContentSelector, "description"),
+					resource.TestCheckResourceAttrSet(dataSourceContentSelector, "expression"),
 				),
 			},
 		},
 	})
 }
 
-func getConfigContentSelectorDoesNotExist(suffix string) string {
+func configContentSelectorDoesNotExist(suffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`data "sonatyperepo_content_selector" "cs" {
 	name = "non-existent-content-selector-%s"
 }`, suffix)
 }
 
 // Helper to create a content selector resource and read it via data source
-func getConfigContentSelectorResource(suffix string) string {
+func configContentSelectorResource(suffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_content_selector" "r" {
 	name        = "tf-test-cs-%s"
