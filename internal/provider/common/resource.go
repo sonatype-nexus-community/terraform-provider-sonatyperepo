@@ -32,7 +32,8 @@ var (
 	_ resource.ResourceWithImportState = &BaseResource{}
 )
 
-// applicationResource is the resource implementation.
+// BaseResource is the resource implementation for Sonatype Nexus Repository resources.
+// It extends basic resource functionality with Sonatype-specific configuration.
 type BaseResource struct {
 	Auth         sonatyperepo.BasicAuth
 	BaseUrl      string
@@ -99,7 +100,27 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.NxrmWritable = config.NxrmWritable
 }
 
-// GetAuthContext returns a new context with authentication set up for API calls
-func (r *BaseResource) GetAuthContext(ctx context.Context) context.Context {
+// AuthContext returns a new context with authentication set up for API calls
+func (r *BaseResource) AuthContext(ctx context.Context) context.Context {
 	return WithAuth(ctx, r.Auth)
+}
+
+// AuthConfig returns the authentication configuration
+func (r *BaseResource) AuthConfig() sonatyperepo.BasicAuth {
+	return r.Auth
+}
+
+// URL returns the API base URL
+func (r *BaseResource) URL() string {
+	return r.BaseUrl
+}
+
+// APIClient returns the API client
+func (r *BaseResource) APIClient() *sonatyperepo.APIClient {
+	return r.Client
+}
+
+// IsConfigured checks if the resource has been properly configured
+func (r *BaseResource) IsConfigured() bool {
+	return r.Client != nil
 }

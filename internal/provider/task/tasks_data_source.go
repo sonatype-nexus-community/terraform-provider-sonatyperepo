@@ -21,8 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -53,31 +55,19 @@ func (d *tasksDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *tasksDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Tasks",
-		Attributes: map[string]schema.Attribute{
-			"tasks": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The name of the Task.",
-							Required:    true,
-							Optional:    false,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the Task.",
-							Required:    true,
-							Optional:    false,
-						},
-						"type": schema.StringAttribute{
-							Description: "The type of Task.",
-							Required:    true,
-							Optional:    false,
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"tasks": schema.DataSourceComputedListNestedAttribute(
+				"List of Tasks",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"id":   schema.DataSourceRequiredString("The ID of the Task."),
+						"name": schema.DataSourceRequiredString("The name of the Task."),
+						"type": schema.DataSourceRequiredString("The type of Task."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -94,7 +84,7 @@ func (d *tasksDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	tasksResponse, httpResponse, err := d.Client.TasksAPI.GetTasks(ctx).Execute()
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Unable to list tasks",
 			&err,
 			httpResponse,

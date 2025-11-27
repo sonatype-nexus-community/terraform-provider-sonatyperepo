@@ -21,18 +21,22 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
+
+const contentSelectorNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 // contentSelectorResource is the resource implementation.
 type contentSelectorResource struct {
@@ -51,33 +55,17 @@ func (r *contentSelectorResource) Metadata(_ context.Context, req resource.Metad
 
 // Schema defines the schema for the resource.
 func (r *contentSelectorResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Content Selectors in Sonatype Nexus Repository",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the Content Selector.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Content Selector name must match pattern `^[a-zA-Z0-9\\-]{1}[a-zA-Z0-9_\\-\\.]*$`",
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this Content Selector.",
-				Required:    true,
-				Optional:    false,
-			},
-			"expression": schema.StringAttribute{
-				Description: "The Content Selector expression used to identify content.",
-				Required:    true,
-				Optional:    false,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredStringWithRegex(
+				"The name of the Content Selector.",
+				regexp.MustCompile(contentSelectorNamePattern),
+				fmt.Sprintf("Content Selector name must match pattern %s`", contentSelectorNamePattern),
+			),
+			"description":  schema.ResourceRequiredString("The description of this Content Selector."),
+			"expression":   schema.ResourceRequiredString("The Content Selector expression used to identify content."),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -93,13 +81,13 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Call API to Create
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiCreateRequest()
 	plan.MapToApiCreate(apiBody)
 	httpResponse, err := r.Client.ContentSelectorsAPI.CreateContentSelector(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error creating Content Selector",
 			&err,
 			httpResponse,
@@ -107,7 +95,7 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Creation of Content Selector was not successful",
 			&err,
 			httpResponse,
@@ -135,7 +123,7 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
 	apiResponse, httpResponse, err := r.Client.ContentSelectorsAPI.GetContentSelector(ctx, state.Name.ValueString()).Execute()
@@ -143,14 +131,14 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				"Content Selector to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				"Error reading Content Selector",
 				&err,
 				httpResponse,
@@ -186,13 +174,13 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Call API to Update
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiUpdateRequest()
 	plan.MapToApiUpdate(apiBody)
 	httpResponse, err := r.Client.ContentSelectorsAPI.UpdateContentSelector(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error updating Content Selector",
 			&err,
 			httpResponse,
@@ -200,7 +188,7 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Update of Content Selector was not successful",
 			&err,
 			httpResponse,
@@ -227,13 +215,13 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	httpResponse, err := r.Client.ContentSelectorsAPI.DeleteContentSelector(ctx, state.Name.ValueString()).Execute()
 
 	// Handle Error
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error removing Content Selector",
 			&err,
 			httpResponse,
@@ -241,7 +229,7 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Removal of Content Selector was not successful",
 			&err,
 			httpResponse,

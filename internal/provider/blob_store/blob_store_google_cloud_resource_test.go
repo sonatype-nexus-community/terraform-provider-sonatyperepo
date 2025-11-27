@@ -45,7 +45,7 @@ func TestAccBlobStoreGoogleCloudResourceExpectFailure(t *testing.T) {
 
 // TestAccBlobStoreGoogleCloudResourceValidation tests resource validation without API calls
 func TestAccBlobStoreGoogleCloudResourceValidation(t *testing.T) {
-	
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -235,7 +235,7 @@ func TestBlobStoreGoogleCloudResourceName(t *testing.T) {
 	// Test resource type name format
 	expectedPattern := `^sonatyperepo_blob_store_gcs$`
 	resourceTypeName := "sonatyperepo_blob_store_gcs"
-	
+
 	matched, err := regexp.MatchString(expectedPattern, resourceTypeName)
 	if err != nil {
 		t.Fatalf("Regex error: %v", err)
@@ -251,20 +251,20 @@ func TestBlobStoreGoogleCloudBucketNameValidation(t *testing.T) {
 		"bucket123",
 		"my-test-bucket-2023",
 	}
-	
+
 	invalidNames := []string{
 		"UPPERCASE_BUCKET",
 		"bucket_with_underscores",
 		"bucket-name-that-is-way-too-long-and-exceeds-the-maximum-length-allowed-by-google-cloud-storage",
 		"",
 	}
-	
+
 	for _, name := range validNames {
 		if !isValidBucketName(name) {
 			t.Errorf("Expected %s to be a valid bucket name", name)
 		}
 	}
-	
+
 	for _, name := range invalidNames {
 		if isValidBucketName(name) {
 			t.Errorf("Expected %s to be an invalid bucket name", name)
@@ -277,7 +277,7 @@ func isValidBucketName(name string) bool {
 	if len(name) < 3 || len(name) > 63 {
 		return false
 	}
-	
+
 	// Basic validation - no uppercase, no underscores
 	for _, char := range name {
 		if char >= 'A' && char <= 'Z' {
@@ -287,6 +287,6 @@ func isValidBucketName(name string) bool {
 			return false
 		}
 	}
-	
+
 	return true
 }

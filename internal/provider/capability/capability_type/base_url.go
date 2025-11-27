@@ -24,13 +24,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -68,28 +68,22 @@ func (f *BaseUrlCapability) DoUpdateRequest(plan any, capabilityId string, apiCl
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *BaseUrlCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *BaseUrlCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreBaseUrlModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BaseUrlCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"url": schema.StringAttribute{
-			Description: "Reverse proxy base URL",
-			Required:    true,
-			Optional:    false,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^https?://[^\s]+$`),
-					"Must be a valid http:// or https:// URL",
-				),
-			},
-		},
+func (f *BaseUrlCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"url": schema.ResourceRequiredStringWithRegex(
+			"Reverse proxy base URL",
+			regexp.MustCompile(`^https?://[^\s]+$`),
+			"Must be a valid http:// or https:// URL",
+		),
 	}
 }
 
-func (f *BaseUrlCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *BaseUrlCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreBaseUrlModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

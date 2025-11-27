@@ -35,8 +35,7 @@ Some Acceptance Tests cannot be run in parallel against a single Sonatype Nexus 
 
 ## Standardised Development Patterns
 
-- **Context Management**: See [Centralized API Context Management](./contributing/CONTEXT_MANAGEMENT.md)
-- **Error Handling**: See [Centralized Error Handling](./contributing/ERROR_HANDLING.md)
+See [terraform-provider-shared](https://github.com/sonatype-nexus-community/terraform-provider-shared) and it's examples.
 
 ## Sign off your commits
 

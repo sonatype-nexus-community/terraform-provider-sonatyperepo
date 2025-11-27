@@ -2,7 +2,11 @@
 
 ## X.Y.Z (UNRELEASED)
 
-_TBC_
+ENHANCEMENTS:
+* Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208]
+
+  You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
+
 
 ## 0.12.0 November 14, 2025
 

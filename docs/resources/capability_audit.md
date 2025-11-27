@@ -36,7 +36,7 @@ resource "sonatyperepo_capability_audit" "cap_audit" {
 ### Read-Only
 
 - `id` (String) The internal ID of the Capability.
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 ## Import
 

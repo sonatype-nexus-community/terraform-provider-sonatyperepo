@@ -22,15 +22,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // blobStoreFileResource is the resource implementation.
@@ -50,38 +51,19 @@ func (r *blobStoreFileResource) Metadata(_ context.Context, req resource.Metadat
 
 // Schema defines the schema for the resource.
 func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
-			"path": schema.StringAttribute{
-				Description: "The Path on disk of this File Blob Store",
-				Required:    true,
-				Optional:    false,
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    true,
-						Optional:    false,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    true,
-					},
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredString("Name of the Blob Store"),
+			"path": schema.ResourceRequiredString("The Path on disk of this File Blob Store"),
+			"soft_quota": schema.ResourceOptionalSingleNestedAttribute(
+				"Soft Quota for this Blob Store",
+				map[string]tfschema.Attribute{
+					"type":  schema.ResourceRequiredString("Soft Quota type"),
+					"limit": schema.ResourceOptionalInt64("Quota limit"),
 				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -99,7 +81,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Call API to Create
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	request_payload := sonatyperepo.FileBlobStoreApiCreateRequest{
 		Name: plan.Name.ValueStringPointer(),
@@ -117,30 +99,30 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-	common.HandleApiError(
-	 "Error creating Blob Store File",
-	&err,
-	api_response,
-	 &resp.Diagnostics,
-	)
-	 return
- 	}
+		errors.HandleAPIError(
+			"Error creating Blob Store File",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+		return
+	}
 
- 	if api_response.StatusCode == http.StatusNoContent {
- 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
- 	diags := resp.State.Set(ctx, plan)
- 	resp.Diagnostics.Append(diags...)
- 	if resp.Diagnostics.HasError() {
- 	return
- 	}
- 	} else {
- 	common.HandleApiError(
- 	"Creation of Blob Store File was not successful",
- 	&err,
- 	 api_response,
- 	 &resp.Diagnostics,
- 	 )
- 	}
+	if api_response.StatusCode == http.StatusNoContent {
+		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+		diags := resp.State.Set(ctx, plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		errors.HandleAPIError(
+			"Creation of Blob Store File was not successful",
+			&err,
+			api_response,
+			&resp.Diagnostics,
+		)
+	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -155,7 +137,7 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
 	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
@@ -163,14 +145,14 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				"Blob Store File to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				"Error reading Blob Store File",
 				&err,
 				httpResponse,
@@ -216,7 +198,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = r.GetAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	request_payload := sonatyperepo.FileBlobStoreApiUpdateRequest{
@@ -237,14 +219,14 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				"Blob Store File to update did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				"Error updating Blob Store File",
 				&err,
 				httpResponse,

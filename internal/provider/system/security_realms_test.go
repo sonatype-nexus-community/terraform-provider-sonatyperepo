@@ -29,15 +29,15 @@ import (
 const (
 	resourceTypeSecurityRealms = "sonatyperepo_security_realms"
 	resourceNameSecurityRealms = "sonatyperepo_security_realms.test"
-	
+
 	// Test attribute paths
-	activeCount = "active.#"
+	activeCount  = "active.#"
 	activeIndex0 = "active.0"
 	activeIndex1 = "active.1"
 	activeIndex2 = "active.2"
 	activeIndex3 = "active.3"
 	activeIndex4 = "active.4"
-	idAttr = "id"
+	idAttr       = "id"
 )
 
 func TestAccSecurityRealmsResource(t *testing.T) {
@@ -83,10 +83,10 @@ func TestAccSecurityRealmsResource(t *testing.T) {
 				},
 				// Update and Read testing - reorder realms
 				{
-					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm","DockerToken"}),
+					Config: getSecurityRealmsResourceConfig(randomString, []string{"NexusAuthenticatingRealm", "DockerToken"}),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify reordered realm configuration
-						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "2"),						
+						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeCount, "2"),
 						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex0, "NexusAuthenticatingRealm"),
 						resource.TestCheckResourceAttr(resourceNameSecurityRealms, activeIndex1, "DockerToken"),
 						resource.TestCheckResourceAttrSet(resourceNameSecurityRealms, idAttr),
@@ -211,7 +211,7 @@ func TestAccSecurityRealmsResourceImportOnly(t *testing.T) {
 func getSecurityRealmsResourceConfig(randomString string, activeRealms []string) string {
 	realmsConfig := ""
 	for _, realm := range activeRealms {
-		realmsConfig += fmt.Sprintf(`    "%s",` + "\n", realm)
+		realmsConfig += fmt.Sprintf(`    "%s",`+"\n", realm)
 	}
 	// Remove trailing comma and newline
 	if len(realmsConfig) > 0 {

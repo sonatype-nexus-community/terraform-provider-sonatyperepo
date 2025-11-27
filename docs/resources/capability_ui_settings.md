@@ -47,7 +47,7 @@ resource "sonatyperepo_capability_ui_settings" "cap" {
 ### Read-Only
 
 - `id` (String) The internal ID of the Capability.
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--properties"></a>
 ### Nested Schema for `properties`

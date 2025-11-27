@@ -24,17 +24,15 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type YumRepositoryFormat struct {
@@ -56,12 +54,12 @@ type YumRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic YUM Format Functions
 // --------------------------------------------
-func (f *YumRepositoryFormat) GetKey() string {
+func (f *YumRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_YUM
 }
 
-func (f *YumRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *YumRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -98,18 +96,18 @@ func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdateYumHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getYumSchemaAttributes(true))
+func (f *YumRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, yumSchemaAttributes(true))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -174,18 +172,18 @@ func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateYumProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getYumSchemaAttributes(false))
+func (f *YumRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -250,18 +248,18 @@ func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateYumGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *YumRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, getYumSchemaAttributes(false))
+func (f *YumRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *YumRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryYumGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *YumRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *YumRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryYumGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -295,47 +293,40 @@ func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getYumSchemaAttributes(isHosted bool) map[string]schema.Attribute {
-	var attrs = make(map[string]schema.Attribute, 0)
+func yumSchemaAttributes(isHosted bool) map[string]tfschema.Attribute {
 	if isHosted {
-		attrs["deploy_policy"] = schema.StringAttribute{
-			Description: "Validate that all paths are RPMs or yum metadata.",
-			Optional:    true,
-			Validators: []validator.String{
-				stringvalidator.OneOf(common.DEPLOY_POLICY_PERMISSIVE, common.DEPLOY_POLICY_STRICT),
-			},
-		}
-		attrs["repo_data_depth"] = schema.Int32Attribute{
-			Description: "Specifies the repository depth where repodata folder(s) are created",
-			Required:    true,
-			Validators: []validator.Int32{
-				int32validator.AtLeast(0),
-				int32validator.AtMost(5),
-			},
+		return map[string]tfschema.Attribute{
+			"yum": schema.ResourceRequiredSingleNestedAttribute(
+				"YUM specific configuration for this Repository",
+				map[string]tfschema.Attribute{
+					"deploy_policy": schema.ResourceOptionalStringEnum(
+						"Validate that all paths are RPMs or yum metadata.",
+						common.DEPLOY_POLICY_PERMISSIVE,
+						common.DEPLOY_POLICY_STRICT,
+					),
+					"repo_data_depth": schema.ResourceRequiredInt32WithRange(
+						"Specifies the repository depth where repodata folder(s) are created",
+						0,
+						5,
+					),
+				},
+			),
 		}
 	} else {
-		attrs["key_pair"] = schema.StringAttribute{
-			Description: "PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
-			Optional:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
+		return map[string]tfschema.Attribute{
+			"yum": schema.ResourceOptionalSingleNestedAttribute(
+				"YUM specific configuration for this Repository",
+				map[string]tfschema.Attribute{
+					"key_pair": schema.ResourceOptionalStringWithPlanModifier(
+						"PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
+						stringplanmodifier.UseStateForUnknown(),
+					),
+					"passphrase": schema.ResourceSensitiveOptionalStringWithPlanModifier(
+						"Passphrase to access PGP signing key",
+						stringplanmodifier.UseStateForUnknown(),
+					),
+				},
+			),
 		}
-		attrs["passphrase"] = schema.StringAttribute{
-			Description: "Passphrase to access PGP signing key",
-			Optional:    true,
-			Sensitive:   true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		}
-	}
-	return map[string]schema.Attribute{
-		"yum": schema.SingleNestedAttribute{
-			Description: "YUM specific configuration for this Repository",
-			Required:    isHosted,
-			Optional:    !isHosted,
-			Attributes:  attrs,
-		},
 	}
 }

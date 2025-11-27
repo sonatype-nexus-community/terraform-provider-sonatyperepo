@@ -27,16 +27,17 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
+
+const privilegeNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 const (
 	PRIVILEGE_ERROR_RESPONSE_PREFIX           = "Error response: "
@@ -54,13 +55,13 @@ type privilegeResource struct {
 
 // Metadata returns the resource type name.
 func (r *privilegeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.GetResourceName(r.PrivilegeTypeType))
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, r.PrivilegeType.ResourceName(r.PrivilegeTypeType))
 }
 
 // Schema defines the schema for the resource.
 func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := getBasePrivilegeSchema(r.PrivilegeTypeType)
-	maps.Copy(schema.Attributes, r.PrivilegeType.GetPrivilegeTypeSchemaAttributes())
+	schema := basePrivilegeSchema(r.PrivilegeTypeType)
+	maps.Copy(schema.Attributes, r.PrivilegeType.PrivilegeTypeSchemaAttributes())
 	if r.PrivilegeType.IsDeprecated() {
 		schema.DeprecationMessage = "Groovy scripting has been disbaled by default since Sonatype Nexus Repository 3.21.2 - see https://help.sonatype.com/en/script-api.html"
 	}
@@ -70,7 +71,7 @@ func (r *privilegeResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 // Create creates the resource and sets the initial Terraform state.
 func (r *privilegeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := r.PrivilegeType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := r.PrivilegeType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -90,7 +91,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -98,8 +99,8 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-	if !slices.Contains(r.PrivilegeType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+	if !slices.Contains(r.PrivilegeType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Privilege was not successful", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -117,7 +118,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 // Read refreshes the Terraform state with the latest data.
 func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	stateModel, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -140,14 +141,14 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "read"),
 				&err,
 				httpResponse,
@@ -168,11 +169,11 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := r.PrivilegeType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := r.PrivilegeType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -189,14 +190,14 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "update"),
 				&err,
 				httpResponse,
@@ -216,7 +217,7 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := r.PrivilegeType.GetStateAsModel(ctx, req.State)
+	state, diags := r.PrivilegeType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -247,14 +248,14 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				fmt.Sprintf(PRIVILEGE_ERROR_DID_NOT_EXIST, r.PrivilegeTypeType.String(), "delete"),
 				&err,
 				httpResponse,
@@ -264,7 +265,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if httpResponse.StatusCode != http.StatusNoContent {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Unexpected response when deleting %s Privilege", r.PrivilegeTypeType.String()),
 			&err,
 			httpResponse,
@@ -273,42 +274,22 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func getBasePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) schema.Schema {
-	return schema.Schema{
+func basePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfschema.Schema {
+	return tfschema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the privilege. This value cannot be changed.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						`Please provide a name that complies with the Regular Expression: '^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$'`,
-					),
-				},
-			},
-			"description": schema.StringAttribute{
-				Description: "Friendly description of this Privilege",
-				Required:    true,
-				Optional:    false,
-			},
-			"read_only": schema.BoolAttribute{
-				Description: "Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     booldefault.StaticBool(false),
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
-				Computed:    true,
-				Default:     stringdefault.StaticString(privilegeTypeType.String()),
-				Validators: []validator.String{
-					stringvalidator.OneOf(privilegeTypeType.String()),
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredStringWithRegex(
+				"The name of the privilege. This value cannot be changed.",
+				regexp.MustCompile(privilegeNamePattern),
+				fmt.Sprintf("Please provide a name that complies with the Regular Expression: `%s`", privilegeNamePattern),
+			),
+			"description": schema.ResourceRequiredString("Friendly description of this Privilege"),
+			"read_only":   schema.ResourceComputedBoolWithDefault("Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.", false),
+			"type": schema.ResourceComputedStringWithDefault(
+				"The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.",
+				privilegeTypeType.String(),
+			),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }

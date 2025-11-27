@@ -24,7 +24,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -37,27 +37,27 @@ type BaseTaskType struct {
 	taskType   common.TaskType
 }
 
-func (f *BaseTaskType) GetApiCreateSuccessResponseCodes() []int {
+func (f *BaseTaskType) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
 }
 
-func (f *BaseTaskType) GetKey() string {
+func (f *BaseTaskType) Key() string {
 	return f.taskType.String()
 }
 
-func (f *BaseTaskType) GetMarkdownDescription() string {
-	return fmt.Sprintf("Manage Task '%s' (%s)", f.GetPublicName(), f.GetType().String())
+func (f *BaseTaskType) MarkdownDescription() string {
+	return fmt.Sprintf("Manage Task '%s' (%s)", f.PublicName(), f.Type().String())
 }
 
-func (f *BaseTaskType) GetPublicName() string {
+func (f *BaseTaskType) PublicName() string {
 	return f.publicName
 }
 
-func (f *BaseTaskType) GetResourceName() string {
-	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"), "-", "_"))
+func (f *BaseTaskType) ResourceName() string {
+	return fmt.Sprintf("task_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.Key()), ".", "_"), "-", "_"))
 }
 
-func (f *BaseTaskType) GetType() common.TaskType {
+func (f *BaseTaskType) Type() common.TaskType {
 	return f.taskType
 }
 
@@ -66,15 +66,15 @@ func (f *BaseTaskType) GetType() common.TaskType {
 type TaskTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
-	GetApiCreateSuccessResponseCodes() []int
-	GetMarkdownDescription() string
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetPropertiesSchema() map[string]schema.Attribute
-	GetPublicName() string
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName() string
-	GetKey() string
-	GetType() common.TaskType
+	ApiCreateSuccessResponseCodes() []int
+	MarkdownDescription() string
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	PropertiesSchema() map[string]tfschema.Attribute
+	PublicName() string
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	ResourceName() string
+	Key() string
+	Type() common.TaskType
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
 	UpdateStateFromPlanForUpdate(plan any, state any) any

@@ -22,10 +22,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -56,66 +56,28 @@ func (d *usersDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *usersDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Users",
-		Attributes: map[string]schema.Attribute{
-			"users": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"user_id": schema.StringAttribute{
-							Description: "The userid which is required for login. This value cannot be changed.",
-							Required:    true,
-							Optional:    false,
-						},
-						"first_name": schema.StringAttribute{
-							Description: "The first name of the user.",
-							Required:    true,
-							Optional:    false,
-						},
-						"last_name": schema.StringAttribute{
-							Description: "The last name of the user.",
-							Required:    true,
-							Optional:    false,
-						},
-						"email_address": schema.StringAttribute{
-							Description: "The email address associated with the user.",
-							Required:    true,
-							Optional:    false,
-						},
-						"read_only": schema.BoolAttribute{
-							Description: "Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update.",
-							Required:    true,
-							Optional:    false,
-						},
-						"source": schema.StringAttribute{
-							Description: "The user source which is the origin of this user. This value cannot be changed.",
-							Required:    true,
-							Optional:    false,
-						},
-						"status": schema.StringAttribute{
-							Description: "The user's status",
-							Required:    true,
-							Optional:    false,
-							Validators: []validator.String{
-								stringvalidator.OneOf([]string{"active", "locked", "disabled", "changepassword"}...),
-							},
-						},
-						"roles": schema.SetAttribute{
-							Description: "The roles which the user has been assigned within Nexus.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
-						"external_roles": schema.SetAttribute{
-							Description: "The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"users": schema.DataSourceComputedListNestedAttribute(
+				"List of Users",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"user_id":       schema.DataSourceRequiredString("The userid which is required for login. This value cannot be changed."),
+						"first_name":    schema.DataSourceRequiredString("The first name of the user."),
+						"last_name":     schema.DataSourceRequiredString("The last name of the user."),
+						"email_address": schema.DataSourceRequiredString("The email address associated with the user."),
+						"read_only":     schema.DataSourceRequiredBool("Indicates whether the user's properties could be modified by the Nexus Repository Manager. When false only roles are considered during update."),
+						"source":        schema.DataSourceRequiredString("The user source which is the origin of this user. This value cannot be changed."),
+						"status": schema.DataSourceRequiredStringWithValidators(
+							"The user's status",
+							stringvalidator.OneOf(common.AllUserStatusTypes()...),
+						),
+						"roles":          schema.DataSourceRequiredStringSet("The roles which the user has been assigned within Nexus."),
+						"external_roles": schema.DataSourceRequiredStringSet("The roles which the user has been assigned in an external source, e.g. LDAP group. These cannot be changed within the Nexus Repository Manager."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -132,9 +94,11 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	usersResponse, httpResponse, err := d.Client.SecurityManagementUsersAPI.GetUsers(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Users",
-			fmt.Sprintf("Unable to read Users: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Unable to list Users",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

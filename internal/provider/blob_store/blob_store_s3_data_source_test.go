@@ -42,7 +42,7 @@ func TestAccBlobStoreS3DataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
 					name = "this-will-not-exist"
 				}`,
-				ExpectError: regexp.MustCompile("Error: S3 Blobstore not found"),
+				ExpectError: regexp.MustCompile("No S3 BlobStore with name"),
 			},
 		},
 	})

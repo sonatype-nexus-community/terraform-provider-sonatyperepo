@@ -25,11 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type PyPiRepositoryFormat struct {
@@ -51,12 +53,12 @@ type PyPiRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic PyPi Format Functions
 // --------------------------------------------
-func (f *PyPiRepositoryFormat) GetKey() string {
+func (f *PyPiRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_PYPI
 }
 
-func (f *PyPiRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *PyPiRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -93,16 +95,16 @@ func (f *PyPiRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdatePypiHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonHostedSchemaAttributes()
+func (f *PyPiRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonHostedSchemaAttributes()
 }
 
-func (f *PyPiRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -167,18 +169,18 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getPyPiSchemaAttributes())
+func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, pyPiSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *PyPiRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -243,16 +245,16 @@ func (f *PyPiRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *PyPiRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(true)
+func (f *PyPiRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonGroupSchemaAttributes(true)
 }
 
-func (f *PyPiRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryPyPiGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *PyPiRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *PyPiRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryPyPiGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -286,17 +288,13 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getPyPiSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"pypi": schema.SingleNestedAttribute{
-			Description: "PyPi specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"remove_quarrantined": schema.BoolAttribute{
-					Description: "Remove Quarantined Versions",
-					Required:    true,
-				},
+func pyPiSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"pypi": schema.ResourceRequiredSingleNestedAttribute(
+			"PyPi specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"remove_quarrantined": schema.ResourceRequiredBool("Remove Quarantined Versions"),
 			},
-		},
+		),
 	}
 }

@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,12 +42,12 @@ type CocoaPodsRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic CocoaPods Format Functions
 // --------------------------------------------
-func (f *CocoaPodsRepositoryFormat) GetKey() string {
+func (f *CocoaPodsRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_COCOAPODS
 }
 
-func (f *CocoaPodsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *CocoaPodsRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -81,16 +81,16 @@ func (f *CocoaPodsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, ap
 	return apiClient.RepositoryManagementAPI.UpdateCocoapodsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CocoaPodsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+func (f *CocoaPodsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonProxySchemaAttributes()
 }
 
-func (f *CocoaPodsRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CocoaPodsRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCocoaPodsProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CocoaPodsRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CocoaPodsRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCocoaPodsProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

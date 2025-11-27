@@ -21,21 +21,23 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // userResource is the resource implementation.
@@ -55,79 +57,39 @@ func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Local and non-Local Users",
-		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
-				Description: "The userid which is required for login. This value cannot be changed.",
-				Required:    true,
-				Optional:    false,
-			},
-			"first_name": schema.StringAttribute{
-				MarkdownDescription: `The first name of the user.
-				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"last_name": schema.StringAttribute{
-				MarkdownDescription: `The last name of the user.
+		Attributes: map[string]tfschema.Attribute{
+			"user_id": schema.ResourceRequiredStringWithPlanModifier(
+				"The userid which is required for login. This value cannot be changed.",
+				[]planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			),
+			"first_name": schema.ResourceRequiredString(`The first name of the user.
 
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"email_address": schema.StringAttribute{
-				MarkdownDescription: `The email address associated with the user.
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"last_name": schema.ResourceRequiredString(`The last name of the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"email_address": schema.ResourceRequiredString(`The email address associated with the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"password": schema.ResourceSensitiveString(`The password for the user.
+			
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`),
+			"status": schema.ResourceRequiredStringWithValidators(
+				`The user's status.
 				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"password": schema.StringAttribute{
-				MarkdownDescription: `The password for the user.
-				
-**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`,
-				Required:  false,
-				Optional:  true,
-				Sensitive: true,
-			},
-			"status": schema.StringAttribute{
-				MarkdownDescription: `The user's status.
-				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						common.USER_STATUS_ACTIVE,
-						common.USER_STATUS_LOCKED,
-						common.USER_STATUS_DISABLED,
-						common.USER_STATUS_CHANGE_PASSWORD,
-					),
-				},
-			},
-			"roles": schema.SetAttribute{
-				Description: "The list of roles assigned to this User.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"read_only": schema.BoolAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"source": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				stringvalidator.OneOf(
+					common.AllUserStatusTypes()...,
+				),
+			),
+			"roles":        schema.ResourceRequiredStringSet("The list of roles assigned to this User."),
+			"read_only":    schema.ResourceComputedBool("Whether the user is read-only"),
+			"source":       schema.ResourceComputedString("Source system managing this user"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -153,7 +115,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating User: %s", plan.UserId.ValueString()),
 			&err,
 			httpResponse,
@@ -195,14 +157,14 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				"User to read did not exist",
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				"Error reading User",
 				&err,
 				httpResponse,

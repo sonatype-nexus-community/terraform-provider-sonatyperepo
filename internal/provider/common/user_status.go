@@ -16,6 +16,24 @@
 
 package common
 
+type UserStatusType string
+
+func (ust UserStatusType) String() string {
+	return string(ust)
+}
+
 const (
-	ERROR_UNABLE_TO_READ_BLOB_STORE_FILE string = "Unable to read blob store file"
+	USER_STATUS_ACTIVE          UserStatusType = "active"
+	USER_STATUS_LOCKED          UserStatusType = "locked"
+	USER_STATUS_DISABLED        UserStatusType = "disabled"
+	USER_STATUS_CHANGE_PASSWORD UserStatusType = "changepassword"
 )
+
+func AllUserStatusTypes() []string {
+	return []string{
+		USER_STATUS_ACTIVE.String(),
+		USER_STATUS_LOCKED.String(),
+		USER_STATUS_DISABLED.String(),
+		USER_STATUS_CHANGE_PASSWORD.String(),
+	}
+}

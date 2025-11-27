@@ -27,15 +27,16 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 const (
@@ -53,12 +54,12 @@ type taskResource struct {
 
 // Metadata returns the resource type name.
 func (t *taskResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, t.TaskType.GetResourceName())
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, t.TaskType.ResourceName())
 }
 
 // Set Schema for this Resource
 func (t *taskResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = getTaskSchema(t.TaskType)
+	resp.Schema = taskSchema(t.TaskType)
 }
 
 // This allows users to import existing Tasks into Terraform state.
@@ -69,7 +70,7 @@ func (r *taskResource) ImportState(ctx context.Context, req resource.ImportState
 
 func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := t.TaskType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := t.TaskType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -89,17 +90,17 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
-			fmt.Sprintf("Error creating %s Task", t.TaskType.GetType().String()),
+		errors.HandleAPIError(
+			fmt.Sprintf("Error creating %s Task", t.TaskType.Type().String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
 		)
 		return
 	}
-	if !slices.Contains(t.TaskType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
-			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.GetType().String()),
+	if !slices.Contains(t.TaskType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+		errors.HandleAPIError(
+			fmt.Sprintf("Creation of %s Task was not successful", t.TaskType.Type().String()),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -120,11 +121,11 @@ func (t *taskResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := t.TaskType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := t.TaskType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := t.TaskType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := t.TaskType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
@@ -141,15 +142,15 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
-				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
+			errors.HandleAPIWarning(
+				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
-				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "update"),
+			errors.HandleAPIError(
+				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -167,7 +168,7 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := t.TaskType.GetStateAsModel(ctx, req.State)
+	state, diags := t.TaskType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -203,7 +204,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
-			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting Task %s (attempt %d)", t.TaskType.GetType().String(), attempts))
+			tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting Task %s (attempt %d)", t.TaskType.Type().String(), attempts))
 			attempts++
 			continue
 		}
@@ -211,15 +212,15 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				common.HandleApiWarning(
-					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
+				errors.HandleAPIWarning(
+					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
 				)
 			} else {
-				common.HandleApiError(
-					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.GetType().String(), "delete"),
+				errors.HandleAPIError(
+					fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "delete"),
 					&err,
 					httpResponse,
 					&resp.Diagnostics,
@@ -228,8 +229,8 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			common.HandleApiError(
-				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.GetType().String(), attempts),
+			errors.HandleAPIError(
+				fmt.Sprintf("Unexpected response when deleting %s Task (attempt %d)", t.TaskType.Type().String(), attempts),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -243,98 +244,52 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func getTaskSchema(tt tasktype.TaskTypeI) schema.Schema {
-	return schema.Schema{
-		MarkdownDescription: tt.GetMarkdownDescription(),
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The internal ID of the Task.",
-				Computed:    true,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    true,
-				Optional:    false,
-			},
-			"enabled": schema.BoolAttribute{
-				Description: "Indicates if the task is enabled.",
-				Required:    true,
-				Optional:    false,
-			},
-			"alert_email": schema.StringAttribute{
-				Description: "E-mail address for task notifications.",
-				Required:    false,
-				Optional:    true,
-			},
-			"notification_condition": schema.StringAttribute{
-				Description: "The type of Task.",
-				Required:    true,
-				Optional:    false,
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						common.NOTIFICATION_CONDITION_FAILURE, common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
+func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
+	return tfschema.Schema{
+		MarkdownDescription: tt.MarkdownDescription(),
+		Attributes: map[string]tfschema.Attribute{
+			"id":          schema.ResourceComputedString("The internal ID of the Task."),
+			"name":        schema.ResourceRequiredString("The name of the Task."),
+			"enabled":     schema.ResourceRequiredBool("Indicates if the task is enabled."),
+			"alert_email": schema.ResourceOptionalString("E-mail address for task notifications."),
+			"notification_condition": schema.ResourceRequiredStringEnum(
+				"The type of Task.",
+				common.NOTIFICATION_CONDITION_FAILURE,
+				common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
+			),
+			"frequency": schema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.",
+				map[string]tfschema.Attribute{
+					"schedule": schema.ResourceRequiredStringEnum(
+						"Type of Schedule.",
+						common.FREQUENCY_SCHEDULE_MANUAL,
+						common.FREQUENCY_SCHEDULE_ONCE,
+						common.FREQUENCY_SCHEDULE_HOURLY,
+						common.FREQUENCY_SCHEDULE_DAILY,
+						common.FREQUENCY_SCHEDULE_WEEKLY,
+						common.FREQUENCY_SCHEDULE_MONTHLY,
+						common.FREQUENCY_SCHEDULE_CRON,
 					),
-				},
-			},
-			"frequency": schema.SingleNestedAttribute{
-				Description: "Frequency Schedule for this Task.",
-				Required:    true,
-				Optional:    false,
-				Attributes: map[string]schema.Attribute{
-					"schedule": schema.StringAttribute{
-						Description: "Type of Schedule.",
-						Required:    true,
-						Optional:    false,
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								common.FREQUENCY_SCHEDULE_MANUAL,
-								common.FREQUENCY_SCHEDULE_ONCE,
-								common.FREQUENCY_SCHEDULE_HOURLY,
-								common.FREQUENCY_SCHEDULE_DAILY,
-								common.FREQUENCY_SCHEDULE_WEEKLY,
-								common.FREQUENCY_SCHEDULE_MONTHLY,
-								common.FREQUENCY_SCHEDULE_CRON,
-							),
-						},
-					},
-					"start_date": schema.Int32Attribute{
-						Description: "Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
-						Required:    false,
-						Optional:    true,
-					},
-					"timezone_offset": schema.StringAttribute{
-						Description: "The offset time zone of the client. Example: -05:00",
-						Required:    false,
-						Optional:    true,
-					},
-					"recurring_days": schema.ListAttribute{
-						MarkdownDescription: `Array with the number of the days the task must run.
+					"start_date": schema.ResourceOptionalInt32(
+						"Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
+					),
+					"timezone_offset": schema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
+					"recurring_days": func() tfschema.ListAttribute {
+						thisAttr := schema.ResourceOptionalInt32List(
+							`Array with the number of the days the task must run.
 
 - For "weekly" schedule allowed values, 1 to 7.
 - For "monthly" schedule allowed values, 1 to 31.`,
-						ElementType: types.Int32Type,
-						Required:    false,
-						Optional:    true,
-						Validators: []validator.List{
+						)
+						thisAttr.Validators = []validator.List{
 							listvalidator.SizeAtLeast(1),
-						},
-					},
-					"cron_expression": schema.StringAttribute{
-						Description: "Cron expression for the task. Only applies for for \"cron\" schedule.",
-						Required:    false,
-						Optional:    true,
-					},
+						}
+						return thisAttr
+					}(),
+					"cron_expression": schema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
 				},
-			},
-			"properties": schema.SingleNestedAttribute{
-				Description: "Properties specific to this Task type",
-				Required:    true,
-				Optional:    false,
-				Attributes:  tt.GetPropertiesSchema(),
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"properties":   schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.PropertiesSchema()),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
