@@ -342,3 +342,39 @@ resource "%s" "repo" {
 		},
 	})
 }
+func TestAccRepositoryRawProxyInvalidRemoteUrl(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid remote URL (missing protocol)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "raw-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, "sonatyperepo_repository_raw_proxy", randomString),
+				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
+			},
+		},
+	})
+}
