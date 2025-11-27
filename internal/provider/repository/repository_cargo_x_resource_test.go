@@ -284,6 +284,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -324,6 +325,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -364,6 +366,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -404,6 +407,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -444,6 +448,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidMaxAgeNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -481,6 +486,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
