@@ -32,15 +32,26 @@ func TestAccContentSelectorDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Missing required argument
 			{
 				Config:      utils_test.ProviderConfig + `data "sonatyperepo_content_selector" "cs" {}`,
 				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
+			// Test 2: Non-existent selector returns empty
 			{
 				Config: getConfigContentSelectorDoesNotExist(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr("data.sonatyperepo_content_selector.cs", "name"),
+				),
+			},
+			// Test 3: Happy path - create selector resource and read via data source
+			{
+				Config: getConfigContentSelectorResource(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "name"),
+					resource.TestCheckResourceAttr("data.sonatyperepo_content_selector.cs", "name", fmt.Sprintf("tf-test-cs-%s", randomString)),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "description"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selector.cs", "expression"),
 				),
 			},
 		},
@@ -51,4 +62,20 @@ func getConfigContentSelectorDoesNotExist(suffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`data "sonatyperepo_content_selector" "cs" {
 	name = "non-existent-content-selector-%s"
 }`, suffix)
+}
+
+// Helper to create a content selector resource and read it via data source
+func getConfigContentSelectorResource(suffix string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_content_selector" "r" {
+	name        = "tf-test-cs-%s"
+	description = "Test content selector for acceptance test"
+	expression  = "path =~ \".*\""
+}
+
+data "sonatyperepo_content_selector" "cs" {
+	name       = sonatyperepo_content_selector.r.name
+	depends_on = [sonatyperepo_content_selector.r]
+}
+`, suffix)
 }

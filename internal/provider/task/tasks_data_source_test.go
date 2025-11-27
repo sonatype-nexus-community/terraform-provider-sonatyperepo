@@ -27,12 +27,24 @@ func TestAccTasksDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify tasks can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_tasks" "tasks" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_tasks.tasks", "tasks.#"),
+				),
+			},
+			// Test 2: Verify response structure and task attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_tasks" "tasks" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_tasks.tasks", "tasks.#"),
+					// Verify at least one task exists with expected attributes
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_tasks.tasks", "tasks.0.id"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_tasks.tasks", "tasks.0.name"),
 				),
 			},
 		},

@@ -29,21 +29,37 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Missing required argument
+			{
+				Config:      utils_test.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {}`,
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+			// Test 2: Happy path - default blob store exists and is readable
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
 					name = "default"
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "name", "default"),
 					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_file.b", "path", "default"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_file.b", "last_updated"),
+					// Soft quota is absent in default config
 					resource.TestCheckNoResourceAttr("data.sonatyperepo_blob_store_file.b", "soft_quota"),
 				),
 			},
+			// Test 3: Non-existent blob store
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
 					name = "this-will-not-exist"
 				}`,
 				ExpectError: regexp.MustCompile("Error: " + common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE),
+			},
+			// Test 4: Invalid name values
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_file" "b" {
+					name = ""
+				}`,
+				ExpectError: regexp.MustCompile("Error:"),
 			},
 		},
 	})

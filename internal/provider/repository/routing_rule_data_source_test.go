@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -36,7 +37,12 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create a routing rule and then read it with data source
+			// Test 1: Missing required argument
+			{
+				Config:      utils_test.ProviderConfig + `data "sonatyperepo_routing_rule" "test" {}`,
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+			// Test 2: Create a routing rule and then read it with data source
 			{
 				Config: getTestAccRoutingRuleDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -71,6 +77,23 @@ func TestAccRoutingRulesDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Check that we have at least our created routing rules
 					resource.TestCheckResourceAttrSet(dataSourceName, "routing_rules.#"),
+					// Verify the list contains routing rules with expected attributes
+					resource.TestCheckTypeSetElemNestedAttrs(
+						dataSourceName,
+						"routing_rules.*",
+						map[string]string{
+							"name": fmt.Sprintf("test-routing-rule-ds1-%s", randomString),
+							"mode": repository.RoutingRuleModeBlock,
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs(
+						dataSourceName,
+						"routing_rules.*",
+						map[string]string{
+							"name": fmt.Sprintf("test-routing-rule-ds2-%s", randomString),
+							"mode": repository.RoutingRuleModeAllow,
+						},
+					),
 				),
 			},
 		},

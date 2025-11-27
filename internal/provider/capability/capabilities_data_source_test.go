@@ -29,7 +29,7 @@ func TestAccCapabilitiesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			// Not supported prior to NXRM 3.84.0
+			// Capabilities data source not supported prior to NXRM 3.84.0
 			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
 				Major: 3,
 				Minor: 0,
@@ -41,12 +41,25 @@ func TestAccCapabilitiesDataSource(t *testing.T) {
 			})
 		},
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify capabilities can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_capabilities" "caps" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.#"),
+				),
+			},
+			// Test 2: Verify response structure and capability attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_capabilities" "caps" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.#"),
+					// Verify at least one capability exists with expected attributes
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.id"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.type"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_capabilities.caps", "capabilities.0.enabled"),
 				),
 			},
 		},

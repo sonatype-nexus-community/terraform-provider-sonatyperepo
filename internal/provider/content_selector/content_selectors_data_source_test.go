@@ -27,12 +27,25 @@ func TestAccContentSelectorsDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify content selectors can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_content_selectors" "cses" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.#"),
+				),
+			},
+			// Test 2: Verify response structure and content selector attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_content_selectors" "cses" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.#"),
+					// Verify at least one content selector exists with expected attributes
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.name"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.description"),
+					resource.TestCheckResourceAttrSet("data.sonatyperepo_content_selectors.cses", "content_selectors.0.expression"),
 				),
 			},
 		},
