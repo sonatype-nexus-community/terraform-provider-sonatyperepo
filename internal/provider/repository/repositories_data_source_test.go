@@ -37,7 +37,7 @@ func TestAccRepositoriesDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test 1: Create test repositories and verify they appear in list
 			{
-				Config: getTestAccRepositoriesDataSourceConfig(randomString),
+				Config: testAccRepositoriesDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Check that list is populated
 					resource.TestCheckResourceAttrSet(dataSourceName, "repositories.#"),
@@ -63,7 +63,7 @@ func TestAccRepositoriesDataSource(t *testing.T) {
 	})
 }
 
-func getTestAccRepositoriesDataSourceConfig(randomString string) string {
+func testAccRepositoriesDataSourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_repository_raw_hosted" "test_hosted" {
   name   = "test-raw-hosted-ds-%s"

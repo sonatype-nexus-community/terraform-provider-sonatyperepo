@@ -23,6 +23,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceUsers = "data.sonatyperepo_users.us"
+)
+
 func TestAccUsersDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -32,7 +36,7 @@ func TestAccUsersDataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_users" "us" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.#"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.#"),
 				),
 			},
 			// Test 2: Verify response structure and user attributes
@@ -41,19 +45,19 @@ func TestAccUsersDataSource(t *testing.T) {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify count is greater than 0
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.#"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.#"),
 					// Verify at least one user exists with expected attributes
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.user_id"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.first_name"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.last_name"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.email_address"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.read_only"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.source"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.status"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.user_id"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.first_name"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.last_name"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.email_address"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.read_only"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.source"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.status"),
 					// Verify user has roles assigned
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.roles.#"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.roles.#"),
 					// Verify user has external roles assigned
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_users.us", "users.0.external_roles.#"),
+					resource.TestCheckResourceAttrSet(dataSourceUsers, "users.0.external_roles.#"),
 				),
 			},
 		},
