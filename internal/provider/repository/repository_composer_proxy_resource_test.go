@@ -56,11 +56,23 @@ resource "sonatyperepo_repository_composer_group" "repo" {
 `, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
-			// Create and Read testing
+			// Create with minimal configuration
+			{
+				Config: getRepositoryComposerProxyResourceMinimalConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify minimal config
+					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameComposerProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.remote_url", "https://repo.packagist.org/"),
+				),
+			},
+			// Update to full configuration
 			{
 				Config: getRepositoryComposerProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify full config
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
@@ -91,6 +103,21 @@ resource "sonatyperepo_repository_composer_group" "repo" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func getRepositoryComposerProxyResourceMinimalConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-minimal-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+  }
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+  }
+}
+`, resourceTypeComposerProxy, randomString)
 }
 
 func getRepositoryComposerProxyResourceConfig(randomString string, includeReplication bool) string {

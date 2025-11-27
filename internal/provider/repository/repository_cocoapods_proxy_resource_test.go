@@ -56,11 +56,23 @@ resource "sonatyperepo_repository_cocoapods_group" "repo" {
 `, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
-			// Create and Read testing
+			// Create with minimal configuration
+			{
+				Config: getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify minimal config
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
+				),
+			},
+			// Update to full configuration
 			{
 				Config: getRepositoryCocoaPodsProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify full config
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
@@ -91,6 +103,21 @@ resource "sonatyperepo_repository_cocoapods_group" "repo" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-minimal-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+  }
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+  }
+}
+`, resourceTypeCocoaPodsProxy, randomString)
 }
 
 func getRepositoryCocoaPodsProxyResourceConfig(randomString string, includeReplication bool) string {

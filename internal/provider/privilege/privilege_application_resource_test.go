@@ -37,19 +37,11 @@ func TestAccPrivilegeApplicationResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration
 			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "p" {
-	name = "test-priv-app-%s"
-	description = "some description"
-	domain = "rubbish"
-	actions = [
-    	"ALL"
-  	]
-}`, resourceTypePrivilegeApplication, randomString),
+				Config: buildPrivilegeApplicationResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify minimal configuration
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "some description"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
@@ -58,20 +50,11 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "1"),
 				),
 			},
-			// Update and Read testing
+			// Update to full configuration
 			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "p" {
-	name = "test-priv-app-%s"
-	description = "updated description"
-	domain = "custom"
-	actions = [
-    	"READ",
-    	"ADD"
-  	]
-}`, resourceTypePrivilegeApplication, randomString),
+				Config: buildPrivilegeApplicationResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify updated values
+					// Verify full configuration
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "updated description"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
@@ -83,4 +66,29 @@ resource "%s" "p" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func buildPrivilegeApplicationResourceMinimal(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-app-%s"
+	description = "some description"
+	domain = "rubbish"
+	actions = [
+    	"ALL"
+  	]
+}`, resourceTypePrivilegeApplication, randomString)
+}
+
+func buildPrivilegeApplicationResourceComplete(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-app-%s"
+	description = "updated description"
+	domain = "custom"
+	actions = [
+    	"READ",
+    	"ADD"
+  	]
+}`, resourceTypePrivilegeApplication, randomString)
 }

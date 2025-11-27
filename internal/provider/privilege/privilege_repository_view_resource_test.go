@@ -37,21 +37,11 @@ func TestAccPrivilegeRepositoryViewResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration
 			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "p" {
-	name = "test-priv-repo-view-%s"
-	description = "a description"
-	actions = [
-    	"BROWSE",
-		"ADD"
-  	]
-	format = "maven2"
-	repository = "maven-central"
-}`, resourceTypePrivilegeRepoView, randomString),
+				Config: buildPrivilegeRepositoryViewResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify minimal configuration
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "name", fmt.Sprintf("test-priv-repo-view-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "description", "a description"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "read_only", "false"),
@@ -61,22 +51,11 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "maven-central"),
 				),
 			},
-			// Update and Read testing
+			// Update to full configuration
 			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "p" {
-	name = "test-priv-repo-view-%s"
-	description = "updated description"
-	actions = [
-    	"BROWSE",
-		"ADD",
-		"EDIT"
-  	]
-	format = "nuget"
-	repository = "nuget.org-proxy"
-}`, resourceTypePrivilegeRepoView, randomString),
+				Config: buildPrivilegeRepositoryViewResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify updated values
+					// Verify full configuration
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "name", fmt.Sprintf("test-priv-repo-view-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "description", "updated description"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "read_only", "false"),
@@ -89,4 +68,33 @@ resource "%s" "p" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func buildPrivilegeRepositoryViewResourceMinimal(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-repo-view-%s"
+	description = "a description"
+	actions = [
+    	"BROWSE",
+		"ADD"
+  	]
+	format = "maven2"
+	repository = "maven-central"
+}`, resourceTypePrivilegeRepoView, randomString)
+}
+
+func buildPrivilegeRepositoryViewResourceComplete(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-repo-view-%s"
+	description = "updated description"
+	actions = [
+    	"BROWSE",
+		"ADD",
+		"EDIT"
+  	]
+	format = "nuget"
+	repository = "nuget.org-proxy"
+}`, resourceTypePrivilegeRepoView, randomString)
 }

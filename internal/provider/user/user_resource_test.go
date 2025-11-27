@@ -37,11 +37,11 @@ func TestAccUserResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration (no password)
 			{
-				Config: getUserResourceConfig(randomString),
+				Config: buildUserResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify minimal configuration
 					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Acc Test %s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "User"),
@@ -52,31 +52,19 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "1"),
 				),
 			},
-			// Update and Read testing
+			// Create with full configuration
 			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "u" {
-  user_id = "acc-test-user-%s"
-  first_name = "Updated Acc Test %s"
-  last_name = "UpdatedUser"
-  email_address = "acc-test-%s@local"
-  password = "UpdatedPassword"
-  status = "active"
-  roles = [
-    "nx-anonymous"
-  ]
-}
-`, resourceTypeUser, randomString, randomString, randomString),
+				Config: buildUserResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify updated values
-					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Updated Acc Test %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "UpdatedUser"),
-					resource.TestCheckResourceAttr(resourceNameUser, "email_address", fmt.Sprintf("acc-test-%s@local", randomString)),
+					// Verify full configuration
+					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-complete-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Complete %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "TestUser"),
+					resource.TestCheckResourceAttr(resourceNameUser, "email_address", fmt.Sprintf("complete-%s@local", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "status", "active"),
 					resource.TestCheckResourceAttr(resourceNameUser, "read_only", "false"),
 					resource.TestCheckResourceAttr(resourceNameUser, "source", common.DEFAULT_USER_SOURCE),
-					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "1"),
+					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "2"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -85,7 +73,41 @@ resource "%s" "u" {
 
 }
 
-func getUserResourceConfig(randomString string) string {
+func TestAccUserResourceUpdate(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: buildUserResourceMinimal(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Acc Test %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "User"),
+					resource.TestCheckResourceAttr(resourceNameUser, "status", "active"),
+					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "1"),
+				),
+			},
+			// Update to full configuration
+			{
+				Config: buildUserResourceComplete(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-complete-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Complete %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "TestUser"),
+					resource.TestCheckResourceAttr(resourceNameUser, "email_address", fmt.Sprintf("complete-%s@local", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "status", "active"),
+					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "2"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func buildUserResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "u" {
   user_id = "acc-test-user-%s"
@@ -96,6 +118,23 @@ resource "%s" "u" {
   status = "active"
   roles = [
     "nx-anonymous"
+  ]
+}
+`, resourceTypeUser, randomString, randomString, randomString)
+}
+
+func buildUserResourceComplete(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "u" {
+  user_id = "acc-test-user-complete-%s"
+  first_name = "Complete %s"
+  last_name = "TestUser"
+  email_address = "complete-%s@local"
+  password = "CompletePassword"
+  status = "active"
+  roles = [
+    "nx-anonymous",
+    "nx-admin"
   ]
 }
 `, resourceTypeUser, randomString, randomString, randomString)

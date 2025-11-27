@@ -56,11 +56,24 @@ resource "sonatyperepo_repository_apt_group" "repo" {
 `, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
-			// Create and Read testing
+			// Create with minimal configuration
+			{
+				Config: getRepositoryAptProxyResourceMinimalConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify minimal config
+					resource.TestCheckResourceAttr(resourceNameAptProxy, "name", fmt.Sprintf("apt-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameAptProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameAptProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameAptProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNameAptProxy, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
+					resource.TestCheckResourceAttr(resourceNameAptProxy, "apt.distribution", "bionic"),
+				),
+			},
+			// Update to full configuration
 			{
 				Config: getRepositoryAptProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify full config
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameAptProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameAptProxy, "url"),
@@ -93,6 +106,24 @@ resource "sonatyperepo_repository_apt_group" "repo" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func getRepositoryAptProxyResourceMinimalConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "apt-proxy-repo-minimal-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+  }
+  proxy = {
+    remote_url = "https://archive.ubuntu.com/ubuntu/"
+  }
+  apt = {
+	distribution = "bionic"
+  }
+}
+`, resourceTypeAptProxy, randomString)
 }
 
 func getRepositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
