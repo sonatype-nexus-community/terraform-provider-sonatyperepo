@@ -402,3 +402,237 @@ resource "%s" "repo" {
 
 
 
+func TestAccRepositoryRubyGemsProxyInvalidTimeoutTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too large, max is 3600)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-timeout-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 3601
+    }
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryRubyGemsProxyInvalidTimeoutTooSmall(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too small, min is 1)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-timeout-small-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 0
+    }
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryRubyGemsProxyInvalidRetriesTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (too large, max is 10)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-retries-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = 11
+    }
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryRubyGemsProxyInvalidRetriesNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-retries-neg-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = -1
+    }
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryRubyGemsProxyInvalidMaxAgeNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid content_max_age (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-maxage-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = -1
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryRubyGemsProxyInvalidTimeToLiveNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid time_to_live (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "ruby_gems-proxy-repo-ttl-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = -1
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeProxy, randomString),
+				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+			},
+		},
+	})
+}
+
