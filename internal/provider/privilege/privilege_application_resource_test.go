@@ -58,6 +58,28 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "1"),
 				),
 			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-app-%s"
+	description = "updated description"
+	domain = "custom"
+	actions = [
+    	"READ",
+    	"ADD"
+  	]
+}`, resourceTypePrivilegeApplication, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "name", fmt.Sprintf("test-priv-app-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "type", privilege_type.TypeApplication.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "domain", "custom"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeApplication, "actions.#", "2"),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

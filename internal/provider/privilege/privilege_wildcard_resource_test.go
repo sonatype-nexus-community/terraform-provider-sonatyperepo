@@ -54,6 +54,23 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "pattern", "test-pattern"),
 				),
 			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-wildcard-%s"
+	description = "updated description"
+	pattern = "updated-pattern-*"
+}`, resourceTypePrivilegeWildcard, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "pattern", "updated-pattern-*"),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

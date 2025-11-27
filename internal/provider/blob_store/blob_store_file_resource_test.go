@@ -42,6 +42,21 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_file.bsf", "last_updated"),
 				),
 			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_blob_store_file" "bsf" {
+  name = "test-%s"
+  path = "path-updated-%s"
+}
+`, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "name", fmt.Sprintf("test-%s", randomString)),
+					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "path", fmt.Sprintf("path-updated-%s", randomString)),
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_file.bsf", "last_updated"),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

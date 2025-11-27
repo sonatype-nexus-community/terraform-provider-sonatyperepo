@@ -47,7 +47,7 @@ resource "%s" "p" {
     	"BROWSE"
   	]
 	format = "maven2"
-	repository = "maven-public"
+	repository = "maven-central"
 }`, resourceTypePrivilegeRepoAdmin, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
@@ -57,7 +57,31 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "type", privilege_type.TypeRepositoryAdmin.String()),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "actions.#", "1"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "maven2"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "maven-public"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "maven-central"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-repo-admin-%s"
+	description = "updated description"
+	actions = [
+    	"BROWSE",
+    	"ADD"
+  	]
+	format = "nuget"
+	repository = "nuget.org-proxy"
+}`, resourceTypePrivilegeRepoAdmin, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "name", fmt.Sprintf("test-priv-repo-admin-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "type", privilege_type.TypeRepositoryAdmin.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "actions.#", "2"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "nuget"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "nuget.org-proxy"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

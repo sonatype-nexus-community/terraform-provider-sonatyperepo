@@ -45,7 +45,7 @@ resource "%s" "p" {
 	description = "a description"
 	actions = [
     	"BROWSE",
-		"READ"
+		"ADD"
   	]
 	format = "maven2"
 	repository = "maven-central"
@@ -59,6 +59,31 @@ resource "%s" "p" {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "actions.#", "2"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "format", "maven2"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "maven-central"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "p" {
+	name = "test-priv-repo-view-%s"
+	description = "updated description"
+	actions = [
+    	"BROWSE",
+		"ADD",
+		"EDIT"
+  	]
+	format = "nuget"
+	repository = "nuget.org-proxy"
+}`, resourceTypePrivilegeRepoView, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "name", fmt.Sprintf("test-priv-repo-view-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "type", privilege_type.TypeRepositoryView.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "actions.#", "3"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "format", "nuget"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoView, "repository", "nuget.org-proxy"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

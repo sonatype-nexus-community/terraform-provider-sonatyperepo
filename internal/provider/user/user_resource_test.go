@@ -31,7 +31,7 @@ var (
 	resourceNameUser = fmt.Sprintf("%s.u", resourceTypeUser)
 )
 
-func TestAccRoleResource(t *testing.T) {
+func TestAccUserResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -45,6 +45,33 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Acc Test %s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "User"),
+					resource.TestCheckResourceAttr(resourceNameUser, "email_address", fmt.Sprintf("acc-test-%s@local", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "status", "active"),
+					resource.TestCheckResourceAttr(resourceNameUser, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNameUser, "source", common.DEFAULT_USER_SOURCE),
+					resource.TestCheckResourceAttr(resourceNameUser, "roles.#", "1"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "u" {
+  user_id = "acc-test-user-%s"
+  first_name = "Updated Acc Test %s"
+  last_name = "UpdatedUser"
+  email_address = "acc-test-%s@local"
+  password = "UpdatedPassword"
+  status = "active"
+  roles = [
+    "nx-anonymous"
+  ]
+}
+`, resourceTypeUser, randomString, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNameUser, "user_id", fmt.Sprintf("acc-test-user-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "first_name", fmt.Sprintf("Updated Acc Test %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameUser, "last_name", "UpdatedUser"),
 					resource.TestCheckResourceAttr(resourceNameUser, "email_address", fmt.Sprintf("acc-test-%s@local", randomString)),
 					resource.TestCheckResourceAttr(resourceNameUser, "status", "active"),
 					resource.TestCheckResourceAttr(resourceNameUser, "read_only", "false"),

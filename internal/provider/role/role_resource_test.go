@@ -48,6 +48,32 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "1"),
 				),
 			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "rl" {
+  id = "my-test-role-%s"
+  name = "My Updated Role %s"
+  description = "This is an updated test role"
+  privileges = [
+    "nx-healthcheck-read",
+    "nx-healthcheck-summary-read"
+  ]
+  roles = [
+    "nx-anonymous",
+    "nx-admin"
+  ]
+}
+`, resourceTypeRole, randomString, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNameRole, "id", fmt.Sprintf("my-test-role-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, "name", fmt.Sprintf("My Updated Role %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, "description", "This is an updated test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "2"),
+				),
+			},
 			// ImportState testing
 			{
 				ResourceName:            resourceNameRole,
