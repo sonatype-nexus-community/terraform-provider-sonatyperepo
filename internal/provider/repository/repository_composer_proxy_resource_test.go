@@ -39,6 +39,23 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Group validation - empty member_names
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_repository_composer_group" "repo" {
+  name = "composer-group-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  group = {
+    member_names = []
+  }
+}
+`, randomString),
+				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
+			},
 			// Create and Read testing
 			{
 				Config: getRepositoryComposerProxyResourceConfig(randomString, false),

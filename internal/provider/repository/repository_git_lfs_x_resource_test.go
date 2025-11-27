@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -30,11 +31,29 @@ func TestAccRepositoryGitLfsResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceTypeHosted := "sonatyperepo_repository_gitlfs_hosted"
+	resourceTypeGroup := "sonatyperepo_repository_gitlfs_group"
 	resourceHostedName := fmt.Sprintf("%s.repo", resourceTypeHosted)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Group validation - empty member_names
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "git-lfs-group-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  group = {
+    member_names = []
+  }
+}
+`, resourceTypeGroup, randomString),
+				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
+			},
 			// Create and Read testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
