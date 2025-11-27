@@ -44,7 +44,7 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 			},
 			// Test 2: Create a routing rule and then read it with data source
 			{
-				Config: getTestAccRoutingRuleDataSourceConfig(randomString),
+				Config: testAccRoutingRuleDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Check resource attributes
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
@@ -62,4 +62,19 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccRoutingRuleDataSourceConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_routing_rule" "test" {
+  name        = "test-routing-rule-ds-%s"
+  description = "Test routing rule for data source"
+  mode        = "%s"
+  matchers    = ["^/com/example/.*", "^/org/example/.*"]
+}
+
+data "sonatyperepo_routing_rule" "test" {
+  name = sonatyperepo_routing_rule.test.name
+}
+`, randomString, repository.RoutingRuleModeBlock)
 }

@@ -36,7 +36,7 @@ func TestAccRoutingRulesDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create multiple routing rules and list them
 			{
-				Config: getTestAccRoutingRulesDataSourceConfig(randomString),
+				Config: testAccRoutingRulesDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Check that we have at least our created routing rules
 					resource.TestCheckResourceAttrSet(dataSourceName, "routing_rules.#"),
@@ -63,22 +63,7 @@ func TestAccRoutingRulesDataSource(t *testing.T) {
 	})
 }
 
-func getTestAccRoutingRuleDataSourceConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_routing_rule" "test" {
-  name        = "test-routing-rule-ds-%s"
-  description = "Test routing rule for data source"
-  mode        = "%s"
-  matchers    = ["^/com/example/.*", "^/org/example/.*"]
-}
-
-data "sonatyperepo_routing_rule" "test" {
-  name = sonatyperepo_routing_rule.test.name
-}
-`, randomString, repository.RoutingRuleModeBlock)
-}
-
-func getTestAccRoutingRulesDataSourceConfig(randomString string) string {
+func testAccRoutingRulesDataSourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_routing_rule" "test1" {
   name        = "test-routing-rule-ds1-%s"
