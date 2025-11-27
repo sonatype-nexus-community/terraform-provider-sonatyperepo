@@ -439,3 +439,26 @@ resource "%s" "repo" {
 	})
 }
 
+func TestAccRepositoryDockerHostedMissingStorage(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Missing storage block (required field)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "docker-hosted-repo-%s"
+  online = true
+  # Missing storage block
+}
+`, "sonatyperepo_repository_docker_hosted", randomString),
+				ExpectError: regexp.MustCompile("Attribute storage is required"),
+			},
+		},
+	})
+}
+
+
+
