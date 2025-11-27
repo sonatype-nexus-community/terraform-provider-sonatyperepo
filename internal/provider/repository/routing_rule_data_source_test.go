@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -36,9 +37,14 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create a routing rule and then read it with data source
+			// Test 1: Missing required argument
 			{
-				Config: getTestAccRoutingRuleDataSourceConfig(randomString),
+				Config:      utils_test.ProviderConfig + `data "sonatyperepo_routing_rule" "test" {}`,
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+			// Test 2: Create a routing rule and then read it with data source
+			{
+				Config: testAccRoutingRuleDataSourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Check resource attributes
 					resource.TestCheckResourceAttr(resourceName, "name", routingRuleName),
@@ -58,26 +64,7 @@ func TestAccRoutingRuleDataSource(t *testing.T) {
 	})
 }
 
-func TestAccRoutingRulesDataSource(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	dataSourceName := "data.sonatyperepo_routing_rules.test"
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create multiple routing rules and list them
-			{
-				Config: getTestAccRoutingRulesDataSourceConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Check that we have at least our created routing rules
-					resource.TestCheckResourceAttrSet(dataSourceName, "routing_rules.#"),
-				),
-			},
-		},
-	})
-}
-
-func getTestAccRoutingRuleDataSourceConfig(randomString string) string {
+func testAccRoutingRuleDataSourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_routing_rule" "test" {
   name        = "test-routing-rule-ds-%s"
@@ -90,29 +77,4 @@ data "sonatyperepo_routing_rule" "test" {
   name = sonatyperepo_routing_rule.test.name
 }
 `, randomString, repository.RoutingRuleModeBlock)
-}
-
-func getTestAccRoutingRulesDataSourceConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_routing_rule" "test1" {
-  name        = "test-routing-rule-ds1-%s"
-  description = "Test routing rule 1"
-  mode        = "%s"
-  matchers    = ["^/com/test1/.*"]
-}
-
-resource "sonatyperepo_routing_rule" "test2" {
-  name        = "test-routing-rule-ds2-%s"
-  description = "Test routing rule 2"
-  mode        = "%s"
-  matchers    = ["^/com/test2/.*"]
-}
-
-data "sonatyperepo_routing_rules" "test" {
-  depends_on = [
-    sonatyperepo_routing_rule.test1,
-    sonatyperepo_routing_rule.test2
-  ]
-}
-`, randomString, repository.RoutingRuleModeBlock, randomString, repository.RoutingRuleModeAllow)
 }

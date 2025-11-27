@@ -25,11 +25,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type ApplicationPrivilegeType struct {
@@ -64,33 +66,26 @@ func (pt *ApplicationPrivilegeType) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateApplicationPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *ApplicationPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"domain": schema.StringAttribute{
-			Description: "The domain (i.e. 'blobstores', 'capabilities' or even '*' for all) that this privilege is granting access to. Note that creating new privileges with a domain is only necessary when using plugins that define their own domain(s).",
-			Required:    true,
-			Optional:    false,
-		},
-		"actions": schema.SetAttribute{
-			Description: "A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
-			Required:    true,
-			Optional:    false,
-			ElementType: types.StringType,
-			Validators: []validator.Set{
+func (pt *ApplicationPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"domain": schema.ResourceRequiredString("The domain (i.e. 'blobstores', 'capabilities' or even '*' for all) that this privilege is granting access to. Note that creating new privileges with a domain is only necessary when using plugins that define their own domain(s)."),
+		"actions": schema.ResourceRequiredStringSetWithValidator(
+			"A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
+			setvalidator.All(
 				setvalidator.ValueStringsAre([]validator.String{
 					stringvalidator.OneOf(AllActionsExceptRun()...),
 				}...),
-			},
-		},
+			),
+		),
 	}
 }
 
-func (pt *ApplicationPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *ApplicationPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeApplicationModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *ApplicationPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *ApplicationPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeApplicationModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

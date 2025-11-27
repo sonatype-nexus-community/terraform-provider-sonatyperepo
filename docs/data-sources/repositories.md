@@ -17,7 +17,7 @@ Use this data source to get all Repositories
 
 ### Read-Only
 
-- `repositories` (Attributes List) (see [below for nested schema](#nestedatt--repositories))
+- `repositories` (Attributes List) List of Repositories (see [below for nested schema](#nestedatt--repositories))
 
 <a id="nestedatt--repositories"></a>
 ### Nested Schema for `repositories`

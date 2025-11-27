@@ -23,16 +23,34 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceRoles = "data.sonatyperepo_roles.roles"
+)
+
 func TestAccRolesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify roles can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_roles" "roles" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_roles.roles", "roles.#"),
+					resource.TestCheckResourceAttrSet(dataSourceRoles, "roles.#"),
+				),
+			},
+			// Test 2: Verify response structure and role attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_roles" "roles" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet(dataSourceRoles, "roles.#"),
+					// Verify at least one role exists with expected attributes
+					resource.TestCheckResourceAttrSet(dataSourceRoles, "roles.0.id"),
+					resource.TestCheckResourceAttrSet(dataSourceRoles, "roles.0.name"),
+					// Verify role has privileges (array of privilege ids)
+					resource.TestCheckResourceAttrSet(dataSourceRoles, "roles.0.privileges.#"),
 				),
 			},
 		},

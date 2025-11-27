@@ -17,7 +17,7 @@ Use this data source to get all routing rules
 
 ### Read-Only
 
-- `routing_rules` (Attributes List) (see [below for nested schema](#nestedatt--routing_rules))
+- `routing_rules` (Attributes List) List of Routing Rules (see [below for nested schema](#nestedatt--routing_rules))
 
 <a id="nestedatt--routing_rules"></a>
 ### Nested Schema for `routing_rules`

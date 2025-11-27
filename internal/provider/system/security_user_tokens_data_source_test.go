@@ -17,7 +17,6 @@ package system_test
 
 import (
 	"fmt"
-	"os"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -30,63 +29,24 @@ const (
 )
 
 func TestAccSecurityUserTokenDataSource(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Create a resource first
-				{
-					Config: getSecurityUserTokenDataSourceConfigWithResource(true, 45, true, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						// Verify the resource
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_days", "45"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(resourceNameSecurityUserToken, "protect_content", "false"),
-						// Verify the data source
-						resource.TestCheckResourceAttr(dataSourceNameSecurityUserToken, "enabled", "true"),
-						resource.TestCheckResourceAttr(dataSourceNameSecurityUserToken, "expiration_days", "45"),
-						resource.TestCheckResourceAttr(dataSourceNameSecurityUserToken, "expiration_enabled", "true"),
-						resource.TestCheckResourceAttr(dataSourceNameSecurityUserToken, "protect_content", "false"),
-					),
-				},
+	// This test reads the current security user token configuration
+	// Note: Resource creation/modification is not tested as it would lock out the test user
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test 1: Read current data source state
+			{
+				Config: getSecurityUserTokenDataSourceConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify data source can read the current state
+					resource.TestCheckResourceAttrSet(dataSourceNameSecurityUserToken, "enabled"),
+					resource.TestCheckResourceAttrSet(dataSourceNameSecurityUserToken, "expiration_days"),
+					resource.TestCheckResourceAttrSet(dataSourceNameSecurityUserToken, "expiration_enabled"),
+					resource.TestCheckResourceAttrSet(dataSourceNameSecurityUserToken, "protect_content"),
+				),
 			},
-		})
-	}
-}
-
-func TestAccSecurityUserTokenDataSourceStandalone(t *testing.T) {
-	if os.Getenv("TF_ACC_SINGLE_HIT") == "1" {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps: []resource.TestStep{
-				// Read the current configuration using data source only
-				{
-					Config: getSecurityUserTokenDataSourceConfig(),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						// Just verify that the data source can read the current state
-						resource.TestCheckResourceAttrSet(dataSourceNameSecurityUserToken, "enabled"),
-					),
-				},
-			},
-		})
-	}
-}
-
-func getSecurityUserTokenDataSourceConfigWithResource(enabled bool, expirationDays int, expirationEnabled bool, protectContent bool) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "test" {
-	enabled = %t
-	expiration_days = %d
-	expiration_enabled = %t
-	protect_content = %t
-}
-
-data "%s" "test" {
-	depends_on = [%s.test]
-}
-`, resourceTypeSecurityUserToken, enabled, expirationDays, expirationEnabled, protectContent,
-		dataSourceTypeSecurityUserToken, resourceTypeSecurityUserToken)
+		},
+	})
 }
 
 func getSecurityUserTokenDataSourceConfig() string {

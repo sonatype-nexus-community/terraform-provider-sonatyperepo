@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,12 +42,12 @@ type GitLfsRepositoryFormatHosted struct {
 // --------------------------------------------
 // Generic Git LFS Format Functions
 // --------------------------------------------
-func (f *GitLfsRepositoryFormat) GetKey() string {
+func (f *GitLfsRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_GIT_LFS
 }
 
-func (f *GitLfsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *GitLfsRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -81,16 +81,16 @@ func (f *GitLfsRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.RepositoryManagementAPI.UpdateGitlfsHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *GitLfsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonHostedSchemaAttributes()
+func (f *GitLfsRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonHostedSchemaAttributes()
 }
 
-func (f *GitLfsRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *GitLfsRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryGitLfsHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *GitLfsRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *GitLfsRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryGitLfsHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

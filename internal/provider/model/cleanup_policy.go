@@ -22,12 +22,12 @@ import (
 
 // CleanupPolicyModel represents the Terraform model for a cleanup policy
 type CleanupPolicyModel struct {
-	Name        types.String                    `tfsdk:"name"`
-	Notes       types.String                    `tfsdk:"notes"`
-	Format      types.String                    `tfsdk:"format"`
-	Criteria    *CleanupPolicyCriteriaModel     `tfsdk:"criteria"`
-	Retain      types.Int64                     `tfsdk:"retain"`
-	LastUpdated types.String                    `tfsdk:"last_updated"`
+	Name        types.String                `tfsdk:"name"`
+	Notes       types.String                `tfsdk:"notes"`
+	Format      types.String                `tfsdk:"format"`
+	Criteria    *CleanupPolicyCriteriaModel `tfsdk:"criteria"`
+	Retain      types.Int64                 `tfsdk:"retain"`
+	LastUpdated types.String                `tfsdk:"last_updated"`
 }
 
 // CleanupPolicyCriteriaModel represents the criteria for a cleanup policy

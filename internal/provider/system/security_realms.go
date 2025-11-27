@@ -24,8 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
@@ -36,6 +35,8 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // Constants for error messages to avoid duplication
@@ -70,25 +71,21 @@ func (r *securityRealmsResource) Metadata(_ context.Context, req resource.Metada
 
 // Schema defines the schema for the resource.
 func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Activate and order Sontaype Nexus Repository Security realms. This resource manages the configuration of active security realms and their order.",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Resource identifier",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"active": schema.ListAttribute{
-				Description: "Specify active security realms in usage order. At least one realm must be specified.",
-				ElementType: types.StringType,
-				Required:    true,
-				Validators: []validator.List{
+		Attributes: map[string]tfschema.Attribute{
+			"id": schema.ResourceComputedStringWithPlanModifier(
+				"Resource identifier",
+				stringplanmodifier.UseStateForUnknown(),
+			),
+			"active": func() tfschema.ListAttribute {
+				thisAttr := schema.ResourceRequiredStringList("Specify active security realms in usage order. At least one realm must be specified.")
+				thisAttr.Validators = []validator.List{
 					listvalidator.SizeAtLeast(1),
 					listvalidator.UniqueValues(),
-				},
-			},
+				}
+				return thisAttr
+			}(),
 		},
 	}
 }
@@ -96,8 +93,7 @@ func (r *securityRealmsResource) Schema(_ context.Context, _ resource.SchemaRequ
 // ImportState imports the resource state from the remote system.
 // For security realms, we use a static ID since this is a singleton resource.
 func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.AuthContext(ctx)
 
 	// Read current configuration from the API
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
@@ -120,10 +116,10 @@ func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.I
 
 	// Convert API response to Terraform state
 	var state model.SecurityRealmsModel
-	
+
 	// Set the ID
 	state.ID = types.StringValue("security_realms")
-	
+
 	// Convert API response to Terraform List
 	if apiResponse != nil {
 		activeElements := make([]attr.Value, len(apiResponse))
@@ -149,7 +145,7 @@ func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.I
 
 	// Set the state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	
+
 	tflog.Info(ctx, "Successfully imported security realms configuration")
 }
 
@@ -220,7 +216,7 @@ func (r *securityRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call - GetActiveRealms returns []string directly
 	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()

@@ -19,19 +19,19 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // blobStoreFileResource is the resource implementation.
@@ -51,38 +51,19 @@ func (r *blobStoreFileResource) Metadata(_ context.Context, req resource.Metadat
 
 // Schema defines the schema for the resource.
 func (r *blobStoreFileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the Blob Store",
-				Required:    true,
-			},
-			"path": schema.StringAttribute{
-				Description: "The Path on disk of this File Blob Store",
-				Required:    true,
-				Optional:    false,
-			},
-			"soft_quota": schema.SingleNestedAttribute{
-				Description: "Soft Quota for this Blob Store",
-				Required:    false,
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
-						Description: "Soft Quota type",
-						Required:    true,
-						Optional:    false,
-					},
-					"limit": schema.Int64Attribute{
-						Description: "Quota limit",
-						Required:    false,
-						Optional:    true,
-					},
+		Attributes: map[string]tfschema.Attribute{
+			"name": schema.ResourceRequiredString("Name of the Blob Store"),
+			"path": schema.ResourceRequiredString("The Path on disk of this File Blob Store"),
+			"soft_quota": schema.ResourceOptionalSingleNestedAttribute(
+				"Soft Quota for this Blob Store",
+				map[string]tfschema.Attribute{
+					"type":  schema.ResourceRequiredString("Soft Quota type"),
+					"limit": schema.ResourceOptionalInt64("Quota limit"),
 				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -100,11 +81,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	request_payload := sonatyperepo.FileBlobStoreApiCreateRequest{
 		Name: plan.Name.ValueStringPointer(),
@@ -122,10 +99,11 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		error_body, _ := io.ReadAll(api_response.Body)
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Error creating Blob Store File",
-			"Could not create Blob Store File, unexpected error: "+api_response.Status+": "+string(error_body),
+			&err,
+			api_response,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -138,11 +116,12 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
-			"Failed to create Blob Store File",
-			fmt.Sprintf("Unable to create Blob Store File: %d: %s", api_response.StatusCode, api_response.Status),
+		errors.HandleAPIError(
+			"Creation of Blob Store File was not successful",
+			&err,
+			api_response,
+			&resp.Diagnostics,
 		)
-		return
 	}
 }
 
@@ -158,11 +137,7 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
 	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
@@ -170,10 +145,18 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
+			errors.HandleAPIWarning(
+				"Blob Store File to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Blob Store File",
-				fmt.Sprintf("Unable to read Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			errors.HandleAPIError(
+				"Error reading Blob Store File",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -215,11 +198,7 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	request_payload := sonatyperepo.FileBlobStoreApiUpdateRequest{
@@ -240,14 +219,18 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
+			errors.HandleAPIWarning(
 				"Blob Store File to update did not exist",
-				fmt.Sprintf("Unable to update Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Updating Blob Store File",
-				fmt.Sprintf("Unable to update Blob Store File: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			errors.HandleAPIError(
+				"Error updating Blob Store File",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return

@@ -25,11 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type CargoRepositoryFormat struct {
@@ -51,12 +53,12 @@ type CargoRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Cargo Format Functions
 // --------------------------------------------
-func (f *CargoRepositoryFormat) GetKey() string {
+func (f *CargoRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_CARGO
 }
 
-func (f *CargoRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *CargoRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -90,16 +92,16 @@ func (f *CargoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonHostedSchemaAttributes()
+func (f *CargoRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonHostedSchemaAttributes()
 }
 
-func (f *CargoRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositorCargoHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositorCargoHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -147,18 +149,18 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getCargoSchemaAttributes())
+func (f *CargoRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, cargoSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *CargoRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCargoProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCargoProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -206,18 +208,18 @@ func (f *CargoRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CargoRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttrs := getCommonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttrs, getCargoSchemaAttributes())
+func (f *CargoRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttrs := commonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttrs, cargoSchemaAttributes())
 	return additionalAttrs
 }
 
-func (f *CargoRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCargoGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CargoRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CargoRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCargoGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -237,17 +239,13 @@ func (f *CargoRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getCargoSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"cargo": schema.SingleNestedAttribute{
-			Description: "Cargo specific configuration for this Repository",
-			Required:    true,
-			Attributes: map[string]schema.Attribute{
-				"require_authentication": schema.BoolAttribute{
-					Description: "Indicates if this repository requires authentication overriding anonymous access.",
-					Required:    true,
-				},
+func cargoSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"cargo": schema.ResourceRequiredSingleNestedAttribute(
+			"Cargo specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"require_authentication": schema.ResourceRequiredBool("Indicates if this repository requires authentication overriding anonymous access."),
 			},
-		},
+		),
 	}
 }

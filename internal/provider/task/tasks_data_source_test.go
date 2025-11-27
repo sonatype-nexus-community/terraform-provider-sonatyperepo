@@ -23,16 +23,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	dataSourceTasks = "data.sonatyperepo_tasks.tasks"
+)
+
 func TestAccTasksDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify tasks can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_tasks" "tasks" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_tasks.tasks", "tasks.#"),
+					resource.TestCheckResourceAttrSet(dataSourceTasks, "tasks.#"),
+				),
+			},
+			// Test 2: Verify response structure and task attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_tasks" "tasks" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet(dataSourceTasks, "tasks.#"),
+					// Verify at least one task exists with expected attributes
+					resource.TestCheckResourceAttrSet(dataSourceTasks, "tasks.0.id"),
+					resource.TestCheckResourceAttrSet(dataSourceTasks, "tasks.0.name"),
 				),
 			},
 		},

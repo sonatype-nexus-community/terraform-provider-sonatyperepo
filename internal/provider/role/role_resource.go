@@ -20,18 +20,22 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // roleResource is the resource implementation.
@@ -51,46 +55,23 @@ func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Roles in Sonatype Nexus Repository",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The id of the role.",
-				MarkdownDescription: `The id of the Role.
+		Attributes: map[string]tfschema.Attribute{
+			"id": schema.ResourceRequiredStringWithPlanModifier(
+				`The id of the Role.
 
-This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication. 
+This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.
 Matching Roles based on id will automatically be granted to LDAP or SAML users.`,
-				Required: true,
-				Optional: false,
-				PlanModifiers: []planmodifier.String{
+				[]planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the role.",
-				Required:    true,
-				Optional:    false,
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this role.",
-				Required:    true,
-				Optional:    false,
-			},
-			"privileges": schema.SetAttribute{
-				Description: "The set of privileges assigned to this role.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"roles": schema.SetAttribute{
-				Description: "The set of roles assigned to this role.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"name":         schema.ResourceRequiredString("The name of the role."),
+			"description":  schema.ResourceRequiredString("The description of this role."),
+			"privileges":   schema.ResourceRequiredStringSet("The set of privileges assigned to this role."),
+			"roles":        schema.ResourceRequiredStringSet("The set of roles assigned to this role."),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -116,15 +97,19 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, httpResponse, err := r.Client.SecurityManagementRolesAPI.Create(ctx).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Error creating Role",
-			fmt.Sprintf("Error creating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Error creating Role",
-			fmt.Sprintf("Unexpected Response Code whilst creating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Creation of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -160,14 +145,18 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"Role does not exist",
-				fmt.Sprintf("Unable to read Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			errors.HandleAPIWarning(
+				"Role to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading Role",
-				fmt.Sprintf("Unable to read Role: %s: %s", httpResponse.Status, err),
+			errors.HandleAPIError(
+				"Error reading Role",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -209,15 +198,19 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	httpResponse, err := r.Client.SecurityManagementRolesAPI.Update(ctx, state.Id.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Error updating Role",
-			fmt.Sprintf("Error updating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error updating Role",
-			fmt.Sprintf("Unexpected Response Code whilst updating Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Update of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 
@@ -250,15 +243,19 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Handle Error
 	if err != nil {
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Error removing Role",
-			fmt.Sprintf("Error removing Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	} else if httpResponse.StatusCode != http.StatusNoContent {
-		resp.Diagnostics.AddError(
-			"Error removing Role",
-			fmt.Sprintf("Unexpected Response Code whilst removing Role: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Removal of Role was not successful",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

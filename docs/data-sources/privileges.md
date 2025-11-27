@@ -17,7 +17,7 @@ Use this data source to get all Privileges
 
 ### Read-Only
 
-- `privileges` (Attributes List) (see [below for nested schema](#nestedatt--privileges))
+- `privileges` (Attributes List) List of Privileges (see [below for nested schema](#nestedatt--privileges))
 
 <a id="nestedatt--privileges"></a>
 ### Nested Schema for `privileges`
@@ -26,7 +26,7 @@ Required:
 
 - `description` (String) Friendly description of this Privilege
 - `name` (String) The name of the privilege. This value cannot be changed.
-- `type` (String) The email address associated with the user.
+- `type` (String) The privilege type.
 
 Read-Only:
 

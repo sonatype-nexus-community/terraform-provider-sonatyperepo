@@ -21,9 +21,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -54,32 +56,20 @@ func (d *repositoriesDataSource) Metadata(_ context.Context, req datasource.Meta
 
 // Schema defines the schema for the data source.
 func (d *repositoriesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Repositories",
-		Attributes: map[string]schema.Attribute{
-			"repositories": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "Name of the Repository",
-							Required:    true,
-						},
-						"format": schema.StringAttribute{
-							Description: "Repository format",
-							Required:    true,
-						},
-						"type": schema.StringAttribute{
-							Description: "Repository type",
-							Required:    true,
-						},
-						"url": schema.StringAttribute{
-							Description: "URL to use this Repository",
-							Required:    true,
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"repositories": schema.DataSourceComputedListNestedAttribute(
+				"List of Repositories",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name":   schema.DataSourceRequiredString("Name of the Repository"),
+						"format": schema.DataSourceRequiredString("Repository format"),
+						"type":   schema.DataSourceRequiredString("Repository type"),
+						"url":    schema.DataSourceRequiredString("URL to use this Repository"),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -96,9 +86,11 @@ func (d *repositoriesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	repositories, httpResponse, err := d.Client.RepositoryManagementAPI.GetAllRepositories(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Repositories",
-			fmt.Sprintf("Unable to read Repositories: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Unable to read Repositories",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

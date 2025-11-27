@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -65,16 +65,16 @@ func (f *WebhookRepositoryCapability) DoUpdateRequest(plan any, capabilityId str
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *WebhookRepositoryCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *WebhookRepositoryCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.WebhookRepositoryCapabilityModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *WebhookRepositoryCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return getPropertiesSchemaForWebhookCapability(common.AllRepositoryWebHookEventTypes(), true)
+func (f *WebhookRepositoryCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return propertiesSchemaForWebhookCapability(common.AllRepositoryWebHookEventTypes(), true)
 }
 
-func (f *WebhookRepositoryCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *WebhookRepositoryCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.WebhookRepositoryCapabilityModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

@@ -57,6 +57,11 @@ func (d *BaseDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 	d.Client = config.Client
 }
 
+// AuthContext returns a new context with authentication set up for API calls
+func (d *BaseDataSource) AuthContext(ctx context.Context) context.Context {
+	return WithAuth(ctx, d.Auth)
+}
+
 // Metadata implements datasource.DataSource.
 func (*BaseDataSource) Metadata(context.Context, datasource.MetadataRequest, *datasource.MetadataResponse) {
 	panic("unimplemented")

@@ -14,11 +14,26 @@
  * limitations under the License.
  */
 
-package blob_store
+package common
 
-// Blob Store Types.
+type UserStatusType string
+
+func (ust UserStatusType) String() string {
+	return string(ust)
+}
+
 const (
-	BLOB_STORE_TYPE_FILE         string = "file"
-	BLOB_STORE_TYPE_S3           string = "s3"
-	BLOB_STORE_TYPE_GOOGLE_CLOUD string = "gc_storage"
+	USER_STATUS_ACTIVE          UserStatusType = "active"
+	USER_STATUS_LOCKED          UserStatusType = "locked"
+	USER_STATUS_DISABLED        UserStatusType = "disabled"
+	USER_STATUS_CHANGE_PASSWORD UserStatusType = "changepassword"
 )
+
+func AllUserStatusTypes() []string {
+	return []string{
+		USER_STATUS_ACTIVE.String(),
+		USER_STATUS_LOCKED.String(),
+		USER_STATUS_DISABLED.String(),
+		USER_STATUS_CHANGE_PASSWORD.String(),
+	}
+}

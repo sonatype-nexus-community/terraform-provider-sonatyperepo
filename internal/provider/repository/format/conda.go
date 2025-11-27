@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (c) 2019-present Sonatype, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,12 +42,12 @@ type CondaRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic Conda Format Functions
 // --------------------------------------------
-func (f *CondaRepositoryFormat) GetKey() string {
+func (f *CondaRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_CONDA
 }
 
-func (f *CondaRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *CondaRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -81,16 +81,16 @@ func (f *CondaRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCondaProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *CondaRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+func (f *CondaRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonProxySchemaAttributes()
 }
 
-func (f *CondaRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CondaRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryCondaProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CondaRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CondaRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryCondaProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

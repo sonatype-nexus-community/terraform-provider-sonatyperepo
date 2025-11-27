@@ -34,7 +34,7 @@ Manage Proxy RAW Repositories
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--http_client"></a>
 ### Nested Schema for `http_client`

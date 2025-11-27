@@ -24,10 +24,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -65,22 +67,18 @@ func (f *DefaultRoleCapability) DoUpdateRequest(plan any, capabilityId string, a
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *DefaultRoleCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *DefaultRoleCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreDefaultRoleModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *DefaultRoleCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"role": schema.StringAttribute{
-			Description: "The role which is automatically granted to authenticated users",
-			Required:    true,
-			Optional:    false,
-		},
+func (f *DefaultRoleCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"role": schema.ResourceRequiredString("The role which is automatically granted to authenticated users"),
 	}
 }
 
-func (f *DefaultRoleCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *DefaultRoleCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreDefaultRoleModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

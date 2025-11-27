@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 )
 
 type SonatypeDataSourceData struct {
@@ -40,7 +41,7 @@ type SonatypeDataSourceData struct {
 func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics, versionHint *string) {
 	httpResponse, err := p.Client.StatusAPI.IsWritable(ctx).Execute()
 	if err != nil {
-		HandleApiError(
+		sharederr.HandleAPIError(
 			"Sonatype Nexus Repository is not writable or contactable",
 			&err,
 			httpResponse,

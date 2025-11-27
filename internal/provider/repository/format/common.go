@@ -25,7 +25,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -68,7 +68,7 @@ func (f *BaseRepositoryFormat) DoDeleteRequest(repositoryName string, apiClient 
 	return apiClient.RepositoryManagementAPI.DeleteRepository(ctx, repositoryName).Execute()
 }
 
-func (f *BaseRepositoryFormat) GetApiCreateSuccessResponseCodes() []int {
+func (f *BaseRepositoryFormat) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusCreated}
 }
 
@@ -150,12 +150,12 @@ type RepositoryFormat interface {
 	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
 	ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error
-	GetApiCreateSuccessResponseCodes() []int
-	GetFormatSchemaAttributes() map[string]schema.Attribute
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName(repoType RepositoryType) string
-	GetKey() string
+	ApiCreateSuccessResponseCodes() []int
+	FormatSchemaAttributes() map[string]tfschema.Attribute
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	ResourceName(repoType RepositoryType) string
+	Key() string
 	UpdatePlanForState(plan any) any
 	// UpdateStateFromApi updates the state model from API response data.
 	// IMPORTANT: state parameter may be nil (during import operations).
@@ -164,6 +164,6 @@ type RepositoryFormat interface {
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 }
 
-func getResourceName(format string, repoType RepositoryType) string {
+func resourceName(format string, repoType RepositoryType) string {
 	return fmt.Sprintf("repository_%s_%s", strings.ToLower(format), repoType.String())
 }
