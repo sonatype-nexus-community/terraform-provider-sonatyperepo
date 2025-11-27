@@ -28,15 +28,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositorDockerResource(t *testing.T) {
+const (
+	resourceTypeDockerGroup  = "sonatyperepo_repository_docker_group"
+	resourceTypeDockerHosted = "sonatyperepo_repository_docker_hosted"
+	resourceTypeDockerProxy  = "sonatyperepo_repository_docker_proxy"
+)
 
+var (
+	resourceDockerGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeDockerGroup)
+	resourceDockerHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeDockerHosted)
+	resourceDockerProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeDockerProxy)
+)
+
+func TestAccRepositorDockerResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_docker_group"
-	resourceTypeHosted := "sonatyperepo_repository_docker_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_docker_proxy"
-	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
-	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -59,7 +64,7 @@ resource "%s" "repo" {
     v1_enabled = false
   }
 }
-`, resourceTypeGroup, randomString),
+`, resourceTypeDockerGroup, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			{
@@ -138,61 +143,49 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
+`, resourceTypeDockerHosted, randomString, resourceTypeDockerProxy, randomString, resourceTypeDockerGroup, randomString, randomString, resourceTypeDockerProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.latest_policy", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceDockerHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.latest_policy", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceDockerHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("docker-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://registry-1.docker.io"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.cache_foreign_layers", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.foreign_layer_url_whitelist.#", "0"),
-					resource.TestCheckResourceAttr(resourceProxyName, "docker_proxy.index_type", common.DOCKER_PROXY_INDEX_TYPE_REGISTRY),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "name", fmt.Sprintf("docker-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceDockerProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "proxy.remote_url", "https://registry-1.docker.io"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "proxy.metadata_max_age", "1400"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "http_client.connection.user_agent_suffix", "terraform"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("docker-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, "name", fmt.Sprintf("docker-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceDockerGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
+					resource.TestCheckResourceAttr(resourceDockerGroupName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -201,10 +194,7 @@ resource "%s" "repo" {
 }
 
 func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
-
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeHosted := "sonatyperepo_repository_docker_hosted"
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -236,20 +226,20 @@ func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
 		path_enabled = true
 		v1_enabled = true
 	}
-	}`, resourceTypeHosted, randomString),
+	}`, resourceTypeDockerHosted, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_PATH_ENABLED, "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "name", fmt.Sprintf("docker-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceDockerHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceDockerHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_DOCKER_PATH_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, RES_ATTR_DOCKER_V1_ENABLED, "true"),
 				),
 				// Delete testing automatically occurs in TestCase
 			},
@@ -259,8 +249,6 @@ func TestAccRepositorDockerPathEnabledResource(t *testing.T) {
 
 func TestAccRepositoryDockerHostedImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_docker_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("docker-hosted-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -286,22 +274,22 @@ resource "%s" "repo" {
     v1_enabled = false
   }
 }
-`, resourceType, repoName),
+`, resourceTypeDockerHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
-					resource.TestCheckResourceAttr(resourceName, "component.proprietary_components", "true"),
-					resource.TestCheckResourceAttr(resourceName, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceName, "storage.latest_policy", "true"),
-					resource.TestCheckResourceAttr(resourceName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceName, "storage.write_policy", "ALLOW"),
-					resource.TestCheckResourceAttr(resourceName, "docker.force_basic_auth", "false"),
-					resource.TestCheckResourceAttr(resourceName, "docker.v1_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "component.proprietary_components", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.latest_policy", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "storage.write_policy", "ALLOW"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "docker.force_basic_auth", "false"),
+					resource.TestCheckResourceAttr(resourceDockerHostedName, "docker.v1_enabled", "false"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName: resourceName,
+				ResourceName: resourceDockerHostedName,
 				ImportState:  true,
 				// Cannot test for valid import state due to API not returning `latest_policy` when reading
 				// Docker Registries
@@ -317,8 +305,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryDockerProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_docker_proxy"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("docker-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -353,15 +339,15 @@ resource "%s" "repo" {
   }
   docker_proxy = {}
 }
-`, resourceType, repoName),
+`, resourceTypeDockerProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceDockerProxyName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceDockerProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -405,7 +391,7 @@ resource "%s" "repo" {
     enable_v1 = false
   }
 }
-`, "sonatyperepo_repository_docker_proxy", randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
 			},
 		},
@@ -432,7 +418,7 @@ resource "%s" "repo" {
     v1_enabled = true
   }
 }
-`, "sonatyperepo_repository_docker_hosted", randomString),
+`, resourceTypeDockerHosted, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -453,14 +439,12 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_docker_hosted", randomString),
+`, resourceTypeDockerHosted, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
 
 func TestAccRepositoryDockerProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -495,7 +479,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
 			},
 		},
@@ -535,7 +519,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
 			},
 		},
@@ -575,7 +559,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
 			},
 		},
@@ -615,7 +599,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
 			},
 		},
@@ -652,7 +636,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
@@ -689,10 +673,9 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
 	})
 }
-

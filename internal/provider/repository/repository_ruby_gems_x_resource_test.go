@@ -27,15 +27,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryRubyGemsResource(t *testing.T) {
+const (
+	resourceTypeRubyGemsGroup  = "sonatyperepo_repository_ruby_gems_group"
+	resourceTypeRubyGemsHosted = "sonatyperepo_repository_ruby_gems_hosted"
+	resourceTypeRubyGemsProxy  = "sonatyperepo_repository_ruby_gems_proxy"
+)
 
+var (
+	resourceRubyGemsGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeRubyGemsGroup)
+	resourceRubyGemsHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeRubyGemsHosted)
+	resourceRubyGemsProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeRubyGemsProxy)
+)
+
+func TestAccRepositoryRubyGemsResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_ruby_gems_group"
-	resourceTypeHosted := "sonatyperepo_repository_ruby_gems_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_ruby_gems_proxy"
-	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
-	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -54,7 +59,7 @@ resource "%s" "repo" {
 	member_names = []
   }
 }
-`, resourceTypeGroup, randomString),
+`, resourceTypeRubyGemsGroup, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			{
@@ -119,51 +124,51 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
+`, resourceTypeRubyGemsHosted, randomString, resourceTypeRubyGemsProxy, randomString, resourceTypeRubyGemsGroup, randomString, randomString, resourceTypeRubyGemsProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("ruby-gems-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "name", fmt.Sprintf("ruby-gems-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceRubyGemsHostedName, "cleanup"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("ruby-gems-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://rubygems.org"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "name", fmt.Sprintf("ruby-gems-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.remote_url", "https://rubygems.org"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceRubyGemsProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceRubyGemsProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("ruby-gems-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "name", fmt.Sprintf("ruby-gems-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "group.member_names.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -173,10 +178,7 @@ resource "%s" "repo" {
 
 func TestAccRepositoryRubyGemsHostedImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_ruby_gems_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("ruby-gems-hosted-import-%s", randomString)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -192,15 +194,15 @@ resource "%s" "repo" {
     write_policy = "ALLOW_ONCE"
   }
 }
-`, resourceType, repoName),
+`, resourceTypeRubyGemsHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceRubyGemsHostedName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -213,8 +215,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryRubyGemsProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_ruby_gems_proxy"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("ruby-gems-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -244,15 +244,15 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceType, repoName),
+`, resourceTypeRubyGemsProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceRubyGemsProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -265,12 +265,8 @@ resource "%s" "repo" {
 
 func TestAccRepositoryRubyGemsGroupImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_ruby_gems_group"
-	resourceTypeHosted := "sonatyperepo_repository_ruby_gems_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("ruby-gems-group-import-%s", randomString)
 	memberName := fmt.Sprintf("ruby-gems-hosted-member-%s", randomString)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -299,15 +295,15 @@ resource "%s" "repo" {
   }
   depends_on = [%s.member]
 }
-`, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
+`, resourceTypeRubyGemsHosted, memberName, resourceTypeRubyGemsGroup, repoName, memberName, resourceTypeRubyGemsHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceRubyGemsGroupName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -347,7 +343,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, "sonatyperepo_repository_ruby_gems_proxy", randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
 			},
 		},
@@ -372,7 +368,7 @@ resource "%s" "repo" {
   }
   ruby_gems = {}
 }
-`, "sonatyperepo_repository_ruby_gems_hosted", randomString),
+`, resourceTypeRubyGemsHosted, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -393,14 +389,12 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_ruby_gems_hosted", randomString),
+`, resourceTypeRubyGemsHosted, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
 
 func TestAccRepositoryRubyGemsProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -435,7 +429,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
 			},
 		},
@@ -475,7 +469,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
 			},
 		},
@@ -515,7 +509,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
 			},
 		},
@@ -555,7 +549,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
 			},
 		},
@@ -592,7 +586,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
@@ -629,10 +623,9 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeRubyGemsProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
 	})
 }
-

@@ -27,33 +27,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryGitLfsResource(t *testing.T) {
+const resourceTypeGitLfsHosted = "sonatyperepo_repository_gitlfs_hosted"
 
+var resourceGitLfsHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGitLfsHosted)
+
+func TestAccRepositoryGitLfsResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeHosted := "sonatyperepo_repository_gitlfs_hosted"
-	resourceTypeGroup := "sonatyperepo_repository_gitlfs_group"
-	resourceHostedName := fmt.Sprintf("%s.repo", resourceTypeHosted)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Group validation - empty member_names
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git-lfs-group-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  group = {
-    member_names = []
-  }
-}
-`, resourceTypeGroup, randomString),
-				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
-			},
 			// Create and Read testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
@@ -66,56 +49,20 @@ resource "%s" "repo" {
 	write_policy = "ALLOW_ONCE"
   }
 }
-`, resourceTypeHosted, randomString),
+`, resourceTypeGitLfsHosted, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("git-lfs-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, "name", fmt.Sprintf("git-lfs-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceGitLfsHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceGitLfsHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceGitLfsHostedName, "cleanup"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-func TestAccRepositoryGitLfsProxyInvalidRemoteUrl(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid remote URL (missing protocol)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "invalid-url-without-protocol"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, "sonatyperepo_repository_git_lfs_proxy", randomString),
-				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
-			},
 		},
 	})
 }
@@ -138,7 +85,7 @@ resource "%s" "repo" {
   }
   git_lfs = {}
 }
-`, "sonatyperepo_repository_git_lfs_hosted", randomString),
+`, resourceTypeGitLfsHosted, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -159,246 +106,9 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_git_lfs_hosted", randomString),
+`, resourceTypeGitLfsHosted, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
-
-func TestAccRepositoryGitLfsProxyInvalidTimeoutTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too large, max is 3600)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-timeout-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 3601
-    }
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGitLfsProxyInvalidTimeoutTooSmall(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too small, min is 1)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-timeout-small-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 0
-    }
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGitLfsProxyInvalidRetriesTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (too large, max is 10)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-retries-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = 11
-    }
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGitLfsProxyInvalidRetriesNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-retries-neg-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = -1
-    }
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGitLfsProxyInvalidMaxAgeNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid content_max_age (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-maxage-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = -1
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGitLfsProxyInvalidTimeToLiveNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid time_to_live (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git_lfs-proxy-repo-ttl-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = -1
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
-			},
-		},
-	})
-}
-

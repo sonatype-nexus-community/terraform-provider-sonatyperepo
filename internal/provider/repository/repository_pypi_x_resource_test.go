@@ -27,15 +27,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	resourceTypePypiGroup  = "sonatyperepo_repository_pypi_group"
+	resourceTypePypiHosted = "sonatyperepo_repository_pypi_hosted"
+	resourceTypePypiProxy  = "sonatyperepo_repository_pypi_proxy"
+)
+
+var (
+	resourcePypiGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypePypiGroup)
+	resourcePypiHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypePypiHosted)
+	resourcePypiProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypePypiProxy)
+)
+
 func TestAccRepositoryPyPiResource(t *testing.T) {
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_pypi_group"
-	resourceTypeHosted := "sonatyperepo_repository_pypi_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_pypi_proxy"
-	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
-	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -54,7 +60,7 @@ resource "%s" "repo" {
 	member_names = []
   }
 }
-`, resourceTypeGroup, randomString),
+`, resourceTypePypiGroup, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			{
@@ -122,50 +128,50 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
+`, resourceTypePypiHosted, randomString, resourceTypePypiProxy, randomString, resourceTypePypiGroup, randomString, randomString, resourceTypePypiProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "name", fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiHostedName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourcePypiHostedName, "cleanup"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://pypi.org/"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "pypi.remove_quarrantined", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "name", fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiProxyName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.remote_url", "https://pypi.org/"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.content_max_age", "1442"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.metadata_max_age", "1400"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourcePypiProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "pypi.remove_quarrantined", "true"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("pypi-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, "name", fmt.Sprintf("pypi-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiGroupName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, "group.member_names.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -175,8 +181,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryPyPiHostedImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_pypi_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("pypi-hosted-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -194,15 +198,15 @@ resource "%s" "repo" {
     write_policy = "ALLOW_ONCE"
   }
 }
-`, resourceType, repoName),
+`, resourceTypePypiHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "name", repoName),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourcePypiHostedName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -215,8 +219,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryPyPiProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_pypi_proxy"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("pypi-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -249,15 +251,15 @@ resource "%s" "repo" {
     remove_quarrantined = true
   }
 }
-`, resourceType, repoName),
+`, resourceTypePypiProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "name", repoName),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourcePypiProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -270,9 +272,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryPyPiGroupImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_pypi_group"
-	resourceTypeHosted := "sonatyperepo_repository_pypi_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("pypi-group-import-%s", randomString)
 	memberName := fmt.Sprintf("pypi-hosted-member-%s", randomString)
 
@@ -304,15 +303,15 @@ resource "%s" "repo" {
   }
   depends_on = [%s.member]
 }
-`, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
+`, resourceTypePypiHosted, memberName, resourceTypePypiGroup, repoName, memberName, resourceTypePypiHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, "name", repoName),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourcePypiGroupName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -355,7 +354,7 @@ resource "%s" "repo" {
     index_type = "SIMPLE"
   }
 }
-`, "sonatyperepo_repository_pypi_proxy", randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
 			},
 		},
@@ -380,7 +379,7 @@ resource "%s" "repo" {
   }
   pypi = {}
 }
-`, "sonatyperepo_repository_pypi_hosted", randomString),
+`, resourceTypePypiHosted, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -401,14 +400,12 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_pypi_hosted", randomString),
+`, resourceTypePypiHosted, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
 
 func TestAccRepositoryPypiProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -443,7 +440,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
 			},
 		},
@@ -483,7 +480,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
 			},
 		},
@@ -523,7 +520,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
 			},
 		},
@@ -563,7 +560,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
 			},
 		},
@@ -600,7 +597,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
@@ -637,10 +634,9 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypePypiProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
 	})
 }
-

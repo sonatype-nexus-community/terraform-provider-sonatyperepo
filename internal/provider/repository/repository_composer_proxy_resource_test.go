@@ -28,12 +28,14 @@ import (
 )
 
 const (
-	resourceNameComposerProxy = "sonatyperepo_repository_composer_proxy.repo"
 	resourceTypeComposerProxy = "sonatyperepo_repository_composer_proxy"
 )
 
-func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
+var (
+	resourceComposerProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeComposerProxy)
+)
 
+func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -42,7 +44,7 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 			// Group validation - empty member_names
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_repository_composer_group" "repo" {
+resource "%s" "repo" {
   name = "composer-group-repo-%s"
   online = true
   storage = {
@@ -53,7 +55,7 @@ resource "sonatyperepo_repository_composer_group" "repo" {
     member_names = []
   }
 }
-`, randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			// Create with minimal configuration
@@ -61,11 +63,11 @@ resource "sonatyperepo_repository_composer_group" "repo" {
 				Config: getRepositoryComposerProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.remote_url", "https://repo.packagist.org/"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
 				),
 			},
 			// Update to full configuration
@@ -73,31 +75,31 @@ resource "sonatyperepo_repository_composer_group" "repo" {
 				Config: getRepositoryComposerProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.remote_url", "https://repo.packagist.org/"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceNameComposerProxy, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceNameComposerProxy, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceComposerProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceComposerProxyName, "replication.asset_path_regex"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -224,7 +226,7 @@ resource "%s" "repo" {
   }
   composer = {}
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -245,14 +247,12 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
 
 func TestAccRepositoryComposerProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -287,7 +287,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be less than or equal to 3600"),
 			},
 		},
@@ -327,7 +327,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be greater than or equal to 1"),
 			},
 		},
@@ -367,7 +367,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be less than or equal to 10"),
 			},
 		},
@@ -407,7 +407,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be greater than or equal to 0"),
 			},
 		},
@@ -444,7 +444,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
@@ -481,10 +481,9 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, "sonatyperepo_repository_composer_proxy", randomString),
+`, resourceTypeComposerProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
 	})
 }
-

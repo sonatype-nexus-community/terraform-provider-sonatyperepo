@@ -27,15 +27,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryYumResource(t *testing.T) {
+const (
+	resourceTypeYumGroup  = "sonatyperepo_repository_yum_group"
+	resourceTypeYumHosted = "sonatyperepo_repository_yum_hosted"
+	resourceTypeYumProxy  = "sonatyperepo_repository_yum_proxy"
+)
 
+var (
+	resourceYumGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeYumGroup)
+	resourceYumHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeYumHosted)
+	resourceYumProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeYumProxy)
+)
+
+func TestAccRepositoryYumResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_yum_group"
-	resourceTypeHosted := "sonatyperepo_repository_yum_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_yum_proxy"
-	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
-	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -54,7 +59,7 @@ resource "%s" "repo" {
 	member_names = []
   }
 }
-`, resourceTypeGroup, randomString),
+`, resourceTypeYumGroup, randomString),
 				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
 			},
 			{
@@ -122,51 +127,51 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
+`, resourceTypeYumHosted, randomString, resourceTypeYumProxy, randomString, resourceTypeYumGroup, randomString, randomString, resourceTypeYumProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("yum-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "name", fmt.Sprintf("yum-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceYumHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceYumHostedName, "cleanup"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("yum-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://mirror.centos.org/centos/"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "name", fmt.Sprintf("yum-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceYumProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.remote_url", "https://mirror.centos.org/centos/"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceYumProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceYumProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("yum-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, "name", fmt.Sprintf("yum-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceYumGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumGroupName, "group.member_names.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -176,8 +181,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryYumHostedImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_yum_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("yum-hosted-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -198,15 +201,15 @@ resource "%s" "repo" {
     repo_data_depth = 0
   }
 }
-`, resourceType, repoName),
+`, resourceTypeYumHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceYumHostedName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceYumHostedName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -219,8 +222,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryYumProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_yum_proxy"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("yum-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
@@ -250,15 +251,15 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceType, repoName),
+`, resourceTypeYumProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceYumProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -271,9 +272,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryYumGroupImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceType := "sonatyperepo_repository_yum_group"
-	resourceTypeHosted := "sonatyperepo_repository_yum_hosted"
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceType)
 	repoName := fmt.Sprintf("yum-group-import-%s", randomString)
 	memberName := fmt.Sprintf("yum-hosted-member-%s", randomString)
 
@@ -308,15 +306,15 @@ resource "%s" "repo" {
   }
   depends_on = [%s.member]
 }
-`, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
+`, resourceTypeYumHosted, memberName, resourceTypeYumGroup, repoName, memberName, resourceTypeYumHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, "name", repoName),
+					resource.TestCheckResourceAttr(resourceYumGroupName, "online", "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceName,
+				ResourceName:                         resourceYumGroupName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -359,7 +357,7 @@ resource "%s" "repo" {
     enable_api = false
   }
 }
-`, "sonatyperepo_repository_yum_proxy", randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
 			},
 		},
@@ -386,7 +384,7 @@ resource "%s" "repo" {
     deploy_policy = "rewrite"
   }
 }
-`, "sonatyperepo_repository_yum_hosted", randomString),
+`, resourceTypeYumHosted, randomString),
 				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
 			},
 		},
@@ -407,14 +405,12 @@ resource "%s" "repo" {
   online = true
   # Missing storage block
 }
-`, "sonatyperepo_repository_yum_hosted", randomString),
+`, resourceTypeYumHosted, randomString),
 				ExpectError: regexp.MustCompile("Attribute storage is required"),
 			},
 		},
 	})
 }
-
-
 
 func TestAccRepositoryYumProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -449,7 +445,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
 			},
 		},
@@ -489,7 +485,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
 			},
 		},
@@ -529,7 +525,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
 			},
 		},
@@ -569,7 +565,7 @@ resource "%s" "repo" {
     }
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
 			},
 		},
@@ -606,7 +602,7 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
@@ -643,10 +639,9 @@ resource "%s" "repo" {
     auto_block = true
   }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeYumProxy, randomString),
 				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
 			},
 		},
 	})
 }
-
