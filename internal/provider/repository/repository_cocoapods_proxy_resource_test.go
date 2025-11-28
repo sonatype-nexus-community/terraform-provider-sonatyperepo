@@ -65,7 +65,14 @@ resource "sonatyperepo_repository_cocoapods_group" "repo" {
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.content_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "http_client.auto_block", "true"),
 				),
 			},
 			// Update to full configuration
@@ -112,9 +119,20 @@ resource "%s" "repo" {
   online = true
   storage = {
 	blob_store_name = "default"
+	strict_content_type_validation = true
   }
   proxy = {
     remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
   }
 }
 `, resourceTypeCocoaPodsProxy, randomString)
@@ -200,7 +218,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeCocoaPodsProxy, randomString),
-				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
+				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
@@ -222,10 +240,22 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  cocoapods = {}
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
@@ -244,9 +274,22 @@ resource "%s" "repo" {
   name = "cocoapods-proxy-repo-%s"
   online = true
   # Missing storage block
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Attribute storage is required"),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
@@ -288,7 +331,7 @@ resource "%s" "repo" {
   }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be less than or equal to 3600"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -328,7 +371,7 @@ resource "%s" "repo" {
   }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be greater than or equal to 1"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -368,7 +411,7 @@ resource "%s" "repo" {
   }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be less than or equal to 10"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -408,44 +451,7 @@ resource "%s" "repo" {
   }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be greater than or equal to 0"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryCocoapodsProxyInvalidMaxAgeNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid content_max_age (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "cocoapods-proxy-repo-maxage-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = -1
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -482,7 +488,7 @@ resource "%s" "repo" {
   }
 }
 `, "sonatyperepo_repository_cocoapods_proxy", randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})

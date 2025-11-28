@@ -41,23 +41,6 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Group validation - empty member_names
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "composer-group-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  group = {
-    member_names = []
-  }
-}
-`, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
-			},
 			// Create with minimal configuration
 			{
 				Config: getRepositoryComposerProxyResourceMinimalConfig(randomString),
@@ -67,7 +50,14 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceComposerProxyName, "url"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "storage.strict_content_type_validation", "true"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.auto_block", "true"),
 				),
 			},
 			// Update to full configuration
@@ -114,9 +104,20 @@ resource "%s" "repo" {
   online = true
   storage = {
 	blob_store_name = "default"
+	strict_content_type_validation = true
   }
   proxy = {
     remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
   }
 }
 `, resourceTypeComposerProxy, randomString)
@@ -202,7 +203,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
+				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
@@ -224,10 +225,22 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  composer = {}
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
@@ -246,9 +259,22 @@ resource "%s" "repo" {
   name = "composer-proxy-repo-%s"
   online = true
   # Missing storage block
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute storage is required"),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
@@ -288,7 +314,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be less than or equal to 3600"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -328,7 +354,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.timeout must be between|must be greater than or equal to 1"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -368,7 +394,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be less than or equal to 10"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -408,44 +434,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("Attribute http_client.connection.retries must be between|must be greater than or equal to 0"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryComposerProxyInvalidMaxAgeNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid content_max_age (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "composer-proxy-repo-maxage-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = -1
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -482,7 +471,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeComposerProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})

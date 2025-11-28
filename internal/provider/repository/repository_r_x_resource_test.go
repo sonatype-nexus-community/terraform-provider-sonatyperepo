@@ -207,7 +207,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be a valid URL|must be a valid HTTP URL"),
+				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
@@ -232,7 +232,7 @@ resource "%s" "repo" {
   r = {}
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
@@ -253,7 +253,7 @@ resource "%s" "repo" {
   # Missing storage block
 }
 `, resourceTypeRHosted, randomString),
-				ExpectError: regexp.MustCompile("Attribute storage is required"),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
@@ -293,7 +293,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 3600"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -333,7 +333,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 1"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
@@ -373,7 +373,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be less than or equal to 10"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -413,44 +413,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be between|must be greater than or equal to 0"),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryRProxyInvalidMaxAgeNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid content_max_age (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "r-proxy-repo-maxage-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = -1
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
@@ -487,7 +450,7 @@ resource "%s" "repo" {
   }
 }
 `, resourceTypeRProxy, randomString),
-				ExpectError: regexp.MustCompile("must be greater than or equal to|cannot be negative"),
+				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})

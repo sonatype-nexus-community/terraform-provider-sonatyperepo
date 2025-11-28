@@ -86,7 +86,7 @@ resource "%s" "repo" {
   git_lfs = {}
 }
 `, resourceTypeGitLfsHosted, randomString),
-				ExpectError: regexp.MustCompile("Blob store.*not found|Blob store.*does not exist"),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
@@ -107,7 +107,7 @@ resource "%s" "repo" {
   # Missing storage block
 }
 `, resourceTypeGitLfsHosted, randomString),
-				ExpectError: regexp.MustCompile("Attribute storage is required"),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
