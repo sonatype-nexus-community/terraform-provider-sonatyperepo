@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -38,11 +39,47 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Group validation - empty member_names
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_repository_cocoapods_group" "repo" {
+  name = "cocoapods-group-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  group = {
+    member_names = []
+  }
+}
+`, randomString),
+				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
+			},
+			// Create with minimal configuration
+			{
+				Config: getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify minimal config
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.content_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "http_client.auto_block", "true"),
+				),
+			},
+			// Update to full configuration
 			{
 				Config: getRepositoryCocoaPodsProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
+					// Verify full config
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
 					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
@@ -73,6 +110,32 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-minimal-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeCocoaPodsProxy, randomString)
 }
 
 func getRepositoryCocoaPodsProxyResourceConfig(randomString string, includeReplication bool) string {
@@ -123,3 +186,311 @@ resource "%s" "repo" {
 }
 `, resourceTypeCocoaPodsProxy, randomString, replicationConfig)
 }
+
+func TestAccRepositoryCocoaPodsProxyInvalidRemoteUrl(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid remote URL (missing protocol)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeCocoaPodsProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyInvalidBlobStore(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid blob store name (non-existent)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "non-existent-blob-store"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyMissingStorage(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Missing storage block (required field)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-%s"
+  online = true
+  # Missing storage block
+  proxy = {
+    remote_url = "https://cdn.cocoapods.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
+			},
+		},
+	})
+}
+
+
+
+func TestAccRepositoryCocoapodsProxyInvalidTimeoutTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too large, max is 3600)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-timeout-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 3601
+    }
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyInvalidTimeoutTooSmall(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too small, min is 1)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-timeout-small-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 0
+    }
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyInvalidRetriesTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (too large, max is 10)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-retries-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = 11
+    }
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyInvalidRetriesNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-retries-neg-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = -1
+    }
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryCocoapodsProxyInvalidTimeToLiveNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid time_to_live (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cocoapods-proxy-repo-ttl-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = -1
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, "sonatyperepo_repository_cocoapods_proxy", randomString),
+				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
+			},
+		},
+	})
+}
+

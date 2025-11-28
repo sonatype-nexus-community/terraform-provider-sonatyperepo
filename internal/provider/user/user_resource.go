@@ -240,6 +240,13 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	)
 	apiBody := sonatyperepo.NewApiUser(plan.Status.ValueString())
 	plan.MapToApi(apiBody)
+	// Preserve source from state since it's a read-only computed field
+	// Use state source or default if not present
+	source := state.Source.ValueString()
+	if source == "" {
+		source = common.DEFAULT_USER_SOURCE
+	}
+	apiBody.Source = &source
 	httpResponse, err := r.Client.SecurityManagementUsersAPI.UpdateUser(ctx, state.UserId.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
@@ -272,6 +279,41 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		}
 	}
 
+	// Refresh state from API to get computed fields
+	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Source(source).Execute()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading updated User",
+			fmt.Sprintf("Error reading User after update: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		)
+		return
+	}
+
+	if len(apiResponse) == 0 {
+		resp.Diagnostics.AddError(
+			"No User with requested User ID",
+			fmt.Sprintf("No user found for %s@%s after update", state.UserId.ValueString(), source),
+		)
+		return
+	}
+
+	var updatedUser *sonatyperepo.ApiUser
+	for _, u := range apiResponse {
+		if *u.UserId == state.UserId.ValueString() && *u.Source == source {
+			updatedUser = &u
+			break
+		}
+	}
+
+	if updatedUser == nil {
+		resp.Diagnostics.AddError(
+			"User does not exist after update",
+			fmt.Sprintf("No user returned: %s: %s", httpResponse.Status, err),
+		)
+		return
+	}
+
+	plan.MapFromApi(updatedUser)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)

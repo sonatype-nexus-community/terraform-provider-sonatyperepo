@@ -18,10 +18,10 @@ package blob_store_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
@@ -29,14 +29,12 @@ import (
 
 // TestAccBlobStoreGoogleCloudResourceExpectFailure tests that the resource fails gracefully without GCP credentials
 func TestAccBlobStoreGoogleCloudResourceExpectFailure(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test that creation fails gracefully with authentication error
 			{
-				Config:      getTestAccBlobStoreGoogleCloudResourceMinimal(randomString),
+				Config:      buildGoogleCloudResourceMinimal("test-gcs-fail"),
 				ExpectError: regexp.MustCompile("Error creating Google Cloud Storage Blob Store|authentication|unauthorized|forbidden|invalid_grant"),
 			},
 		},
@@ -45,18 +43,17 @@ func TestAccBlobStoreGoogleCloudResourceExpectFailure(t *testing.T) {
 
 // TestAccBlobStoreGoogleCloudResourceValidation tests resource validation without API calls
 func TestAccBlobStoreGoogleCloudResourceValidation(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test invalid bucket name validation
 			{
-				Config:      getTestAccBlobStoreGoogleCloudResourceInvalidBucket(),
+				Config:      buildGoogleCloudResourceInvalidBucket(),
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
 			// Test missing required fields
 			{
-				Config:      getTestAccBlobStoreGoogleCloudResourceMissingName(),
+				Config:      buildGoogleCloudResourceMissingName(),
 				ExpectError: regexp.MustCompile("Missing required argument|name is required"),
 			},
 		},
@@ -70,7 +67,7 @@ func TestAccBlobStoreGoogleCloudResourceConfigValidation(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test soft quota validation
 			{
-				Config:      getTestAccBlobStoreGoogleCloudResourceInvalidSoftQuota(),
+				Config:      buildGoogleCloudResourceInvalidSoftQuota(),
 				ExpectError: regexp.MustCompile("invalid soft quota|limit must be positive|Error creating"),
 			},
 		},
@@ -79,27 +76,60 @@ func TestAccBlobStoreGoogleCloudResourceConfigValidation(t *testing.T) {
 
 // TestAccBlobStoreGoogleCloudResourceSchema tests the resource schema without creating resources
 func TestAccBlobStoreGoogleCloudResourceSchema(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test that the configuration is parsed correctly (will fail at API call, which is expected)
 			{
-				Config:      getTestAccBlobStoreGoogleCloudResourceComplete(randomString),
+				Config:      buildGoogleCloudResourceComplete("test-schema"),
 				ExpectError: regexp.MustCompile("Error creating Google Cloud Storage Blob Store"),
 				Check: resource.ComposeTestCheckFunc(
 					// These checks won't run due to ExpectError, but they validate the schema
-					resource.TestCheckResourceAttr("sonatyperepo_blob_store_google_cloud.gc_complete", "name", fmt.Sprintf("test-gc-complete-%s", randomString)),
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
 				),
 			},
 		},
 	})
 }
 
-// Configuration functions for tests
+// TestAccBlobStoreGoogleCloudResourceWithCredentials tests full GCS resource CRUD when GCP credentials are available
+func TestAccBlobStoreGoogleCloudResourceWithCredentials(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			if os.Getenv("TF_ACC_GCS_BLOB_STORE") != "1" {
+				t.Skip("GCS blob store resource tests require GCP credentials - set TF_ACC_GCS_BLOB_STORE=1 to enable")
+			}
+		},
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: buildGoogleCloudResourceComplete("test-crud"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "bucket_configuration.0.bucket.0.name"),
+				),
+			},
+			// Update testing
+			{
+				Config: buildGoogleCloudResourceComplete("test-crud-updated"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:      "sonatyperepo_blob_store_gcs.gc_complete",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
 
-func getTestAccBlobStoreGoogleCloudResourceMinimal(randomString string) string {
+// Configuration builder functions
+
+func buildGoogleCloudResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_blob_store_gcs" "gc_minimal" {
   name = "test-gc-minimal-%s"
@@ -125,7 +155,7 @@ resource "sonatyperepo_blob_store_gcs" "gc_minimal" {
 `, randomString, randomString)
 }
 
-func getTestAccBlobStoreGoogleCloudResourceComplete(randomString string) string {
+func buildGoogleCloudResourceComplete(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_blob_store_gcs" "gc_complete" {
   name = "test-gc-complete-%s"
@@ -160,7 +190,7 @@ resource "sonatyperepo_blob_store_gcs" "gc_complete" {
 `, randomString, randomString, randomString)
 }
 
-func getTestAccBlobStoreGoogleCloudResourceInvalidBucket() string {
+func buildGoogleCloudResourceInvalidBucket() string {
 	return utils_test.ProviderConfig + `
 resource "sonatyperepo_blob_store_gcs" "gc_invalid" {
   name = "test-gc-invalid"
@@ -182,7 +212,7 @@ resource "sonatyperepo_blob_store_gcs" "gc_invalid" {
 `
 }
 
-func getTestAccBlobStoreGoogleCloudResourceMissingName() string {
+func buildGoogleCloudResourceMissingName() string {
 	return utils_test.ProviderConfig + `
 resource "sonatyperepo_blob_store_gcs" "gc_missing" {
   bucket_configuration {
@@ -202,7 +232,7 @@ resource "sonatyperepo_blob_store_gcs" "gc_missing" {
 `
 }
 
-func getTestAccBlobStoreGoogleCloudResourceInvalidSoftQuota() string {
+func buildGoogleCloudResourceInvalidSoftQuota() string {
 	return utils_test.ProviderConfig + `
 resource "sonatyperepo_blob_store_gcs" "gc_invalid_quota" {
   name = "test-gc-invalid-quota"

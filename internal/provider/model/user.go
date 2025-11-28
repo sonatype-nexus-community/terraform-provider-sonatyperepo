@@ -69,7 +69,7 @@ func (m *UserModelResource) MapToApi(api *sonatyperepo.ApiUser) {
 		api.Roles = append(api.Roles, r.ValueString())
 	}
 	api.ReadOnly = m.ReadOnly.ValueBoolPointer()
-	api.Source = m.Source.ValueStringPointer()
+	// Source should be set by the caller for updates since it's a computed field
 }
 
 func (m *UserModelResource) MapToCreateApi(api *sonatyperepo.ApiCreateUser) {

@@ -36,9 +36,9 @@ func TestAccRoleResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration
 			{
-				Config: getRoleResourceConfig(randomString),
+				Config: buildRoleResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameRole, "id", fmt.Sprintf("my-test-role-%s", randomString)),
@@ -46,6 +46,18 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameRole, "description", "This is a test role"),
 					resource.TestCheckResourceAttr(resourceNameRole, "privileges.#", "1"),
 					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "1"),
+				),
+			},
+			// Update to full configuration
+			{
+				Config: buildRoleResourceComplete(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify updated values
+					resource.TestCheckResourceAttr(resourceNameRole, "id", fmt.Sprintf("my-test-role-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, "name", fmt.Sprintf("My Updated Role %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, "description", "This is an updated test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, "privileges.#", "2"),
+					resource.TestCheckResourceAttr(resourceNameRole, "roles.#", "2"),
 				),
 			},
 			// ImportState testing
@@ -62,7 +74,7 @@ func TestAccRoleResource(t *testing.T) {
 
 }
 
-func getRoleResourceConfig(randomString string) string {
+func buildRoleResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "rl" {
   id = "my-test-role-%s"
@@ -73,6 +85,24 @@ resource "%s" "rl" {
   ]
   roles = [
     "nx-anonymous"
+  ]
+}
+`, resourceTypeRole, randomString, randomString)
+}
+
+func buildRoleResourceComplete(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "rl" {
+  id = "my-test-role-%s"
+  name = "My Updated Role %s"
+  description = "This is an updated test role"
+  privileges = [
+    "nx-healthcheck-read",
+    "nx-healthcheck-summary-read"
+  ]
+  roles = [
+    "nx-anonymous",
+    "nx-admin"
   ]
 }
 `, resourceTypeRole, randomString, randomString)
