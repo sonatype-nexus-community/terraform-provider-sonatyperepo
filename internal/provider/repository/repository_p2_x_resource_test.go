@@ -32,7 +32,6 @@ const resourceTypeP2Proxy = "sonatyperepo_repository_p2_proxy"
 var resourceP2ProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeP2Proxy)
 
 func TestAccRepositorP2Resource(t *testing.T) {
-
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -212,7 +211,19 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  p2 = {}
+  proxy = {
+    remote_url = "https://download.eclipse.org/releases/2025-06"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),

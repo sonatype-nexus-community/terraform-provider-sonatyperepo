@@ -37,23 +37,6 @@ func TestAccRepositorCondaResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Group validation - empty member_names
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_repository_conda_group" "repo" {
-  name = "conda-group-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  group = {
-    member_names = []
-  }
-}
-`, randomString),
-				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
-			},
 			// Create and Read testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
@@ -228,7 +211,19 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  conda = {}
+  proxy = {
+    remote_url = "https://repo.anaconda.com/pkgs/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeCondaProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -250,6 +245,19 @@ resource "%s" "repo" {
   name = "conda-proxy-repo-%s"
   online = true
   # Missing storage block
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeCondaProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),

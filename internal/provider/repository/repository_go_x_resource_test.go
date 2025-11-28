@@ -321,7 +321,19 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  go = {}
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeGoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -343,6 +355,14 @@ resource "%s" "repo" {
   name = "go-proxy-repo-%s"
   online = true
   # Missing storage block
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeGoGroup, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
@@ -440,7 +460,7 @@ func TestAccRepositoryGoProxyInvalidRetriesTooLarge(t *testing.T) {
 			// Invalid retries (too large, max is 10)
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {s
+resource "%s" "repo" {
   name = "go-proxy-repo-retries-%s"
   online = true
   storage = {

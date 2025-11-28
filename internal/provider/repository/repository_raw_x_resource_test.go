@@ -369,6 +369,9 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
 }
 `, resourceTypeRawProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
@@ -392,8 +395,11 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+    write_policy = "ALLOW"
   }
-  raw = {}
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
 }
 `, resourceTypeRawHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -455,6 +461,9 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
 }
 `, resourceTypeRawProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
@@ -494,6 +503,9 @@ resource "%s" "repo" {
     connection = {
       timeout = 0
     }
+  }
+  raw = {
+    content_disposition = "ATTACHMENT"
   }
 }
 `, resourceTypeRawProxy, randomString),
@@ -535,6 +547,9 @@ resource "%s" "repo" {
       retries = 11
     }
   }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
 }
 `, resourceTypeRawProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -575,6 +590,9 @@ resource "%s" "repo" {
       retries = -1
     }
   }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
 }
 `, resourceTypeRawProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -611,6 +629,9 @@ resource "%s" "repo" {
   http_client = {
     blocked = false
     auto_block = true
+  }
+  raw = {
+    content_disposition = "ATTACHMENT"
   }
 }
 `, resourceTypeRawProxy, randomString),

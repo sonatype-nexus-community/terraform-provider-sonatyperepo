@@ -388,8 +388,9 @@ resource "%s" "repo" {
   }
   docker = {
     force_basic_auth = false
-    enable_v1 = false
+    v1_enabled = false
   }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
@@ -413,8 +414,10 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+	write_policy = "ALLOW"
   }
   docker = {
+    force_basic_auth = false
     v1_enabled = true
   }
 }
@@ -438,6 +441,10 @@ resource "%s" "repo" {
   name = "docker-hosted-repo-%s"
   online = true
   # Missing storage block
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
 }
 `, resourceTypeDockerHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
@@ -478,6 +485,11 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
@@ -518,6 +530,11 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
@@ -558,6 +575,11 @@ resource "%s" "repo" {
       retries = 11
     }
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -598,6 +620,11 @@ resource "%s" "repo" {
       retries = -1
     }
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -635,6 +662,11 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
+  docker = {
+    force_basic_auth = false
+    v1_enabled = true
+  }
+  docker_proxy = {  }
 }
 `, resourceTypeDockerProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),

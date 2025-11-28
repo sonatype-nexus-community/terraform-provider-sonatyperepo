@@ -40,7 +40,6 @@ var (
 )
 
 func TestAccRepositoryRResource(t *testing.T) {
-
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

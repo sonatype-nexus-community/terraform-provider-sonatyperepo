@@ -82,8 +82,8 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
   }
-  git_lfs = {}
 }
 `, resourceTypeGitLfsHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),

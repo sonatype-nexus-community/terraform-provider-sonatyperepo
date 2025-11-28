@@ -365,8 +365,8 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+    write_policy = "ALLOW"
   }
-  ruby_gems = {}
 }
 `, resourceTypeRubyGemsHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),

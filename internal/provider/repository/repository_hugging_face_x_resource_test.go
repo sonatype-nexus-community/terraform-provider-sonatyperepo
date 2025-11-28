@@ -212,7 +212,19 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  hugging_face = {}
+  proxy = {
+    remote_url = "https://huggingface.co"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -234,6 +246,19 @@ resource "%s" "repo" {
   name = "hugging_face-proxy-repo-%s"
   online = true
   # Missing storage block
+  proxy = {
+    remote_url = "https://huggingface.co"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),

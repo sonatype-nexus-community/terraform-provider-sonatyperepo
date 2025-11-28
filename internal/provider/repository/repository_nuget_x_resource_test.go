@@ -348,6 +348,9 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
+  nuget_proxy = {
+    nuget_version = "V2"
+  }
 }
 `, resourceTypeNugetProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
@@ -371,8 +374,8 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+    write_policy = "ALLOW_ONCE"
   }
-  nuget = {}
 }
 `, resourceTypeNugetHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -434,6 +437,9 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
+  nuget_proxy = {
+    nuget_version = "V2"
+  }
 }
 `, resourceTypeNugetProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
@@ -473,6 +479,9 @@ resource "%s" "repo" {
     connection = {
       timeout = 0
     }
+  }
+  nuget_proxy = {
+    nuget_version = "V2"
   }
 }
 `, resourceTypeNugetProxy, randomString),
@@ -514,6 +523,9 @@ resource "%s" "repo" {
       retries = 11
     }
   }
+  nuget_proxy = {
+    nuget_version = "V2"
+  }
 }
 `, resourceTypeNugetProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -554,6 +566,9 @@ resource "%s" "repo" {
       retries = -1
     }
   }
+  nuget_proxy = {
+    nuget_version = "V2"
+  }
 }
 `, resourceTypeNugetProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -590,6 +605,9 @@ resource "%s" "repo" {
   http_client = {
     blocked = false
     auto_block = true
+  }
+  nuget_proxy = {
+    nuget_version = "V2"
   }
 }
 `, resourceTypeNugetProxy, randomString),

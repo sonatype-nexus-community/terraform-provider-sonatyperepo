@@ -274,8 +274,8 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+    write_policy = "ALLOW_ONCE"
   }
-  helm = {}
 }
 `, resourceTypeHelmHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
