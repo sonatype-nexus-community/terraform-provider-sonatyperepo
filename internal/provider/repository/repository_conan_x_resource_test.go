@@ -209,7 +209,7 @@ resource "%s" "repo" {
     auto_block = true
   }
   conan = {
-    require_authentication = false
+    conan_version = "V2"
   }
 }
 `, resourceTypeConanProxy, randomString),
@@ -235,7 +235,22 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  conan = {}
+  proxy = {
+    remote_url = "https://center2.conan.io"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+  conan = {
+    conan_version = "V2"
+  }
 }
 `, resourceTypeConanProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
@@ -297,6 +312,9 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
+  conan = {
+    conan_version = "V2"
+  }
 }
 `, resourceTypeConanProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
@@ -336,6 +354,9 @@ resource "%s" "repo" {
     connection = {
       timeout = 0
     }
+  }
+  conan = {
+    conan_version = "V2"
   }
 }
 `, resourceTypeConanProxy, randomString),
@@ -377,6 +398,9 @@ resource "%s" "repo" {
       retries = 11
     }
   }
+  conan = {
+    conan_version = "V2"
+  }
 }
 `, resourceTypeConanProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -417,6 +441,9 @@ resource "%s" "repo" {
       retries = -1
     }
   }
+  conan = {
+    conan_version = "V2"
+  }
 }
 `, resourceTypeConanProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
@@ -453,6 +480,9 @@ resource "%s" "repo" {
   http_client = {
     blocked = false
     auto_block = true
+  }
+  conan = {
+    conan_version = "V2"
   }
 }
 `, resourceTypeConanProxy, randomString),
