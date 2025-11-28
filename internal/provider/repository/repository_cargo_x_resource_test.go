@@ -28,27 +28,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryCargoResource(t *testing.T) {
+const (
+	resourceTypeCargoGroup  = "sonatyperepo_repository_cargo_group"
+	resourceTypeCargoHosted = "sonatyperepo_repository_cargo_hosted"
+	resourceTypeCargoProxy  = "sonatyperepo_repository_cargo_proxy"
+)
 
+var (
+	resourceCargoGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoGroup)
+	resourceCargoHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoHosted)
+	resourceCargoProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoProxy)
+)
+
+func TestAccRepositoryCargoResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeGroup := "sonatyperepo_repository_cargo_group"
-	resourceTypeHosted := "sonatyperepo_repository_cargo_hosted"
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
-	resourceGroupName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGroup)
-	resourceHostedName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHosted)
-	resourceProxyName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeProxy)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			// Know regression in NXRM 3.82.0 - skip these tests as they will fail - see https://sonatype.atlassian.net/browse/NEXUS-48088
+			// Know regression in NXRM 3.82.0 - skip these tests as they will fail - see https://sonatype.atlassian.net/browse/NEXUS-48088 - fix coming 3.88.x
 			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
 				Major: 3,
 				Minor: 82,
 				Patch: 0,
 			}, &common.SystemVersion{
 				Major: 3,
-				Minor: 85,
+				Minor: 87,
 				Patch: 99,
 			})
 		},
@@ -70,8 +75,8 @@ resource "%s" "repo" {
     require_authentication = false
   }
 }
-`, resourceTypeGroup, randomString),
-				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
+`, resourceTypeCargoGroup, randomString),
+				ExpectError: regexp.MustCompile(errorMessageGroupMemberNamesEmpty),
 			},
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
@@ -141,61 +146,61 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeHosted, randomString, resourceTypeProxy, randomString, resourceTypeGroup, randomString, randomString, resourceTypeProxy),
+`, resourceTypeCargoHosted, randomString, resourceTypeCargoProxy, randomString, resourceTypeCargoGroup, randomString, randomString, resourceTypeCargoProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("cargo-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, "name", fmt.Sprintf("cargo-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, "component.proprietary_components", "false"),
+					resource.TestCheckNoResourceAttr(resourceCargoHostedName, "cleanup"),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceProxyName, "name", fmt.Sprintf("cargo-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceProxyName, "url"),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceProxyName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.remote_url", "https://index.crates.io/"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceProxyName, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceProxyName, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceProxyName, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceProxyName, "replication.asset_path_regex"),
-					resource.TestCheckResourceAttr(resourceProxyName, "cargo.require_authentication", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "name", fmt.Sprintf("cargo-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.remote_url", "https://index.crates.io/"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceCargoProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceCargoProxyName, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "cargo.require_authentication", "true"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGroupName, "name", fmt.Sprintf("cargo-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGroupName, "url"),
-					resource.TestCheckResourceAttr(resourceGroupName, "storage.blob_store_name", "default"),
-					resource.TestCheckResourceAttr(resourceGroupName, "group.member_names.#", "1"),
-					resource.TestCheckResourceAttr(resourceGroupName, "cargo.require_authentication", "false"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "name", fmt.Sprintf("cargo-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "online", "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "storage.blob_store_name", "default"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "cargo.require_authentication", "false"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
-			},
-			})
-			}
+		},
+	})
+}
 
-			func TestAccRepositoryCargoProxyInvalidRemoteUrl(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidRemoteUrl(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -228,7 +233,7 @@ resource "%s" "repo" {
     require_authentication = false
   }
 }
-`, "sonatyperepo_repository_cargo_proxy", randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
@@ -250,10 +255,10 @@ resource "%s" "repo" {
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
+    write_policy = "ALLOW"
   }
-  cargo = {}
 }
-`, "sonatyperepo_repository_cargo_hosted", randomString),
+`, resourceTypeCargoHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
@@ -273,18 +278,19 @@ resource "%s" "repo" {
   name = "cargo-hosted-repo-%s"
   online = true
   # Missing storage block
+  cargo = {
+    require_authentication = false
+  }
 }
-`, "sonatyperepo_repository_cargo_hosted", randomString),
+`, resourceTypeCargoHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
 }
 
-
 func TestAccRepositoryCargoProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -315,8 +321,11 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
+  cargo = {
+    require_authentication = false
+  }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
@@ -325,7 +334,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -356,8 +364,11 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
+  cargo = {
+    require_authentication = false
+  }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
@@ -366,7 +377,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -397,8 +407,11 @@ resource "%s" "repo" {
       retries = 11
     }
   }
+  cargo = {
+    require_authentication = false
+  }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
@@ -407,7 +420,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -438,8 +450,11 @@ resource "%s" "repo" {
       retries = -1
     }
   }
+  cargo = {
+    require_authentication = false
+  }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
@@ -448,7 +463,6 @@ resource "%s" "repo" {
 
 func TestAccRepositoryCargoProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeProxy := "sonatyperepo_repository_cargo_proxy"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -476,11 +490,13 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
+  cargo = {
+    require_authentication = false
+  }
 }
-`, resourceTypeProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})
 }
-

@@ -31,6 +31,7 @@ const (
 
 var (
 	errorMessageBlobStoreNotFound                = "Blob store.*not found"
+	errorMessageGroupMemberNamesEmpty            = "Attribute group.member_names list must contain at least 1 elements"
 	errorMessageInvalidRemoteUrl                 = "Attribute proxy.remote_url must be a valid HTTP URL"
 	errorMessageHttpClientConnectionRetriesValue = fmt.Sprintf(
 		"Attribute http_client.connection.retries value must be between %d and %d",
