@@ -27,6 +27,8 @@ import (
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
+const resourceNameGcsBlobStore = "sonatyperepo_blob_store_gcs.gc_complete"
+
 // TestAccBlobStoreGoogleCloudResourceExpectFailure tests that the resource fails gracefully without GCP credentials
 func TestAccBlobStoreGoogleCloudResourceExpectFailure(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -85,7 +87,7 @@ func TestAccBlobStoreGoogleCloudResourceSchema(t *testing.T) {
 				ExpectError: regexp.MustCompile("Error creating Google Cloud Storage Blob Store"),
 				Check: resource.ComposeTestCheckFunc(
 					// These checks won't run due to ExpectError, but they validate the schema
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
+					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
 				),
 			},
 		},
@@ -106,20 +108,20 @@ func TestAccBlobStoreGoogleCloudResourceWithCredentials(t *testing.T) {
 			{
 				Config: buildGoogleCloudResourceComplete("test-crud"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "bucket_configuration.0.bucket.0.name"),
+					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
+					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "bucket_configuration.0.bucket.0.name"),
 				),
 			},
 			// Update testing
 			{
 				Config: buildGoogleCloudResourceComplete("test-crud-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_gcs.gc_complete", "name"),
+					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:      "sonatyperepo_blob_store_gcs.gc_complete",
+				ResourceName:      resourceNameGcsBlobStore,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

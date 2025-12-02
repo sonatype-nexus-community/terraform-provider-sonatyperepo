@@ -43,7 +43,7 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
-				Config: getRepositoryAptProxyResourceMinimalConfig(randomString),
+				Config: repositoryAptProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
 					resource.TestCheckResourceAttr(resourceAptProxyName, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
@@ -56,7 +56,7 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 			},
 			// Update to full configuration
 			{
-				Config: getRepositoryAptProxyResourceConfig(randomString, false),
+				Config: repositoryAptProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
 					resource.TestCheckResourceAttr(resourceAptProxyName, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
@@ -83,7 +83,7 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 	})
 }
 
-func getRepositoryAptProxyResourceMinimalConfig(randomString string) string {
+func repositoryAptProxyResourceMinimalConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
   name = "apt-proxy-repo-%s"
@@ -112,7 +112,7 @@ resource "%s" "repo" {
 `, resourceTypeAptProxy, randomString)
 }
 
-func getRepositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
+func repositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `

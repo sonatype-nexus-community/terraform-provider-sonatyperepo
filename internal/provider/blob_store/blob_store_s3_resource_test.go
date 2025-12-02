@@ -26,6 +26,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const resourceNameS3BlobStore = "sonatyperepo_blob_store_s3.test"
+
 // TestAccBlobStoreS3ResourceValidation tests S3 resource validation without API calls
 func TestAccBlobStoreS3ResourceValidation(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -54,20 +56,20 @@ func TestAccBlobStoreS3ResourceWithCredentials(t *testing.T) {
 			{
 				Config: buildS3ResourceCompleteConfig("test-crud"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_s3.test", "name"),
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_s3.test", "bucket_configuration.0.bucket.0.region"),
+					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "name"),
+					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "bucket_configuration.0.bucket.0.region"),
 				),
 			},
 			// Update testing
 			{
 				Config: buildS3ResourceCompleteConfig("test-crud-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_s3.test", "name"),
+					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "name"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:      "sonatyperepo_blob_store_s3.test",
+				ResourceName:      resourceNameS3BlobStore,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

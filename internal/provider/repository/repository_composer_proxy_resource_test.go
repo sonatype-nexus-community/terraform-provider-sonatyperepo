@@ -43,7 +43,7 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
-				Config: getRepositoryComposerProxyResourceMinimalConfig(randomString),
+				Config: repositoryComposerProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
@@ -62,7 +62,7 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 			},
 			// Update to full configuration
 			{
-				Config: getRepositoryComposerProxyResourceConfig(randomString, false),
+				Config: repositoryComposerProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
@@ -97,7 +97,7 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	})
 }
 
-func getRepositoryComposerProxyResourceMinimalConfig(randomString string) string {
+func repositoryComposerProxyResourceMinimalConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
   name = "composer-proxy-repo-minimal-%s"
@@ -123,7 +123,7 @@ resource "%s" "repo" {
 `, resourceTypeComposerProxy, randomString)
 }
 
-func getRepositoryComposerProxyResourceConfig(randomString string, includeReplication bool) string {
+func repositoryComposerProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `

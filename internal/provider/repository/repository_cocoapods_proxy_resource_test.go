@@ -41,7 +41,7 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
-				Config: getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString),
+				Config: repositoryCocoaPodsProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-minimal-%s", randomString)),
@@ -60,7 +60,7 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 			},
 			// Update to full configuration
 			{
-				Config: getRepositoryCocoaPodsProxyResourceConfig(randomString, false),
+				Config: repositoryCocoaPodsProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
@@ -95,7 +95,7 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 	})
 }
 
-func getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString string) string {
+func repositoryCocoaPodsProxyResourceMinimalConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
   name = "cocoapods-proxy-repo-minimal-%s"
@@ -121,7 +121,7 @@ resource "%s" "repo" {
 `, resourceTypeCocoaPodsProxy, randomString)
 }
 
-func getRepositoryCocoaPodsProxyResourceConfig(randomString string, includeReplication bool) string {
+func repositoryCocoaPodsProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
