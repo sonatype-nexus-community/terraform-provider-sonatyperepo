@@ -130,21 +130,21 @@ resource "%s" "repo" {
 `, resourceTypeYumHosted, randomString, resourceTypeYumProxy, randomString, resourceTypeYumGroup, randomString, randomString, resourceTypeYumProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceYumHostedName, "name", fmt.Sprintf("yum-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceYumHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_NAME, fmt.Sprintf("yum-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceYumHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceYumHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceYumHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceYumHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceYumHostedName, RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceYumProxyName, "name", fmt.Sprintf("yum-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceYumProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_NAME, fmt.Sprintf("yum-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceYumProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.remote_url", "https://mirror.centos.org/centos/"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.metadata_max_age", "1440"),
@@ -167,9 +167,9 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceYumProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceYumGroupName, "name", fmt.Sprintf("yum-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceYumGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_NAME, fmt.Sprintf("yum-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceYumGroupName, "group.member_names.#", "1"),
 				),
@@ -203,8 +203,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeYumHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceYumHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceYumHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -253,8 +253,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeYumProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceYumProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceYumProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -308,8 +308,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeYumHosted, memberName, resourceTypeYumGroup, repoName, memberName, resourceTypeYumHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceYumGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceYumGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

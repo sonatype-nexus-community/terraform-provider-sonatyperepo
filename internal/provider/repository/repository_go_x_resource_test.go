@@ -115,11 +115,11 @@ resource "%s" "repo" {
 `, resourceTypeGoProxy, randomString, resourceTypeGoGroup, randomString, randomString, resourceTypeGoProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceGoProxyName, "name", fmt.Sprintf("go-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGoProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGoProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceGoProxyName, RES_ATTR_NAME, fmt.Sprintf("go-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGoProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceGoProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceGoProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceGoProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceGoProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceGoProxyName, "proxy.remote_url", "https://proxy.golang.org/"),
 					resource.TestCheckResourceAttr(resourceGoProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceGoProxyName, "proxy.metadata_max_age", "1440"),
@@ -142,9 +142,9 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceGoProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceGoGroupName, "name", fmt.Sprintf("go-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceGoGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceGoGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceGoGroupName, RES_ATTR_NAME, fmt.Sprintf("go-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGoGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceGoGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceGoGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceGoGroupName, "group.member_names.#", "1"),
 				),
@@ -188,8 +188,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeGoProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -252,8 +252,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeGoProxy, memberName, resourceTypeGoGroup, repoName, memberName, resourceTypeGoProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceGoGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceGoGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceGoGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceGoGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

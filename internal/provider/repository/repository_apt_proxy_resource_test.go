@@ -46,9 +46,9 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryAptProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceAptProxyName, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
 					resource.TestCheckResourceAttr(resourceAptProxyName, "apt.distribution", "bionic"),
@@ -59,11 +59,11 @@ func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryAptProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
-					resource.TestCheckResourceAttr(resourceAptProxyName, "name", fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
 					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.metadata_max_age", "1400"),
@@ -200,8 +200,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeAptProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceAptProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

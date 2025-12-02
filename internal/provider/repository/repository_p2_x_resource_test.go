@@ -77,11 +77,11 @@ resource "%s" "repo" {
 `, resourceTypeP2Proxy, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceP2ProxyName, "name", fmt.Sprintf("p2-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceP2ProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceP2ProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_NAME, fmt.Sprintf("p2-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceP2ProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceP2ProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.remote_url", "https://download.eclipse.org/releases/2025-06"),
 					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.metadata_max_age", "1440"),
@@ -142,8 +142,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeP2Proxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceP2ProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceP2ProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

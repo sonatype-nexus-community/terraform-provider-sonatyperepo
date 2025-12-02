@@ -127,21 +127,21 @@ resource "%s" "repo" {
 `, resourceTypeRubyGemsHosted, randomString, resourceTypeRubyGemsProxy, randomString, resourceTypeRubyGemsGroup, randomString, randomString, resourceTypeRubyGemsProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "name", fmt.Sprintf("ruby-gems-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRubyGemsHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_NAME, fmt.Sprintf("ruby-gems-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceRubyGemsHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceRubyGemsHostedName, RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "name", fmt.Sprintf("ruby-gems-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRubyGemsProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_NAME, fmt.Sprintf("ruby-gems-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.remote_url", "https://rubygems.org"),
 					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "proxy.metadata_max_age", "1440"),
@@ -164,9 +164,9 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceRubyGemsProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "name", fmt.Sprintf("ruby-gems-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRubyGemsGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_NAME, fmt.Sprintf("ruby-gems-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRubyGemsGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "group.member_names.#", "1"),
 				),
@@ -196,8 +196,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeRubyGemsHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -246,8 +246,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeRubyGemsProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -297,8 +297,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeRubyGemsHosted, memberName, resourceTypeRubyGemsGroup, repoName, memberName, resourceTypeRubyGemsHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceRubyGemsGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

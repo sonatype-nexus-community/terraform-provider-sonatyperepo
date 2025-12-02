@@ -46,11 +46,11 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryComposerProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceComposerProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_NAME, fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1440"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),
@@ -65,11 +65,11 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryComposerProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceComposerProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_NAME, fmt.Sprintf("composer-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceComposerProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),

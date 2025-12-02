@@ -77,11 +77,11 @@ resource "%s" "repo" {
 `, resourceTypeCondaProxy, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceCondaProxyName, "name", fmt.Sprintf("conda-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceCondaProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceCondaProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_NAME, fmt.Sprintf("conda-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCondaProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceCondaProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceCondaProxyName, "proxy.remote_url", "https://repo.anaconda.com/pkgs/"),
 					resource.TestCheckResourceAttr(resourceCondaProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceCondaProxyName, "proxy.metadata_max_age", "1440"),
@@ -142,8 +142,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeCondaProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceCondaProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceCondaProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceCondaProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

@@ -130,21 +130,21 @@ resource "%s" "repo" {
 `, resourceTypeNugetHosted, randomString, resourceTypeNugetProxy, randomString, resourceTypeNugetGroup, randomString, randomString, resourceTypeNugetProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "name", fmt.Sprintf("nuget-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_NAME, fmt.Sprintf("nuget-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceNugetHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceNugetHostedName, RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceNugetProxyName, "name", fmt.Sprintf("nuget-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_NAME, fmt.Sprintf("nuget-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.remote_url", "https://api.nuget.org/v3/index.json"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.metadata_max_age", "1400"),
@@ -165,9 +165,9 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceNugetProxyName, "routing_rule"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceNugetGroupName, "name", fmt.Sprintf("nuget-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_NAME, fmt.Sprintf("nuget-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNugetGroupName, "group.member_names.#", "1"),
 				),
@@ -198,8 +198,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNugetHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -251,8 +251,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNugetProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNugetProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -303,8 +303,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNugetHosted, memberName, resourceTypeNugetGroup, repoName, memberName, resourceTypeNugetHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNugetGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNugetGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

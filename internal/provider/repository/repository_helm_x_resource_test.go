@@ -93,11 +93,11 @@ resource "%s" "repo" {
 `, resourceTypeHelmProxy, randomString, resourceTypeHelmHosted, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceHelmProxyName, "name", fmt.Sprintf("helm-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHelmProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHelmProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_NAME, fmt.Sprintf("helm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHelmProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHelmProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.remote_url", "https://charts.helm.sh/stable"),
 					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.metadata_max_age", "1440"),
@@ -120,14 +120,14 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceHelmProxyName, "replication.asset_path_regex"),
 
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "name", fmt.Sprintf("helm-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHelmHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_NAME, fmt.Sprintf("helm-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHelmHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHelmHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceHelmHostedName, RES_ATTR_CLEANUP),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -156,8 +156,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeHelmHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceHelmHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -206,8 +206,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeHelmProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceHelmProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceHelmProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

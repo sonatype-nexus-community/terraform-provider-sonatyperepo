@@ -78,11 +78,11 @@ resource "%s" "repo" {
 `, resourceTypeHuggingfaceProxy, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "name", fmt.Sprintf("hugging-face-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHuggingfaceProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_NAME, fmt.Sprintf("hugging-face-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHuggingfaceProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.remote_url", "https://huggingface.co"),
 					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.metadata_max_age", "1440"),
@@ -143,8 +143,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeHuggingfaceProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

@@ -138,22 +138,22 @@ resource "%s" "repo" {
 `, resourceTypeRawHosted, randomString, resourceTypeRawProxy, randomString, resourceTypeRawGroup, randomString, randomString, resourceTypeRawProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceRawHostedName, "name", fmt.Sprintf("raw-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRawHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_NAME, fmt.Sprintf("raw-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRawHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceRawHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceRawHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceRawHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceRawHostedName, RES_ATTR_CLEANUP),
 					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceRawProxyName, "name", fmt.Sprintf("raw-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRawProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_NAME, fmt.Sprintf("raw-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRawProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.remote_url", "https://nodejs.org/dist/"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.metadata_max_age", "1400"),
@@ -175,9 +175,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceRawGroupName, "name", fmt.Sprintf("raw-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceRawGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_NAME, fmt.Sprintf("raw-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceRawGroupName, "group.member_names.#", "1"),
 					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
@@ -211,8 +211,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeRawHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceRawHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceRawHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -263,8 +263,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeRawProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceRawProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceRawProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -324,8 +324,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

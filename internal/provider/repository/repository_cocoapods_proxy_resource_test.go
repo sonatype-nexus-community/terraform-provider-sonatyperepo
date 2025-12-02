@@ -44,11 +44,11 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryCocoaPodsProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-minimal-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_NAME, fmt.Sprintf("cocoapods-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.content_max_age", "1440"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.metadata_max_age", "1440"),
@@ -63,11 +63,11 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 				Config: repositoryCocoaPodsProxyResourceConfig(randomString, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full config
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "name", fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, "url"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_NAME, fmt.Sprintf("cocoapods-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNameCocoaPodsProxy, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.remote_url", "https://cdn.cocoapods.org/"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceNameCocoaPodsProxy, "proxy.metadata_max_age", "1440"),

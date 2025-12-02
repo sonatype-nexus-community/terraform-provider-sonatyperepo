@@ -130,21 +130,21 @@ resource "%s" "repo" {
 `, resourceTypePypiHosted, randomString, resourceTypePypiProxy, randomString, resourceTypePypiGroup, randomString, randomString, resourceTypePypiProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "name", fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiHostedName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_NAME, fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourcePypiHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourcePypiHostedName, RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourcePypiProxyName, "name", fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiProxyName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_NAME, fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.remote_url", "https://pypi.org/"),
 					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourcePypiProxyName, "proxy.metadata_max_age", "1400"),
@@ -166,9 +166,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourcePypiProxyName, "pypi.remove_quarrantined", "true"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourcePypiGroupName, "name", fmt.Sprintf("pypi-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiGroupName, "url"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_NAME, fmt.Sprintf("pypi-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourcePypiGroupName, "group.member_names.#", "1"),
 				),
@@ -199,8 +199,8 @@ resource "%s" "repo" {
 }
 `, resourceTypePypiHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -252,8 +252,8 @@ resource "%s" "repo" {
 }
 `, resourceTypePypiProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourcePypiProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -304,8 +304,8 @@ resource "%s" "repo" {
 }
 `, resourceTypePypiHosted, memberName, resourceTypePypiGroup, repoName, memberName, resourceTypePypiHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourcePypiGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

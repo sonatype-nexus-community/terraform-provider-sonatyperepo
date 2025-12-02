@@ -130,21 +130,21 @@ resource "%s" "repo" {
 `, resourceTypeNpmHosted, randomString, resourceTypeNpmProxy, randomString, resourceTypeNpmGroup, randomString, randomString, resourceTypeNpmProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "name", fmt.Sprintf("npm-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmHostedName, "url"),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_NAME, fmt.Sprintf("npm-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmHostedName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceNpmHostedName, "cleanup"),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceNpmHostedName, RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "name", fmt.Sprintf("npm-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmProxyName, "url"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_NAME, fmt.Sprintf("npm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "storage.strict_content_type_validation", "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceNpmProxyName, "proxy.remote_url", "https://registry.npmjs.org"),
 					resource.TestCheckResourceAttr(resourceNpmProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceNpmProxyName, "proxy.metadata_max_age", "1400"),
@@ -168,9 +168,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceNpmProxyName, "npm.remove_quarrantined", "true"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceNpmGroupName, "name", fmt.Sprintf("npm-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmGroupName, "url"),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_NAME, fmt.Sprintf("npm-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNpmGroupName, "group.member_names.#", "1"),
 				),
@@ -201,8 +201,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNpmHosted, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -251,8 +251,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNpmProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
@@ -303,8 +303,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNpmHosted, memberName, resourceTypeNpmGroup, repoName, memberName, resourceTypeNpmHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNpmGroupName, "name", repoName),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, "online", "true"),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
