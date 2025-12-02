@@ -70,9 +70,9 @@ type WebhookGlobalCapabilityModel struct {
 }
 
 func (m *WebhookGlobalCapabilityModel) FromApiModel(api *v3.CapabilityDTO) {
-	m.Id = types.StringValue(*api.Id)
-	m.Notes = types.StringValue(*api.Notes)
-	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Id = types.StringPointerValue(api.Id)
+	m.Notes = types.StringPointerValue(api.Notes)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
 	m.Properties = &CapabilityPropertiesWebhookGlobal{}
 	namesStr := (*api.Properties)["names"]
 	namesParts := strings.Split(namesStr, ",")

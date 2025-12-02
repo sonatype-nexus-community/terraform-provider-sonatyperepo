@@ -8,6 +8,11 @@ ENHANCEMENTS:
   You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
 
 
+## 0.14.1 December 02, 2025
+
+BUG FIXES:
+* Resources `sonatyperepo_capability_*` crashed provider when `notes` was not provided [GH-222]
+
 ## 0.14.0 November 25, 2025
 
 ENHANCEMENTS:
