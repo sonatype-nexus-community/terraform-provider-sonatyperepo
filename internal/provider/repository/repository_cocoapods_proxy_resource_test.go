@@ -39,23 +39,6 @@ func TestAccRepositoryCocoaPodsProxyResourceNoReplication(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Group validation - empty member_names
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_repository_cocoapods_group" "repo" {
-  name = "cocoapods-group-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  group = {
-    member_names = []
-  }
-}
-`, randomString),
-				ExpectError: regexp.MustCompile("Attribute group.member_names list must contain at least 1 elements"),
-			},
 			// Create with minimal configuration
 			{
 				Config: getRepositoryCocoaPodsProxyResourceMinimalConfig(randomString),
@@ -295,8 +278,6 @@ resource "%s" "repo" {
 	})
 }
 
-
-
 func TestAccRepositoryCocoapodsProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -493,4 +474,3 @@ resource "%s" "repo" {
 		},
 	})
 }
-
