@@ -176,12 +176,12 @@ func (f *ConanRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 
 func (f *ConanRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.RepositoryConanProxyModel)
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.ConanProxyApiRepository))
 	return stateModel
 }
 
 // --------------------------------------------
-// GORUP Conan Format Functions
+// GROUP Conan Format Functions
 // --------------------------------------------
 func (f *ConanRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type

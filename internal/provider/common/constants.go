@@ -109,6 +109,10 @@ const (
 	REPO_FORMAT_R                                                          string = "R"
 	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBYGEMS"
 	REPO_FORMAT_YUM                                                        string = "YUM"
+	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN                          int64  = 1
+	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MAX                          int64  = 10
+	REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MIN                          int64  = 1
+	REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MAX                          int64  = 3600
 	TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET                        int32  = 24
 	TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE                        int32  = 24
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED        int32  = 1

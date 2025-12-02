@@ -28,112 +28,35 @@ import (
 )
 
 const (
-	resourceTypeAptProxy = "sonatyperepo_repository_apt_proxy"
+	resourceTypeHelmHosted = "sonatyperepo_repository_helm_hosted"
+	resourceTypeHelmProxy  = "sonatyperepo_repository_helm_proxy"
 )
 
 var (
-	resourceAptProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeAptProxy)
+	resourceHelmHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHelmHosted)
+	resourceHelmProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHelmProxy)
 )
 
-func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositoryHelmResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create with minimal configuration
+			// Create and Read testing
 			{
-				Config: repositoryAptProxyResourceMinimalConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "apt.distribution", "bionic"),
-				),
-			},
-			// Update to full configuration
-			{
-				Config: repositoryAptProxyResourceConfig(randomString, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify full config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.timeout", "999"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-func repositoryAptProxyResourceMinimalConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "helm-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
+    remote_url = "https://charts.helm.sh/stable"
+    content_max_age = 1441
     metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-	distribution = "bionic"
-  }
-}
-`, resourceTypeAptProxy, randomString)
-}
-
-func repositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig = ""
-	if includeReplication {
-		replicationConfig = `
-	replication = {
-		preemptive_pull_enabled = true
-		asset_path_regex = "some-value"
-	}	
-`
-	}
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
-  online = true
-  storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1442
-    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -156,17 +79,103 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  apt = {
-	distribution = "bionic"
-  }
-  %s
-}
-`, resourceTypeAptProxy, randomString, replicationConfig)
 }
 
-func TestAccRepositoryAptProxyImport(t *testing.T) {
+resource "%s" "repo" {
+  name = "helm-hosted-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
+  }
+}
+`, resourceTypeHelmProxy, randomString, resourceTypeHelmHosted, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Proxy
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_NAME, fmt.Sprintf("helm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHelmProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.remote_url", "https://charts.helm.sh/stable"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceHelmProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceHelmProxyName, "replication.asset_path_regex"),
+
+					// Verify Hosted
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_NAME, fmt.Sprintf("helm-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHelmHostedName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceHelmHostedName, RES_ATTR_CLEANUP),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRepositoryHelmHostedImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("apt-proxy-import-%s", randomString)
+	repoName := fmt.Sprintf("helm-hosted-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+    write_policy = "ALLOW_ONCE"
+  }
+}
+`, resourceTypeHelmHosted, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHelmHostedName, RES_ATTR_ONLINE, "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceHelmHostedName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
+
+func TestAccRepositoryHelmProxyImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	repoName := fmt.Sprintf("helm-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -182,7 +191,7 @@ resource "%s" "repo" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://charts.helm.sh/stable"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -194,19 +203,16 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, repoName),
+`, resourceTypeHelmProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceAptProxyName,
+				ResourceName:                         resourceHelmProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -216,8 +222,7 @@ resource "%s" "repo" {
 		},
 	})
 }
-
-func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidRemoteUrl(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -227,7 +232,7 @@ func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "helm-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -246,18 +251,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
+func TestAccRepositoryHelmHostedInvalidBlobStore(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -267,37 +269,22 @@ func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "helm-hosted-repo-%s"
   online = true
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
+    write_policy = "ALLOW_ONCE"
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
+func TestAccRepositoryHelmHostedMissingStorage(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -307,34 +294,18 @@ func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "helm-hosted-repo-%s"
   online = true
   # Missing storage block
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -344,7 +315,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-%s"
+  name = "helm-proxy-repo-timeout-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -366,18 +337,15 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -387,7 +355,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-small-%s"
+  name = "helm-proxy-repo-timeout-small-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -409,18 +377,15 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -430,7 +395,7 @@ func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-%s"
+  name = "helm-proxy-repo-retries-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -452,18 +417,15 @@ resource "%s" "repo" {
       retries = 11
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -473,7 +435,7 @@ func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-neg-%s"
+  name = "helm-proxy-repo-retries-neg-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -495,18 +457,15 @@ resource "%s" "repo" {
       retries = -1
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
+func TestAccRepositoryHelmProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -516,7 +475,7 @@ func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-ttl-%s"
+  name = "helm-proxy-repo-ttl-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -535,11 +494,8 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHelmProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},

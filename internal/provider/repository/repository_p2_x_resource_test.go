@@ -27,113 +27,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	resourceTypeAptProxy = "sonatyperepo_repository_apt_proxy"
-)
+const resourceTypeP2Proxy = "sonatyperepo_repository_p2_proxy"
 
-var (
-	resourceAptProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeAptProxy)
-)
+var resourceP2ProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeP2Proxy)
 
-func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositorP2Resource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create with minimal configuration
+			// Create and Read testing
 			{
-				Config: repositoryAptProxyResourceMinimalConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "apt.distribution", "bionic"),
-				),
-			},
-			// Update to full configuration
-			{
-				Config: repositoryAptProxyResourceConfig(randomString, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify full config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.timeout", "999"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-func repositoryAptProxyResourceMinimalConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "p2-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
+    remote_url = "https://download.eclipse.org/releases/2025-06"
+    content_max_age = 1441
     metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-	distribution = "bionic"
-  }
-}
-`, resourceTypeAptProxy, randomString)
-}
-
-func repositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig = ""
-	if includeReplication {
-		replicationConfig = `
-	replication = {
-		preemptive_pull_enabled = true
-		asset_path_regex = "some-value"
-	}	
-`
-	}
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
-  online = true
-  storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1442
-    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -156,17 +73,45 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  apt = {
-	distribution = "bionic"
-  }
-  %s
 }
-`, resourceTypeAptProxy, randomString, replicationConfig)
+`, resourceTypeP2Proxy, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Proxy
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_NAME, fmt.Sprintf("p2-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceP2ProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.remote_url", "https://download.eclipse.org/releases/2025-06"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceP2ProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceP2ProxyName, "replication.asset_path_regex"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
 }
 
-func TestAccRepositoryAptProxyImport(t *testing.T) {
+func TestAccRepositoryP2ProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("apt-proxy-import-%s", randomString)
+	repoName := fmt.Sprintf("p2-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -182,7 +127,7 @@ resource "%s" "repo" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://download.eclipse.org/releases/2025-06"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -194,19 +139,16 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, repoName),
+`, resourceTypeP2Proxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceP2ProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceAptProxyName,
+				ResourceName:                         resourceP2ProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -216,8 +158,7 @@ resource "%s" "repo" {
 		},
 	})
 }
-
-func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidRemoteUrl(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -227,7 +168,7 @@ func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "p2-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -246,18 +187,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidBlobStore(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -267,14 +205,14 @@ func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "p2-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://download.eclipse.org/releases/2025-06"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -286,18 +224,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
+func TestAccRepositoryP2ProxyMissingStorage(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -307,34 +242,18 @@ func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "p2-proxy-repo-%s"
   online = true
   # Missing storage block
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -344,7 +263,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-%s"
+  name = "p2-proxy-repo-timeout-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -366,18 +285,15 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -387,7 +303,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-small-%s"
+  name = "p2-proxy-repo-timeout-small-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -409,18 +325,15 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -430,7 +343,7 @@ func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-%s"
+  name = "p2-proxy-repo-retries-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -452,18 +365,15 @@ resource "%s" "repo" {
       retries = 11
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -473,7 +383,7 @@ func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-neg-%s"
+  name = "p2-proxy-repo-retries-neg-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -495,18 +405,15 @@ resource "%s" "repo" {
       retries = -1
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
+func TestAccRepositoryP2ProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -516,7 +423,7 @@ func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-ttl-%s"
+  name = "p2-proxy-repo-ttl-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -535,11 +442,8 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeP2Proxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},

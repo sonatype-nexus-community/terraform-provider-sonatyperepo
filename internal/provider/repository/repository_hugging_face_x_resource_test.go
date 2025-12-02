@@ -27,113 +27,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	resourceTypeAptProxy = "sonatyperepo_repository_apt_proxy"
-)
+const resourceTypeHuggingfaceProxy = "sonatyperepo_repository_huggingface_proxy"
 
-var (
-	resourceAptProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeAptProxy)
-)
+var resourceHuggingfaceProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHuggingfaceProxy)
 
-func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositorHuggingFaceResource(t *testing.T) {
+
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create with minimal configuration
+			// Create and Read testing
 			{
-				Config: repositoryAptProxyResourceMinimalConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "apt.distribution", "bionic"),
-				),
-			},
-			// Update to full configuration
-			{
-				Config: repositoryAptProxyResourceConfig(randomString, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify full config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.timeout", "999"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-func repositoryAptProxyResourceMinimalConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "hugging-face-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
+    remote_url = "https://huggingface.co"
+    content_max_age = 1441
     metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-	distribution = "bionic"
-  }
-}
-`, resourceTypeAptProxy, randomString)
-}
-
-func repositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig = ""
-	if includeReplication {
-		replicationConfig = `
-	replication = {
-		preemptive_pull_enabled = true
-		asset_path_regex = "some-value"
-	}	
-`
-	}
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
-  online = true
-  storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1442
-    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -156,17 +74,45 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  apt = {
-	distribution = "bionic"
-  }
-  %s
 }
-`, resourceTypeAptProxy, randomString, replicationConfig)
+`, resourceTypeHuggingfaceProxy, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Proxy
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_NAME, fmt.Sprintf("hugging-face-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceHuggingfaceProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.remote_url", "https://huggingface.co"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceHuggingfaceProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceHuggingfaceProxyName, "replication.asset_path_regex"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
 }
 
-func TestAccRepositoryAptProxyImport(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyImport(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("apt-proxy-import-%s", randomString)
+	repoName := fmt.Sprintf("huggingface-proxy-import-%s", randomString)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -182,7 +128,7 @@ resource "%s" "repo" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://huggingface.co"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -194,19 +140,16 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, repoName),
+`, resourceTypeHuggingfaceProxy, repoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHuggingfaceProxyName, RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:                         resourceAptProxyName,
+				ResourceName:                         resourceHuggingfaceProxyName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
@@ -216,8 +159,7 @@ resource "%s" "repo" {
 		},
 	})
 }
-
-func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidRemoteUrl(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -227,7 +169,7 @@ func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "hugging_face-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -246,18 +188,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidBlobStore(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -267,14 +206,14 @@ func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "hugging_face-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://huggingface.co"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -286,18 +225,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyMissingStorage(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -307,11 +243,11 @@ func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "hugging_face-proxy-repo-%s"
   online = true
   # Missing storage block
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
+    remote_url = "https://huggingface.co"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -323,18 +259,15 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -344,7 +277,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-%s"
+  name = "hugging_face-proxy-repo-timeout-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -366,18 +299,15 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -387,7 +317,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-small-%s"
+  name = "hugging_face-proxy-repo-timeout-small-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -409,18 +339,15 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -430,7 +357,7 @@ func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-%s"
+  name = "hugging_face-proxy-repo-retries-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -452,18 +379,15 @@ resource "%s" "repo" {
       retries = 11
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -473,7 +397,7 @@ func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-neg-%s"
+  name = "hugging_face-proxy-repo-retries-neg-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -495,18 +419,15 @@ resource "%s" "repo" {
       retries = -1
     }
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
+func TestAccRepositoryHuggingFaceProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -516,7 +437,7 @@ func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-ttl-%s"
+  name = "hugging_face-proxy-repo-ttl-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -535,11 +456,8 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
-  }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeHuggingfaceProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},

@@ -17,6 +17,7 @@
 package format
 
 import (
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -37,7 +38,11 @@ func commonProxySchemaAttributes() map[string]tfschema.Attribute {
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Proxy specific configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"remote_url":       schema.ResourceRequiredString("Location of the remote repository being proxied"),
+				"remote_url": schema.ResourceRequiredStringWithRegex(
+					"Location of the remote repository being proxied",
+					regexp.MustCompile(`^https?://`),
+					"must be a valid HTTP URL (starting with http:// or https://)",
+				),
 				"content_max_age":  schema.ResourceRequiredInt64("How long to cache artifacts before rechecking the remote repository (in minutes)"),
 				"metadata_max_age": schema.ResourceRequiredInt64("How long to cache metadata before rechecking the remote repository (in minutes)"),
 			},
@@ -45,8 +50,13 @@ func commonProxySchemaAttributes() map[string]tfschema.Attribute {
 		"negative_cache": schema.ResourceRequiredSingleNestedAttribute(
 			"Negative Cache configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"enabled":      schema.ResourceRequiredBool("Whether to cache responses for content not present in the proxied repository"),
-				"time_to_live": schema.ResourceRequiredInt64("How long to cache the fact that a file was not found in the repository (in minutes)"),
+				"enabled": schema.ResourceRequiredBool("Whether to cache responses for content not present in the proxied repository"),
+				"time_to_live": schema.ResourceRequiredInt64WithValidators(
+					"How long to cache the fact that a file was not found in the repository (in minutes)",
+					[]validator.Int64{
+						int64validator.AtLeast(0),
+					}...,
+				),
 			},
 		),
 		"http_client": schema.ResourceRequiredSingleNestedAttribute(
@@ -71,7 +81,10 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 				"Total retries if the initial connection attempt suffers a timeout",
 				common.DEFAULT_HTTP_CONNECTION_RETRIES,
 				[]validator.Int64{
-					int64validator.Between(0, 10),
+					int64validator.Between(
+						common.REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN,
+						common.REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MAX,
+					),
 				}...,
 			),
 			"user_agent_suffix": schema.ResourceOptionalString("Custom fragment to append to User-Agent header in HTTP requests"),
@@ -79,7 +92,10 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 				"Seconds to wait for activity before stopping and retrying the connection",
 				common.DEFAULT_HTTP_CONNECTION_TIMEOUT,
 				[]validator.Int64{
-					int64validator.Between(1, 3600),
+					int64validator.Between(
+						common.REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MIN,
+						common.REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MAX,
+					),
 				}...,
 			),
 			"enable_circular_redirects": schema.ResourceComputedOptionalBoolWithDefault(

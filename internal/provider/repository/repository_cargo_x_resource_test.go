@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -28,112 +29,78 @@ import (
 )
 
 const (
-	resourceTypeAptProxy = "sonatyperepo_repository_apt_proxy"
+	resourceTypeCargoGroup  = "sonatyperepo_repository_cargo_group"
+	resourceTypeCargoHosted = "sonatyperepo_repository_cargo_hosted"
+	resourceTypeCargoProxy  = "sonatyperepo_repository_cargo_proxy"
 )
 
 var (
-	resourceAptProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeAptProxy)
+	resourceCargoGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoGroup)
+	resourceCargoHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoHosted)
+	resourceCargoProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeCargoProxy)
 )
 
-func TestAccRepositoryAptProxyResourceNoReplication(t *testing.T) {
+func TestAccRepositoryCargoResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create with minimal configuration
-			{
-				Config: repositoryAptProxyResourceMinimalConfig(randomString),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify minimal config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "apt.distribution", "bionic"),
-				),
-			},
-			// Update to full configuration
-			{
-				Config: repositoryAptProxyResourceConfig(randomString, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify full config
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, fmt.Sprintf("apt-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceAptProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.remote_url", "https://archive.ubuntu.com/ubuntu/"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceAptProxyName, "http_client.connection.timeout", "999"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
+		PreCheck: func() {
+			// Know regression in NXRM 3.82.0 - skip these tests as they will fail - see https://sonatype.atlassian.net/browse/NEXUS-48088 - fix coming 3.88.x
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 82,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 87,
+				Patch: 99,
+			})
 		},
-	})
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cargo-group-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+  }
+  group = {
+	member_names = []
+  }
+  cargo = {
+    require_authentication = false
+  }
+}
+`, resourceTypeCargoGroup, randomString),
+				ExpectError: regexp.MustCompile(errorMessageGroupMemberNamesEmpty),
+			},
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "cargo-hosted-repo-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
+  }
 }
 
-func repositoryAptProxyResourceMinimalConfig(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "cargo-proxy-repo-%s"
   online = true
   storage = {
 	blob_store_name = "default"
 	strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
+    remote_url = "https://index.crates.io/"
+    content_max_age = 1441
     metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-	distribution = "bionic"
-  }
-}
-`, resourceTypeAptProxy, randomString)
-}
-
-func repositoryAptProxyResourceConfig(randomString string, includeReplication bool) string {
-	var replicationConfig = ""
-	if includeReplication {
-		replicationConfig = `
-	replication = {
-		preemptive_pull_enabled = true
-		asset_path_regex = "some-value"
-	}	
-`
-	}
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
-  online = true
-  storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1442
-    metadata_max_age = 1400
   }
   negative_cache = {
     enabled = true
@@ -156,68 +123,84 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  apt = {
-	distribution = "bionic"
+  cargo = {
+    require_authentication = true
   }
-  %s
-}
-`, resourceTypeAptProxy, randomString, replicationConfig)
 }
 
-func TestAccRepositoryAptProxyImport(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("apt-proxy-import-%s", randomString)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create with minimal configuration
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "%s"
+  name = "cargo-group-repo-%s"
   online = true
   storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
+	blob_store_name = "default"
+	strict_content_type_validation = true
   }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
+  group = {
+	member_names = ["cargo-proxy-repo-%s"]
   }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
+  cargo = {
+    require_authentication = false
   }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
-  }
+
+  depends_on = [
+	%s.repo
+  ]
 }
-`, resourceTypeAptProxy, repoName),
+`, resourceTypeCargoHosted, randomString, resourceTypeCargoProxy, randomString, resourceTypeCargoGroup, randomString, randomString, resourceTypeCargoProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceAptProxyName, RES_ATTR_ONLINE, "true"),
+					// Verify Hosted
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_NAME, fmt.Sprintf("cargo-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoHostedName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceCargoHostedName, RES_ATTR_CLEANUP),
+
+					// Verify Proxy
+					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_NAME, fmt.Sprintf("cargo-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.remote_url", "https://index.crates.io/"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceCargoProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceCargoProxyName, "replication.asset_path_regex"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, "cargo.require_authentication", "true"),
+
+					// Verify Group
+					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_NAME, fmt.Sprintf("cargo-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoGroupName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, "cargo.require_authentication", "false"),
 				),
 			},
-			// Import and verify no changes
-			{
-				ResourceName:                         resourceAptProxyName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        repoName,
-				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidRemoteUrl(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -227,7 +210,7 @@ func TestAccRepositoryAptProxyInvalidRemoteUrl(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "cargo-proxy-repo-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -246,18 +229,18 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
+func TestAccRepositoryCargoHostedInvalidBlobStore(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -267,37 +250,22 @@ func TestAccRepositoryAptProxyInvalidBlobStore(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "cargo-hosted-repo-%s"
   online = true
   storage = {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
+    write_policy = "ALLOW"
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
+func TestAccRepositoryCargoHostedMissingStorage(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -307,34 +275,21 @@ func TestAccRepositoryAptProxyMissingStorage(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-%s"
+  name = "cargo-hosted-repo-%s"
   online = true
   # Missing storage block
-  proxy = {
-    remote_url = "https://archive.ubuntu.com/ubuntu/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoHosted, randomString),
 				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidTimeoutTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -344,7 +299,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-%s"
+  name = "cargo-proxy-repo-timeout-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -366,18 +321,18 @@ resource "%s" "repo" {
       timeout = 3601
     }
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidTimeoutTooSmall(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -387,7 +342,7 @@ func TestAccRepositoryAptProxyInvalidTimeoutTooSmall(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-timeout-small-%s"
+  name = "cargo-proxy-repo-timeout-small-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -409,18 +364,18 @@ resource "%s" "repo" {
       timeout = 0
     }
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidRetriesTooLarge(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -430,7 +385,7 @@ func TestAccRepositoryAptProxyInvalidRetriesTooLarge(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-%s"
+  name = "cargo-proxy-repo-retries-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -452,18 +407,18 @@ resource "%s" "repo" {
       retries = 11
     }
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidRetriesNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -473,7 +428,7 @@ func TestAccRepositoryAptProxyInvalidRetriesNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-retries-neg-%s"
+  name = "cargo-proxy-repo-retries-neg-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -495,18 +450,18 @@ resource "%s" "repo" {
       retries = -1
     }
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
 			},
 		},
 	})
 }
 
-func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
+func TestAccRepositoryCargoProxyInvalidTimeToLiveNegative(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -516,7 +471,7 @@ func TestAccRepositoryAptProxyInvalidTimeToLiveNegative(t *testing.T) {
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
-  name = "apt-proxy-repo-ttl-%s"
+  name = "cargo-proxy-repo-ttl-%s"
   online = true
   storage = {
     blob_store_name = "default"
@@ -535,11 +490,11 @@ resource "%s" "repo" {
     blocked = false
     auto_block = true
   }
-  apt = {
-    distribution = "bionic"
+  cargo = {
+    require_authentication = false
   }
 }
-`, resourceTypeAptProxy, randomString),
+`, resourceTypeCargoProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},

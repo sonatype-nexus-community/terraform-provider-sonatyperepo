@@ -25,21 +25,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccBlobStoreFileResource(t *testing.T) {
+const resourceNameBlobStoreFile = "sonatyperepo_blob_store_file.bsf"
 
+func TestAccBlobStoreFileResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration
 			{
-				Config: getTestAccBlobStoreFileResourceConfig(randomString),
+				Config: buildTestAccBlobStoreFileResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "name", fmt.Sprintf("test-%s", randomString)),
-					resource.TestCheckResourceAttr("sonatyperepo_blob_store_file.bsf", "path", fmt.Sprintf("path-%s", randomString)),
-					resource.TestCheckResourceAttrSet("sonatyperepo_blob_store_file.bsf", "last_updated"),
+					// Verify minimal configuration
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "name", fmt.Sprintf("test-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "path", fmt.Sprintf("path-%s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceNameBlobStoreFile, "last_updated"),
+					resource.TestCheckNoResourceAttr(resourceNameBlobStoreFile, "soft_quota"),
+				),
+			},
+			// Create with full configuration
+			{
+				Config: buildTestAccBlobStoreFileResourceComplete(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify full configuration
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "name", fmt.Sprintf("test-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "path", fmt.Sprintf("path-complete-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "soft_quota.type", "spaceRemainingQuota"),
+					resource.TestCheckResourceAttr(resourceNameBlobStoreFile, "soft_quota.limit", "1099511627776"),
+					resource.TestCheckResourceAttrSet(resourceNameBlobStoreFile, "last_updated"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -47,11 +61,24 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 	})
 }
 
-func getTestAccBlobStoreFileResourceConfig(randomString string) string {
+func buildTestAccBlobStoreFileResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "sonatyperepo_blob_store_file" "bsf" {
   name = "test-%s"
   path = "path-%s"
+}
+`, randomString, randomString)
+}
+
+func buildTestAccBlobStoreFileResourceComplete(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_blob_store_file" "bsf" {
+  name = "test-%s"
+  path = "path-complete-%s"
+  soft_quota = {
+    type  = "spaceRemainingQuota"
+    limit = 1099511627776
+  }
 }
 `, randomString, randomString)
 }
