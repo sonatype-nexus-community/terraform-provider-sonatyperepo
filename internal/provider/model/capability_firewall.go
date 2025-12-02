@@ -43,9 +43,9 @@ type CapabilityFirewallAuditQuarantineModel struct {
 }
 
 func (m *CapabilityFirewallAuditQuarantineModel) FromApiModel(api *v3.CapabilityDTO) {
-	m.Id = types.StringValue(*api.Id)
-	m.Notes = types.StringValue(*api.Notes)
-	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Id = types.StringPointerValue(api.Id)
+	m.Notes = types.StringPointerValue(api.Notes)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
 	m.Properties = &CapabilityPropertiesFirewallAuditQuarantine{}
 	m.Properties.Quarantine = types.BoolValue(ParseBool(
 		(*api.Properties)["quarantine"],
