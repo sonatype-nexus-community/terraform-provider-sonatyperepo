@@ -228,7 +228,19 @@ resource "%s" "repo" {
     blob_store_name = "non-existent-blob-store"
     strict_content_type_validation = true
   }
-  r = {}
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
 }
 `, resourceTypeRProxy, randomString),
 				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
