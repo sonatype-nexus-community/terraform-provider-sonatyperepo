@@ -229,7 +229,7 @@ resource "%s" "repo" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "invalid-url-without-protocol"
+    remote_url = "https://cran.r-project.org/"
     content_max_age = 1440
     metadata_max_age = 1440
   }
