@@ -32,11 +32,12 @@ func TestAccTaskDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Missing required argument
 			{
 				Config:      utils_test.ProviderConfig + `data "sonatyperepo_task" "t" {}`,
 				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
+			// Test 2: Non-existent task returns empty
 			{
 				Config: getConfigTaskDoesNotExist(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -49,6 +50,6 @@ func TestAccTaskDataSource(t *testing.T) {
 
 func getConfigTaskDoesNotExist(suffix string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`data "sonatyperepo_task" "t" {
-	id = "non-existent-content-selector-%s"
+	id = "non-existent-task-%s"
 }`, suffix)
 }

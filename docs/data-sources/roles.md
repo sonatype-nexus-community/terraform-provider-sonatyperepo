@@ -17,7 +17,7 @@ Use this data source to get all Roles
 
 ### Read-Only
 
-- `roles` (Attributes List) (see [below for nested schema](#nestedatt--roles))
+- `roles` (Attributes List) List of Roles (see [below for nested schema](#nestedatt--roles))
 
 <a id="nestedatt--roles"></a>
 ### Nested Schema for `roles`

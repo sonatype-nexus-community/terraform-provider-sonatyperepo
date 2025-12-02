@@ -24,12 +24,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type BlobstoreCompactTask struct {
@@ -67,30 +68,24 @@ func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *BlobstoreCompactTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *BlobstoreCompactTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskBlobstoreCompactModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *BlobstoreCompactTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"blob_store_name": schema.StringAttribute{
-			Description: "The blob store to compact",
-			Required:    true,
-			Optional:    false,
-		},
-		"blobs_older_than": schema.Int32Attribute{
-			MarkdownDescription: `The number of days a blob should kept before permanent deletion (default 0).
+func (f *BlobstoreCompactTask) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"blob_store_name": schema.ResourceRequiredString("The blob store to compact"),
+		"blobs_older_than": schema.ResourceOptionalInt32WithDefault(
+			`The number of days a blob should kept before permanent deletion (default 0).
 			
 **Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).`,
-			Optional: true,
-			Computed: true,
-			Default:  int32default.StaticInt32(0),
-		},
+			0,
+		),
 	}
 }
 
-func (f *BlobstoreCompactTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *BlobstoreCompactTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskBlobstoreCompactModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

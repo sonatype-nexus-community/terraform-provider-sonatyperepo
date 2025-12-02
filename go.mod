@@ -1,18 +1,19 @@
 module terraform-provider-sonatyperepo
 
-go 1.23.0
+go 1.23.7
 
 toolchain go1.23.10
 
 require (
 	github.com/hashicorp/go-version v1.7.0
-	github.com/hashicorp/terraform-plugin-framework v1.14.1
-	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
-	github.com/hashicorp/terraform-plugin-go v0.26.0
+	github.com/hashicorp/terraform-plugin-framework v1.15.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
+	github.com/hashicorp/terraform-plugin-go v0.27.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/hashicorp/terraform-plugin-testing v1.12.0
-	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.1
+	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.6
+	github.com/sonatype-nexus-community/terraform-provider-shared v0.7.2
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/text v0.26.0
 )

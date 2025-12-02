@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,12 +42,12 @@ type HuggingFaceRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic HuggingFace Format Functions
 // --------------------------------------------
-func (f *HuggingFaceRepositoryFormat) GetKey() string {
+func (f *HuggingFaceRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_HUGGING_FACE
 }
 
-func (f *HuggingFaceRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *HuggingFaceRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -81,16 +81,16 @@ func (f *HuggingFaceRepositoryFormatProxy) DoUpdateRequest(plan any, state any, 
 	return apiClient.RepositoryManagementAPI.UpdateHuggingfaceProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *HuggingFaceRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+func (f *HuggingFaceRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonProxySchemaAttributes()
 }
 
-func (f *HuggingFaceRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *HuggingFaceRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryHuggingFaceProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *HuggingFaceRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *HuggingFaceRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryHuggingFaceProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

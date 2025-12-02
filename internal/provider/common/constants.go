@@ -65,8 +65,16 @@ const (
 	HTTP_AUTH_TYPE_USERNAME                                                string = "username"
 	IQ_AUTHENTICATON_TYPE_PKI                                              string = "PKI"
 	IQ_AUTHENTICATON_TYPE_USER                                             string = "USER"
+	IQ_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                  int32  = 30
+	IQ_MIN_CONNECTION_TIMEOUT_SECONDS                                      int32  = 1
+	IQ_MAX_CONNECTION_TIMEOUT_SECONDS                                      int32  = 3600
 	LDAP_GROUP_MAPPING_DYNAMIC                                             string = "DYNAMIC"
 	LDAP_GROUP_MAPPING_STATIC                                              string = "STATIC"
+	LDAP_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                int32  = 30
+	LDAP_MIN_CONNECTION_TIMEOUT_SECONDS                                    int32  = 1
+	LDAP_MAX_CONNECTION_TIMEOUT_SECONDS                                    int32  = 3600
+	LDAP_DEFAULT_CONNECTION_RETRY_SECONDS                                  int32  = 300
+	LDAP_DEFAULT_MAX_CONENCTION_ATTEMPTS                                   int32  = 3
 	MAVEN_CONTENT_DISPOSITION_ATTACHMENT                                   string = "ATTACHMENT"
 	MAVEN_CONTENT_DISPOSITION_INLINE                                       string = "INLINE"
 	MAVEN_LAYOUT_STRICT                                                    string = "STRICT"
@@ -101,15 +109,15 @@ const (
 	REPO_FORMAT_R                                                          string = "R"
 	REPO_FORMAT_RUBY_GEMS                                                  string = "RUBYGEMS"
 	REPO_FORMAT_YUM                                                        string = "YUM"
+	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN                          int64  = 1
+	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MAX                          int64  = 10
+	REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MIN                          int64  = 1
+	REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MAX                          int64  = 3600
 	TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET                        int32  = 24
 	TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE                        int32  = 24
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED        int32  = 1
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_REMOVE_IF_RELEASED      bool   = false
 	TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_SNAPSHOT_RETENTION_DAYS int32  = 30
-	USER_STATUS_ACTIVE                                                     string = "active"
-	USER_STATUS_LOCKED                                                     string = "locked"
-	USER_STATUS_DISABLED                                                   string = "disabled"
-	USER_STATUS_CHANGE_PASSWORD                                            string = "changepassword"
 	WRITE_POLICY_ALLOW                                                     string = "ALLOW"
 	WRITE_POLICY_ALLOW_ONCE                                                string = "ALLOW_ONCE"
 	WRITE_POLICY_DENY                                                      string = "DENY"
@@ -118,6 +126,7 @@ const (
 	SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED                         bool   = false
 	SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT                            bool   = false
 	ERROR_MESSAGE_UNAUTHORIZED                                             string = "Your user is unauthorized to access this resource or feature."
+	ERROR_UNABLE_TO_READ_BLOB_STORE_FILE                                   string = "Unable to read blob store file"
 )
 
 func NewFalse() *bool {

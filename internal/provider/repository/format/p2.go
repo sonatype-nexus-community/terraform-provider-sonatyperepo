@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,12 +42,12 @@ type P2RepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic P2 Format Functions
 // --------------------------------------------
-func (f *P2RepositoryFormat) GetKey() string {
+func (f *P2RepositoryFormat) Key() string {
 	return common.REPO_FORMAT_P2
 }
 
-func (f *P2RepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *P2RepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -84,16 +84,16 @@ func (f *P2RepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateP2ProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *P2RepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+func (f *P2RepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonProxySchemaAttributes()
 }
 
-func (f *P2RepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *P2RepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryP2ProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *P2RepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *P2RepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryP2ProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

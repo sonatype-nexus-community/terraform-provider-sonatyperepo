@@ -18,6 +18,7 @@ package repository_test
 
 import (
 	"fmt"
+	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -27,47 +28,68 @@ import (
 )
 
 const (
-	resourceNameComposerProxy = "sonatyperepo_repository_composer_proxy.repo"
 	resourceTypeComposerProxy = "sonatyperepo_repository_composer_proxy"
 )
 
-func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
+var (
+	resourceComposerProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeComposerProxy)
+)
 
+func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create with minimal configuration
 			{
-				Config: getRepositoryComposerProxyResourceConfig(randomString, false),
+				Config: repositoryComposerProxyResourceMinimalConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "name", fmt.Sprintf("composer-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceNameComposerProxy, "url"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.remote_url", "https://repo.packagist.org/"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.content_max_age", "1441"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "proxy.metadata_max_age", "1440"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.password", "pass"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.preemptive", "true"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "http_client.authentication.type", "username"),
-					resource.TestCheckNoResourceAttr(resourceNameComposerProxy, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceNameComposerProxy, "replication.preemptive_pull_enabled", "false"),
-					resource.TestCheckNoResourceAttr(resourceNameComposerProxy, "replication.asset_path_regex"),
+					// Verify minimal config
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_NAME, fmt.Sprintf("composer-proxy-repo-minimal-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.auto_block", "true"),
+				),
+			},
+			// Update to full configuration
+			{
+				Config: repositoryComposerProxyResourceConfig(randomString, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify full config
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_NAME, fmt.Sprintf("composer-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceComposerProxyName, RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.remote_url", "https://repo.packagist.org/"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.content_max_age", "1441"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "proxy.metadata_max_age", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.blocked", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.auto_block", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.enable_circular_redirects", "false"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.enable_cookies", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.use_trust_store", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.retries", "9"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.timeout", "999"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.connection.user_agent_suffix", "terraform"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.username", "user"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.preemptive", "true"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "http_client.authentication.type", "username"),
+					resource.TestCheckNoResourceAttr(resourceComposerProxyName, "routing_rule"),
+					resource.TestCheckResourceAttr(resourceComposerProxyName, "replication.preemptive_pull_enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceComposerProxyName, "replication.asset_path_regex"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -75,7 +97,33 @@ func TestAccRepositoryComposerProxyResourceNoReplication(t *testing.T) {
 	})
 }
 
-func getRepositoryComposerProxyResourceConfig(randomString string, includeReplication bool) string {
+func repositoryComposerProxyResourceMinimalConfig(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-minimal-%s"
+  online = true
+  storage = {
+	blob_store_name = "default"
+	strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeComposerProxy, randomString)
+}
+
+func repositoryComposerProxyResourceConfig(randomString string, includeReplication bool) string {
 	var replicationConfig = ""
 	if includeReplication {
 		replicationConfig = `
@@ -122,4 +170,309 @@ resource "%s" "repo" {
   %s
 }
 `, resourceTypeComposerProxy, randomString, replicationConfig)
+}
+
+func TestAccRepositoryComposerProxyInvalidRemoteUrl(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid remote URL (missing protocol)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "invalid-url-without-protocol"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidBlobStore(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid blob store name (non-existent)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "non-existent-blob-store"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyMissingStorage(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Missing storage block (required field)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-%s"
+  online = true
+  # Missing storage block
+  proxy = {
+    remote_url = "https://repo.packagist.org/"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidTimeoutTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too large, max is 3600)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-timeout-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 3601
+    }
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidTimeoutTooSmall(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid timeout (too small, min is 1)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-timeout-small-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      timeout = 0
+    }
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidRetriesTooLarge(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (too large, max is 10)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-retries-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = 11
+    }
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidRetriesNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid retries (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-retries-neg-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+    connection = {
+      retries = -1
+    }
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryComposerProxyInvalidTimeToLiveNegative(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Invalid time_to_live (negative)
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "composer-proxy-repo-ttl-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "https://repo.example.com"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = -1
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+}
+`, resourceTypeComposerProxy, randomString),
+				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
+			},
+		},
+	})
 }

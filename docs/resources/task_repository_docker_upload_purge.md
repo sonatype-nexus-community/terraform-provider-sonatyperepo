@@ -30,7 +30,7 @@ Manage Task 'Docker - Delete incomplete uploads' (repository.docker.upload-purge
 ### Read-Only
 
 - `id` (String) The internal ID of the Task.
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--frequency"></a>
 ### Nested Schema for `frequency`

@@ -21,7 +21,7 @@ Configure and LDAP connection
 - `hostname` (String) LDAP server hostname
 - `name` (String) LDAP connection name
 - `port` (Number) LDAP server port
-- `protocol` (String) The user's status
+- `protocol` (String) LDAP protocol to use
 - `search_base` (String) LDAP location to be added to the connection URL
 - `user_email_name_attribute` (String) This is used to find an email address given the user ID - e.g. mail
 - `user_id_attribute` (String) This is used to find a user given its user ID - e.g. uid
@@ -55,4 +55,4 @@ Configure and LDAP connection
 ### Read-Only
 
 - `id` (String) Internal LDAP server ID
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed

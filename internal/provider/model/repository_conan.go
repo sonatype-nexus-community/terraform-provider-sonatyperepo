@@ -63,10 +63,10 @@ type RepositoryConanProxyModel struct {
 	Conan *conanProxyAttributesModel `tfsdk:"conan"`
 }
 
-func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {

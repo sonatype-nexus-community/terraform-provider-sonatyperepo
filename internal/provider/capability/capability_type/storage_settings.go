@@ -23,14 +23,13 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -68,27 +67,21 @@ func (f *StorageSettingsCapability) DoUpdateRequest(plan any, capabilityId strin
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *StorageSettingsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *StorageSettingsCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCoreStorageSettingsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *StorageSettingsCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"last_downloaded_interval": schema.Int32Attribute{
-			Description: "'Last Downloaded' Update Interval (hours)",
-			Required:    false,
-			Optional:    true,
-			Computed:    true,
-			Default:     int32default.StaticInt32(common.CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL),
-			Validators: []validator.Int32{
-				int32validator.AtLeast(0),
-			},
-		},
+func (f *StorageSettingsCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"last_downloaded_interval": schema.ResourceOptionalInt32WithDefault(
+			"'Last Downloaded' Update Interval (hours)",
+			common.CAPABILITY_STORAGE_SETTINGS_DEFAULT_LAST_DOWNLOADED_INTERVAL,
+		),
 	}
 }
 
-func (f *StorageSettingsCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *StorageSettingsCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCoreStorageSettingsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
