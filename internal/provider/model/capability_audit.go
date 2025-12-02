@@ -31,9 +31,9 @@ type CapabilityAuditModel struct {
 }
 
 func (m *CapabilityAuditModel) FromApiModel(api *v3.CapabilityDTO) {
-	m.Id = types.StringValue(*api.Id)
-	m.Notes = types.StringValue(*api.Notes)
-	m.Enabled = types.BoolValue(*api.Enabled)
+	m.Id = types.StringPointerValue(api.Id)
+	m.Notes = types.StringPointerValue(api.Notes)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
 }
 
 func (m *CapabilityAuditModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
