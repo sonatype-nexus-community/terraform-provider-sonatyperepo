@@ -44,6 +44,5 @@ var (
 		common.REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MAX,
 	)
 	errorMessageNegativeCacheTimeoutValue = "Attribute negative_cache.time_to_live value must be at least 0"
-	errorMessageProxyMaxAgeValue          = "Attribute proxy.* value must be"
 	errorMessageStorageRequired           = "The argument \"storage\" is required, but no definition was found."
 )
