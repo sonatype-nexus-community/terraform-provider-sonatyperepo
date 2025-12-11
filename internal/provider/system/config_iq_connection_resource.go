@@ -74,7 +74,7 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 				Optional:    false,
 			},
 			"authentication_method": schema.StringAttribute{
-				Description: "Username to use for authentication with SMTP Server",
+				Description: "Method of authentication withthe Sonatype IQ Server",
 				Required:    true,
 				Optional:    false,
 				Validators: []validator.String{
