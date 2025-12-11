@@ -48,7 +48,131 @@ const (
 	REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL  = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s"
 	REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s - %s"
 	REPOSITORY_ERROR_DID_NOT_EXIST             = "%s %s Repository did not exist to %s"
+
+	// Retry configuration for eventual consistency handling
+	groupRepoReadMaxRetries = 3
+	groupRepoReadRetryDelay = 2 * time.Second
 )
+
+// getMemberNamesFromPlan extracts member_names from a plan model using reflection.
+// Plan models have Group.MemberNames as []types.String
+func getMemberNamesFromPlan(plan any) []string {
+	v := reflect.ValueOf(plan)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	groupField := v.FieldByName("Group")
+	if !groupField.IsValid() {
+		return nil
+	}
+
+	memberNamesField := groupField.FieldByName("MemberNames")
+	if !memberNamesField.IsValid() {
+		return nil
+	}
+
+	// Convert []types.String to []string
+	result := make([]string, memberNamesField.Len())
+	for i := 0; i < memberNamesField.Len(); i++ {
+		elem := memberNamesField.Index(i)
+		// types.String has ValueString() method
+		if method := elem.MethodByName("ValueString"); method.IsValid() {
+			result[i] = method.Call(nil)[0].String()
+		}
+	}
+	return result
+}
+
+// getMemberNamesFromApiResponse extracts member_names from API response using reflection.
+// API responses have Group.MemberNames as []string or Group.GetMemberNames() method
+func getMemberNamesFromApiResponse(api any) []string {
+	v := reflect.ValueOf(api)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	groupField := v.FieldByName("Group")
+	if !groupField.IsValid() {
+		return nil
+	}
+
+	// Try GetMemberNames() method first
+	if method := groupField.MethodByName("GetMemberNames"); method.IsValid() {
+		results := method.Call(nil)
+		if len(results) > 0 {
+			if names, ok := results[0].Interface().([]string); ok {
+				return names
+			}
+		}
+	}
+
+	// Fallback to direct field access
+	memberNamesField := groupField.FieldByName("MemberNames")
+	if !memberNamesField.IsValid() {
+		return nil
+	}
+
+	if names, ok := memberNamesField.Interface().([]string); ok {
+		return names
+	}
+	return nil
+}
+
+// memberNamesMatch compares plan and API member_names (exact order).
+// Returns true if both have the same members in the same order.
+func memberNamesMatch(plan, api any) bool {
+	planNames := getMemberNamesFromPlan(plan)
+	apiNames := getMemberNamesFromApiResponse(api)
+
+	if len(planNames) != len(apiNames) {
+		return false
+	}
+
+	for i := range planNames {
+		if planNames[i] != apiNames[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// readRepositoryWithRetry reads repository from API with retry logic for group repositories.
+// For group repos, it retries if member_names don't match due to eventual consistency.
+// Returns the API response, HTTP response, and any error encountered.
+func (r *repositoryResource) readRepositoryWithRetry(ctx context.Context, plan any) (any, *http.Response, error) {
+	var apiResponse any
+	var httpResponse *http.Response
+	var err error
+
+	for attempt := 0; attempt <= groupRepoReadMaxRetries; attempt++ {
+		apiResponse, httpResponse, err = r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
+		if err != nil {
+			return apiResponse, httpResponse, err
+		}
+
+		// For non-group repos, return immediately
+		if r.RepositoryType != format.REPO_TYPE_GROUP {
+			return apiResponse, httpResponse, nil
+		}
+
+		// For group repos, verify member_names match to handle eventual consistency
+		if memberNamesMatch(plan, apiResponse) {
+			return apiResponse, httpResponse, nil
+		}
+
+		if attempt < groupRepoReadMaxRetries {
+			tflog.Warn(ctx, "API member_names don't match plan (eventual consistency), retrying...",
+				map[string]any{"attempt": attempt + 1, "max_retries": groupRepoReadMaxRetries})
+			time.Sleep(groupRepoReadRetryDelay)
+			continue
+		}
+
+		tflog.Warn(ctx, "API member_names still don't match after retries, proceeding anyway")
+	}
+
+	return apiResponse, httpResponse, nil
+}
 
 // Generic to all Repository Resources
 type repositoryResource struct {
@@ -120,9 +244,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Call Read API as that contains more complete information for mapping to State
-	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
-
-	// Handle any errors
+	apiResponse, httpResponse, err := r.readRepositoryWithRetry(ctx, plan)
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
@@ -242,9 +364,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Call Read API as that contains more complete information for mapping to State
-	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(planModel, r.Client, ctx)
-
-	// Handle any errors
+	apiResponse, httpResponse, err := r.readRepositoryWithRetry(ctx, planModel)
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
