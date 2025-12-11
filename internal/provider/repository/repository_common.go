@@ -121,7 +121,7 @@ func getMemberNamesFromApiResponse(api any) []string {
 
 // memberNamesMatch compares plan and API member_names (exact order).
 // Returns true if both have the same members in the same order.
-func memberNamesMatch(plan any, api any) bool {
+func memberNamesMatch(plan, api any) bool {
 	planNames := getMemberNamesFromPlan(plan)
 	apiNames := getMemberNamesFromApiResponse(api)
 
@@ -135,6 +135,43 @@ func memberNamesMatch(plan any, api any) bool {
 		}
 	}
 	return true
+}
+
+// readRepositoryWithRetry reads repository from API with retry logic for group repositories.
+// For group repos, it retries if member_names don't match due to eventual consistency.
+// Returns the API response, HTTP response, and any error encountered.
+func (r *repositoryResource) readRepositoryWithRetry(ctx context.Context, plan any) (any, *http.Response, error) {
+	var apiResponse any
+	var httpResponse *http.Response
+	var err error
+
+	for attempt := 0; attempt <= groupRepoReadMaxRetries; attempt++ {
+		apiResponse, httpResponse, err = r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
+		if err != nil {
+			return apiResponse, httpResponse, err
+		}
+
+		// For non-group repos, return immediately
+		if r.RepositoryType != format.REPO_TYPE_GROUP {
+			return apiResponse, httpResponse, nil
+		}
+
+		// For group repos, verify member_names match to handle eventual consistency
+		if memberNamesMatch(plan, apiResponse) {
+			return apiResponse, httpResponse, nil
+		}
+
+		if attempt < groupRepoReadMaxRetries {
+			tflog.Warn(ctx, "API member_names don't match plan (eventual consistency), retrying...",
+				map[string]any{"attempt": attempt + 1, "max_retries": groupRepoReadMaxRetries})
+			time.Sleep(groupRepoReadRetryDelay)
+			continue
+		}
+
+		tflog.Warn(ctx, "API member_names still don't match after retries, proceeding anyway")
+	}
+
+	return apiResponse, httpResponse, nil
 }
 
 // Generic to all Repository Resources
@@ -207,48 +244,25 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Call Read API as that contains more complete information for mapping to State
-	// For group repositories, retry if member_names don't match (eventual consistency)
-	var apiResponse any
-	for attempt := 0; attempt <= groupRepoReadMaxRetries; attempt++ {
-		var readErr error
-		apiResponse, httpResponse, readErr = r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
-
-		// Handle any errors
-		if readErr != nil {
-			if httpResponse.StatusCode == http.StatusNotFound {
-				resp.State.RemoveResource(ctx)
-				common.HandleApiWarning(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-					&readErr,
-					httpResponse,
-					&resp.Diagnostics,
-				)
-			} else {
-				common.HandleApiError(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-					&readErr,
-					httpResponse,
-					&resp.Diagnostics,
-				)
-			}
-			return
-		}
-
-		// For group repos, verify member_names match to handle eventual consistency
-		if r.RepositoryType == format.REPO_TYPE_GROUP {
-			if memberNamesMatch(plan, apiResponse) {
-				break // Data matches, proceed
-			}
-			if attempt < groupRepoReadMaxRetries {
-				tflog.Warn(ctx, "API member_names don't match plan (eventual consistency), retrying...",
-					map[string]any{"attempt": attempt + 1, "max_retries": groupRepoReadMaxRetries})
-				time.Sleep(groupRepoReadRetryDelay)
-				continue
-			}
-			tflog.Warn(ctx, "API member_names still don't match after retries, proceeding anyway")
+	apiResponse, httpResponse, err := r.readRepositoryWithRetry(ctx, plan)
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			common.HandleApiWarning(
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		} else {
-			break // Not a group repo, no retry needed
+			common.HandleApiError(
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		}
+		return
 	}
 
 	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
@@ -350,48 +364,25 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Call Read API as that contains more complete information for mapping to State
-	// For group repositories, retry if member_names don't match (eventual consistency)
-	var apiResponse any
-	for attempt := 0; attempt <= groupRepoReadMaxRetries; attempt++ {
-		var readErr error
-		apiResponse, httpResponse, readErr = r.RepositoryFormat.DoReadRequest(planModel, r.Client, ctx)
-
-		// Handle any errors
-		if readErr != nil {
-			if httpResponse.StatusCode == http.StatusNotFound {
-				resp.State.RemoveResource(ctx)
-				common.HandleApiWarning(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-					&readErr,
-					httpResponse,
-					&resp.Diagnostics,
-				)
-			} else {
-				common.HandleApiError(
-					fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
-					&readErr,
-					httpResponse,
-					&resp.Diagnostics,
-				)
-			}
-			return
-		}
-
-		// For group repos, verify member_names match to handle eventual consistency
-		if r.RepositoryType == format.REPO_TYPE_GROUP {
-			if memberNamesMatch(planModel, apiResponse) {
-				break // Data matches, proceed
-			}
-			if attempt < groupRepoReadMaxRetries {
-				tflog.Warn(ctx, "API member_names don't match plan (eventual consistency), retrying...",
-					map[string]any{"attempt": attempt + 1, "max_retries": groupRepoReadMaxRetries})
-				time.Sleep(groupRepoReadRetryDelay)
-				continue
-			}
-			tflog.Warn(ctx, "API member_names still don't match after retries, proceeding anyway")
+	apiResponse, httpResponse, err := r.readRepositoryWithRetry(ctx, planModel)
+	if err != nil {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			common.HandleApiWarning(
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		} else {
-			break // Not a group repo, no retry needed
+			common.HandleApiError(
+				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.GetKey(), "read"),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		}
+		return
 	}
 
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(planModel, apiResponse)
