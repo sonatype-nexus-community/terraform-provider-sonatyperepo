@@ -30,6 +30,7 @@ func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attrib
 			ElementType: types.StringType,
 			Required:    false,
 			Optional:    true,
+			Computed:    true,
 			Validators: []validator.List{
 				listvalidator.SizeAtLeast(1),
 			},

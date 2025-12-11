@@ -152,8 +152,8 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 		m.EnableCookies = types.BoolValue(false)
 		m.UseTrustStore = types.BoolValue(false)
 		m.UserAgentSuffix = types.StringNull()
-		m.Retries = types.Int64Null()
-		m.Timeout = types.Int64Null()
+		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES)
+		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT)
 		return
 	}
 
@@ -165,13 +165,13 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 	if api.Retries != nil {
 		m.Retries = types.Int64Value(int64(*api.Retries))
 	} else {
-		m.Retries = types.Int64Null()
+		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES)
 	}
 
 	if api.Timeout != nil {
 		m.Timeout = types.Int64Value(int64(*api.Timeout))
 	} else {
-		m.Timeout = types.Int64Null()
+		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT)
 	}
 }
 
