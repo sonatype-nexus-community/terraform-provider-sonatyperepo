@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_system_config_product_license Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Configure and LDAP connection
+  Configure product license
 ---
 
 # sonatyperepo_system_config_product_license (Resource)
 
-Configure and LDAP connection
+Configure product license
 
 ## Example Usage
 
