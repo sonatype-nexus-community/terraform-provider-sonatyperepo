@@ -30,8 +30,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -105,6 +104,8 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 			"properties": schema.StringAttribute{
 				Description: "Additional properties to configure for Sonatype Repository Firewall",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"show_iq_server_link": schema.BoolAttribute{
 				Description: "Show Sonatype Repository Firewall link in Browse menu when server is enabled",
@@ -118,9 +119,6 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
@@ -147,7 +145,6 @@ func (r *systemConfigIqConnectionResource) Create(ctx context.Context, req resou
 func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
 	var state model.IqConnectionModel
-
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
@@ -238,7 +235,6 @@ func (r *systemConfigIqConnectionResource) Delete(ctx context.Context, req resou
 
 func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, reqPlan *tfsdk.Plan, respDiags *diag.Diagnostics) *model.IqConnectionModel {
 	var plan model.IqConnectionModel
-
 	respDiags.Append(reqPlan.Get(ctx, &plan)...)
 
 	if respDiags.HasError() {
@@ -254,19 +250,19 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 
 	apiModel := sonatyperepo.NewIqConnectionXoWithDefaults()
 	plan.MapToApi(apiModel)
-	apiResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
+	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
 
 	// Handle Error
 	if err != nil {
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
-			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 		return nil
-	} else if apiResponse.StatusCode != http.StatusNoContent {
+	} else if httpResponse.StatusCode != http.StatusNoContent {
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
 
