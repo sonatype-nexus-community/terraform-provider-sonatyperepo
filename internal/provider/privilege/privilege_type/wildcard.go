@@ -23,10 +23,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type WildcardPrivilegeType struct {
@@ -61,22 +63,18 @@ func (pt *WildcardPrivilegeType) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateWildcardPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *WildcardPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"pattern": schema.StringAttribute{
-			Description: "A colon separated list of parts that create a permission string.",
-			Required:    true,
-			Optional:    false,
-		},
+func (pt *WildcardPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"pattern": schema.ResourceRequiredString("A colon separated list of parts that create a permission string."),
 	}
 }
 
-func (pt *WildcardPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *WildcardPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeWildcardModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *WildcardPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *WildcardPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeWildcardModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

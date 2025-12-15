@@ -49,7 +49,9 @@ func DeleteBlobStore(client *sonatyperepo.APIClient, ctx *context.Context, blobS
 			)
 		}
 		return
-	} else if api_response.StatusCode != http.StatusNoContent {
+	} else if api_response.StatusCode == http.StatusNoContent {
+		resp.State.RemoveResource(*ctx)
+	} else {
 		resp.Diagnostics.AddError(
 			"Error deleting Blob Store",
 			fmt.Sprintf("Unexpected Response Code whilst deleting Blob Store: %d: %s", api_response.StatusCode, api_response.Status),

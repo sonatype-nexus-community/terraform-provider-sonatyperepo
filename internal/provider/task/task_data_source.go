@@ -22,8 +22,10 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -54,26 +56,12 @@ func (d *taskDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 // Schema defines the schema for the data source.
 func (d *taskDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a single Task by ID",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    true,
-				Optional:    false,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of Task.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"id":   schema.DataSourceRequiredString("The ID of the Task."),
+			"name": schema.DataSourceComputedString("The name of the Task."),
+			"type": schema.DataSourceComputedString("The type of Task."),
 		},
 	}
 }
@@ -105,14 +93,18 @@ func (d *taskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state := model.TaskModelSimple{}
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning(
+			errors.HandleAPIWarning(
 				"No Task with supplied ID",
-				fmt.Sprintf("No Task with supplied ID: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			errors.HandleAPIError(
 				"Error finding Task",
-				fmt.Sprintf("Error finding Task: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 			return
 		}

@@ -26,14 +26,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // securityUserTokenResource is the resource implementation.
@@ -53,39 +54,31 @@ func (r *securityUserTokenResource) Metadata(_ context.Context, req resource.Met
 
 // Schema defines the schema for the resource.
 func (r *securityUserTokenResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage User Token Configuration",
-		Attributes: map[string]schema.Attribute{
-			"enabled": schema.BoolAttribute{
-				Description: "Whether or not User Tokens feature is enabled",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_ENABLED),
-			},
-			"expiration_days": schema.Int32Attribute{
-				Description: "Set user token expiration days (1-999)",
-				Optional:    true,
-				Computed:    true,
-				Default:     int32default.StaticInt32(common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS),
-				Validators: []validator.Int32{
+		Attributes: map[string]tfschema.Attribute{
+			"enabled": schema.ResourceOptionalBoolWithDefault(
+				"Whether or not User Tokens feature is enabled",
+				common.SECURITY_USER_TOKEN_DEFAULT_ENABLED,
+			),
+			"expiration_days": func() tfschema.Int32Attribute {
+				thisAttr := schema.ResourceOptionalInt32WithDefault(
+					"Set user token expiration days (1-999)",
+					common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS,
+				)
+				thisAttr.Validators = []validator.Int32{
 					int32validator.Between(1, 999),
-				},
-			},
-			"expiration_enabled": schema.BoolAttribute{
-				Description: "Enable user tokens expiration",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED),
-			},
-			"protect_content": schema.BoolAttribute{
-				Description: "Additionally require user tokens for repository authentication",
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+				}
+				return thisAttr
+			}(),
+			"expiration_enabled": schema.ResourceOptionalBoolWithDefault(
+				"Enable user tokens expiration",
+				common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_ENABLED,
+			),
+			"protect_content": schema.ResourceOptionalBoolWithDefault(
+				"Additionally require user tokens for repository authentication",
+				common.SECURITY_USER_TOKEN_DEFAULT_PROTECT_CONTENT),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -106,7 +99,7 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error importing User Token settings",
 			&err,
 			httpResponse,
@@ -155,7 +148,7 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error creating User Token settings",
 			&err,
 			httpResponse,
@@ -195,7 +188,7 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error reading User Token settings",
 			&err,
 			httpResponse,
@@ -237,7 +230,7 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error updating User Token settings",
 			&err,
 			httpResponse,
@@ -284,7 +277,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			"Error disabling User Token settings",
 			&err,
 			httpResponse,

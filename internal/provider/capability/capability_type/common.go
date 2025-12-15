@@ -26,12 +26,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -42,11 +42,11 @@ type BaseCapabilityType struct {
 	publicName     string
 }
 
-func (ct *BaseCapabilityType) GetApiCreateSuccessResponseCodes() []int {
+func (ct *BaseCapabilityType) ApiCreateSuccessResponseCodes() []int {
 	return []int{http.StatusOK}
 }
 
-func (ct *BaseCapabilityType) GetKey() string {
+func (ct *BaseCapabilityType) Key() string {
 	return ct.capabilityType.String()
 }
 
@@ -58,7 +58,7 @@ func (ct *BaseCapabilityType) GetPublicName() string {
 	return ct.publicName
 }
 
-func (ct *BaseCapabilityType) GetResourceName() string {
+func (ct *BaseCapabilityType) ResourceName() string {
 	return fmt.Sprintf("capability_%s", common.SanitiseStringForResourceName(ct.GetPublicName()))
 }
 
@@ -72,13 +72,13 @@ func (ct *BaseCapabilityType) GetType() common.CapabilityType {
 type CapabilityTypeI interface {
 	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error)
 	DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
-	GetApiCreateSuccessResponseCodes() []int
+	ApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
-	GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
-	GetPropertiesSchema() map[string]schema.Attribute
-	GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
-	GetResourceName() string
-	GetKey() string
+	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)
+	PropertiesSchema() map[string]tfschema.Attribute
+	StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics)
+	ResourceName() string
+	Key() string
 	GetPublicName() string
 	GetType() common.CapabilityType
 	UpdatePlanForState(plan any) any
@@ -89,47 +89,31 @@ type CapabilityTypeI interface {
 // --------------------------------------------
 // Helper method to generate schema for Webhook Capabilities
 // --------------------------------------------
-func getPropertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]schema.Attribute {
-	defaultProps := map[string]schema.Attribute{
-		"names": schema.SetAttribute{
-			Description: "Event types which trigger this Webhook.",
-			Required:    true,
-			ElementType: types.StringType,
-			Validators: []validator.Set{
+func propertiesSchemaForWebhookCapability(permissibleEventTypes []string, includeRepository bool) map[string]tfschema.Attribute {
+	defaultProps := map[string]tfschema.Attribute{
+		"names": schema.ResourceRequiredStringSetWithValidator(
+			"Event types which trigger this Webhook.",
+			setvalidator.All(
 				setvalidator.SizeBetween(1, 2),
 				setvalidator.ValueStringsAre(
 					stringvalidator.OneOf(permissibleEventTypes...),
 				),
-			},
-		},
-		"secret": schema.StringAttribute{
-			Description: "Key to use for HMAC payload digest.",
-			Optional:    true,
-			Sensitive:   true,
-		},
-		"url": schema.StringAttribute{
-			Description: "Send a HTTP POST request to this URL.",
-			Required:    true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^https?://[^\s]+$`),
-					"Must be a valid http:// or https:// URL",
-				),
-			},
-		},
+			),
+		),
+		"secret": schema.ResourceSensitiveString("Key to use for HMAC payload digest."),
+		"url": schema.ResourceRequiredStringWithRegex(
+			"Send a HTTP POST request to this URL.",
+			regexp.MustCompile(`^https?://[^\s]+$`),
+			"Must be a valid http:// or https:// URL",
+		),
 	}
 
 	if includeRepository {
-		defaultProps["repository"] = schema.StringAttribute{
-			Description: "Repository to discriminate events from.",
-			Required:    true,
-			Validators: []validator.String{
-				stringvalidator.RegexMatches(
-					regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-					"Must be a valid repository name",
-				),
-			},
-		}
+		defaultProps["repository"] = schema.ResourceRequiredStringWithRegex(
+			"Repository to discriminate events from.",
+			regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
+			"Must be a valid repository name",
+		)
 	}
 
 	return defaultProps

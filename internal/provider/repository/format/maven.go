@@ -24,14 +24,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type MavenRepositoryFormat struct {
@@ -53,13 +53,13 @@ type MavenRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic Maven Format Functions
 // --------------------------------------------
-func (f *MavenRepositoryFormat) GetKey() string {
+func (f *MavenRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_MAVEN
 }
 
-func (f *MavenRepositoryFormat) GetResourceName(repoType RepositoryType) string {
+func (f *MavenRepositoryFormat) ResourceName(repoType RepositoryType) string {
 	// Override to use "maven" instead of "maven2" for resource names
-	return getResourceName("maven", repoType)
+	return resourceName("maven", repoType)
 }
 
 // --------------------------------------------
@@ -103,18 +103,18 @@ func (f *MavenRepositoryFormatHosted) DoImportRequest(repositoryName string, api
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+func (f *MavenRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *MavenRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -176,18 +176,18 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getMavenSchemaAttributes())
+func (f *MavenRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
 
-func (f *MavenRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -249,16 +249,16 @@ func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *MavenRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(false)
+func (f *MavenRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonGroupSchemaAttributes(false)
 }
 
-func (f *MavenRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryMavenGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *MavenRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *MavenRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryMavenGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -282,47 +282,28 @@ func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getMavenSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"maven": schema.SingleNestedAttribute{
-			Description: "Maven specific configuration for this Repository",
-			Required:    true,
-			Optional:    false,
-			Attributes: map[string]schema.Attribute{
-				"version_policy": schema.StringAttribute{
-					Description: "What type of artifacts does this repository store?",
-					Required:    false,
-					Optional:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(
-							common.MAVEN_VERSION_POLICY_RELEASE,
-							common.MAVEN_VERSION_POLICY_SNAPSHOT,
-							common.MAVEN_VERSION_POLICY_MIXED,
-						),
-					},
-				},
-				"layout_policy": schema.StringAttribute{
-					Description: "Validate that all paths are maven artifact or metadata paths",
-					Required:    false,
-					Optional:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(
-							common.MAVEN_LAYOUT_STRICT, common.MAVEN_LAYOUT_PERMISSIVE,
-						),
-					},
-				},
-				"content_disposition": schema.StringAttribute{
-					Description: "Add Content-Disposition header as 'ATTACHMENT' to disable some content from being inline in a browser.",
-					Required:    false,
-					Optional:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(
-							common.MAVEN_CONTENT_DISPOSITION_INLINE,
-							common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT,
-						),
-					},
-				},
+func mavenSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"maven": schema.ResourceRequiredSingleNestedAttribute(
+			"Maven specific configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"version_policy": schema.ResourceOptionalStringEnum(
+					"What type of artifacts does this repository store?",
+					common.MAVEN_VERSION_POLICY_RELEASE,
+					common.MAVEN_VERSION_POLICY_SNAPSHOT,
+					common.MAVEN_VERSION_POLICY_MIXED,
+				),
+				"layout_policy": schema.ResourceOptionalStringEnum(
+					"Validate that all paths are maven artifact or metadata paths",
+					common.MAVEN_LAYOUT_STRICT,
+					common.MAVEN_LAYOUT_PERMISSIVE,
+				),
+				"content_disposition": schema.ResourceOptionalStringEnum(
+					"Add Content-Disposition header as 'ATTACHMENT' to disable some content from being inline in a browser.",
+					common.MAVEN_CONTENT_DISPOSITION_INLINE,
+					common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT,
+				),
 			},
-		},
+		),
 	}
 }

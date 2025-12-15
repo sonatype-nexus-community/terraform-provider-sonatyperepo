@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package repository_test
+package task_test
 
 import (
 	"fmt"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -26,38 +27,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRepositoryGitLfsResource(t *testing.T) {
-
+func TestAccTaskLicenseExpirationNotificationResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceTypeHosted := "sonatyperepo_repository_gitlfs_hosted"
-	resourceHostedName := fmt.Sprintf("%s.repo", resourceTypeHosted)
-
+	resourceName := fmt.Sprintf(resourceNameF, resourceTypeLicenseExpiryNotification)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.86.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 85,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "git-lfs-hosted-repo-%s"
-   online = true
-  storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
-	write_policy = "ALLOW_ONCE"
+resource "%s" "test_task" {
+  name = "test-license-expiry-notification-%s"
+  enabled = true
+  alert_email = "admin@example2.com"
+  notification_condition = "FAILURE"
+  frequency = {
+    schedule = "manual"
   }
 }
-`, resourceTypeHosted, randomString),
+`, resourceTypeLicenseExpiryNotification, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceHostedName, "name", fmt.Sprintf("git-lfs-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceHostedName, "online", "true"),
-					resource.TestCheckResourceAttrSet(resourceHostedName, "url"),
-					resource.TestCheckResourceAttr(resourceHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.strict_content_type_validation", "true"),
-					resource.TestCheckResourceAttr(resourceHostedName, "storage.write_policy", common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceHostedName, "component.proprietary_components", "false"),
-					resource.TestCheckNoResourceAttr(resourceHostedName, "cleanup"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-license-expiry-notification-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "alert_email", "admin@example2.com"),
+					resource.TestCheckResourceAttr(resourceName, "notification_condition", common.NOTIFICATION_CONDITION_FAILURE),
+					resource.TestCheckResourceAttr(resourceName, fieldFrequencySchedule, common.FREQUENCY_SCHEDULE_MANUAL),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

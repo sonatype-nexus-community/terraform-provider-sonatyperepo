@@ -2,7 +2,25 @@
 
 ## UNRELEASED
 
-_TBC_
+ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_task_license_expiration_notification` - see [help docs](https://help.sonatype.com/en/license-management.html#license-expiration-notifications) [GH-223]
+
+BUG FIXES:
+* Resource `sonatyperepo_capability_audit` could not be imported [GH-237]
+* Resource `sonatyperepo_system_iq_connection` always showed plan changes due to `properties` and `last_updated` fields [GH-236]
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.86.2](https://help.sonatype.com/en/sonatype-nexus-repository-3-86-0-release-notes.html)
+
+## 0.15.0 December 15, 2025
+
+ENHANCEMENTS:
+* Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208], [GH-201], [GH-199]
+
+  You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
+
+BUG FIXES:
+* Could not create `sonatyperepo_repository_conan_proxy` resource [GH-224]
 
 ## 0.14.1 December 02, 2025
 

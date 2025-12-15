@@ -17,7 +17,7 @@ Use this data source to get all Blob Stores
 
 ### Read-Only
 
-- `blob_stores` (Attributes List) (see [below for nested schema](#nestedatt--blob_stores))
+- `blob_stores` (Attributes List) List of Blob Stores (see [below for nested schema](#nestedatt--blob_stores))
 
 <a id="nestedatt--blob_stores"></a>
 ### Nested Schema for `blob_stores`

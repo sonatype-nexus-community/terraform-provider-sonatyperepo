@@ -17,6 +17,7 @@
 package task_test
 
 const (
-	fieldFrequencySchedule = "frequency.schedule"
-	resourceNameF          = "%s.test_task"
+	fieldFrequencySchedule                = "frequency.schedule"
+	resourceNameF                         = "%s.test_task"
+	resourceTypeLicenseExpiryNotification = "sonatyperepo_task_license_expiration_notification"
 )

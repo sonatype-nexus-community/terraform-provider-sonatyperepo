@@ -21,9 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -54,53 +55,23 @@ func (d *rolesDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 // Schema defines the schema for the data source.
 func (d *rolesDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Roles",
-		Attributes: map[string]schema.Attribute{
-			"roles": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The id of the role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"description": schema.StringAttribute{
-							Description: "The description of this role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"read_only": schema.BoolAttribute{
-							Description: "Indicates whether the role can be changed. The system will ignore any supplied external values.",
-							Required:    true,
-							Optional:    false,
-						},
-						"source": schema.StringAttribute{
-							Description: "The user source which is the origin of this role.",
-							Required:    true,
-							Optional:    false,
-						},
-						"privileges": schema.SetAttribute{
-							Description: "The set of privileges assigned to this role.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
-						"roles": schema.SetAttribute{
-							Description: "The set of roles assigned to this role.",
-							Required:    true,
-							Optional:    false,
-							ElementType: types.StringType,
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"roles": schema.DataSourceComputedListNestedAttribute(
+				"List of Roles",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"id":          schema.DataSourceRequiredString("The id of the role."),
+						"name":        schema.DataSourceRequiredString("The name of the role."),
+						"description": schema.DataSourceRequiredString("The description of this role."),
+						"read_only":   schema.DataSourceRequiredBool("Indicates whether the role can be changed. The system will ignore any supplied external values."),
+						"source":      schema.DataSourceRequiredString("The user source which is the origin of this role."),
+						"privileges":  schema.DataSourceRequiredStringSet("The set of privileges assigned to this role."),
+						"roles":       schema.DataSourceRequiredStringSet("The set of roles assigned to this role."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -117,9 +88,11 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	rolesResponse, httpResponse, err := d.Client.SecurityManagementRolesAPI.GetRoles(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable list Roles",
-			fmt.Sprintf("Unable to read Roles: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		errors.HandleAPIError(
+			"Unable to list roles",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -130,25 +103,6 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s Role", *role.Name))
 		newRole := model.RoleModelIncludingReadOnly{}
 		newRole.MapFromApi(&role)
-
-		// newRole := model.RoleModelIncludingReadOnly{
-		// 	Id:          types.StringValue(*role.Id),
-		// 	Name:        types.StringValue(*role.Name),
-		// 	Description: types.StringValue(*role.Description),
-		// 	ReadOnly:    types.BoolValue(*role.ReadOnly),
-		// 	Source:      types.StringValue(*role.Source),
-		// 	Privileges:  make([]types.String, 0),
-		// 	Roles:       make([]types.String, 0),
-		// }
-
-		// for _, privilege := range role.Privileges {
-		// 	newRole.Privileges = append(newRole.Privileges, types.StringValue(privilege))
-		// }
-
-		// for _, r := range role.Roles {
-		// 	newRole.Roles = append(newRole.Roles, types.StringValue(r))
-		// }
-
 		state.Roles = append(state.Roles, newRole)
 	}
 

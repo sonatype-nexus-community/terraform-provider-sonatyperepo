@@ -20,7 +20,7 @@ Manage Roles in Sonatype Nexus Repository
 - `description` (String) The description of this role.
 - `id` (String) The id of the Role.
 
-This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication. 
+This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.
 Matching Roles based on id will automatically be granted to LDAP or SAML users.
 - `name` (String) The name of the role.
 - `privileges` (Set of String) The set of privileges assigned to this role.
@@ -28,7 +28,7 @@ Matching Roles based on id will automatically be granted to LDAP or SAML users.
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 ## Import
 

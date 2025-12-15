@@ -27,7 +27,7 @@ Use this data source to get a specific S3 Blob Store by it's name
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
@@ -83,7 +83,7 @@ Optional:
 Optional:
 
 - `encryption_key` (String, Sensitive) The encryption key
-- `encryption_type` (String) The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'
+- `encryption_type` (String) The type of S3 server side encryption to use
 
 
 

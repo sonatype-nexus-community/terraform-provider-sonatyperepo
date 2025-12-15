@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -61,16 +61,16 @@ func (pt *RepositoryAdminPrivilegeType) DoUpdateRequest(plan any, state any, api
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryAdminPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *RepositoryAdminPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	return getSchemaAttributesActionFormatRepository()
+func (pt *RepositoryAdminPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+	return schemaAttributesActionFormatRepository()
 }
 
-func (pt *RepositoryAdminPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *RepositoryAdminPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeRepositoryAdminModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *RepositoryAdminPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *RepositoryAdminPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeRepositoryAdminModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

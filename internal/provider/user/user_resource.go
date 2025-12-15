@@ -21,21 +21,23 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // userResource is the resource implementation.
@@ -55,79 +57,39 @@ func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 // Schema defines the schema for the resource.
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Manage Local and non-Local Users",
-		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
-				Description: "The userid which is required for login. This value cannot be changed.",
-				Required:    true,
-				Optional:    false,
-			},
-			"first_name": schema.StringAttribute{
-				MarkdownDescription: `The first name of the user.
-				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"last_name": schema.StringAttribute{
-				MarkdownDescription: `The last name of the user.
+		Attributes: map[string]tfschema.Attribute{
+			"user_id": schema.ResourceRequiredStringWithPlanModifier(
+				"The userid which is required for login. This value cannot be changed.",
+				[]planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			),
+			"first_name": schema.ResourceRequiredString(`The first name of the user.
 
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"email_address": schema.StringAttribute{
-				MarkdownDescription: `The email address associated with the user.
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"last_name": schema.ResourceRequiredString(`The last name of the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"email_address": schema.ResourceRequiredString(`The email address associated with the user.
+
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
+			"password": schema.ResourceSensitiveString(`The password for the user.
+			
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`),
+			"status": schema.ResourceRequiredStringWithValidators(
+				`The user's status.
 				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-			},
-			"password": schema.StringAttribute{
-				MarkdownDescription: `The password for the user.
-				
-**Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`,
-				Required:  false,
-				Optional:  true,
-				Sensitive: true,
-			},
-			"status": schema.StringAttribute{
-				MarkdownDescription: `The user's status.
-				
-**Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
-				Required: true,
-				Optional: false,
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						common.USER_STATUS_ACTIVE,
-						common.USER_STATUS_LOCKED,
-						common.USER_STATUS_DISABLED,
-						common.USER_STATUS_CHANGE_PASSWORD,
-					),
-				},
-			},
-			"roles": schema.SetAttribute{
-				Description: "The list of roles assigned to this User.",
-				Required:    true,
-				Optional:    false,
-				ElementType: types.StringType,
-			},
-			"read_only": schema.BoolAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"source": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+  **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`,
+				stringvalidator.OneOf(
+					common.AllUserStatusTypes()...,
+				),
+			),
+			"roles":        schema.ResourceRequiredStringSet("The list of roles assigned to this User."),
+			"read_only":    schema.ResourceComputedBool("Whether the user is read-only"),
+			"source":       schema.ResourceComputedString("Source system managing this user"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -153,7 +115,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating User: %s", plan.UserId.ValueString()),
 			&err,
 			httpResponse,
@@ -195,14 +157,18 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			resp.Diagnostics.AddWarning(
-				"User does not exist",
-				fmt.Sprintf("Unable to read User: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			errors.HandleAPIWarning(
+				"User to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Reading User",
-				fmt.Sprintf("Unable to read User: %s: %s", httpResponse.Status, err),
+			errors.HandleAPIError(
+				"Error reading User",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
@@ -274,6 +240,13 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	)
 	apiBody := sonatyperepo.NewApiUser(plan.Status.ValueString())
 	plan.MapToApi(apiBody)
+	// Preserve source from state since it's a read-only computed field
+	// Use state source or default if not present
+	source := state.Source.ValueString()
+	if source == "" {
+		source = common.DEFAULT_USER_SOURCE
+	}
+	apiBody.Source = &source
 	httpResponse, err := r.Client.SecurityManagementUsersAPI.UpdateUser(ctx, state.UserId.ValueString()).Body(*apiBody).Execute()
 
 	if err != nil {
@@ -306,6 +279,41 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		}
 	}
 
+	// Refresh state from API to get computed fields
+	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Source(source).Execute()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading updated User",
+			fmt.Sprintf("Error reading User after update: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+		)
+		return
+	}
+
+	if len(apiResponse) == 0 {
+		resp.Diagnostics.AddError(
+			"No User with requested User ID",
+			fmt.Sprintf("No user found for %s@%s after update", state.UserId.ValueString(), source),
+		)
+		return
+	}
+
+	var updatedUser *sonatyperepo.ApiUser
+	for _, u := range apiResponse {
+		if *u.UserId == state.UserId.ValueString() && *u.Source == source {
+			updatedUser = &u
+			break
+		}
+	}
+
+	if updatedUser == nil {
+		resp.Diagnostics.AddError(
+			"User does not exist after update",
+			fmt.Sprintf("No user returned: %s: %s", httpResponse.Status, err),
+		)
+		return
+	}
+
+	plan.MapFromApi(updatedUser)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)

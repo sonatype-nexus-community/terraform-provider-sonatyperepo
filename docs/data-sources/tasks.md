@@ -17,13 +17,13 @@ Use this data source to get all Tasks
 
 ### Read-Only
 
-- `tasks` (Attributes List) (see [below for nested schema](#nestedatt--tasks))
+- `tasks` (Attributes List) List of Tasks (see [below for nested schema](#nestedatt--tasks))
 
 <a id="nestedatt--tasks"></a>
 ### Nested Schema for `tasks`
 
 Required:
 
-- `id` (String) The name of the Task.
+- `id` (String) The ID of the Task.
 - `name` (String) The name of the Task.
 - `type` (String) The type of Task.
