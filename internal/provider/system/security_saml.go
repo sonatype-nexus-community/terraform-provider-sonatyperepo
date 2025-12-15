@@ -71,7 +71,7 @@ func (r *securitySamlResource) Schema(_ context.Context, _ resource.SchemaReques
 				regexp.MustCompile(`(?s)^\s*<.*>\s*$`),
 				"Must be valid XML",
 				10,
-				math.MaxInt64,
+				math.MaxInt,
 			),
 			"username_attribute": schema.ResourceRequiredStringWithLengthAtLeast(
 				"IdP field mappings for username",
