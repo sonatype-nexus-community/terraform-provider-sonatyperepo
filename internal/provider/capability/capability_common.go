@@ -367,7 +367,7 @@ func capabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
 		Attributes: map[string]tfschema.Attribute{
 			"id":           schema.ResourceComputedString("The internal ID of the Capability."),
-			"notes":        schema.ResourceOptionalString("Optional notes about configured capability."),
+			"notes":        schema.ResourceOptionalStringWithDefault("Optional notes about configured capability.", ""),
 			"enabled":      schema.ResourceRequiredBool("Whether the Capability is enabled."),
 			"last_updated": schema.ResourceLastUpdated(),
 		},
