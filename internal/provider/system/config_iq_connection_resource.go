@@ -74,7 +74,7 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 					common.IQ_MAX_CONNECTION_TIMEOUT_SECONDS,
 				),
 			),
-			"properties":             schema.ResourceOptionalString("Additional properties to configure for Sonatype Repository Firewall"),
+			"properties":             schema.ResourceOptionalStringWithDefault("Additional properties to configure for Sonatype Repository Firewall", ""),
 			"show_iq_server_link":    schema.ResourceRequiredBool("Show Sonatype Repository Firewall link in Browse menu when server is enabled"),
 			"fail_open_mode_enabled": schema.ResourceRequiredBool("Allow by default when quarantine is enabled and the connection to Sonatype IQ Server fails"),
 			"last_updated":           schema.ResourceLastUpdated(),
@@ -103,7 +103,6 @@ func (r *systemConfigIqConnectionResource) Create(ctx context.Context, req resou
 func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
 	var state model.IqConnectionModel
-
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
@@ -194,7 +193,6 @@ func (r *systemConfigIqConnectionResource) Delete(ctx context.Context, req resou
 
 func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, reqPlan *tfsdk.Plan, respDiags *diag.Diagnostics) *model.IqConnectionModel {
 	var plan model.IqConnectionModel
-
 	respDiags.Append(reqPlan.Get(ctx, &plan)...)
 
 	if respDiags.HasError() {
@@ -210,19 +208,19 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 
 	apiModel := sonatyperepo.NewIqConnectionXoWithDefaults()
 	plan.MapToApi(apiModel)
-	apiResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
+	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
 
 	// Handle Error
 	if err != nil {
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
-			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 		return nil
-	} else if apiResponse.StatusCode != http.StatusNoContent {
+	} else if httpResponse.StatusCode != http.StatusNoContent {
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
-			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 	}
 

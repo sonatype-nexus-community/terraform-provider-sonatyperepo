@@ -18,6 +18,7 @@ package model
 
 import (
 	"encoding/json"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -120,7 +121,7 @@ func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
 	m.Username = types.StringPointerValue(api.Username)
 	// Skip password
 	m.ConnectionTimeout = types.Int32PointerValue(api.TimeoutSeconds)
-	m.Properties = types.StringPointerValue(api.Properties)
+	m.Properties = types.StringValue(strings.TrimSuffix(*api.Properties, "\n"))
 	m.ShowIQServerLink = types.BoolPointerValue(api.ShowLink)
 	m.FailOpenModeEnabled = types.BoolPointerValue(api.FailOpenModeEnabled)
 }
