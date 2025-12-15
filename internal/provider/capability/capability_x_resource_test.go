@@ -25,6 +25,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const (
@@ -33,6 +34,62 @@ const (
 	propertiesUrl = "properties.url"
 	urlFString    = "https://%s.tld"
 )
+
+func TestAccCapabilityAuditResource(t *testing.T) {
+	resourceName := fmt.Sprintf("%s.this", resourceAudit)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: utils_test.ProviderConfig + `
+data "sonatyperepo_capabilities" "capabilities" {}
+`,
+			},
+			// Test import
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "this" {
+  enabled = true
+  notes   = "Terraform managed"
+}
+`, resourceAudit),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateIdFunc: testAccCapabilityAuditImportStateIdFunc,
+				// ImportStateVerify:       true,
+				// ImportStateVerifyIgnore: []string{"last_updated"},
+				// ImportStatePersist:      true,
+				// ImportStateVerifyIdentifierAttribute: "id",
+			},
+		},
+	})
+}
+
+func testAccCapabilityAuditImportStateIdFunc(s *terraform.State) (string, error) {
+	rs, ok := s.RootModule().Resources["data.sonatyperepo_capabilities.capabilities"]
+	if !ok {
+		return "", fmt.Errorf("data source not found in state")
+	}
+
+	// Find the audit capability by iterating through the capabilities list
+	attrs := rs.Primary.Attributes
+	for i := 0; i < 100; i++ { // Assuming max 100 capabilities
+		typeKey := fmt.Sprintf("capabilities.%d.type", i)
+		typeValue, exists := attrs[typeKey]
+		if !exists {
+			break // No more capabilities
+		}
+		if typeValue == "audit" {
+			idKey := fmt.Sprintf("capabilities.%d.id", i)
+			if id, ok := attrs[idKey]; ok {
+				return id, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("audit capability not found in data source")
+}
 
 func TestAccCapabilityCoreBaseUrlResource(t *testing.T) {
 
