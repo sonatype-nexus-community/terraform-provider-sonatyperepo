@@ -2,11 +2,15 @@
 
 ## UNRELEASED
 
+## 0.15.0 December 15, 2025
+
 ENHANCEMENTS:
-* Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208]
+* Refactored common code and patterns into a shared library to improve mantainability and consistency [GH-208], [GH-201], [GH-199]
 
   You will see slight changes (improvements, minor corrections and consistency) in descriptions of fields for data sources and resources as a result of this, but there **should be NO breaking changes** - all schemas have been verified as matching version the previous release.
 
+BUG FIXES:
+* Could not create `sonatyperepo_repository_conan_proxy` resource [GH-224]
 
 ## 0.14.1 December 02, 2025
 
