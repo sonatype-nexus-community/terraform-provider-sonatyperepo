@@ -58,11 +58,8 @@ func (m *BaseCapabilityModel) MapFromApi(api *v3.CapabilityDTO) {
 
 func (m *BaseCapabilityModel) toApiCreateModel() *v3.CapabilityDTO {
 	api := v3.NewCapabilityDTOWithDefaults()
-	api.Id = m.Id.ValueStringPointer()
 	api.Notes = m.Notes.ValueStringPointer()
 	api.Enabled = m.Enabled.ValueBoolPointer()
-	props := make(map[string]string)
-	api.Properties = &props
 	return api
 }
 

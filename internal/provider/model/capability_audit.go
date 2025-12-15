@@ -32,7 +32,7 @@ type CapabilityAuditModel struct {
 
 func (m *CapabilityAuditModel) FromApiModel(api *v3.CapabilityDTO) {
 	m.Id = types.StringPointerValue(api.Id)
-	m.Notes = types.StringValue(*api.Notes)
+	m.Notes = types.StringPointerValue(api.Notes)
 	m.Enabled = types.BoolPointerValue(api.Enabled)
 }
 
