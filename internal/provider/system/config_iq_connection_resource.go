@@ -74,7 +74,7 @@ func (r *systemConfigIqConnectionResource) Schema(_ context.Context, _ resource.
 					common.IQ_MAX_CONNECTION_TIMEOUT_SECONDS,
 				),
 			),
-			"properties":             schema.ResourceOptionalString("Additional properties to configure for Sonatype Repository Firewall"),
+			"properties":             schema.ResourceOptionalStringWithDefault("Additional properties to configure for Sonatype Repository Firewall", ""),
 			"show_iq_server_link":    schema.ResourceRequiredBool("Show Sonatype Repository Firewall link in Browse menu when server is enabled"),
 			"fail_open_mode_enabled": schema.ResourceRequiredBool("Allow by default when quarantine is enabled and the connection to Sonatype IQ Server fails"),
 			"last_updated":           schema.ResourceLastUpdated(),

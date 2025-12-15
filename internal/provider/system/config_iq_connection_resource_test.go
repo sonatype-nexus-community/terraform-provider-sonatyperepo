@@ -64,6 +64,25 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
+					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
+				),
+			},
+			// Test adding Properties
+			{
+				Config: systemIqConnectionWithPropertiesResourceConfig(randomString, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", "key1=value1&key2=value2"),
+					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -82,6 +101,22 @@ resource "%s" "iq" {
   username = "user"
   password = "token"
   show_iq_server_link = %t
+}
+`, resourceTypeSysIqConnection, randomString, showIqLink)
+}
+
+func systemIqConnectionWithPropertiesResourceConfig(randomString string, showIqLink bool) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "iq" {
+  authentication_method = "USER"
+  enabled = false
+  fail_open_mode_enabled = false
+  nexus_trust_store_enabled = false
+  url = "https://%s.somewhere.tld"
+  username = "user"
+  password = "token"
+  show_iq_server_link = %t
+  properties = "key1=value1&key2=value2"
 }
 `, resourceTypeSysIqConnection, randomString, showIqLink)
 }
