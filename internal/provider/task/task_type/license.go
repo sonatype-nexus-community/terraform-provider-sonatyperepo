@@ -53,7 +53,7 @@ func (f *LicenseExpirationNotificationTask) DoCreateRequest(plan any, apiClient 
 	planModel := (plan).(model.TaskLicenseExpirationNotificationModel)
 
 	// Call API to Create
-	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel()).Execute()
 }
 
 func (f *LicenseExpirationNotificationTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
@@ -64,7 +64,7 @@ func (f *LicenseExpirationNotificationTask) DoUpdateRequest(plan any, state any,
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
 
 	// Call API to Update
-	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
+	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel()).Execute()
 }
 
 func (f *LicenseExpirationNotificationTask) MarkdownDescription() string {
@@ -96,14 +96,14 @@ func (f *LicenseExpirationNotificationTask) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *LicenseExpirationNotificationTask) UpdateStateFromApi(state any, api any) any {
+func (f *LicenseExpirationNotificationTask) UpdateStateFromApi(state, api any) any {
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
 	apiModel := (api).(v3.CreateTask201Response)
 	stateModel.Id = types.StringValue(apiModel.Id)
 	return stateModel
 }
 
-func (f *LicenseExpirationNotificationTask) UpdateStateFromPlanForUpdate(plan any, state any) any {
+func (f *LicenseExpirationNotificationTask) UpdateStateFromPlanForUpdate(plan, state any) any {
 	planModel := (plan).(model.TaskLicenseExpirationNotificationModel)
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
 

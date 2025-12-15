@@ -28,12 +28,12 @@ type TaskLicenseExpirationNotificationModel struct {
 	BaseTaskModel
 }
 
-func (m *TaskLicenseExpirationNotificationModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+func (m *TaskLicenseExpirationNotificationModel) ToApiCreateModel() *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_LICENSE_EXPIRATION_NOTIFICATION.String()
 	return api
 }
 
-func (m *TaskLicenseExpirationNotificationModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+func (m *TaskLicenseExpirationNotificationModel) ToApiUpdateModel() *v3.UpdateTaskRequest {
 	return m.toApiUpdateModel()
 }
