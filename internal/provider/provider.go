@@ -321,6 +321,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		system.NewSecuritySamlResource,
 		system.NewSecurityUserTokenResource,
 		task.NewTaskBlobstoreCompactResource,
+		task.NewTaskLicenseExpirationNotificationResource,
 		task.NewTaskMalwareRemediatorResource,
 		task.NewTaskRepairRebuildBrowseNodesResource,
 		task.NewTaskRepositoryDockerGcResource,
