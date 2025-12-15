@@ -17,7 +17,7 @@ Use this data source to get all Content Selectors
 
 ### Read-Only
 
-- `content_selectors` (Attributes List) (see [below for nested schema](#nestedatt--content_selectors))
+- `content_selectors` (Attributes List) List of Content Selectors (see [below for nested schema](#nestedatt--content_selectors))
 
 <a id="nestedatt--content_selectors"></a>
 ### Nested Schema for `content_selectors`

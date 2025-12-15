@@ -22,13 +22,13 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -54,26 +54,12 @@ func (d *contentSelectorDataSource) Metadata(_ context.Context, req datasource.M
 
 // Schema defines the schema for the data source.
 func (d *contentSelectorDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a single Content Selector by name",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The name of the Content Selector.",
-				Required:    true,
-				Optional:    false,
-			},
-			"description": schema.StringAttribute{
-				Description: "The description of this Content Selector.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"expression": schema.StringAttribute{
-				Description: "The Content Selector expression used to identify content.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"name":        schema.DataSourceRequiredString("The name of the Content Selector."),
+			"description": schema.DataSourceComputedString("The description of this Content Selector."),
+			"expression":  schema.DataSourceComputedString("The Content Selector expression used to identify content."),
 		},
 	}
 }
@@ -94,25 +80,25 @@ func (d *contentSelectorDataSource) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelector(ctx, data.Name.ValueString()).Execute()
 
 	state := model.ContentSelectorModel{}
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddWarning(
+			errors.HandleAPIWarning(
 				"No Content Selector with supplied name",
-				fmt.Sprintf("No Content Selector with supplied name: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
+			errors.HandleAPIError(
 				"Error finding Content Selector",
-				fmt.Sprintf("Error finding Content Selector with supplied name: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 			return
 		}

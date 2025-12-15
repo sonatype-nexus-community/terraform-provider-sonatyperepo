@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -50,13 +50,13 @@ type RubyGemsRepositoryFormatGroup struct {
 // --------------------------------------------
 // Generic RubyGems Format Functions
 // --------------------------------------------
-func (f *RubyGemsRepositoryFormat) GetKey() string {
+func (f *RubyGemsRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_RUBY_GEMS
 }
 
-func (f *RubyGemsRepositoryFormat) GetResourceName(repoType RepositoryType) string {
+func (f *RubyGemsRepositoryFormat) ResourceName(repoType RepositoryType) string {
 	// Override to maintain backward compatibility with resource name containing underscore
-	return getResourceName("ruby_gems", repoType)
+	return resourceName("ruby_gems", repoType)
 }
 
 // --------------------------------------------
@@ -93,16 +93,16 @@ func (f *RubyGemsRepositoryFormatHosted) DoUpdateRequest(plan any, state any, ap
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonHostedSchemaAttributes()
+func (f *RubyGemsRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonHostedSchemaAttributes()
 }
 
-func (f *RubyGemsRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRubyGemsHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RubyGemsRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRubyGemsHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -167,16 +167,16 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonProxySchemaAttributes()
+func (f *RubyGemsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonProxySchemaAttributes()
 }
 
-func (f *RubyGemsRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositorRubyGemsProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RubyGemsRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositorRubyGemsProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -241,16 +241,16 @@ func (f *RubyGemsRepositoryFormatGroup) DoUpdateRequest(plan any, state any, api
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-func (f *RubyGemsRepositoryFormatGroup) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	return getCommonGroupSchemaAttributes(false)
+func (f *RubyGemsRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonGroupSchemaAttributes(false)
 }
 
-func (f *RubyGemsRepositoryFormatGroup) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryRubyGemsGroupModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RubyGemsRepositoryFormatGroup) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RubyGemsRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryRubyGemsGroupModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

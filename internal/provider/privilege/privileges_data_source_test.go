@@ -23,16 +23,34 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccUsersDataSource(t *testing.T) {
+const (
+	dataSourcePrivileges = "data.sonatyperepo_privileges.ps"
+)
+
+func TestAccPrivilegesDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
+			// Test 1: Verify privileges can be listed
 			{
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_privileges" "ps" {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_privileges.ps", "privileges.#"),
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.#"),
+				),
+			},
+			// Test 2: Verify response structure and privilege attributes
+			{
+				Config: utils_test.ProviderConfig + `data "sonatyperepo_privileges" "ps" {
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify count is greater than 0
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.#"),
+					// Verify at least one privilege exists with expected attributes
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.0.name"),
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.0.description"),
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.0.read_only"),
+					resource.TestCheckResourceAttrSet(dataSourcePrivileges, "privileges.0.type"),
 				),
 			},
 		},

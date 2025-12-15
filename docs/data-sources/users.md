@@ -17,7 +17,7 @@ Use this data source to get all Users
 
 ### Read-Only
 
-- `users` (Attributes List) (see [below for nested schema](#nestedatt--users))
+- `users` (Attributes List) List of Users (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>
 ### Nested Schema for `users`

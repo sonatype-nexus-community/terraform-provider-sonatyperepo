@@ -20,5 +20,5 @@ Use this data source to get the current User Token configuration
 - `enabled` (Boolean) Whether or not User Tokens feature is enabled
 - `expiration_days` (Number) User token expiration days (1-999)
 - `expiration_enabled` (Boolean) Whether user tokens expiration is enabled
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 - `protect_content` (Boolean) Whether user tokens are required for repository authentication

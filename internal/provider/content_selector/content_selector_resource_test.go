@@ -38,7 +38,7 @@ func TestAccContentSelectorResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: getContentSelectorResourceConfig(randomString),
+				Config: contentSelectorResourceConfig(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameContentSelector, "name", fmt.Sprintf("test-content-selector-%s", randomString)),
@@ -52,7 +52,7 @@ func TestAccContentSelectorResource(t *testing.T) {
 
 }
 
-func getContentSelectorResourceConfig(randomString string) string {
+func contentSelectorResourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "cs" {
   name = "test-content-selector-%s"

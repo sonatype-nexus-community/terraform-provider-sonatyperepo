@@ -24,10 +24,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -65,29 +67,21 @@ func (f *FirewallAuditQuarantineCapability) DoUpdateRequest(plan any, capability
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *FirewallAuditQuarantineCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *FirewallAuditQuarantineCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityFirewallAuditQuarantineModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *FirewallAuditQuarantineCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"repository": schema.StringAttribute{
-			Description: "The repository to be evaluated.",
-			Required:    true,
-			Optional:    false,
-		},
-		"quarantine": schema.BoolAttribute{
-			MarkdownDescription: `Whether enable Quarantine for this repository. 
+func (f *FirewallAuditQuarantineCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"repository": schema.ResourceRequiredString("The repository to be evaluated."),
+		"quarantine": schema.ResourceRequiredBool(`Whether enable Quarantine for this repository. 
 			
-**Note:** If enabled and later disabled, all quarantined components will be made available in the repository; those components cannot be re-quarantined.`,
-			Required: true,
-			Optional: false,
-		},
+**Note:** If enabled and later disabled, all quarantined components will be made available in the repository; those components cannot be re-quarantined.`),
 	}
 }
 
-func (f *FirewallAuditQuarantineCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *FirewallAuditQuarantineCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityFirewallAuditQuarantineModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

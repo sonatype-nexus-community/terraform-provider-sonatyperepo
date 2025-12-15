@@ -40,7 +40,7 @@ resource "sonatyperepo_capability_custom_s3_regions" "cap" {
 ### Read-Only
 
 - `id` (String) The internal ID of the Capability.
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--properties"></a>
 ### Nested Schema for `properties`

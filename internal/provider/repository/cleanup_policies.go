@@ -25,13 +25,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -39,7 +37,12 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
+
+const cleanupPolicyNamePattern = `^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`
 
 // cleanupPolicyResource is the resource implementation.
 type cleanupPolicyResource struct {
@@ -58,63 +61,38 @@ func (r *cleanupPolicyResource) Metadata(_ context.Context, req resource.Metadat
 
 // Schema defines the schema for the resource.
 func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this resource to create and manage cleanup policies in Sonatype Nexus Repository Manager",
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the cleanup policy",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
+		Attributes: map[string]tfschema.Attribute{
+			"name": func() tfschema.StringAttribute {
+				attr := schema.ResourceRequiredStringWithRegexAndLength(
+					"Name of the cleanup policy",
+					regexp.MustCompile(cleanupPolicyNamePattern),
+					"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
+					1,
+					255,
+				)
+				attr.PlanModifiers = []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				}
+				return attr
+			}(),
+			"notes": schema.ResourceOptionalString("Notes for the cleanup policy"),
+			"format": schema.ResourceRequiredStringEnum(
+				"Repository format that this cleanup policy applies to",
+				"apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum",
+			),
+			"criteria": schema.ResourceRequiredSingleNestedAttribute(
+				"Cleanup criteria for this policy - at least one criterion must be specified",
+				map[string]tfschema.Attribute{
+					"last_blob_updated": schema.ResourceOptionalInt64("Remove components that haven't been downloaded in this many days"),
+					"last_downloaded":   schema.ResourceOptionalInt64("Remove components that were last downloaded more than this many days ago"),
+					"release_type":      schema.ResourceOptionalString("Remove components that match this release type (e.g., RELEASES, PRERELEASES)"),
+					"asset_regex":       schema.ResourceOptionalString("Remove components that have at least one asset name matching this regular expression"),
 				},
-				Validators: []validator.String{
-					stringvalidator.LengthBetween(1, 255),
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-zA-Z0-9\-]{1}[a-zA-Z0-9_\-\.]*$`),
-						"Name must start with an alphanumeric character or hyphen, and can only contain alphanumeric characters, underscores, hyphens, and periods",
-					),
-				},
-			},
-			"notes": schema.StringAttribute{
-				Description: "Notes for the cleanup policy",
-				Optional:    true,
-			},
-			"format": schema.StringAttribute{
-				Description: "Repository format that this cleanup policy applies to",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf("apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "huggingface", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "yum"),
-				},
-			},
-			"criteria": schema.SingleNestedAttribute{
-				Description: "Cleanup criteria for this policy - at least one criterion must be specified",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"last_blob_updated": schema.Int64Attribute{
-						Description: "Remove components that haven't been downloaded in this many days",
-						Optional:    true,
-					},
-					"last_downloaded": schema.Int64Attribute{
-						Description: "Remove components that were last downloaded more than this many days ago",
-						Optional:    true,
-					},
-					"release_type": schema.StringAttribute{
-						Description: "Remove components that match this release type (e.g., RELEASES, PRERELEASES)",
-						Optional:    true,
-					},
-					"asset_regex": schema.StringAttribute{
-						Description: "Remove components that have at least one asset name matching this regular expression",
-						Optional:    true,
-					},
-				},
-			},
-			"retain": schema.Int64Attribute{
-				Description: "Minimum number of component versions to retain",
-				Optional:    true,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			),
+			"retain":       schema.ResourceOptionalInt64("Minimum number of component versions to retain"),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 }
@@ -153,10 +131,11 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	// Handle Error
 	if err != nil {
-		errorBody, _ := io.ReadAll(apiResponse.Body)
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Error creating cleanup policy",
-			"Could not create cleanup policy, unexpected error: "+apiResponse.Status+": "+string(errorBody),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -171,11 +150,12 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError(
-			"Failed to create cleanup policy",
-			fmt.Sprintf("Unable to create cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		errors.HandleAPIError(
+			"Creation of cleanup policy was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
-		return
 	}
 }
 
@@ -190,7 +170,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.AuthContext(ctx)
 
 	// Fetch cleanup policy from API
 	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
@@ -199,12 +179,20 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
+			errors.HandleAPIWarning(
+				"Cleanup policy to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 			return
 		}
 
-		resp.Diagnostics.AddError(
-			"Error Reading cleanup policy",
-			"Unable to read cleanup policy: "+err.Error(),
+		errors.HandleAPIError(
+			"Error reading cleanup policy",
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -239,7 +227,7 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+	ctx = r.AuthContext(ctx)
 
 	// Build request payload and make API call
 	requestPayload := buildRequestPayload(plan)
@@ -282,23 +270,29 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		if apiResponse != nil && apiResponse.StatusCode == 404 {
 			// Resource already deleted, nothing to do
-			resp.Diagnostics.AddWarning(
+			errors.HandleAPIWarning(
 				"Cleanup policy to delete did not exist",
-				fmt.Sprintf("Cleanup policy was already deleted: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		} else {
-			resp.Diagnostics.AddError(
-				"Error Deleting cleanup policy",
-				fmt.Sprintf("Unable to delete cleanup policy: %s", err.Error()),
+			errors.HandleAPIError(
+				"Error deleting cleanup policy",
+				&err,
+				apiResponse,
+				&resp.Diagnostics,
 			)
 		}
 		return
 	}
 
 	if apiResponse.StatusCode != http.StatusNoContent && apiResponse.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Failed to delete cleanup policy",
-			fmt.Sprintf("Unable to delete cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+		errors.HandleAPIError(
+			"Deletion of cleanup policy was not successful",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}
@@ -451,14 +445,18 @@ func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name str
 func (r *cleanupPolicyResource) handleUpdateError(resp *resource.UpdateResponse, apiResponse *http.Response, err error) {
 	if apiResponse != nil && apiResponse.StatusCode == 404 {
 		resp.State.RemoveResource(context.Background())
-		resp.Diagnostics.AddWarning(
+		errors.HandleAPIWarning(
 			"Cleanup policy to update did not exist",
-			fmt.Sprintf("Unable to update cleanup policy: %d: %s", apiResponse.StatusCode, apiResponse.Status),
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 	} else {
-		resp.Diagnostics.AddError(
-			"Error Updating cleanup policy",
-			fmt.Sprintf("Unable to update cleanup policy: %s", err.Error()),
+		errors.HandleAPIError(
+			"Error updating cleanup policy",
+			&err,
+			apiResponse,
+			&resp.Diagnostics,
 		)
 	}
 }

@@ -27,7 +27,7 @@ Use this data source to get a specific S3 Blob Store by it's name
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) The timestamp of when the resource was last updated
 
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
@@ -65,10 +65,10 @@ Optional:
 
 Optional:
 
-- `access_key_id` (String, Sensitive) An IAM access key ID for granting access to the S3 bucket
+- `access_key_id` (String) An IAM access key ID for granting access to the S3 bucket
 - `role` (String) An IAM role to assume in order to access the S3 bucket
-- `secret_access_key` (String, Sensitive) The secret access key associated with the specified IAM access key ID
-- `session_token` (String, Sensitive) An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket
+- `secret_access_key` (String) The secret access key associated with the specified IAM access key ID
+- `session_token` (String) An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket
 
 
 <a id="nestedatt--bucket_configuration--encryption"></a>
@@ -76,7 +76,7 @@ Optional:
 
 Optional:
 
-- `encryption_key` (String, Sensitive) The encryption key
+- `encryption_key` (String) The encryption key
 - `encryption_type` (String) The type of S3 server side encryption to use. Either 's3ManagedEncryption' or 'kmsManagedEncryption'
 
 

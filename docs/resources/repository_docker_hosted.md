@@ -30,7 +30,7 @@ Manage Hosted DOCKER Repositories
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 <a id="nestedatt--docker"></a>
 ### Nested Schema for `docker`
@@ -60,8 +60,8 @@ Required:
 Optional:
 
 - `latest_policy` (Boolean) Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.
-			
-**NOTE:** The APIs for Sonatype Nexus Repository do not currently allow for reading this value - hence during import this may result in terraform plan changes as we defualt to false.
+
+  **NOTE:** The APIs for Sonatype Nexus Repository do not currently allow for reading this value - hence during import this may result in terraform plan changes as we defualt to false.
 
 
 <a id="nestedatt--cleanup"></a>
