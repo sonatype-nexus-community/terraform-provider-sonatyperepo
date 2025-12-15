@@ -8,6 +8,7 @@ ENHANCEMENTS:
 BUG FIXES:
 * Resource `sonatyperepo_capability_audit` could not be imported [GH-237]
 * Resource `sonatyperepo_system_iq_connection` always showed plan changes due to `properties` and `last_updated` fields [GH-236]
+* Proxy Repository Resources could produce inconsistent results after apply [GH-232] (thanks @yfougeray-euphoria)
 
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.86.2](https://help.sonatype.com/en/sonatype-nexus-repository-3-86-0-release-notes.html)
