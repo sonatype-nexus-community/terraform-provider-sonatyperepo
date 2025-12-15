@@ -22,19 +22,21 @@ import (
 	"net/http"
 	"reflect"
 	"slices"
-	capabilitytype "terraform-provider-sonatyperepo/internal/provider/capability/capability_type"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
+
+	capabilitytype "terraform-provider-sonatyperepo/internal/provider/capability/capability_type"
 )
 
 const (
@@ -52,12 +54,12 @@ type capabilityResource struct {
 
 // Metadata returns the resource type name.
 func (c *capabilityResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, c.CapabilityType.GetResourceName())
+	resp.TypeName = fmt.Sprintf("%s_%s", req.ProviderTypeName, c.CapabilityType.ResourceName())
 }
 
 // Set Schema for this Resource
 func (c *capabilityResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = getCapabilitySchema(c.CapabilityType)
+	resp.Schema = capabilitySchema(c.CapabilityType)
 }
 
 // This allows import of existing capabilities into Terraform state.
@@ -68,7 +70,7 @@ func (c *capabilityResource) ImportState(ctx context.Context, req resource.Impor
 
 func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	plan, diags := c.CapabilityType.GetPlanAsModel(ctx, req.Plan)
+	plan, diags := c.CapabilityType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -77,18 +79,14 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.AuthContext(ctx)
 
 	// Make API requet
 	capabilityCreateResponse, httpResponse, err := c.CapabilityType.DoCreateRequest(plan, c.Client, ctx, c.NxrmVersion)
 
 	// Handle Errors
 	if err != nil {
-		common.HandleApiError(
+		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s Capability", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -96,8 +94,8 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	if !slices.Contains(c.CapabilityType.GetApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
-		common.HandleApiError(
+	if !slices.Contains(c.CapabilityType.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
+		errors.HandleAPIError(
 			fmt.Sprintf("Creation of %s Capability was not successful", c.CapabilityType.GetType().String()),
 			&err,
 			httpResponse,
@@ -114,7 +112,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 
 func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Retrieve values from state
-	stateModel, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -124,14 +122,10 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.AuthContext(ctx)
 
 	// Make API Request
-	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(stateModel, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -141,15 +135,15 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+			errors.HandleAPIWarning(
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+			errors.HandleAPIError(
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -160,8 +154,8 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		common.HandleApiWarning(
-			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "read"),
+		errors.HandleAPIWarning(
+			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "read"),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -178,22 +172,18 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 
 func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	planModel, diags := c.CapabilityType.GetPlanAsModel(ctx, req.Plan)
+	planModel, diags := c.CapabilityType.PlanAsModel(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Retrieve values from state
-	stateModel, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	stateModel, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.AuthContext(ctx)
 
 	// Make API requet
-	capabilityId, shouldReturn := getCapabilityIdFromState(stateModel, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(stateModel, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -203,14 +193,14 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
+			errors.HandleAPIWarning(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
+			errors.HandleAPIError(
 				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
@@ -227,15 +217,15 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
-			common.HandleApiWarning(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+			errors.HandleAPIWarning(
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
 			)
 		} else {
-			common.HandleApiError(
-				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+			errors.HandleAPIError(
+				fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 				&err,
 				httpResponse,
 				&resp.Diagnostics,
@@ -246,8 +236,8 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
-		common.HandleApiWarning(
-			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetKey(), capabilityId.ValueString(), "update"),
+		errors.HandleAPIWarning(
+			fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.Key(), capabilityId.ValueString(), "update"),
 			&err,
 			httpResponse,
 			&resp.Diagnostics,
@@ -264,7 +254,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	state, diags := c.CapabilityType.GetStateAsModel(ctx, req.State)
+	state, diags := c.CapabilityType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	// Handle any errors
@@ -274,14 +264,10 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	ctx = c.AuthContext(ctx)
 
 	// Make API request
-	capabilityId, shouldReturn := getCapabilityIdFromState(state, &resp.Diagnostics)
+	capabilityId, shouldReturn := capabilityIdFromState(state, &resp.Diagnostics)
 	if shouldReturn {
 		return
 	}
@@ -303,22 +289,28 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 		if err != nil {
 			if httpResponse.StatusCode == http.StatusNotFound {
 				resp.State.RemoveResource(ctx)
-				resp.Diagnostics.AddWarning(
+				errors.HandleAPIWarning(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
-					fmt.Sprintf(CAPABILITY_GENERAL_ERROR_RESPONSE_GENERAL, httpResponse.Status),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			} else {
-				resp.Diagnostics.AddError(
+				errors.HandleAPIError(
 					fmt.Sprintf(CAPABILITY_ERROR_DID_NOT_EXIST, c.CapabilityType.GetType().String(), capabilityId.ValueString(), "delete"),
-					fmt.Sprintf(CAPABILITY_GENERAL_ERROR_RESPONSE_WITH_ERR, httpResponse.Status, err),
+					&err,
+					httpResponse,
+					&resp.Diagnostics,
 				)
 			}
 			return
 		}
 		if httpResponse.StatusCode != http.StatusNoContent {
-			resp.Diagnostics.AddError(
+			errors.HandleAPIError(
 				fmt.Sprintf("Unexpected response when deleting %s Capability (attempt %d)", c.CapabilityType.GetType().String(), attempts),
-				fmt.Sprintf("Error response: %s", httpResponse.Status),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
 			)
 
 			time.Sleep(1 * time.Second)
@@ -330,12 +322,8 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context.Context) (*v3.CapabilityDTO, *http.Response, error) {
-	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		v3.ContextBasicAuth,
-		c.Auth,
-	)
+	// Ensure API Context has authentication
+	ctx = c.AuthContext(ctx)
 
 	// Make API Request
 	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List(ctx).Execute()
@@ -357,7 +345,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	return capability, httpResponse, nil
 }
 
-func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes.StringValue, bool) {
+func capabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes.StringValue, bool) {
 	capabilityIdStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Id").Interface()
 	capabilityId, ok := capabilityIdStructField.(basetypes.StringValue)
 	if !ok {
@@ -370,43 +358,23 @@ func getCapabilityIdFromState(state any, respDiags *diag.Diagnostics) (basetypes
 	return capabilityId, false
 }
 
-func getCapabilitySchema(ct capabilitytype.CapabilityTypeI) schema.Schema {
-	propertiesAttributes := ct.GetPropertiesSchema()
+func capabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
+	propertiesAttributes := ct.PropertiesSchema()
 
-	baseSchema := schema.Schema{
+	baseSchema := tfschema.Schema{
 		MarkdownDescription: ct.GetMarkdownDescription() + `
 		
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.`,
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The internal ID of the Capability.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"notes": schema.StringAttribute{
-				Description: "Optional notes about configured capability.",
-				Optional:    true,
-			},
-			"enabled": schema.BoolAttribute{
-				Description: "Whether the Capability is enabled.",
-				Required:    true,
-				Optional:    false,
-			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+		Attributes: map[string]tfschema.Attribute{
+			"id":           schema.ResourceComputedString("The internal ID of the Capability."),
+			"notes":        schema.ResourceOptionalString("Optional notes about configured capability."),
+			"enabled":      schema.ResourceRequiredBool("Whether the Capability is enabled."),
+			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
 
 	if len(propertiesAttributes) > 0 {
-		baseSchema.Attributes["properties"] = schema.SingleNestedAttribute{
-			Description: "Properties specific to this Capability type",
-			Required:    true,
-			Optional:    false,
-			Attributes:  propertiesAttributes,
-		}
+		baseSchema.Attributes["properties"] = schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Capability type", propertiesAttributes)
 	}
 
 	return baseSchema

@@ -49,7 +49,7 @@ resource "sonatyperepo_routing_rule" "allow_approved" {
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 ## Import
 

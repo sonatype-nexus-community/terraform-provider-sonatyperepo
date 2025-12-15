@@ -65,16 +65,16 @@ func (f *AuditCapability) DoUpdateRequest(plan any, capabilityId string, apiClie
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *AuditCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *AuditCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityAuditModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *AuditCapability) GetPropertiesSchema() map[string]schema.Attribute {
+func (f *AuditCapability) PropertiesSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{}
 }
 
-func (f *AuditCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *AuditCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityAuditModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

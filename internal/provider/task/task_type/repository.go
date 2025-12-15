@@ -24,13 +24,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -71,28 +71,22 @@ func (f *RepositoryDockerGcTask) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryDockerGcTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryDockerGcTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryDockerGcModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryDockerGcTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"deploy_offset": schema.Int32Attribute{
-			MarkdownDescription: `Manifests and images deployed within this period before the task starts will not be deleted.`,
-			Optional:            true,
-			Computed:            true,
-			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET),
-		},
-		"repository_name": schema.StringAttribute{
-			Description: "The Docker repository to clean up.",
-			Required:    true,
-			Optional:    false,
-		},
+func (f *RepositoryDockerGcTask) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"deploy_offset": schema.ResourceOptionalInt32WithDefault(
+			`Manifests and images deployed within this period before the task starts will not be deleted.`,
+			common.TASK_REPOSITORY_DOCKER_GC_DEFAULT_DEPLOY_OFFSET,
+		),
+		"repository_name": schema.ResourceRequiredString("The Docker repository to clean up."),
 	}
 }
 
-func (f *RepositoryDockerGcTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryDockerGcTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryDockerGcModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -158,23 +152,21 @@ func (f *RepositoryDockerUploadPurgeTask) DoUpdateRequest(plan any, state any, a
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryDockerUploadPurgeTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryDockerUploadPurgeModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"age": schema.Int32Attribute{
-			MarkdownDescription: `Delete incomplete docker uploads that are older than the specified age in hours.`,
-			Optional:            true,
-			Computed:            true,
-			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE),
-		},
+func (f *RepositoryDockerUploadPurgeTask) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"age": schema.ResourceOptionalInt32WithDefault(
+			`Delete incomplete docker uploads that are older than the specified age in hours.`,
+			common.TASK_REPOSITORY_DOCKER_UPLOAD_PURGE_DEFAULT_AGE,
+		),
 	}
 }
 
-func (f *RepositoryDockerUploadPurgeTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryDockerUploadPurgeTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryDockerUploadPurgeModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -240,44 +232,33 @@ func (f *RepositoryMavenRemoveSnapshotsTask) DoUpdateRequest(plan any, state any
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepositoryMavenRemoveSnapshotsTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepositoryMavenRemoveSnapshotsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"repository_name": schema.StringAttribute{
-			Description: "The Maven repository or repository group to remove snapshots from.",
-			Required:    true,
-			Optional:    false,
-		},
-		"minimum_retained": schema.Int32Attribute{
-			MarkdownDescription: `Minimum number of snapshots to keep for one GAV.`,
-			Optional:            true,
-			Computed:            true,
-			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED),
-		},
-		"snapshot_retention_days": schema.Int32Attribute{
-			MarkdownDescription: `Delete all snapshots older than this, provided we still keep the minimum number specified.`,
-			Optional:            true,
-			Computed:            true,
-			Default:             int32default.StaticInt32(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_SNAPSHOT_RETENTION_DAYS),
-		},
-		"remove_if_released": schema.BoolAttribute{
-			MarkdownDescription: `Delete all snapshots that have a corresponding release.`,
-			Optional:            true,
-			Computed:            true,
-			Default:             booldefault.StaticBool(common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_REMOVE_IF_RELEASED),
-		},
-		"grace_period_in_days": schema.Int32Attribute{
-			MarkdownDescription: `The grace period during which snapshots with an associated release will not be deleted.`,
-			Optional:            true,
-		},
+func (f *RepositoryMavenRemoveSnapshotsTask) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"repository_name": schema.ResourceRequiredString("The Maven repository or repository group to remove snapshots from."),
+		"minimum_retained": schema.ResourceOptionalInt32WithDefault(
+			`Minimum number of snapshots to keep for one GAV.`,
+			common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_MINIMUM_RETAINED,
+		),
+		"snapshot_retention_days": schema.ResourceOptionalInt32WithDefault(
+			`Delete all snapshots older than this, provided we still keep the minimum number specified.`,
+			common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_SNAPSHOT_RETENTION_DAYS,
+		),
+		"remove_if_released": schema.ResourceOptionalBoolWithDefault(
+			`Delete all snapshots that have a corresponding release.`,
+			common.TASK_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS_DEFAULT_REMOVE_IF_RELEASED,
+		),
+		"grace_period_in_days": schema.ResourceOptionalInt32(
+			`The grace period during which snapshots with an associated release will not be deleted.`,
+		),
 	}
 }
 
-func (f *RepositoryMavenRemoveSnapshotsTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepositoryMavenRemoveSnapshotsTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepositoryMavenRemoveSnapshotsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

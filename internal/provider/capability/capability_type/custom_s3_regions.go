@@ -25,11 +25,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -67,25 +68,21 @@ func (f *CustomS3RegionsCapability) DoUpdateRequest(plan any, capabilityId strin
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *CustomS3RegionsCapability) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *CustomS3RegionsCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.CapabilityCustomS3RegionsModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *CustomS3RegionsCapability) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"regions": schema.SetAttribute{
-			Description: "Custom S3 Regions.",
-			Required:    true,
-			ElementType: types.StringType,
-			Validators: []validator.Set{
-				setvalidator.SizeAtLeast(1),
-			},
-		},
+func (f *CustomS3RegionsCapability) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"regions": schema.ResourceRequiredStringSetWithValidator(
+			"Custom S3 Regions.",
+			setvalidator.SizeAtLeast(1),
+		),
 	}
 }
 
-func (f *CustomS3RegionsCapability) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *CustomS3RegionsCapability) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.CapabilityCustomS3RegionsModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

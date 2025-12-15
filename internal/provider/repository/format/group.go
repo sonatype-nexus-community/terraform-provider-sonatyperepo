@@ -18,36 +18,31 @@ package format
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func getCommonGroupSchemaAttributes(includeDeploy bool) map[string]schema.Attribute {
-	attributes := map[string]schema.Attribute{
-		"member_names": schema.ListAttribute{
-			Description: "Member repositories' names",
-			ElementType: types.StringType,
-			Required:    false,
-			Optional:    true,
-			Validators: []validator.List{
+func commonGroupSchemaAttributes(includeDeploy bool) map[string]tfschema.Attribute {
+	attributes := map[string]tfschema.Attribute{
+		"member_names": func() tfschema.ListAttribute {
+			thisAttr := schema.ResourceOptionalStringList("Member repositories' names")
+			thisAttr.Validators = []validator.List{
 				listvalidator.SizeAtLeast(1),
-			},
-		},
+			}
+			return thisAttr
+		}(),
 	}
 	if includeDeploy {
-		attributes["writable_member"] = schema.StringAttribute{
-			Description: "This field is for the Group Deployment feature available in Sonatype Nexus Repository Pro.",
-			Required:    false,
-			Optional:    true,
-		}
+		attributes["writable_member"] = schema.ResourceOptionalString(
+			"This field is for the Group Deployment feature available in Sonatype Nexus Repository Pro.",
+		)
 	}
-	return map[string]schema.Attribute{
-		"group": schema.SingleNestedAttribute{
-			Description: "Group specific configuration for this Repository",
-			Required:    true,
-			Optional:    false,
-			Attributes:  attributes,
-		},
+	return map[string]tfschema.Attribute{
+		"group": schema.ResourceRequiredSingleNestedAttribute(
+			"Group specific configuration for this Repository",
+			attributes,
+		),
 	}
 }

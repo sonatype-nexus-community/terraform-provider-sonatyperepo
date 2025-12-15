@@ -42,7 +42,7 @@ func TestAccBlobStoreGroupDataSource(t *testing.T) {
 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_group" "b" {
 					name = "this-will-not-exist"
 				}`,
-				ExpectError: regexp.MustCompile("Error: Unable to Read Group Blob Store"),
+				ExpectError: regexp.MustCompile("Unable to read group blob store"),
 			},
 		},
 	})

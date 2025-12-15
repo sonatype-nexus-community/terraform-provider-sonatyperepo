@@ -21,16 +21,17 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
+//
 var (
 	_ datasource.DataSource              = &contentSelectorsDataSource{}
 	_ datasource.DataSourceWithConfigure = &contentSelectorsDataSource{}
@@ -53,31 +54,19 @@ func (d *contentSelectorsDataSource) Metadata(_ context.Context, req datasource.
 
 // Schema defines the schema for the data source.
 func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get all Content Selectors",
-		Attributes: map[string]schema.Attribute{
-			"content_selectors": schema.ListNestedAttribute{
-				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "The name of the Content Selector.",
-							Required:    true,
-							Optional:    false,
-						},
-						"description": schema.StringAttribute{
-							Description: "The description of this Content Selector.",
-							Required:    true,
-							Optional:    false,
-						},
-						"expression": schema.StringAttribute{
-							Description: "The Content Selector expression used to identify content.",
-							Required:    true,
-							Optional:    false,
-						},
+		Attributes: map[string]tfschema.Attribute{
+			"content_selectors": schema.DataSourceComputedListNestedAttribute(
+				"List of Content Selectors",
+				tfschema.NestedAttributeObject{
+					Attributes: map[string]tfschema.Attribute{
+						"name":        schema.DataSourceRequiredString("The name of the Content Selector."),
+						"description": schema.DataSourceRequiredString("The description of this Content Selector."),
+						"expression":  schema.DataSourceRequiredString("The Content Selector expression used to identify content."),
 					},
 				},
-			},
+			),
 		},
 	}
 }
@@ -86,17 +75,15 @@ func (d *contentSelectorsDataSource) Schema(_ context.Context, req datasource.Sc
 func (d *contentSelectorsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.ContentSelectorsModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
 	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelectors(ctx).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
+		errors.HandleAPIError(
 			"Unable list Content Selectors",
-			fmt.Sprintf("Unable to read Content Selectors: %d: %s", httpResponse.StatusCode, httpResponse.Status),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
 		)
 		return
 	}

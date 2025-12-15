@@ -31,7 +31,7 @@ resource "sonatyperepo_content_selector" "cs1" {
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed
 
 ## Import
 

@@ -17,7 +17,7 @@ Configure the Sonatype IQ Server Connection
 
 ### Required
 
-- `authentication_method` (String) Username to use for authentication with SMTP Server
+- `authentication_method` (String) Authentication method for Sonatype IQ Connection
 - `enabled` (Boolean) Whether to use Sonatype Repository Firewall
 - `fail_open_mode_enabled` (Boolean) Allow by default when quarantine is enabled and the connection to Sonatype IQ Server fails
 - `nexus_trust_store_enabled` (Boolean) Use certificates stored in the Nexus Repository Manager truststore to connect to Sonatype IQ Server
@@ -33,4 +33,4 @@ Configure the Sonatype IQ Server Connection
 
 ### Read-Only
 
-- `last_updated` (String)
+- `last_updated` (String) String representation of the date/time the resource was last changed

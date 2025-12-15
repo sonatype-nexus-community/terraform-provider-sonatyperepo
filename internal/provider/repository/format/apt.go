@@ -25,12 +25,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type AptRepositoryFormat struct {
@@ -48,12 +49,12 @@ type AptRepositoryFormatProxy struct {
 // --------------------------------------------
 // Generic APT Format Functions
 // --------------------------------------------
-func (f *AptRepositoryFormat) GetKey() string {
+func (f *AptRepositoryFormat) Key() string {
 	return common.REPO_FORMAT_APT
 }
 
-func (f *AptRepositoryFormat) GetResourceName(repoType RepositoryType) string {
-	return getResourceName(f.GetKey(), repoType)
+func (f *AptRepositoryFormat) ResourceName(repoType RepositoryType) string {
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -97,18 +98,18 @@ func (f *AptRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *AptRepositoryFormatHosted) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, getAptSchemaAttributes(false))
+func (f *AptRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonHostedSchemaAttributes()
+	maps.Copy(additionalAttributes, aptSchemaAttributes(false))
 	return additionalAttributes
 }
 
-func (f *AptRepositoryFormatHosted) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryAptHostedModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *AptRepositoryFormatHosted) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryAptHostedModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -185,18 +186,18 @@ func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 	return *apiResponse, httpResponse, nil
 }
 
-func (f *AptRepositoryFormatProxy) GetFormatSchemaAttributes() map[string]schema.Attribute {
-	additionalAttributes := getCommonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, getAptSchemaAttributes(true))
+func (f *AptRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonProxySchemaAttributes()
+	maps.Copy(additionalAttributes, aptSchemaAttributes(true))
 	return additionalAttributes
 }
 
-func (f *AptRepositoryFormatProxy) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.RepositoryAptProxyModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *AptRepositoryFormatProxy) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *AptRepositoryFormatProxy) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.RepositoryAptProxyModel
 	return stateModel, state.Get(ctx, &stateModel)
 }
@@ -220,47 +221,32 @@ func (f *AptRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
-func getAptSchemaAttributes(isProxy bool) map[string]schema.Attribute {
-	aptAttrs := map[string]schema.Attribute{
-		"distribution": schema.StringAttribute{
-			Description: "Distribution to fetch",
-			Required:    true,
-		},
+func aptSchemaAttributes(isProxy bool) map[string]tfschema.Attribute {
+	aptAttrs := map[string]tfschema.Attribute{
+		"distribution": schema.ResourceRequiredString("Distribution to fetch"),
 	}
 	if isProxy {
-		aptAttrs["flat"] = schema.BoolAttribute{
-			Description: "Whether this repository is flat",
-			Optional:    true,
-			Computed:    true,
-			Default:     booldefault.StaticBool(false),
-		}
+		aptAttrs["flat"] = schema.ResourceOptionalBoolWithDefault(
+			"Whether this repository is flat",
+			false,
+		)
 	}
 
-	attrs := map[string]schema.Attribute{
-		"apt": schema.SingleNestedAttribute{
-			Description: "APT specific configuration for this Repository",
-			Required:    true,
-			Optional:    false,
-			Attributes:  aptAttrs,
-		},
+	attrs := map[string]tfschema.Attribute{
+		"apt": schema.ResourceRequiredSingleNestedAttribute(
+			"APT specific configuration for this Repository",
+			aptAttrs,
+		),
 	}
 
 	if !isProxy {
-		attrs["apt_signing"] = schema.SingleNestedAttribute{
-			Description: "APT signing configuration for this Repository",
-			Optional:    true,
-			Attributes: map[string]schema.Attribute{
-				"key_pair": schema.StringAttribute{
-					Description: "PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
-					Required:    true,
-				},
-				"passphrase": schema.StringAttribute{
-					Description: "Passphrase to access PGP signing key",
-					Required:    true,
-					Sensitive:   true,
-				},
+		attrs["apt_signing"] = schema.ResourceOptionalSingleNestedAttribute(
+			"APT signing configuration for this Repository",
+			map[string]tfschema.Attribute{
+				"key_pair":   schema.ResourceRequiredString("PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)"),
+				"passphrase": schema.ResourceSensitiveRequiredString("Passphrase to access PGP signing key"),
 			},
-		}
+		)
 	}
 
 	return attrs

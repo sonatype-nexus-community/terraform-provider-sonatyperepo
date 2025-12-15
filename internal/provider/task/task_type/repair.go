@@ -26,11 +26,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 // --------------------------------------------
@@ -40,8 +42,8 @@ type BaseRepairTask struct {
 	BaseTaskType
 }
 
-func (f *BaseRepairTask) GetResourceName() string {
-	return fmt.Sprintf("task_repair_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.GetKey()), ".", "_"), "-", "_"))
+func (f *BaseRepairTask) ResourceName() string {
+	return fmt.Sprintf("task_repair_%s", strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(f.Key()), ".", "_"), "-", "_"))
 }
 
 // --------------------------------------------
@@ -84,22 +86,18 @@ func (f *RepairRebuildBrowseNodesTask) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (f *RepairRebuildBrowseNodesTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.TaskRepairCreateBrowseNodesModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetPropertiesSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"repository_name": schema.StringAttribute{
-			Description: "The Repository to rebuild browse trees for.",
-			Required:    true,
-			Optional:    false,
-		},
+func (f *RepairRebuildBrowseNodesTask) PropertiesSchema() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"repository_name": schema.ResourceRequiredString("The Repository to rebuild browse trees for."),
 	}
 }
 
-func (f *RepairRebuildBrowseNodesTask) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (f *RepairRebuildBrowseNodesTask) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.TaskRepairCreateBrowseNodesModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

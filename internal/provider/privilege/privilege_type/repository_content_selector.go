@@ -23,10 +23,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type RepositoryContentSelectorPrivilegeType struct {
@@ -61,22 +63,18 @@ func (pt *RepositoryContentSelectorPrivilegeType) DoUpdateRequest(plan any, stat
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryContentSelectorPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
-func (pt *RepositoryContentSelectorPrivilegeType) GetPrivilegeTypeSchemaAttributes() map[string]schema.Attribute {
-	attributes := getSchemaAttributesActionFormatRepository()
-	attributes["content_selector"] = schema.StringAttribute{
-		Description: "The name of a content selector that will be used to grant access to content via this privilege.",
-		Required:    true,
-		Optional:    false,
-	}
+func (pt *RepositoryContentSelectorPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
+	attributes := schemaAttributesActionFormatRepository()
+	attributes["content_selector"] = schema.ResourceRequiredString("The name of a content selector that will be used to grant access to content via this privilege.")
 	return attributes
 }
 
-func (pt *RepositoryContentSelectorPrivilegeType) GetPlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+func (pt *RepositoryContentSelectorPrivilegeType) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
 	var planModel model.PrivilegeRepositoryContentSelectorModel
 	return planModel, plan.Get(ctx, &planModel)
 }
 
-func (pt *RepositoryContentSelectorPrivilegeType) GetStateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+func (pt *RepositoryContentSelectorPrivilegeType) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
 	var stateModel model.PrivilegeRepositoryContentSelectorModel
 	return stateModel, state.Get(ctx, &stateModel)
 }

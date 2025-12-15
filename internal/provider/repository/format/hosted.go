@@ -18,40 +18,39 @@ package format
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func getCommonHostedSchemaAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"component": schema.SingleNestedAttribute{
-			Description: "Component configuration for this Repository",
-			Required:    false,
-			Optional:    true,
-			Computed:    true,
-			Attributes: map[string]schema.Attribute{
-				"proprietary_components": schema.BoolAttribute{
-					Description: "Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)",
-					Optional:    true,
-					Computed:    true,
-					Default:     booldefault.StaticBool(false),
+func commonHostedSchemaAttributes() map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
+		"component": func() tfschema.SingleNestedAttribute {
+			thisAttr := schema.ResourceComputedOptionalSingleNestedAttribute(
+				"Component configuration for this Repository",
+				map[string]tfschema.Attribute{
+					"proprietary_components": schema.ResourceOptionalBoolWithDefault(
+						"Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)",
+						false,
+					),
 				},
-			},
-			Default: objectdefault.StaticValue(types.ObjectValueMust(
+			)
+			thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
 				map[string]attr.Type{
 					"proprietary_components": types.BoolType,
 				},
 				map[string]attr.Value{
 					"proprietary_components": types.BoolValue(false),
 				},
-			)),
-			PlanModifiers: []planmodifier.Object{
+			))
+			thisAttr.PlanModifiers = []planmodifier.Object{
 				objectplanmodifier.UseStateForUnknown(),
-			},
-		},
+			}
+			return thisAttr
+		}(),
 	}
 }
