@@ -245,51 +245,57 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
-	return tfschema.Schema{
-		MarkdownDescription: tt.MarkdownDescription(),
-		Attributes: map[string]tfschema.Attribute{
-			"id":          schema.ResourceComputedString("The internal ID of the Task."),
-			"name":        schema.ResourceRequiredString("The name of the Task."),
-			"enabled":     schema.ResourceRequiredBool("Indicates if the task is enabled."),
-			"alert_email": schema.ResourceOptionalString("E-mail address for task notifications."),
-			"notification_condition": schema.ResourceRequiredStringEnum(
-				"The type of Task.",
-				common.NOTIFICATION_CONDITION_FAILURE,
-				common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
-			),
-			"frequency": schema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.",
-				map[string]tfschema.Attribute{
-					"schedule": schema.ResourceRequiredStringEnum(
-						"Type of Schedule.",
-						common.FREQUENCY_SCHEDULE_MANUAL,
-						common.FREQUENCY_SCHEDULE_ONCE,
-						common.FREQUENCY_SCHEDULE_HOURLY,
-						common.FREQUENCY_SCHEDULE_DAILY,
-						common.FREQUENCY_SCHEDULE_WEEKLY,
-						common.FREQUENCY_SCHEDULE_MONTHLY,
-						common.FREQUENCY_SCHEDULE_CRON,
-					),
-					"start_date": schema.ResourceOptionalInt32(
-						"Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
-					),
-					"timezone_offset": schema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
-					"recurring_days": func() tfschema.ListAttribute {
-						thisAttr := schema.ResourceOptionalInt32List(
-							`Array with the number of the days the task must run.
+	attributes := map[string]tfschema.Attribute{
+		"id":          schema.ResourceComputedString("The internal ID of the Task."),
+		"name":        schema.ResourceRequiredString("The name of the Task."),
+		"enabled":     schema.ResourceRequiredBool("Indicates if the task is enabled."),
+		"alert_email": schema.ResourceOptionalString("E-mail address for task notifications."),
+		"notification_condition": schema.ResourceRequiredStringEnum(
+			"The type of Task.",
+			common.NOTIFICATION_CONDITION_FAILURE,
+			common.NOTIFICATION_CONDITION_SUCCESS_OR_FAILURE,
+		),
+		"frequency": schema.ResourceRequiredSingleNestedAttribute("Frequency Schedule for this Task.",
+			map[string]tfschema.Attribute{
+				"schedule": schema.ResourceRequiredStringEnum(
+					"Type of Schedule.",
+					common.FREQUENCY_SCHEDULE_MANUAL,
+					common.FREQUENCY_SCHEDULE_ONCE,
+					common.FREQUENCY_SCHEDULE_HOURLY,
+					common.FREQUENCY_SCHEDULE_DAILY,
+					common.FREQUENCY_SCHEDULE_WEEKLY,
+					common.FREQUENCY_SCHEDULE_MONTHLY,
+					common.FREQUENCY_SCHEDULE_CRON,
+				),
+				"start_date": schema.ResourceOptionalInt32(
+					"Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
+				),
+				"timezone_offset": schema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
+				"recurring_days": func() tfschema.ListAttribute {
+					thisAttr := schema.ResourceOptionalInt32List(
+						`Array with the number of the days the task must run.
 
 - For "weekly" schedule allowed values, 1 to 7.
 - For "monthly" schedule allowed values, 1 to 31.`,
-						)
-						thisAttr.Validators = []validator.List{
-							listvalidator.SizeAtLeast(1),
-						}
-						return thisAttr
-					}(),
-					"cron_expression": schema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
-				},
-			),
-			"properties":   schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", tt.PropertiesSchema()),
-			"last_updated": schema.ResourceLastUpdated(),
-		},
+					)
+					thisAttr.Validators = []validator.List{
+						listvalidator.SizeAtLeast(1),
+					}
+					return thisAttr
+				}(),
+				"cron_expression": schema.ResourceOptionalString("Cron expression for the task. Only applies for for \"cron\" schedule."),
+			},
+		),
+		"last_updated": schema.ResourceLastUpdated(),
+	}
+
+	propertiesSchema := tt.PropertiesSchema()
+	if len(propertiesSchema) > 0 {
+		attributes["properties"] = schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Task type", propertiesSchema)
+	}
+
+	return tfschema.Schema{
+		MarkdownDescription: tt.MarkdownDescription(),
+		Attributes:          attributes,
 	}
 }

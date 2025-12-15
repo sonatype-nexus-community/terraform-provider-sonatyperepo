@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_task_license_expiration_notification` - see [help docs](https://help.sonatype.com/en/license-management.html#license-expiration-notifications) [GH-223]
+
 BUG FIXES:
 * Resource `sonatyperepo_capability_audit` could not be imported [GH-237]
 * Resource `sonatyperepo_system_iq_connection` always showed plan changes due to `properties` and `last_updated` fields [GH-236]

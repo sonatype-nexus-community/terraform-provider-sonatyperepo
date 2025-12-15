@@ -28,6 +28,7 @@ const (
 	TASK_TYPE_BLOBSTORE_PLANRECONCILIATION                      TaskType = "blobstore.planReconciliation"
 	TASK_TYPE_CREATE_BROWSE_NODES                               TaskType = "create.browse.nodes"
 	TASK_TYPE_H2_BACKUP_TASK                                    TaskType = "h2.backup.task"
+	TASK_TYPE_LICENSE_EXPIRATION_NOTIFICATION                   TaskType = "license.expiration.notification"
 	TASK_TYPE_MALWARE_REMEDIATOR                                TaskType = "malware.remediator"
 	TASK_TYPE_REPOSITORY_APT_REBUILD_METADATA                   TaskType = "repository.apt.rebuild.metadata"
 	TASK_TYPE_REPOSITORY_DOCKER_GC                              TaskType = "repository.docker.gc"
