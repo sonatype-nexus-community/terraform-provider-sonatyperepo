@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-package task_test
+package task
 
-const (
-	fieldFrequencySchedule                = "frequency.schedule"
-	resourceNameF                         = "%s.test_task"
-	resourceTypeLicenseExpiryNotification = "sonatyperepo_task_license_expiration_notification"
+import (
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	tasktype "terraform-provider-sonatyperepo/internal/provider/task/task_type"
 )
+
+// NewTaskLicenseExpirationNotificationResource is a helper function to simplify the provider implementation.
+func NewTaskLicenseExpirationNotificationResource() resource.Resource {
+	return &taskResource{
+		TaskType: tasktype.NewLicenseExpirationNotificationTask(),
+	}
+}
