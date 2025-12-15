@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+BUG FIXES:
+* Resource `sonatyperepo_system_iq_connection` always showed plan changes due to `properties` and `last_updated` fields [GH-236]
+
 ## 0.15.0 December 15, 2025
 
 ENHANCEMENTS:
