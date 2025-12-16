@@ -20,7 +20,7 @@ import "fmt"
 
 const (
 	errMessageBlobStoreGroupNoMembers        string = "cannot be empty"
-	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group member"
+	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group"
 
 	RES_ATTR_NAME             string = "name"
 	RES_ATTR_PATH             string = "path"
