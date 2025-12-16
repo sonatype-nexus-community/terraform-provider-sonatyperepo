@@ -39,7 +39,12 @@ body:
     attributes:
       label: High Availability enabled?
       description: Is Sonatype Nexus Repository Manager High Availability (HA) enabled?
-      default: false
+      options:
+        - label: Yes
+          value: true
+        - label: No
+          value: false
+      required: true
 
   - type: textarea
     id: description
