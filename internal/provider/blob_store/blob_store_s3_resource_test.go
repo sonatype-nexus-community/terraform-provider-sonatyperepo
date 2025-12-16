@@ -26,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const resourceNameS3BlobStore = "sonatyperepo_blob_store_s3.test"
-
 // TestAccBlobStoreS3ResourceValidation tests S3 resource validation without API calls
 func TestAccBlobStoreS3ResourceValidation(t *testing.T) {
 	resource.Test(t, resource.TestCase{
