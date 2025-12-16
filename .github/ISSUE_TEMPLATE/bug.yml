@@ -34,16 +34,15 @@ body:
     validations:
       required: true
 
-  - type: checkboxes
+  - type: dropdown
     id: nxrm-ha
     attributes:
       label: High Availability enabled?
       description: Is Sonatype Nexus Repository Manager High Availability (HA) enabled?
       options:
-        - label: Yes
-          value: true
-        - label: No
-          value: false
+        - Yes
+        - No
+    validations:
       required: true
 
   - type: textarea
