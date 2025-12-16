@@ -1,0 +1,113 @@
+name: Bug Report
+description: Report a bug or issue
+title: "[BUG]: "
+labels: ["triage-required"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hey,
+
+        Thank you for opening an issue. Please be aware that this is a Community Project from Sonatype, and is not officially supported by Sonatype.
+
+  - type: textarea
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: Run `terraform -v` to show the version. If you are not running the latest version of Terraform, please upgrade because your issue may have already been fixed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: provider-version
+    attributes:
+      label: Provider Version
+      description: Version of the `sonatyperepo` provider being used.
+    validations:
+      required: true
+
+  - type: textarea
+    id: nxrm-version
+    attributes:
+      label: Sonatype Nexus Repository Manager version
+      description: Version of the Sonatype Nexus Repository Manager you are running Terraform against
+    validations:
+      required: true
+
+  - type: checkbox
+    id: nxrm-ha
+    attributes:
+      label: High Availability enabled?
+      description: Is Sonatype Nexus Repository Manager High Availability (HA) enabled?
+      default: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Issue or Bug
+      description: Report what happened vs what you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: terraform-configuration-files
+    attributes:
+      label: Terraform Configuration Files
+      render: hcl
+      description: |
+        Please copy and paste any relevant configration files. This will be automatically formatted into code, so no need for backticks.
+        Please check your configuration before submission to ensure sensitive information is redacted.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Please list the steps required to reproduce the issue. 
+        
+        This will be automatically formatted into code, so no need for backticks.
+      render: shell
+      placeholder: |
+        terraform apply
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Debug and/or Error Output
+      description: |
+        Please copy and paste any relevant debug output. This will be automatically formatted into code, so no need for backticks.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Please copy and paste any relevant logs. This will be automatically formatted into code, so no need for backticks.
+
+        _Tip:_ Run terraform with `TF_LOG=DEBUG` set to get debug logs - e.g. `TF_LOG=DEBUG terraform apply`.
+
+        Please check your logs before submission to ensure sensitive information is redacted.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
