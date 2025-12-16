@@ -26,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const resourceNameS3BlobStore = "sonatyperepo_blob_store_s3.test"
-
 // TestAccBlobStoreS3ResourceValidation tests S3 resource validation without API calls
 func TestAccBlobStoreS3ResourceValidation(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -56,20 +54,20 @@ func TestAccBlobStoreS3ResourceWithCredentials(t *testing.T) {
 			{
 				Config: buildS3ResourceCompleteConfig("test-crud"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "name"),
-					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "bucket_configuration.0.bucket.0.region"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-complete-test-crud"),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.bucket.0.region"),
 				),
 			},
 			// Update testing
 			{
 				Config: buildS3ResourceCompleteConfig("test-crud-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceNameS3BlobStore, "name"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-complete-test-crud-updated"),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:      resourceNameS3BlobStore,
+				ResourceName:      RES_NAME_BLOB_STORE_S3,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -81,7 +79,7 @@ func TestAccBlobStoreS3ResourceWithCredentials(t *testing.T) {
 
 func buildS3ResourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_s3" "test" {
+resource "%s" "test" {
   name = "test-s3-%s"
   bucket_configuration = {
 	bucket = {
@@ -92,12 +90,12 @@ resource "sonatyperepo_blob_store_s3" "test" {
 	}
   }
 }
-`, randomString, randomString, randomString)
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString)
 }
 
 func buildS3ResourceCompleteConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_s3" "test" {
+resource "%s" "test" {
   name = "test-s3-complete-%s"
   bucket_configuration = {
 	bucket = {
@@ -107,8 +105,8 @@ resource "sonatyperepo_blob_store_s3" "test" {
 		expiration = 99
 	}
 	bucket_security = {
-		access_key_id = "AKIAIOSFODNN7EXAMPLE"
-		secret_access_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+		access_key_id = "not-a-valid-aws-key"
+		secret_access_key = "not-a-valid-aws-secret-key"
 	}
   }
   soft_quota = {
@@ -116,5 +114,5 @@ resource "sonatyperepo_blob_store_s3" "test" {
 	limit = 1099511627776
   }
 }
-`, randomString, randomString, randomString)
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString)
 }

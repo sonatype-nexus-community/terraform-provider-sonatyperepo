@@ -22,21 +22,22 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 )
 
-const resourceNameGcsBlobStore = "sonatyperepo_blob_store_gcs.gc_complete"
-
 // TestAccBlobStoreGoogleCloudResourceExpectFailure tests that the resource fails gracefully without GCP credentials
 func TestAccBlobStoreGoogleCloudResourceExpectFailure(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test that creation fails gracefully with authentication error
 			{
-				Config:      buildGoogleCloudResourceMinimal("test-gcs-fail"),
+				Config:      buildGoogleCloudResourceMinimal(randomString),
 				ExpectError: regexp.MustCompile("Error creating Google Cloud Storage Blob Store|authentication|unauthorized|forbidden|invalid_grant"),
 			},
 		},
@@ -87,7 +88,7 @@ func TestAccBlobStoreGoogleCloudResourceSchema(t *testing.T) {
 				ExpectError: regexp.MustCompile("Error creating Google Cloud Storage Blob Store"),
 				Check: resource.ComposeTestCheckFunc(
 					// These checks won't run due to ExpectError, but they validate the schema
-					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_GCS, RES_ATTR_NAME),
 				),
 			},
 		},
@@ -108,20 +109,20 @@ func TestAccBlobStoreGoogleCloudResourceWithCredentials(t *testing.T) {
 			{
 				Config: buildGoogleCloudResourceComplete("test-crud"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
-					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "bucket_configuration.0.bucket.0.name"),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_GCS, RES_ATTR_NAME),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_GCS, "bucket_configuration.0.bucket.0.name"),
 				),
 			},
 			// Update testing
 			{
 				Config: buildGoogleCloudResourceComplete("test-crud-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceNameGcsBlobStore, "name"),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_GCS, RES_ATTR_NAME),
 				),
 			},
 			// Import and verify no changes
 			{
-				ResourceName:      resourceNameGcsBlobStore,
+				ResourceName:      RES_NAME_BLOB_STORE_GCS,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -133,7 +134,7 @@ func TestAccBlobStoreGoogleCloudResourceWithCredentials(t *testing.T) {
 
 func buildGoogleCloudResourceMinimal(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_gcs" "gc_minimal" {
+resource "%s" "test" {
   name = "test-gc-minimal-%s"
   
   bucket_configuration {
@@ -154,12 +155,12 @@ resource "sonatyperepo_blob_store_gcs" "gc_minimal" {
     }
   }
 }
-`, randomString, randomString)
+`, RES_TYPE_BLOB_STORE_GCS, randomString, randomString)
 }
 
 func buildGoogleCloudResourceComplete(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_blob_store_gcs" "gc_complete" {
+resource "%s" "test" {
   name = "test-gc-complete-%s"
   
   bucket_configuration {
@@ -189,12 +190,12 @@ resource "sonatyperepo_blob_store_gcs" "gc_complete" {
     limit = 100000000000
   }
 }
-`, randomString, randomString, randomString)
+`, RES_TYPE_BLOB_STORE_GCS, randomString, randomString, randomString)
 }
 
 func buildGoogleCloudResourceInvalidBucket() string {
-	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_gcs" "gc_invalid" {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
   name = "test-gc-invalid"
   
   bucket_configuration {
@@ -211,12 +212,12 @@ resource "sonatyperepo_blob_store_gcs" "gc_invalid" {
     }
   }
 }
-`
+`, RES_TYPE_BLOB_STORE_GCS)
 }
 
 func buildGoogleCloudResourceMissingName() string {
-	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_gcs" "gc_missing" {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
   bucket_configuration {
     bucket {
       name = "valid-bucket-name"
@@ -231,12 +232,12 @@ resource "sonatyperepo_blob_store_gcs" "gc_missing" {
     }
   }
 }
-`
+`, RES_TYPE_BLOB_STORE_GCS)
 }
 
 func buildGoogleCloudResourceInvalidSoftQuota() string {
-	return utils_test.ProviderConfig + `
-resource "sonatyperepo_blob_store_gcs" "gc_invalid_quota" {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
   name = "test-gc-invalid-quota"
   
   bucket_configuration {
@@ -258,7 +259,7 @@ resource "sonatyperepo_blob_store_gcs" "gc_invalid_quota" {
     limit = -1
   }
 }
-`
+`, RES_TYPE_BLOB_STORE_GCS)
 }
 
 // Unit tests that don't require API calls

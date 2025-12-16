@@ -18,6 +18,8 @@ package model
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 type BlobStoreModel struct {
@@ -34,11 +36,25 @@ type BlobStoresModel struct {
 	BlobStores []BlobStoreModel `tfsdk:"blob_stores"`
 }
 
+// BlobStoreSoftQuota
+// ------------------------------------
 type BlobStoreSoftQuota struct {
 	Type  types.String `tfsdk:"type"`
 	Limit types.Int64  `tfsdk:"limit"`
 }
 
+func (m *BlobStoreSoftQuota) MapFromApi(api *v3.BlobStoreApiSoftQuota) {
+	m.Type = types.StringPointerValue(api.Type)
+	m.Limit = types.Int64PointerValue(api.Limit)
+}
+
+func (m *BlobStoreSoftQuota) MapToApi(api *v3.BlobStoreApiSoftQuota) {
+	api.Type = m.Type.ValueStringPointer()
+	api.Limit = m.Limit.ValueInt64Pointer()
+}
+
+// BlobStoreFileModel
+// ------------------------------------
 type BlobStoreFileModel struct {
 	Name        types.String        `tfsdk:"name"`
 	Path        types.String        `tfsdk:"path"`
@@ -46,6 +62,8 @@ type BlobStoreFileModel struct {
 	LastUpdated types.String        `tfsdk:"last_updated"`
 }
 
+// BlobStoreGroupModel
+// ------------------------------------
 type BlobStoreGroupModel struct {
 	Name        types.String        `tfsdk:"name"`
 	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
@@ -54,6 +72,49 @@ type BlobStoreGroupModel struct {
 	LastUpdated types.String        `tfsdk:"last_updated"`
 }
 
+func (m *BlobStoreGroupModel) MapFromApi(api *v3.GroupBlobStoreApiModel) {
+	// Name is not in API response
+	m.FillPolicy = types.StringPointerValue(api.FillPolicy)
+	if api.SoftQuota != nil {
+		m.SoftQuota = &BlobStoreSoftQuota{}
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	m.Members = make([]types.String, 0)
+	for _, member := range api.Members {
+		m.Members = append(m.Members, types.StringValue(member))
+	}
+}
+
+func (m *BlobStoreGroupModel) MapToApiCreate(api *v3.GroupBlobStoreApiCreateRequest) {
+	api.Name = m.Name.ValueStringPointer()
+	m.mapCommonGroupFields(api)
+}
+
+func (m *BlobStoreGroupModel) MapToApiUpdate(api *v3.GroupBlobStoreApiUpdateRequest) {
+	m.mapCommonGroupFields(api)
+}
+
+func (m *BlobStoreGroupModel) mapCommonGroupFields(api interface {
+	SetSoftQuota(v3.BlobStoreApiSoftQuota)
+	SetFillPolicy(string)
+	SetMembers([]string)
+}) {
+	if m.SoftQuota != nil {
+		softQuota := v3.NewBlobStoreApiSoftQuotaWithDefaults()
+		m.SoftQuota.MapToApi(softQuota)
+		api.SetSoftQuota(*softQuota)
+	}
+	api.SetFillPolicy(m.FillPolicy.ValueString())
+
+	members := make([]string, len(m.Members))
+	for i, member := range m.Members {
+		members[i] = member.ValueString()
+	}
+	api.SetMembers(members)
+}
+
+// BlobStoreS3Model
+// ------------------------------------
 type BlobStoreS3Model struct {
 	Name                types.String                         `tfsdk:"name"`
 	Type                types.String                         `tfsdk:"type"`
