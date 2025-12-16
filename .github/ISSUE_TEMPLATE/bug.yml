@@ -40,8 +40,8 @@ body:
       label: High Availability enabled?
       description: Is Sonatype Nexus Repository Manager High Availability (HA) enabled?
       options:
+        - No - Single node only (Default)
         - Yes - HA is enabled
-        - No - Single node only
     validations:
       required: true
 
