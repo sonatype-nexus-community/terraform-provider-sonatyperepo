@@ -10,7 +10,7 @@ body:
 
         Thank you for opening an issue. Please be aware that this is a Community Project from Sonatype, and is not officially supported by Sonatype.
 
-  - type: textarea
+  - type: input
     id: terraform-version
     attributes:
       label: Terraform Version
@@ -18,7 +18,7 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: input
     id: provider-version
     attributes:
       label: Provider Version
@@ -26,7 +26,7 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: input
     id: nxrm-version
     attributes:
       label: Sonatype Nexus Repository Manager version
@@ -54,14 +54,6 @@ body:
       required: true
 
   - type: textarea
-    id: actual-behavior
-    attributes:
-      label: Actual Behavior
-      description: What actually happened?
-    validations:
-      required: true
-
-  - type: textarea
     id: terraform-configuration-files
     attributes:
       label: Terraform Configuration Files
@@ -77,26 +69,17 @@ body:
     attributes:
       label: Steps to Reproduce
       description: |
-        Please list the steps required to reproduce the issue. 
-        
-        This will be automatically formatted into code, so no need for backticks.
-      render: shell
+        Please list the steps required to reproduce the issue.
       placeholder: |
-        terraform apply
+        1. Do x
+        2. Do y
     validations:
       required: true
 
   - type: textarea
-    id: output
-    attributes:
-      label: Debug and/or Error Output
-      description: |
-        Please copy and paste any relevant debug output. This will be automatically formatted into code, so no need for backticks.
-
-  - type: textarea
     id: logs
     attributes:
-      label: Logs
+      label: Logs & Output
       description: |
         Please copy and paste any relevant logs. This will be automatically formatted into code, so no need for backticks.
 
