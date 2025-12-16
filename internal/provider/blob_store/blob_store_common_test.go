@@ -19,8 +19,8 @@ package blob_store_test
 import "fmt"
 
 const (
-	errMessageBlobStoreGroupNoMembers        string = "Blob Store.*cannot be empty"
-	errMessageBlobStoreGroupIneligibleMember string = "Blob Store.*is set as storage for.*repositories and is not eligible to be a group member"
+	errMessageBlobStoreGroupNoMembers        string = "cannot be empty"
+	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group member"
 
 	RES_ATTR_NAME             string = "name"
 	RES_ATTR_PATH             string = "path"
