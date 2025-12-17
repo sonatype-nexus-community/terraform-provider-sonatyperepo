@@ -4,6 +4,7 @@
 
 ENHANCEMENTS:
 * **New Resource:** `sonatyperepo_blob_store_group` [GH-136]
+* **New Resource:** `sonatyperepo_system_config_http` [GH-246]
 * **New Resource:** `sonatyperepo_task_license_expiration_notification` - see [help docs](https://help.sonatype.com/en/license-management.html#license-expiration-notifications) [GH-223]
 
 BUG FIXES:

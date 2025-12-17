@@ -360,6 +360,8 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.6 h1:RWb/F
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.85.6/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.86.0 h1:eFWG+iEOBk0bS+/HaMNPjww2G3H/gb+7f+RCsG4LNAs=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.86.0/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.86.1 h1:VOprhIPvgVmbqgvsa/oW6xK8QgsQTOjE7sUbJr1X56c=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.86.1/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.7.0 h1:YF4e+EiTXdIBDmXTnPEytEPDwX9Z+uFONyX7eq43qdE=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.7.0/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.7.1 h1:B+hl4utA+t9uvY29+oGQ12tzqVpY6R9sBcNCEuj0x8k=
