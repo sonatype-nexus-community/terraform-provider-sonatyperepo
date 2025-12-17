@@ -21,6 +21,8 @@ import (
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
+	"github.com/sonatype-nexus-community/terraform-provider-shared/util"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -33,6 +35,8 @@ type AnonymousAccessModel struct {
 	LastUpdated types.String `tfsdk:"last_updated"`
 }
 
+// EmailConfigurationModel
+// ------------------------------------------
 type EmailConfigurationModel struct {
 	Enabled                       types.Bool   `tfsdk:"enabled"`
 	Host                          types.String `tfsdk:"host"`
@@ -66,6 +70,8 @@ func (m *EmailConfigurationModel) MapFromApi(api *sonatyperepo.ApiEmailConfigura
 	m.NexusTrustStoreEnabled = types.BoolPointerValue(api.NexusTrustStoreEnabled)
 }
 
+// IqConnectionModel
+// ------------------------------------------
 type IqConnectionModel struct {
 	Enabled                types.Bool   `tfsdk:"enabled"`
 	Url                    types.String `tfsdk:"url"`
@@ -80,11 +86,15 @@ type IqConnectionModel struct {
 	LastUpdated            types.String `tfsdk:"last_updated"`
 }
 
+// SecurityRealmsModel
+// ------------------------------------------
 type SecurityRealmsModel struct {
 	Active types.List   `tfsdk:"active"`
 	ID     types.String `tfsdk:"id"`
 }
 
+// SecuritySamlModel
+// ------------------------------------------
 type SecuritySamlModel struct {
 	IdpMetadata                types.String `tfsdk:"idp_metadata"`
 	UsernameAttribute          types.String `tfsdk:"username_attribute"`
@@ -138,6 +148,8 @@ func (m *IqConnectionModel) MapToApi(api *sonatyperepo.IqConnectionXo) {
 	api.FailOpenModeEnabled = m.FailOpenModeEnabled.ValueBoolPointer()
 }
 
+// LdapServerModel
+// ------------------------------------------
 type LdapServerModel struct {
 	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
@@ -272,6 +284,8 @@ func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerX
 	return &updateModel
 }
 
+// SecurityUserTokenModel
+// ------------------------------------------
 type SecurityUserTokenModel struct {
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	ExpirationDays    types.Int32  `tfsdk:"expiration_days"`
@@ -298,4 +312,122 @@ func (m *SecurityUserTokenModel) MapToApi(api *sonatyperepo.UserTokensApiModel) 
 	}
 	api.ExpirationEnabled = m.ExpirationEnabled.ValueBoolPointer()
 	api.ProtectContent = m.ProtectContent.ValueBoolPointer()
+}
+
+// ProxyAuthSettingsModel
+// ------------------------------------------
+type ProxyAuthSettingsModel struct {
+	Enabled    types.Bool   `tfsdk:"enabled"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
+	NtlmHost   types.String `tfsdk:"ntlm_host"`
+	NtlmDomain types.String `tfsdk:"ntlm_domain"`
+}
+
+func (m *ProxyAuthSettingsModel) MapToApi(api *sonatyperepo.AuthSettingsXo) {
+	api.Enabled = m.Enabled.ValueBool()
+	api.Username = m.Username.ValueString()
+	// Only send password if it's not null (user provided it)
+	if !m.Password.IsNull() && !m.Password.IsUnknown() {
+		api.Password = m.Password.ValueString()
+	}
+	api.NtlmHost = m.NtlmHost.ValueString()
+	api.NtlmDomain = m.NtlmDomain.ValueString()
+}
+
+func (m *ProxyAuthSettingsModel) MapFromApi(api *sonatyperepo.AuthSettingsXo) {
+	m.Enabled = types.BoolValue(api.Enabled)
+	m.Username = types.StringValue(api.Username)
+	// Don't update password from API response
+	m.NtlmHost = types.StringValue(api.NtlmHost)
+	m.NtlmDomain = types.StringValue(api.NtlmDomain)
+}
+
+// ProxySettingsModel
+// ------------------------------------------
+type ProxySettingsModel struct {
+	Enabled        types.Bool              `tfsdk:"enabled"`
+	Host           types.String            `tfsdk:"host"`
+	Port           types.Int32             `tfsdk:"port"`
+	Authentication *ProxyAuthSettingsModel `tfsdk:"authentication"`
+}
+
+func (m *ProxySettingsModel) MapToApi(api *sonatyperepo.ProxySettingsXo) {
+	api.Enabled = m.Enabled.ValueBool()
+	api.Host = m.Host.ValueString()
+	api.Port = util.Int32ToString(m.Port.ValueInt32())
+	api.AuthInfo = *sonatyperepo.NewAuthSettingsXoWithDefaults()
+	if m.Authentication != nil {
+		m.Authentication.MapToApi(&api.AuthInfo)
+	}
+}
+
+func (m *ProxySettingsModel) MapFromApi(api *sonatyperepo.ProxySettingsXo) {
+	m.Enabled = types.BoolValue(api.Enabled)
+	m.Host = types.StringValue(api.Host)
+	port, err := util.StringToInt32(api.Port)
+	if err != nil {
+		port = 0
+	}
+	m.Port = types.Int32Value(port)
+	if m.Authentication == nil {
+		m.Authentication = &ProxyAuthSettingsModel{}
+	}
+	m.Authentication.MapFromApi(&api.AuthInfo)
+}
+
+// HttpConfigurationModel
+// ------------------------------------------
+type HttpConfigurationModel struct {
+	HttpProxy     ProxySettingsModel `tfsdk:"http_proxy"`
+	HttpsProxy    ProxySettingsModel `tfsdk:"https_proxy"`
+	NonProxyHosts []types.String     `tfsdk:"non_proxy_hosts"`
+	Retries       types.Int32        `tfsdk:"retries"`
+	Timeout       types.Int32        `tfsdk:"timeout"`
+	UserAgent     types.String       `tfsdk:"user_agent"`
+	LastUpdated   types.String       `tfsdk:"last_updated"`
+}
+
+func (m *HttpConfigurationModel) MapToApi(api *sonatyperepo.HttpSettingsXo) {
+	httpProxy := sonatyperepo.NewProxySettingsXoWithDefaults()
+	m.HttpProxy.MapToApi(httpProxy)
+	api.HttpProxy = *sonatyperepo.NewNullableProxySettingsXo(httpProxy)
+
+	httpsProxy := sonatyperepo.NewProxySettingsXoWithDefaults()
+	m.HttpsProxy.MapToApi(httpsProxy)
+	api.HttpsProxy = *sonatyperepo.NewNullableProxySettingsXo(httpsProxy)
+
+	api.NonProxyHosts = make([]string, 0)
+	for _, host := range m.NonProxyHosts {
+		api.NonProxyHosts = append(api.NonProxyHosts, host.ValueString())
+	}
+
+	api.Retries = m.Retries.ValueInt32()
+	api.Timeout = m.Timeout.ValueInt32()
+	if m.UserAgent.IsNull() {
+		api.UserAgent = *sonatyperepo.NewNullableString(util.StringToPtr(""))
+	} else {
+		api.UserAgent = *sonatyperepo.NewNullableString(m.UserAgent.ValueStringPointer())
+	}
+}
+
+func (m *HttpConfigurationModel) MapFromApi(api *sonatyperepo.HttpSettingsXo) {
+	if api.HttpProxy.IsSet() && api.HttpProxy.Get() != nil {
+		m.HttpProxy.MapFromApi(api.HttpProxy.Get())
+	}
+	if api.HttpsProxy.IsSet() && api.HttpsProxy.Get() != nil {
+		m.HttpsProxy.MapFromApi(api.HttpsProxy.Get())
+	}
+	m.NonProxyHosts = make([]types.String, len(api.NonProxyHosts))
+	for i, host := range api.NonProxyHosts {
+		m.NonProxyHosts[i] = types.StringValue(host)
+	}
+	m.Retries = types.Int32Value(api.Retries)
+	m.Timeout = types.Int32Value(api.Timeout)
+
+	if api.UserAgent.IsSet() {
+		m.UserAgent = types.StringValue(api.GetUserAgent())
+	} else {
+		m.UserAgent = types.StringValue("")
+	}
 }

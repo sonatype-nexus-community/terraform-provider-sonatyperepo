@@ -63,6 +63,8 @@ const (
 	HTTP_AUTH_TYPE_BEARER_TOKEN                                            string = "bearerToken"
 	HTTP_AUTH_TYPE_NTLM                                                    string = "ntlm"
 	HTTP_AUTH_TYPE_USERNAME                                                string = "username"
+	HTTP_SETTINGS_DEFAULT_RETRIES                                          int32  = 2
+	HTTP_SETTINGS_DEFAULT_TIMEOUT                                          int32  = 20
 	IQ_AUTHENTICATON_TYPE_PKI                                              string = "PKI"
 	IQ_AUTHENTICATON_TYPE_USER                                             string = "USER"
 	IQ_DEFAULT_CONNECTION_TIMEOUT_SECONDS                                  int32  = 30

@@ -315,6 +315,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		role.NewRoleResource,
 		system.NewAnonymousAccessSystemResource,
 		system.NewSystemConfigProductLicenseResource,
+		system.NewSystemConfigHttpResource,
 		system.NewSystemConfigLdapResource,
 		system.NewSystemConfigMailResource,
 		system.NewSystemConfigIqConnectionResource,
