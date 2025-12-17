@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+
+## 0.16.0 December 17, 2025
+
 ENHANCEMENTS:
 * **New Resource:** `sonatyperepo_blob_store_group` [GH-136]
 * **New Resource:** `sonatyperepo_system_config_http` [GH-246]
