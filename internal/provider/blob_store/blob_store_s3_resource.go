@@ -118,8 +118,9 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 							),
 						},
 					),
-					"pre_signed_url_enabled": schema.ResourceOptionalBool(
+					"pre_signed_url_enabled": schema.ResourceOptionalBoolWithDefault(
 						"Whether pre-signed URL is enabled or not",
+						false,
 					),
 				},
 			),
