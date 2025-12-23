@@ -108,6 +108,182 @@ resource "%s" "test" {
 		access_key_id = "not-a-valid-aws-key"
 		secret_access_key = "not-a-valid-aws-secret-key"
 	}
+	pre_signed_url_enabled = false
+  }
+  soft_quota = {
+	type = "spaceUsedQuota"
+	limit = 1099511627776
+  }
+}
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString)
+}
+
+// TestAccBlobStoreS3ResourcePreSignedUrlValidation tests pre-signed URL validation without API calls
+func TestAccBlobStoreS3ResourcePreSignedUrlValidation(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test with pre_signed_url_enabled = true
+			{
+				Config:      buildS3ResourcePreSignedUrlConfig("test-presigned-true", true),
+				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+			},
+			// Test with pre_signed_url_enabled = false
+			{
+				Config:      buildS3ResourcePreSignedUrlConfig("test-presigned-false", false),
+				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+			},
+			// Test with pre_signed_url_enabled omitted (should default to false)
+			{
+				Config:      buildS3ResourcePreSignedUrlConfigOmitted("test-presigned-default"),
+				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+			},
+		},
+	})
+}
+
+// TestAccBlobStoreS3ResourcePreSignedUrlWithCredentials tests pre-signed URL CRUD when AWS credentials are available
+func TestAccBlobStoreS3ResourcePreSignedUrlWithCredentials(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			if os.Getenv("TF_ACC_S3_BLOB_STORE") != "1" {
+				t.Skip("S3 blob store resource tests require AWS credentials - set TF_ACC_S3_BLOB_STORE=1 to enable")
+			}
+		},
+		Steps: []resource.TestStep{
+			// Create with pre_signed_url_enabled = false
+			{
+				Config: buildS3ResourcePreSignedUrlCompleteConfig("test-presigned-crud", false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-presigned-test-presigned-crud"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.pre_signed_url_enabled", "false"),
+					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.bucket.0.region"),
+				),
+			},
+			// Update to pre_signed_url_enabled = true
+			{
+				Config: buildS3ResourcePreSignedUrlCompleteConfig("test-presigned-crud", true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-presigned-test-presigned-crud"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.pre_signed_url_enabled", "true"),
+				),
+			},
+			// Update back to pre_signed_url_enabled = false
+			{
+				Config: buildS3ResourcePreSignedUrlCompleteConfig("test-presigned-crud", false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-presigned-test-presigned-crud"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.pre_signed_url_enabled", "false"),
+				),
+			},
+			// Import and verify
+			{
+				ResourceName:      RES_NAME_BLOB_STORE_S3,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccBlobStoreS3ResourcePreSignedUrlDefault tests that pre_signed_url_enabled defaults to false
+func TestAccBlobStoreS3ResourcePreSignedUrlDefault(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			if os.Getenv("TF_ACC_S3_BLOB_STORE") != "1" {
+				t.Skip("S3 blob store resource tests require AWS credentials - set TF_ACC_S3_BLOB_STORE=1 to enable")
+			}
+		},
+		Steps: []resource.TestStep{
+			// Create without specifying pre_signed_url_enabled
+			{
+				Config: buildS3ResourcePreSignedUrlCompleteConfigOmitted("test-presigned-default"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, "test-s3-presigned-test-presigned-default"),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, "bucket_configuration.0.pre_signed_url_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Configuration builder functions for pre-signed URL tests
+
+func buildS3ResourcePreSignedUrlConfig(randomString string, preSignedUrlEnabled bool) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
+  name = "test-s3-presigned-%s"
+  bucket_configuration = {
+	bucket = {
+		region = "eu-west-2"
+		name = "nexus-bucket-presigned-%s"
+		prefix = "prefix-%s"
+		expiration = 99
+	}
+	pre_signed_url_enabled = %t
+  }
+}
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString, preSignedUrlEnabled)
+}
+
+func buildS3ResourcePreSignedUrlConfigOmitted(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
+  name = "test-s3-presigned-%s"
+  bucket_configuration = {
+	bucket = {
+		region = "eu-west-2"
+		name = "nexus-bucket-presigned-%s"
+		prefix = "prefix-%s"
+		expiration = 99
+	}
+  }
+}
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString)
+}
+
+func buildS3ResourcePreSignedUrlCompleteConfig(randomString string, preSignedUrlEnabled bool) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
+  name = "test-s3-presigned-%s"
+  bucket_configuration = {
+	bucket = {
+		region = "eu-west-2"
+		name = "nexus-bucket-presigned-%s"
+		prefix = "prefix-%s"
+		expiration = 99
+	}
+	bucket_security = {
+		access_key_id = "not-a-valid-aws-key"
+		secret_access_key = "not-a-valid-aws-secret-key"
+	}
+	pre_signed_url_enabled = %t
+  }
+  soft_quota = {
+	type = "spaceUsedQuota"
+	limit = 1099511627776
+  }
+}
+`, RES_TYPE_BLOB_STORE_S3, randomString, randomString, randomString, preSignedUrlEnabled)
+}
+
+func buildS3ResourcePreSignedUrlCompleteConfigOmitted(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "test" {
+  name = "test-s3-presigned-%s"
+  bucket_configuration = {
+	bucket = {
+		region = "eu-west-2"
+		name = "nexus-bucket-presigned-%s"
+		prefix = "prefix-%s"
+		expiration = 99
+	}
+	bucket_security = {
+		access_key_id = "not-a-valid-aws-key"
+		secret_access_key = "not-a-valid-aws-secret-key"
+	}
   }
   soft_quota = {
 	type = "spaceUsedQuota"
