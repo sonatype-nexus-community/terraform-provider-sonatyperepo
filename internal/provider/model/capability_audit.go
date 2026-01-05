@@ -39,10 +39,12 @@ func (m *CapabilityAuditModel) FromApiModel(api *v3.CapabilityDTO) {
 func (m *CapabilityAuditModel) ToApiCreateModel(version common.SystemVersion) *v3.CapabilityDTO {
 	api := m.toApiCreateModel()
 	api.Type = common.CAPABILITY_TYPE_AUDIT.StringPointer()
+	api.Properties = &map[string]string{}
 	return api
 }
 
 func (m *CapabilityAuditModel) ToApiUpdateModel(version common.SystemVersion) *v3.CapabilityDTO {
 	api := m.toApiUpdateModel()
+	api.Properties = &map[string]string{}
 	return api
 }
