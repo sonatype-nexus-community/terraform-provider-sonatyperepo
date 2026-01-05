@@ -2,6 +2,12 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+- Updated the minimum Terraform version to 1.7.0 [GH-253]
+
+BUG FIXES:
+- Unable to update `sonatyperepo_capability_audit` resource after import [GH-250]
+- Unable to update capabilities (`sonatyperepo_capability_*`) due to missing ID in request [GH-251]
 
 ## 0.16.0 December 17, 2025
 
