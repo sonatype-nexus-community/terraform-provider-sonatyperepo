@@ -52,27 +52,41 @@ func TestAccCapabilityAuditResource(t *testing.T) {
 			})
 		},
 		Steps: []resource.TestStep{
-			// Test import - demonstrates that the `properties` field is not being saved to state
+			// Import & Read Testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-data "sonatyperepo_capabilities" "capabilities" {}
+			data "sonatyperepo_capabilities" "capabilities" {}
 
-import {
-  for_each = [for c in data.sonatyperepo_capabilities.capabilities.capabilities : c.id if c.type == "audit"]
+			import {
+			  for_each = [for c in data.sonatyperepo_capabilities.capabilities.capabilities : c.id if c.type == "audit"]
 
-  id = [for c in data.sonatyperepo_capabilities.capabilities.capabilities : c.id if c.type == "audit"][0]
-  to = sonatyperepo_capability_audit.this
-}
+			  id = [for c in data.sonatyperepo_capabilities.capabilities.capabilities : c.id if c.type == "audit"][0]
+			  to = sonatyperepo_capability_audit.this
+			}
 
-resource "%s" "this" {
-  enabled = true
-}
-`, resourceAudit),
+			resource "%s" "this" {
+			  enabled = true
+			  
+			}
+			`, resourceAudit),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					// NOTE: This check will fail - the properties field is not being saved to state
-					resource.TestCheckResourceAttrSet(resourceName, "properties"),
+					resource.TestCheckResourceAttr(resourceName, "notes", ""),
+				),
+			},
+			// Update Testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+			resource "%s" "this" {
+			  enabled = true
+			  notes = "Managed by Terraform"
+			}
+			`, resourceAudit),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "notes", "Managed by Terraform"),
 				),
 			},
 		},
