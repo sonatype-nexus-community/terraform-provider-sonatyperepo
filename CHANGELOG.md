@@ -2,8 +2,12 @@
 
 ## UNRELEASED
 
+## 0.17.0 January 06, 2026
+
 ENHANCEMENTS:
 - Updated the minimum Terraform version to 1.7.0 [GH-253]
+  
+  _Earlier versions may well work fine, but are now not supported or tested._
 
 BUG FIXES:
 - Unable to update `sonatyperepo_capability_audit` resource after import [GH-250]
