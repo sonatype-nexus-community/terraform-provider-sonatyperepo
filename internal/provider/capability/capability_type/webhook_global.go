@@ -93,6 +93,13 @@ func (f *WebhookGlobalCapability) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (ct *WebhookGlobalCapability) MapFromPlanToState(plan any, state any) any {
+	planModel := (plan).(model.WebhookGlobalCapabilityModel)
+	stateModel := (state).(model.WebhookGlobalCapabilityModel)
+	stateModel.Properties.Secret = types.StringValue(planModel.Properties.Secret.ValueString())
+	return stateModel
+}
+
 func (f *WebhookGlobalCapability) UpdateStateFromPlanForUpdate(plan any, state any) any {
 	planModel := (plan).(model.WebhookGlobalCapabilityModel)
 	stateModel := (state).(model.WebhookGlobalCapabilityModel)

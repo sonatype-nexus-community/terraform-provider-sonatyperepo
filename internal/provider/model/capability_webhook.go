@@ -81,11 +81,7 @@ func (m *WebhookGlobalCapabilityModel) FromApiModel(api *v3.CapabilityDTO) {
 		namesValues = append(namesValues, types.StringValue(strings.TrimSpace(part)))
 	}
 	m.Properties.Names = types.SetValueMust(types.StringType, namesValues)
-	if secret, ok := (*api.Properties)["secret"]; ok && secret != "" {
-		m.Properties.Secret = types.StringValue(secret)
-	} else {
-		m.Properties.Secret = types.StringNull()
-	}
+	// Skip Password
 	m.Properties.Url = types.StringValue((*api.Properties)["url"])
 }
 
@@ -161,11 +157,7 @@ func (m *WebhookRepositoryCapabilityModel) FromApiModel(api *v3.CapabilityDTO) {
 		namesValues = append(namesValues, types.StringValue(strings.TrimSpace(part)))
 	}
 	m.Properties.Names = types.SetValueMust(types.StringType, namesValues)
-	if secret, ok := (*api.Properties)["secret"]; ok && secret != "" {
-		m.Properties.Secret = types.StringValue(secret)
-	} else {
-		m.Properties.Secret = types.StringNull()
-	}
+	// Skip Password
 	m.Properties.Url = types.StringValue((*api.Properties)["url"])
 	m.Properties.Repository = types.StringValue((*api.Properties)["repository"])
 }
