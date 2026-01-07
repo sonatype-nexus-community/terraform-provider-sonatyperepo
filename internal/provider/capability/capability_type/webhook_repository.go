@@ -93,6 +93,13 @@ func (f *WebhookRepositoryCapability) UpdateStateFromApi(state any, api any) any
 	return stateModel
 }
 
+func (ct *WebhookRepositoryCapability) MapFromPlanToState(plan any, state any) any {
+	planModel := (plan).(model.WebhookRepositoryCapabilityModel)
+	stateModel := (state).(model.WebhookRepositoryCapabilityModel)
+	stateModel.Properties.Secret = types.StringValue(planModel.Properties.Secret.ValueString())
+	return stateModel
+}
+
 func (f *WebhookRepositoryCapability) UpdateStateFromPlanForUpdate(plan any, state any) any {
 	planModel := (plan).(model.WebhookRepositoryCapabilityModel)
 	stateModel := (state).(model.WebhookRepositoryCapabilityModel)

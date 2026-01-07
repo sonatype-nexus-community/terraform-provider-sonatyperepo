@@ -66,6 +66,10 @@ func (ct *BaseCapabilityType) GetType() common.CapabilityType {
 	return ct.capabilityType
 }
 
+func (ct *BaseCapabilityType) MapFromPlanToState(plan any, state any) any {
+	return state
+}
+
 // --------------------------------------------
 // CapabilityTypeI that all Capability Types must implement
 // --------------------------------------------
@@ -83,6 +87,7 @@ type CapabilityTypeI interface {
 	GetType() common.CapabilityType
 	UpdatePlanForState(plan any) any
 	UpdateStateFromApi(state any, api any) any
+	MapFromPlanToState(plan any, state any) any
 	UpdateStateFromPlanForUpdate(plan any, state any) any
 }
 
