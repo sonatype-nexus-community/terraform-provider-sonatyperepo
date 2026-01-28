@@ -23,6 +23,9 @@ Manage Roles in Sonatype Nexus Repository
 This should be unique and can be the name of an LDAP or SAML Group if you are using LDAP or SAML for authentication.
 Matching Roles based on id will automatically be granted to LDAP or SAML users.
 - `name` (String) The name of the role.
+
+### Optional
+
 - `privileges` (Set of String) The set of privileges assigned to this role.
 - `roles` (Set of String) The set of roles assigned to this role.
 

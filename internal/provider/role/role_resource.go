@@ -25,10 +25,12 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -67,10 +69,16 @@ Matching Roles based on id will automatically be granted to LDAP or SAML users.`
 					stringplanmodifier.RequiresReplace(),
 				},
 			),
-			"name":         schema.ResourceRequiredString("The name of the role."),
-			"description":  schema.ResourceRequiredString("The description of this role."),
-			"privileges":   schema.ResourceRequiredStringSet("The set of privileges assigned to this role."),
-			"roles":        schema.ResourceRequiredStringSet("The set of roles assigned to this role."),
+			"name":        schema.ResourceRequiredString("The name of the role."),
+			"description": schema.ResourceRequiredString("The description of this role."),
+			"privileges": schema.ResourceOptionalStringSetWithDefault(
+				"The set of privileges assigned to this role.",
+				setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+			),
+			"roles": schema.ResourceOptionalStringSetWithDefault(
+				"The set of roles assigned to this role.",
+				setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+			),
 			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}
