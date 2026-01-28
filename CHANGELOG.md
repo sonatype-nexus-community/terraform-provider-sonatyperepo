@@ -2,6 +2,12 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+- Support for S3 Pre-signed URLs on `sonatyperepo_blob_store_s3` Data Source and Resource [GH-248]
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.87.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-87-0-release-notes.html)
+
 ## 0.17.0 January 06, 2026
 
 ENHANCEMENTS:
