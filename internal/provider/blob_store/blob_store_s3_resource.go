@@ -119,7 +119,7 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 						},
 					),
 					"pre_signed_url_enabled": schema.ResourceOptionalBoolWithDefault(
-						"Whether pre-signed URL is enabled or not",
+						"Whether pre-signed URL is enabled or not. **Requires Sonatype Nexus Repository Manager 3.79.0 PRO or later**",
 						false,
 					),
 				},
