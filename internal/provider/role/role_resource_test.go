@@ -76,7 +76,50 @@ func TestAccRoleResource(t *testing.T) {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
 
+func TestAccRoleResourceOnlyPrivileges(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: buildRoleResourceOnlyPrivileges(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Test Role %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is a test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "2"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRoleResourceOnlyRoles(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: buildRoleResourceOnlyRoles(randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Test Role %s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is a test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "0"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "2"),
+				),
+			},
+		},
+	})
 }
 
 func buildRoleResourceMinimal(randomString string) string {
@@ -108,6 +151,33 @@ resource "%s" "rl" {
   roles = [
     "nx-anonymous",
     "nx-admin"
+  ]
+}
+`, resourceTypeRole, randomString, randomString)
+}
+
+func buildRoleResourceOnlyPrivileges(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "rl" {
+  id = "my-test-role-%s"
+  name = "My Test Role %s"
+  description = "This is a test role"
+  privileges = [
+    "nx-healthcheck-read",
+    "nx-healthcheck-summary-read"
+  ]
+}
+`, resourceTypeRole, randomString, randomString)
+}
+
+func buildRoleResourceOnlyRoles(randomString string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "rl" {
+  id = "my-test-role-%s"
+  name = "My Test Role %s"
+  description = "This is a test role"
+  roles = [
+    "nx-anonymous"
   ]
 }
 `, resourceTypeRole, randomString, randomString)
