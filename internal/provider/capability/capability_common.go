@@ -103,8 +103,9 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 	}
 
-	plan = c.CapabilityType.UpdateStateFromApi(plan, capabilityCreateResponse)
-	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
+	stateModel := c.CapabilityType.UpdateStateFromApi(plan, capabilityCreateResponse)
+	stateModel = c.CapabilityType.MapFromPlanToState(plan, stateModel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -163,8 +164,9 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	stateModel = c.CapabilityType.UpdateStateFromApi(stateModel, capability)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &stateModel)...)
+	currentStateModel := c.CapabilityType.UpdateStateFromApi(stateModel, capability)
+	currentStateModel = c.CapabilityType.MapFromPlanToState(stateModel, currentStateModel)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &currentStateModel)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -246,6 +248,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	stateModel = c.CapabilityType.UpdateStateFromApi(stateModel, capability)
+	stateModel = c.CapabilityType.MapFromPlanToState(planModel, stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 	if resp.Diagnostics.HasError() {
 		return
