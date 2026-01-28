@@ -118,6 +118,10 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 							),
 						},
 					),
+					"pre_signed_url_enabled": schema.ResourceOptionalBoolWithDefault(
+						"Whether pre-signed URL is enabled or not",
+						false,
+					),
 				},
 			),
 			"last_updated": schema.ResourceLastUpdated(),
@@ -325,6 +329,9 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 			state.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize = types.Int64Value(int64(*apiResponse.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize))
 		}
 	}
+	if apiResponse.BucketConfiguration.PreSignedUrlEnabled != nil {
+		state.BucketConfiguration.PreSignedUrlEnabled = types.BoolValue(*apiResponse.BucketConfiguration.PreSignedUrlEnabled)
+	}
 	if apiResponse.SoftQuota != nil {
 		state.SoftQuota = &model.BlobStoreSoftQuota{
 			Type:  types.StringValue(*apiResponse.SoftQuota.Type),
@@ -372,6 +379,9 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
 		requestPayload.BucketConfiguration.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
+	}
+	if !plan.BucketConfiguration.PreSignedUrlEnabled.IsNull() {
+		requestPayload.BucketConfiguration.PreSignedUrlEnabled = plan.BucketConfiguration.PreSignedUrlEnabled.ValueBoolPointer()
 	}
 	if plan.BucketConfiguration.Encryption != nil {
 		requestPayload.BucketConfiguration.Encryption = &sonatyperepo.S3BlobStoreApiEncryption{}

@@ -128,6 +128,7 @@ type BlobStoreS3BucketConfigurationModel struct {
 	Encryption               *BlobStoreS3Encryption                    `tfsdk:"encryption"`
 	BucketSecurity           *BlobStoreS3BucketSecurityModel           `tfsdk:"bucket_security"`
 	AdvancedBucketConnection *BlobStoreS3AdvancedBucketConnectionModel `tfsdk:"advanced_bucket_connection"`
+	PreSignedUrlEnabled      types.Bool                                `tfsdk:"pre_signed_url_enabled"`
 }
 
 type BlobStoreS3BucketModel struct {

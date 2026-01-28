@@ -87,6 +87,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 					"force_path_style":         schema.DataSourceOptionalBool("Setting this flag will result in path-style access being used for all requests"),
 					"max_connection_pool_size": schema.DataSourceOptionalInt64("Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore"),
 				}),
+				"pre_signed_url_enabled": schema.DataSourceOptionalBool("Whether pre-signed URL is enabled or not"),
 			}),
 		},
 	}
@@ -178,6 +179,9 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		if apiResponse.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize != nil {
 			state.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize = types.Int64Value(int64(*apiResponse.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize))
 		}
+	}
+	if apiResponse.BucketConfiguration.PreSignedUrlEnabled != nil {
+		state.BucketConfiguration.PreSignedUrlEnabled = types.BoolValue(*apiResponse.BucketConfiguration.PreSignedUrlEnabled)
 	}
 
 	// Set state
