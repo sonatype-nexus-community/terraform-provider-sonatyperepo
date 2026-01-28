@@ -38,7 +38,7 @@ Optional:
 - `bucket` (Attributes) Main Bucket Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration--bucket))
 - `bucket_security` (Attributes) Bucket Security Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration--bucket_security))
 - `encryption` (Attributes) Bucket Encryption Configuration for this Blob Store (see [below for nested schema](#nestedatt--bucket_configuration--encryption))
-- `pre_signed_url_enabled` (Boolean) Whether pre-signed URL is enabled or not
+- `pre_signed_url_enabled` (Boolean) Whether pre-signed URL is enabled or not. **Requires Sonatype Nexus Repository Manager 3.79.0 PRO or later**
 
 <a id="nestedatt--bucket_configuration--advanced_bucket_connection"></a>
 ### Nested Schema for `bucket_configuration.advanced_bucket_connection`

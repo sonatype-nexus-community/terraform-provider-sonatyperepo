@@ -87,7 +87,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 					"force_path_style":         schema.DataSourceOptionalBool("Setting this flag will result in path-style access being used for all requests"),
 					"max_connection_pool_size": schema.DataSourceOptionalInt64("Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore"),
 				}),
-				"pre_signed_url_enabled": schema.DataSourceOptionalBool("Whether pre-signed URL is enabled or not"),
+				"pre_signed_url_enabled": schema.DataSourceOptionalBool("Whether pre-signed URL is enabled or not. **Requires Sonatype Nexus Repository Manager 3.79.0 PRO or later**"),
 			}),
 		},
 	}
