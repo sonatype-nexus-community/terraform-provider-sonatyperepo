@@ -26,13 +26,16 @@ import (
 )
 
 const (
-	resourceTypeRole    = "sonatyperepo_role"
-	resourceNameRole    = "sonatyperepo_role.rl"
-	attrID              = "id"
-	attrName            = "name"
-	attrDescription     = "description"
-	attrPrivilegesCount = "privileges.#"
-	attrRolesCount      = "roles.#"
+	resourceTypeRole      = "sonatyperepo_role"
+	resourceNameRole      = "sonatyperepo_role.rl"
+	attrID                = "id"
+	attrName              = "name"
+	attrDescription       = "description"
+	attrPrivilegesCount   = "privileges.#"
+	attrRolesCount        = "roles.#"
+	roleIdFormat          = "my-test-role-%s"
+	roleNameFormat        = "My Test Role %s"
+	roleDescriptionFormat = "This is a test role"
 )
 
 func TestAccRoleResource(t *testing.T) {
@@ -46,9 +49,9 @@ func TestAccRoleResource(t *testing.T) {
 				Config: buildRoleResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Test Role %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is a test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf(roleIdFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf(roleNameFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, roleDescriptionFormat),
 					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "1"),
 					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "1"),
 				),
@@ -58,9 +61,9 @@ func TestAccRoleResource(t *testing.T) {
 				Config: buildRoleResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify updated values
-					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Updated Role %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is an updated test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf(roleIdFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf(roleNameFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, roleDescriptionFormat),
 					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "2"),
 					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "2"),
 				),
@@ -71,7 +74,7 @@ func TestAccRoleResource(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           fmt.Sprintf("my-test-role-%s", randomString),
+				ImportStateId:           fmt.Sprintf(roleIdFormat, randomString),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -89,9 +92,9 @@ func TestAccRoleResourceOnlyPrivileges(t *testing.T) {
 				Config: buildRoleResourceOnlyPrivileges(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Test Role %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is a test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf(roleIdFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf(roleNameFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, roleDescriptionFormat),
 					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "2"),
 					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "0"),
 				),
@@ -111,9 +114,9 @@ func TestAccRoleResourceOnlyRoles(t *testing.T) {
 				Config: buildRoleResourceOnlyRoles(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf("my-test-role-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf("My Test Role %s", randomString)),
-					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, "This is a test role"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrID, fmt.Sprintf(roleIdFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf(roleNameFormat, randomString)),
+					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, roleDescriptionFormat),
 					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "0"),
 					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "2"),
 				),
