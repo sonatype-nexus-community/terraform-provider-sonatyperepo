@@ -29,10 +29,13 @@ import (
 )
 
 const (
-	resourceNameF = "%s.cap"
-	notesFString  = "example-notes-%s"
-	propertiesUrl = "properties.url"
-	urlFString    = "https://%s.tld"
+	resourceNameF         = "%s.cap"
+	notesFString          = "example-notes-%s"
+	notesUpdatedFString   = "example-notes-%s-updated"
+	propertiesUrl         = "properties.url"
+	superSecretKeyFString = "super-secret-key-%s"
+	testingFString        = "TESTING 1 2 3 %s"
+	urlFString            = "https://%s.tld"
 )
 
 func TestAccCapabilityAuditResource(t *testing.T) {
@@ -71,9 +74,9 @@ func TestAccCapabilityAuditResource(t *testing.T) {
 			}
 			`, resourceAudit),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "notes", ""),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, ""),
 				),
 			},
 			// Update Testing
@@ -85,9 +88,9 @@ func TestAccCapabilityAuditResource(t *testing.T) {
 			}
 			`, resourceAudit),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "notes", "Managed by Terraform"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, "Managed by Terraform"),
 				),
 			},
 		},
@@ -126,9 +129,9 @@ resource "%s" "cap" {
 }
 `, resourceBaseUrl, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
 				),
 			},
@@ -144,9 +147,9 @@ resource "%s" "cap" {
 }
 `, resourceBaseUrl, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
 				),
 			},
@@ -187,9 +190,9 @@ resource "%s" "cap" {
 }
 `, resourceStorageSettings, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.last_downloaded_interval", "24"),
 				),
 			},
@@ -205,9 +208,9 @@ resource "%s" "cap" {
 }
 `, resourceStorageSettings, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckResourceAttr(resourceName, "properties.last_downloaded_interval", "24"),
 				),
 			},
@@ -251,9 +254,9 @@ resource "%s" "cap" {
 }
 `, resourceCustomS3Regions, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-1-%s", randomString)),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-2-%s", randomString)),
 				),
@@ -273,9 +276,9 @@ resource "%s" "cap" {
 }
 `, resourceCustomS3Regions, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-1-%s", randomString)),
 					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-2-%s", randomString)),
 				),
@@ -317,10 +320,10 @@ resource "%s" "cap" {
 }
 `, resourceDefaultRole, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "properties.role", "nx-anonymous"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "false"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRole), "nx-anonymous"),
 				),
 			},
 			// Update testing
@@ -335,10 +338,10 @@ resource "%s" "cap" {
 }
 `, resourceDefaultRole, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "properties.role", "nx-anonymous"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "false"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRole), "nx-anonymous"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -379,11 +382,11 @@ resource "%s" "cap" {
 }
 `, resourceFirewallAuditQuarantine, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
-					resource.TestCheckResourceAttr(resourceName, "properties.quarantine", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRepository), "maven-central"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrQuarantine), "true"),
 				),
 			},
 			// Update testing
@@ -399,11 +402,11 @@ resource "%s" "cap" {
 }
 `, resourceFirewallAuditQuarantine, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
-					resource.TestCheckResourceAttr(resourceName, "properties.quarantine", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRepository), "maven-central"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrQuarantine), "true"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -444,11 +447,11 @@ resource "%s" "cap" {
 }
 `, resourceHealthcheck, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.configured_for_all_proxies", "false"),
-					resource.TestCheckResourceAttr(resourceName, "properties.use_nexus_truststore", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrConfiguredForAllProxies), "false"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrUseNexusTruststore), "true"),
 				),
 			},
 			// Update testing
@@ -464,11 +467,11 @@ resource "%s" "cap" {
 }
 `, resourceHealthcheck, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.configured_for_all_proxies", "false"),
-					resource.TestCheckResourceAttr(resourceName, "properties.use_nexus_truststore", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrConfiguredForAllProxies), "false"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrUseNexusTruststore), "true"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -517,11 +520,11 @@ func TestAccCapabilityOutreachManagementResource(t *testing.T) {
 			}
 			`, resourceOutreachManagement, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.always_remote", "false"),
-					resource.TestCheckResourceAttr(resourceName, "properties.override_url", "https://links.sonatype.com/products/nexus/outreach"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrAlwaysRemote), "false"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrOverrideUrl), "https://links.sonatype.com/products/nexus/outreach"),
 				),
 			},
 			// Update testing
@@ -537,11 +540,11 @@ resource "%s" "cap" {
 }
 `, resourceOutreachManagement, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.always_remote", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.override_url", "https://some.url.tld"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrAlwaysRemote), "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrOverrideUrl), "https://some.url.tld"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -581,10 +584,10 @@ resource "%s" "cap" {
 }
 `, resourceSecurityRutAuth, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.http_header", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrHttpHeader), fmt.Sprintf(testingFString, randomString)),
 				),
 			},
 			// Update testing
@@ -599,10 +602,10 @@ resource "%s" "cap" {
 }
 `, resourceSecurityRutAuth, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.http_header", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrHttpHeader), fmt.Sprintf(testingFString, randomString)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -642,11 +645,11 @@ resource "%s" "cap" {
 }
 `, resourceUiBranding, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.header_enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.header_html", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrHeaderEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrHeaderHtml, fmt.Sprintf(testingFString, randomString)),
 				),
 			},
 			// Update testing
@@ -662,11 +665,11 @@ resource "%s" "cap" {
 }
 `, resourceUiBranding, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.header_enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.header_html", fmt.Sprintf("TESTING 1 2 3 %s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrHeaderEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrHeaderHtml, fmt.Sprintf(testingFString, randomString)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -720,16 +723,16 @@ func TestAccCapabilityUiSettingsResource(t *testing.T) {
 			}
 			`, resourceUiSettings, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.debug_allowed", strconv.FormatBool(common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED)),
-					resource.TestCheckResourceAttr(resourceName, "properties.long_request_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.request_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.session_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.status_interval_anonymous", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.status_interval_authenticated", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.title", common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrDebugAllowed, strconv.FormatBool(common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrLongRequestTimeout, strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrRequestTimeout, strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrSessionTimeout, strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrStatusIntervalAnonymous, strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS), 10)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrStatusIntervalAuthenticated, strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED), 10)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrPropertiesFormat+resourceAttrTitle, common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE),
 				),
 			},
 			// Update testing
@@ -750,16 +753,16 @@ resource "%s" "cap" {
 }
 `, resourceUiSettings, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "properties.debug_allowed", strconv.FormatBool(common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED)),
-					resource.TestCheckResourceAttr(resourceName, "properties.long_request_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.request_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.session_timeout", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.status_interval_anonymous", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.status_interval_authenticated", strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED), 10)),
-					resource.TestCheckResourceAttr(resourceName, "properties.title", common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrDebugAllowed), strconv.FormatBool(common.CAPABILITY_UI_SETTINGS_DEFAULT_DEBUG_ALLOWED)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrLongRequestTimeout), strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_LONG_REQUEST_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRequestTimeout), strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_REQUEST_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrSessionTimeout), strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_SESSION_TIMEOUT), 10)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrStatusIntervalAnonymous), strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_ANONYMOUS), 10)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrStatusIntervalAuthenticated), strconv.FormatInt(int64(common.CAPABILITY_UI_SETTINGS_DEFAULT_STATUS_INTERVAL_AUTHENTICATED), 10)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrTitle), common.CAPABILITY_UI_SETTINGS_DEFAULT_TITLE),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -802,12 +805,12 @@ resource "%s" "cap" {
 }
 `, resourceWebhookGlobal, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "repository"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrNames), "repository"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrSecret), fmt.Sprintf(superSecretKeyFString, randomString)),
 				),
 			},
 			// Update testing
@@ -826,12 +829,12 @@ resource "%s" "cap" {
 }
 `, resourceWebhookGlobal, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "repository"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrNames), "repository"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrSecret), fmt.Sprintf(superSecretKeyFString, randomString)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -875,13 +878,13 @@ resource "%s" "cap" {
 }
 `, resourceWebhookRepository, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "asset"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrNames), "asset"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrSecret), fmt.Sprintf(superSecretKeyFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRepository), "maven-central"),
 				),
 			},
 			// Update testing
@@ -901,13 +904,13 @@ resource "%s" "cap" {
 }
 `, resourceWebhookRepository, randomString, randomString, randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "notes", fmt.Sprintf(notesFString+"-updated", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.names.*", "asset"),
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrNames), "asset"),
 					resource.TestCheckResourceAttr(resourceName, propertiesUrl, fmt.Sprintf(urlFString, randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.secret", fmt.Sprintf("super-secret-key-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceName, "properties.repository", "maven-central"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrSecret), fmt.Sprintf(superSecretKeyFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRepository), "maven-central"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
