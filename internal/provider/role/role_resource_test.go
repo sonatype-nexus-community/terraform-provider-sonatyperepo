@@ -120,7 +120,7 @@ func TestAccRoleResourceOnlyRoles(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameRole, attrName, fmt.Sprintf(roleNameFormat, randomString)),
 					resource.TestCheckResourceAttr(resourceNameRole, attrDescription, roleDescription),
 					resource.TestCheckResourceAttr(resourceNameRole, attrPrivilegesCount, "0"),
-					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "2"),
+					resource.TestCheckResourceAttr(resourceNameRole, attrRolesCount, "1"),
 				),
 			},
 		},
