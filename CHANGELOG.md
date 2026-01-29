@@ -2,9 +2,6 @@
 
 ## UNRELEASED
 
-NOTES:
-* Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html)
-
 ## 0.18.1
 
 BUG FIXES:
