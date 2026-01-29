@@ -58,8 +58,8 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.ResourceRequiredString("Name of the Blob Store"),
 			"type": schema.ResourceOptionalStringWithDefault(
-				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3),
-				BLOB_STORE_TYPE_S3,
+				fmt.Sprintf("Type of this Blob Store - will always be '%s'", common.BLOB_STORE_TYPE_S3),
+				common.BLOB_STORE_TYPE_S3,
 			),
 			"soft_quota": schema.ResourceOptionalSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
@@ -135,7 +135,6 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 	var plan model.BlobStoreS3Model
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
-
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
 		return
@@ -144,122 +143,37 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 	// Call API to Create
 	ctx = r.AuthContext(ctx)
 
-	requestPayload := sonatyperepo.S3BlobStoreApiModel{
-		Name: *plan.Name.ValueStringPointer(),
-		BucketConfiguration: sonatyperepo.S3BlobStoreApiBucketConfiguration{
-			Bucket: sonatyperepo.S3BlobStoreApiBucket{
-				Region: *plan.BucketConfiguration.Bucket.Region.ValueStringPointer(),
-				Name:   *plan.BucketConfiguration.Bucket.Name.ValueStringPointer(),
-			},
-		},
-	}
-	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-		requestPayload.BucketConfiguration.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
-	}
-	if plan.BucketConfiguration.Encryption != nil {
-		requestPayload.BucketConfiguration.Encryption = &sonatyperepo.S3BlobStoreApiEncryption{}
-		if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
-			requestPayload.BucketConfiguration.Encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
-			requestPayload.BucketConfiguration.Encryption.EncryptionKey = plan.BucketConfiguration.Encryption.EncryptionKey.ValueStringPointer()
-		}
-	}
-	if plan.BucketConfiguration.BucketSecurity != nil {
-		requestPayload.BucketConfiguration.BucketSecurity = &sonatyperepo.S3BlobStoreApiBucketSecurity{}
-		if !plan.BucketConfiguration.BucketSecurity.AccessKeyId.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.AccessKeyId = plan.BucketConfiguration.BucketSecurity.AccessKeyId.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.SecretAccessKey.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.SecretAccessKey = plan.BucketConfiguration.BucketSecurity.SecretAccessKey.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.Role.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.Role = plan.BucketConfiguration.BucketSecurity.Role.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.SessionToken.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.SessionToken = plan.BucketConfiguration.BucketSecurity.SessionToken.ValueStringPointer()
-		}
-	}
-	if plan.BucketConfiguration.AdvancedBucketConnection != nil {
-		requestPayload.BucketConfiguration.AdvancedBucketConnection = &sonatyperepo.S3BlobStoreApiAdvancedBucketConnection{}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.Endpoint.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.Endpoint = plan.BucketConfiguration.AdvancedBucketConnection.Endpoint.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.SignerType.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.SignerType = plan.BucketConfiguration.AdvancedBucketConnection.SignerType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle = plan.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle.ValueBoolPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize.IsNull() {
-			max_connection_pool_size := int32(plan.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize.ValueInt64())
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize = &max_connection_pool_size
-		}
-	}
-	if plan.SoftQuota != nil {
-		requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
-			Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
-			Type:  plan.SoftQuota.Type.ValueStringPointer(),
-		}
-	}
-
-	apiResponse, err := r.Client.BlobStoreAPI.CreateS3BlobStore(ctx).Body(requestPayload).Execute()
+	apiBody := sonatyperepo.NewS3BlobStoreApiModelWithDefaults()
+	plan.MapToApi(apiBody)
+	httpResponse, err := r.Client.BlobStoreAPI.CreateS3BlobStore(ctx).Body(*apiBody).Execute()
 
 	// Handle Error
 	if err != nil {
 		errors.HandleAPIError(
 			"Error creating S3 Blob Store",
 			&err,
-			apiResponse,
+			httpResponse,
 			&resp.Diagnostics,
 		)
 		return
 	}
 
-	if apiResponse.StatusCode == http.StatusCreated {
-		// Set LastUpdated
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-
-		// Inject some defaults that are not in the API response
-		plan.Type = types.StringValue(BLOB_STORE_TYPE_S3)
-		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
-		}
-
-		diags := resp.State.Set(ctx, plan)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	} else {
+	// Handle any unexpected errors
+	if httpResponse.StatusCode != http.StatusCreated {
 		errors.HandleAPIError(
 			"Creation of S3 Blob Store was not successful",
 			&err,
-			apiResponse,
+			httpResponse,
 			&resp.Diagnostics,
 		)
-	}
-}
-
-// Read refreshes the Terraform state with the latest data.
-func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Retrieve values from state
-	var state model.BlobStoreS3Model
-
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
 
-	ctx = r.AuthContext(ctx)
-
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, plan.Name.ValueString()).Execute()
 
-	if err != nil {
-		if httpResponse.StatusCode == 404 {
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
+		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
 				"S3 Blob Store to read did not exist",
@@ -278,68 +192,61 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Overwrite items with refreshed state
-	state.Name = types.StringValue(state.Name.ValueString())
-	state.Type = types.StringValue(BLOB_STORE_TYPE_S3)
-	state.BucketConfiguration.Bucket.Region = types.StringValue(apiResponse.BucketConfiguration.Bucket.Region)
-	state.BucketConfiguration.Bucket.Name = types.StringValue(apiResponse.BucketConfiguration.Bucket.Name)
-	if apiResponse.BucketConfiguration.Bucket.Prefix != nil {
-		state.BucketConfiguration.Bucket.Prefix = types.StringValue(*apiResponse.BucketConfiguration.Bucket.Prefix)
+	// Map response to state
+	plan.MapFromApi(apiResponse)
+	// state.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
+
+	// Set LastUpdated
+	plan.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	// Update State
+	diags := resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if apiResponse.BucketConfiguration.Encryption != nil {
-		if state.BucketConfiguration.Encryption == nil {
-			state.BucketConfiguration.Encryption = &model.BlobStoreS3Encryption{}
-		}
-		if apiResponse.BucketConfiguration.Encryption.EncryptionType != nil {
-			state.BucketConfiguration.Encryption.EncryptionType = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionType)
-		}
-		if apiResponse.BucketConfiguration.Encryption.EncryptionKey != nil {
-			state.BucketConfiguration.Encryption.EncryptionKey = types.StringValue(*apiResponse.BucketConfiguration.Encryption.EncryptionKey)
-		}
+}
+
+// Read refreshes the Terraform state with the latest data.
+func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// Retrieve values from state
+	var state model.BlobStoreS3Model
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting request data has errors: %v", resp.Diagnostics.Errors()))
+		return
 	}
-	if apiResponse.BucketConfiguration.BucketSecurity != nil {
-		if state.BucketConfiguration.BucketSecurity == nil {
-			state.BucketConfiguration.BucketSecurity = &model.BlobStoreS3BucketSecurityModel{}
+
+	ctx = r.AuthContext(ctx)
+
+	// Read API Call
+	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, state.Name.ValueString()).Execute()
+
+	if err != nil || httpResponse.StatusCode != http.StatusOK {
+		if httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			errors.HandleAPIWarning(
+				"S3 Blob Store to read did not exist",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
+		} else {
+			errors.HandleAPIError(
+				"Error reading S3 Blob Store",
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
 		}
-		if apiResponse.BucketConfiguration.BucketSecurity.AccessKeyId != nil {
-			state.BucketConfiguration.BucketSecurity.AccessKeyId = types.StringValue(*apiResponse.BucketConfiguration.BucketSecurity.AccessKeyId)
-		}
-		// API does not echo back AWS Secret Access Key
-		if apiResponse.BucketConfiguration.BucketSecurity.Role != nil {
-			state.BucketConfiguration.BucketSecurity.Role = types.StringValue(*apiResponse.BucketConfiguration.BucketSecurity.Role)
-		}
-		if apiResponse.BucketConfiguration.BucketSecurity.SessionToken != nil {
-			state.BucketConfiguration.BucketSecurity.SessionToken = types.StringValue(*apiResponse.BucketConfiguration.BucketSecurity.SessionToken)
-		}
+		return
 	}
-	if apiResponse.BucketConfiguration.AdvancedBucketConnection != nil {
-		if state.BucketConfiguration.AdvancedBucketConnection == nil {
-			state.BucketConfiguration.AdvancedBucketConnection = &model.BlobStoreS3AdvancedBucketConnectionModel{}
-		}
-		if apiResponse.BucketConfiguration.AdvancedBucketConnection.Endpoint != nil {
-			state.BucketConfiguration.AdvancedBucketConnection.Endpoint = types.StringValue(*apiResponse.BucketConfiguration.AdvancedBucketConnection.Endpoint)
-		}
-		if apiResponse.BucketConfiguration.AdvancedBucketConnection.SignerType != nil {
-			state.BucketConfiguration.AdvancedBucketConnection.SignerType = types.StringValue(*apiResponse.BucketConfiguration.AdvancedBucketConnection.SignerType)
-		}
-		if apiResponse.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle != nil {
-			state.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle = types.BoolValue(*apiResponse.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle)
-		}
-		if apiResponse.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize != nil {
-			state.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize = types.Int64Value(int64(*apiResponse.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize))
-		}
-	}
-	if apiResponse.BucketConfiguration.PreSignedUrlEnabled != nil {
-		state.BucketConfiguration.PreSignedUrlEnabled = types.BoolValue(*apiResponse.BucketConfiguration.PreSignedUrlEnabled)
-	}
-	if apiResponse.SoftQuota != nil {
-		state.SoftQuota = &model.BlobStoreSoftQuota{
-			Type:  types.StringValue(*apiResponse.SoftQuota.Type),
-			Limit: types.Int64Value(*apiResponse.SoftQuota.Limit),
-		}
-	} else {
-		state.SoftQuota = nil
-	}
+
+	// Map response to state
+	state.MapFromApi(apiResponse)
+	state.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
 
 	// Set refreshed state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -367,102 +274,41 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 
 	ctx = r.AuthContext(ctx)
 
-	// Update API Call
-	requestPayload := sonatyperepo.S3BlobStoreApiModel{
-		Name: *plan.Name.ValueStringPointer(),
-		BucketConfiguration: sonatyperepo.S3BlobStoreApiBucketConfiguration{
-			Bucket: sonatyperepo.S3BlobStoreApiBucket{
-				Region: *plan.BucketConfiguration.Bucket.Region.ValueStringPointer(),
-				Name:   *plan.BucketConfiguration.Bucket.Name.ValueStringPointer(),
-			},
-		},
-	}
-	if !plan.BucketConfiguration.Bucket.Prefix.IsNull() {
-		requestPayload.BucketConfiguration.Bucket.Prefix = plan.BucketConfiguration.Bucket.Prefix.ValueStringPointer()
-	}
-	if !plan.BucketConfiguration.PreSignedUrlEnabled.IsNull() {
-		requestPayload.BucketConfiguration.PreSignedUrlEnabled = plan.BucketConfiguration.PreSignedUrlEnabled.ValueBoolPointer()
-	}
-	if plan.BucketConfiguration.Encryption != nil {
-		requestPayload.BucketConfiguration.Encryption = &sonatyperepo.S3BlobStoreApiEncryption{}
-		if !plan.BucketConfiguration.Encryption.EncryptionType.IsNull() {
-			requestPayload.BucketConfiguration.Encryption.EncryptionType = plan.BucketConfiguration.Encryption.EncryptionType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.Encryption.EncryptionKey.IsNull() {
-			requestPayload.BucketConfiguration.Encryption.EncryptionKey = plan.BucketConfiguration.Encryption.EncryptionKey.ValueStringPointer()
-		}
-	}
-	if plan.BucketConfiguration.BucketSecurity != nil {
-		requestPayload.BucketConfiguration.BucketSecurity = &sonatyperepo.S3BlobStoreApiBucketSecurity{}
-		if !plan.BucketConfiguration.BucketSecurity.AccessKeyId.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.AccessKeyId = plan.BucketConfiguration.BucketSecurity.AccessKeyId.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.SecretAccessKey.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.SecretAccessKey = plan.BucketConfiguration.BucketSecurity.SecretAccessKey.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.Role.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.Role = plan.BucketConfiguration.BucketSecurity.Role.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.BucketSecurity.SessionToken.IsNull() {
-			requestPayload.BucketConfiguration.BucketSecurity.SessionToken = plan.BucketConfiguration.BucketSecurity.SessionToken.ValueStringPointer()
-		}
-	}
-	if plan.BucketConfiguration.AdvancedBucketConnection != nil {
-		requestPayload.BucketConfiguration.AdvancedBucketConnection = &sonatyperepo.S3BlobStoreApiAdvancedBucketConnection{}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.Endpoint.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.Endpoint = plan.BucketConfiguration.AdvancedBucketConnection.Endpoint.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.SignerType.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.SignerType = plan.BucketConfiguration.AdvancedBucketConnection.SignerType.ValueStringPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle.IsNull() {
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle = plan.BucketConfiguration.AdvancedBucketConnection.ForcePathStyle.ValueBoolPointer()
-		}
-		if !plan.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize.IsNull() {
-			max_connection_pool_size := int32(plan.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize.ValueInt64())
-			requestPayload.BucketConfiguration.AdvancedBucketConnection.MaxConnectionPoolSize = &max_connection_pool_size
-		}
-	}
-	if plan.SoftQuota != nil {
-		requestPayload.SoftQuota = &sonatyperepo.BlobStoreApiSoftQuota{
-			Limit: plan.SoftQuota.Limit.ValueInt64Pointer(),
-			Type:  plan.SoftQuota.Type.ValueStringPointer(),
-		}
-	}
-
-	api_request := r.Client.BlobStoreAPI.UpdateS3BlobStore(ctx, state.Name.ValueString()).Body(requestPayload)
+	apiBody := sonatyperepo.NewS3BlobStoreApiModelWithDefaults()
+	plan.MapToApi(apiBody)
 
 	// Call API
-	api_response, err := api_request.Execute()
+	apiResponse, err := r.Client.BlobStoreAPI.UpdateS3BlobStore(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
 
 	// Handle Error(s)
-	if err != nil {
-		if api_response.StatusCode == 404 {
+	if err != nil || apiResponse.StatusCode != http.StatusNoContent {
+		if apiResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
 				"S3 Blob Store to update did not exist",
 				&err,
-				api_response,
+				apiResponse,
 				&resp.Diagnostics,
 			)
 		} else {
 			errors.HandleAPIError(
 				"Error updating S3 Blob Store",
 				&err,
-				api_response,
+				apiResponse,
 				&resp.Diagnostics,
 			)
 		}
 		return
-	} else if api_response.StatusCode == http.StatusNoContent {
-		// Map response body to schema and populate Computed attribute values
-		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	}
 
-		// Set state to fully populated data
-		resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// Map response body to schema and populate Computed attribute values
+	plan.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	// Set state to fully populated data
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
