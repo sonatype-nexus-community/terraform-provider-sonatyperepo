@@ -2,7 +2,9 @@
 
 ## UNRELEASED
 
-## 0.18.1
+_TBC_
+
+## 0.18.1 January 29, 2026
 
 BUG FIXES:
 - Resolved inability to update resource `sonatyperepo_system_config_ldap_connection` [GH-271]
