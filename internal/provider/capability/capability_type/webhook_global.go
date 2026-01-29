@@ -60,6 +60,7 @@ func (f *WebhookGlobalCapability) DoCreateRequest(plan any, apiClient *v3.APICli
 func (f *WebhookGlobalCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.WebhookGlobalCapabilityModel)
+	planModel.Id = types.StringValue(capabilityId)
 
 	// Call API to Update
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
