@@ -6,6 +6,7 @@
 
 BUG FIXES:
 - Resolved inability to update resource `sonatyperepo_system_config_ldap_connection` [GH-271]
+- Unable to create resource `sonatyperepo_blob_store_s3` [GH-273]
 
 ## 0.18.0 January 29, 2026
 
