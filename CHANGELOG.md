@@ -5,6 +5,11 @@
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html)
 
+## 0.18.1
+
+BUG FIXES:
+- Resolved inability to update resource `sonatyperepo_system_config_ldap_connection` [GH-271]
+
 ## 0.18.0 January 29, 2026
 
 ENHANCEMENTS:
