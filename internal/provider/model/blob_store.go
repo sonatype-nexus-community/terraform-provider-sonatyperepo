@@ -17,9 +17,12 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	"github.com/sonatype-nexus-community/terraform-provider-shared/util"
 )
 
 type BlobStoreModel struct {
@@ -49,6 +52,9 @@ func (m *BlobStoreSoftQuota) MapFromApi(api *v3.BlobStoreApiSoftQuota) {
 }
 
 func (m *BlobStoreSoftQuota) MapToApi(api *v3.BlobStoreApiSoftQuota) {
+	if api == nil {
+		api = v3.NewBlobStoreApiSoftQuotaWithDefaults()
+	}
 	api.Type = m.Type.ValueStringPointer()
 	api.Limit = m.Limit.ValueInt64Pointer()
 }
@@ -123,6 +129,26 @@ type BlobStoreS3Model struct {
 	LastUpdated         types.String                         `tfsdk:"last_updated"`
 }
 
+func (m *BlobStoreS3Model) MapFromApi(api *v3.S3BlobStoreApiModel) {
+	m.Name = types.StringValue(api.Name)
+	m.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
+	if api.SoftQuota != nil {
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
+}
+
+func (m *BlobStoreS3Model) MapToApi(api *v3.S3BlobStoreApiModel) {
+	api.Name = m.Name.ValueString()
+	// api.Type = m.Type.ValueStringPointer()
+	if m.SoftQuota != nil {
+		m.SoftQuota.MapToApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapToApi(&api.BucketConfiguration)
+}
+
+// BlobStoreS3BucketConfigurationModel
+// ------------------------------------
 type BlobStoreS3BucketConfigurationModel struct {
 	Bucket                   BlobStoreS3BucketModel                    `tfsdk:"bucket"`
 	Encryption               *BlobStoreS3Encryption                    `tfsdk:"encryption"`
@@ -131,17 +157,82 @@ type BlobStoreS3BucketConfigurationModel struct {
 	PreSignedUrlEnabled      types.Bool                                `tfsdk:"pre_signed_url_enabled"`
 }
 
+func (m *BlobStoreS3BucketConfigurationModel) MapFromApi(api *v3.S3BlobStoreApiBucketConfiguration) {
+	m.Bucket.MapFromApi(&api.Bucket)
+	if api.Encryption != nil {
+		m.Encryption.MapFromApi(api.Encryption)
+	}
+	if api.BucketSecurity != nil {
+		m.BucketSecurity.MapFromApi(api.BucketSecurity)
+	}
+	if api.AdvancedBucketConnection != nil {
+		m.AdvancedBucketConnection.MapFromApi(api.AdvancedBucketConnection)
+	}
+	m.PreSignedUrlEnabled = types.BoolPointerValue(api.PreSignedUrlEnabled)
+}
+
+func (m *BlobStoreS3BucketConfigurationModel) MapToApi(api *v3.S3BlobStoreApiBucketConfiguration) {
+	m.Bucket.MapToApi(&api.Bucket)
+	if m.Encryption != nil {
+		m.Encryption.MapToApi(api.Encryption)
+	}
+	if m.BucketSecurity != nil {
+		if api.BucketSecurity == nil {
+			api.BucketSecurity = v3.NewS3BlobStoreApiBucketSecurityWithDefaults()
+		}
+		m.BucketSecurity.MapToApi(api.BucketSecurity)
+	}
+	if m.AdvancedBucketConnection != nil {
+		if api.AdvancedBucketConnection == nil {
+			api.AdvancedBucketConnection = v3.NewS3BlobStoreApiAdvancedBucketConnectionWithDefaults()
+		}
+		m.AdvancedBucketConnection.MapToApi(api.AdvancedBucketConnection)
+	}
+	api.PreSignedUrlEnabled = util.BoolToPtr(m.PreSignedUrlEnabled.ValueBool())
+}
+
+// BlobStoreS3BucketModel
+// ------------------------------------
 type BlobStoreS3BucketModel struct {
 	Region types.String `tfsdk:"region"`
 	Name   types.String `tfsdk:"name"`
 	Prefix types.String `tfsdk:"prefix"`
 }
 
+func (m *BlobStoreS3BucketModel) MapFromApi(api *v3.S3BlobStoreApiBucket) {
+	m.Region = types.StringValue(api.Region)
+	m.Name = types.StringValue(api.Name)
+	m.Prefix = types.StringPointerValue(api.Prefix)
+}
+
+func (m *BlobStoreS3BucketModel) MapToApi(api *v3.S3BlobStoreApiBucket) {
+	api.Region = m.Region.ValueString()
+	api.Name = m.Name.ValueString()
+	api.Prefix = m.Prefix.ValueStringPointer()
+}
+
+// BlobStoreS3Encryption
+// ------------------------------------
 type BlobStoreS3Encryption struct {
 	EncryptionType types.String `tfsdk:"encryption_type"`
 	EncryptionKey  types.String `tfsdk:"encryption_key"`
 }
 
+func (m *BlobStoreS3Encryption) MapFromApi(api *v3.S3BlobStoreApiEncryption) {
+	if api == nil {
+		api = v3.NewS3BlobStoreApiEncryptionWithDefaults()
+	}
+	m.EncryptionType = types.StringPointerValue(api.EncryptionType)
+	m.EncryptionKey = types.StringPointerValue(api.EncryptionKey)
+}
+
+func (m *BlobStoreS3Encryption) MapToApi(api *v3.S3BlobStoreApiEncryption) {
+	api.EncryptionType = m.EncryptionType.ValueStringPointer()
+	api.EncryptionKey = m.EncryptionKey.ValueStringPointer()
+}
+
+// BlobStoreS3BucketSecurityModel
+// ------------------------------------
 type BlobStoreS3BucketSecurityModel struct {
 	AccessKeyId     types.String `tfsdk:"access_key_id"`
 	SecretAccessKey types.String `tfsdk:"secret_access_key"`
@@ -149,6 +240,22 @@ type BlobStoreS3BucketSecurityModel struct {
 	SessionToken    types.String `tfsdk:"session_token"`
 }
 
+func (m *BlobStoreS3BucketSecurityModel) MapFromApi(api *v3.S3BlobStoreApiBucketSecurity) {
+	m.AccessKeyId = types.StringPointerValue(api.AccessKeyId)
+	// m.SecretAccessKey = types.StringPointerValue(api.SecretAccessKey)
+	m.Role = types.StringPointerValue(api.Role)
+	m.SessionToken = types.StringPointerValue(api.SessionToken)
+}
+
+func (m *BlobStoreS3BucketSecurityModel) MapToApi(api *v3.S3BlobStoreApiBucketSecurity) {
+	api.AccessKeyId = m.AccessKeyId.ValueStringPointer()
+	api.SecretAccessKey = m.SecretAccessKey.ValueStringPointer()
+	api.Role = m.Role.ValueStringPointer()
+	api.SessionToken = m.SessionToken.ValueStringPointer()
+}
+
+// BlobStoreS3AdvancedBucketConnectionModel
+// ------------------------------------
 type BlobStoreS3AdvancedBucketConnectionModel struct {
 	Endpoint              types.String `tfsdk:"endpoint"`
 	SignerType            types.String `tfsdk:"signer_type"`
@@ -156,6 +263,22 @@ type BlobStoreS3AdvancedBucketConnectionModel struct {
 	MaxConnectionPoolSize types.Int64  `tfsdk:"max_connection_pool_size"`
 }
 
+func (m *BlobStoreS3AdvancedBucketConnectionModel) MapFromApi(api *v3.S3BlobStoreApiAdvancedBucketConnection) {
+	m.Endpoint = types.StringPointerValue(api.Endpoint)
+	m.SignerType = types.StringPointerValue(api.SignerType)
+	m.ForcePathStyle = types.BoolPointerValue(api.ForcePathStyle)
+	m.MaxConnectionPoolSize = util.Int32PtrToValue(api.MaxConnectionPoolSize)
+}
+
+func (m *BlobStoreS3AdvancedBucketConnectionModel) MapToApi(api *v3.S3BlobStoreApiAdvancedBucketConnection) {
+	api.Endpoint = m.Endpoint.ValueStringPointer()
+	api.SignerType = m.SignerType.ValueStringPointer()
+	api.ForcePathStyle = m.ForcePathStyle.ValueBoolPointer()
+	api.MaxConnectionPoolSize = util.Int32ToPtr(int32(m.MaxConnectionPoolSize.ValueInt64()))
+}
+
+// BlobStoreGoogleCloudModel
+// ------------------------------------
 type BlobStoreGoogleCloudModel struct {
 	Name                types.String                             `tfsdk:"name"`
 	Type                types.String                             `tfsdk:"type"`
@@ -164,12 +287,16 @@ type BlobStoreGoogleCloudModel struct {
 	LastUpdated         types.String                             `tfsdk:"last_updated"`
 }
 
+// BlobStoreGoogleCloudBucketConfiguration
+// ------------------------------------
 type BlobStoreGoogleCloudBucketConfiguration struct {
 	Bucket         BlobStoreGoogleCloudBucket          `tfsdk:"bucket"`
 	Authentication *BlobStoreGoogleCloudAuthentication `tfsdk:"authentication"`
 	Encryption     *BlobStoreGoogleCloudEncryption     `tfsdk:"encryption"`
 }
 
+// BlobStoreGoogleCloudBucket
+// ------------------------------------
 type BlobStoreGoogleCloudBucket struct {
 	Name      types.String `tfsdk:"name"`
 	Prefix    types.String `tfsdk:"prefix"`
@@ -177,11 +304,15 @@ type BlobStoreGoogleCloudBucket struct {
 	ProjectId types.String `tfsdk:"project_id"`
 }
 
+// BlobStoreGoogleCloudAuthentication
+// ------------------------------------
 type BlobStoreGoogleCloudAuthentication struct {
 	AuthenticationMethod types.String `tfsdk:"authentication_method"`
 	AccountKey           types.String `tfsdk:"account_key"`
 }
 
+// BlobStoreGoogleCloudEncryption
+// ------------------------------------
 type BlobStoreGoogleCloudEncryption struct {
 	EncryptionType types.String `tfsdk:"encryption_type"`
 	EncryptionKey  types.String `tfsdk:"encryption_key"`

@@ -19,7 +19,7 @@ package blob_store_test
 import (
 	"fmt"
 	"regexp"
-	"terraform-provider-sonatyperepo/internal/provider/blob_store"
+	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -49,7 +49,7 @@ func TestAccBlobStoreGroupResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full configuration
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_GROUP, RES_ATTR_NAME, fmt.Sprintf("test-group-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_GROUP, RES_ATTR_FILL_POLICY, blob_store.BLOB_STORE_FILL_POLICY_ROUND_ROBIN),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_GROUP, RES_ATTR_FILL_POLICY, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_GROUP, RES_ATTR_MEMBERS_COUNT, "1"),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_GROUP, "members.0", fmt.Sprintf("test-%s", randomString)),
 					resource.TestCheckNoResourceAttr(RES_NAME_BLOB_STORE_GROUP, RES_ATTR_SOFT_QUOTA),
@@ -77,7 +77,7 @@ resource "%s" "test" {
     fill_policy = "%s"
     members = [ ]
 }
-`, RES_TYPE_BLOB_STORE_GROUP, randomString, blob_store.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
+`, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
 }
 
 func buildTestAccBlobStoreGroupResourceIneligibleMember(randomString string) string {
@@ -87,7 +87,7 @@ resource "%s" "test" {
     fill_policy = "%s"
     members = [ "default" ]
 }
-`, RES_TYPE_BLOB_STORE_GROUP, randomString, blob_store.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
+`, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
 }
 
 func buildTestAccBlobStoreGroupResourceNewMember(randomString string) string {
@@ -104,5 +104,5 @@ resource "%s" "test" {
 		%s.bs.name
 	]
 }
-`, RES_TYPE_BLOB_STORE_FILE, randomString, randomString, RES_TYPE_BLOB_STORE_GROUP, randomString, blob_store.BLOB_STORE_FILL_POLICY_ROUND_ROBIN, RES_TYPE_BLOB_STORE_FILE)
+`, RES_TYPE_BLOB_STORE_FILE, randomString, randomString, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN, RES_TYPE_BLOB_STORE_FILE)
 }

@@ -27,7 +27,6 @@ type RepositoryModel struct {
 	Format types.String `tfsdk:"format"`
 	Type   types.String `tfsdk:"type"`
 	Url    types.String `tfsdk:"url"`
-	// LastUpdated types.String `tfsdk:"last_updated"`
 }
 
 type RepositoriesModel struct {
@@ -71,42 +70,15 @@ func mapCleanupToApi(m *RepositoryCleanupModel, api *sonatyperepo.CleanupPolicyA
 type repositoryStorageModel struct {
 	BlobStoreName               types.String `tfsdk:"blob_store_name"`
 	StrictContentTypeValidation types.Bool   `tfsdk:"strict_content_type_validation"`
-	// WritePolicy                 types.String `tfsdk:"write_policy"`
 }
 
 func (m *repositoryStorageModel) MapFromApi(api *sonatyperepo.StorageAttributes) {
 	m.BlobStoreName = types.StringValue(api.BlobStoreName)
 	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
-	// m.WritePolicy = types.StringPointerValue(api.WritePolicy)
 
 }
 
 func (m *repositoryStorageModel) MapToApi(api *sonatyperepo.StorageAttributes) {
 	api.BlobStoreName = m.BlobStoreName.ValueString()
 	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
-	// api.WritePolicy = m.WritePolicy.ValueStringPointer()
 }
-
-// func mapStorageNonGroupFromApi(api *sonatyperepo.StorageAttributes, m *repositoryStorageModelNonGroup) {
-// 	m.BlobStoreName = types.StringValue(api.BlobStoreName)
-// 	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
-// 	m.WritePolicy = types.StringPointerValue(api.WritePolicy)
-// }
-
-// func mapStorageNonGroupToApi(m *repositoryStorageModelNonGroup, api *sonatyperepo.StorageAttributes) {
-// 	api.BlobStoreName = m.BlobStoreName.ValueString()
-// 	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
-// 	api.WritePolicy = m.WritePolicy.ValueStringPointer()
-// }
-
-// func mapHostedStorageAttributesFromApi(api *sonatyperepo.HostedStorageAttributes, m *repositoryStorageModelNonGroup) {
-// 	m.BlobStoreName = types.StringValue(api.BlobStoreName)
-// 	m.StrictContentTypeValidation = types.BoolValue(api.StrictContentTypeValidation)
-// 	m.WritePolicy = types.StringValue(api.WritePolicy)
-// }
-
-// func mapHostedStorageAttributesToApi(m repositoryStorageModelNonGroup, api *sonatyperepo.HostedStorageAttributes) {
-// 	api.BlobStoreName = m.BlobStoreName.ValueString()
-// 	api.StrictContentTypeValidation = m.StrictContentTypeValidation.ValueBool()
-// 	api.WritePolicy = m.WritePolicy.ValueString()
-// }

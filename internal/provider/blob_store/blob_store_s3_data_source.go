@@ -59,7 +59,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]tfschema.Attribute{
 			"name":         schema.DataSourceRequiredString("Name of the Blob Store"),
-			"type":         schema.DataSourceOptionalString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_S3)),
+			"type":         schema.DataSourceOptionalString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", common.BLOB_STORE_TYPE_S3)),
 			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 			"soft_quota": schema.DataSourceComputedOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
 				"type":  schema.DataSourceOptionalString("Soft Quota type"),
@@ -124,7 +124,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	state := model.BlobStoreS3Model{
 		Name: types.StringValue(data.Name.ValueString()),
-		Type: types.StringValue(BLOB_STORE_TYPE_S3),
+		Type: types.StringValue(common.BLOB_STORE_TYPE_S3),
 		BucketConfiguration: &model.BlobStoreS3BucketConfigurationModel{
 			Bucket: model.BlobStoreS3BucketModel{
 				Region: types.StringValue(apiResponse.BucketConfiguration.Bucket.Region),
