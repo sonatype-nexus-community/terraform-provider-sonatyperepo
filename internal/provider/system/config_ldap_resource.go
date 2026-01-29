@@ -257,6 +257,7 @@ func (r *systemConfigLdapResource) Update(ctx context.Context, req resource.Upda
 	)
 
 	// Call API to Update
+	plan.Id = state.Id
 	body := plan.ToApiUpdateModel()
 	httpResponse, err := r.Client.SecurityManagementLDAPAPI.UpdateLdapServer(ctx, state.Name.ValueString()).Body(*body).Execute()
 
@@ -271,6 +272,7 @@ func (r *systemConfigLdapResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return

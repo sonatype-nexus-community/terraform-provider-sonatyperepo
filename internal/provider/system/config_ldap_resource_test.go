@@ -53,6 +53,7 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap1" {
 }				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
+					resource.TestCheckResourceAttrSet(resourceNameLdap1, "id"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "name", "Test LDAP Connection"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "protocol", common.PROTOCOL_LDAP),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "hostname", "ldap.somewhere.tld"),
@@ -66,9 +67,10 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap1" {
 					resource.TestCheckResourceAttr(resourceNameLdap1, "connection_timeout", "999"),
 				),
 			},
+			// Update
 			{
 				Config: utils_test.ProviderConfig + `
-resource "sonatyperepo_system_config_ldap_connection" "ldap2" {
+resource "sonatyperepo_system_config_ldap_connection" "ldap1" {
   name = "Test LDAP Connection"
   protocol = "LDAPS"
   hostname = "ldap.somewhere.tld"
@@ -93,27 +95,28 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap2" {
 }				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
-					resource.TestCheckResourceAttr(resourceNameLdap2, "name", "Test LDAP Connection"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "protocol", common.PROTOCOL_LDAPS),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "hostname", "ldap.somewhere.tld"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "port", "636"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "auth_scheme", common.AUTH_SCHEME_NONE),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "connection_retry_delay", "60"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "connection_timeout", "10"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "nexus_trust_store_enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "map_ldap_groups_to_roles", "true"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "search_base", "a-base"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "group_subtree", "false"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "group_type", common.LDAP_GROUP_MAPPING_DYNAMIC),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_base_dn", "ou=people"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_email_name_attribute", "mail"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_id_attribute", "uid"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_ldap_filter", ""),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_member_of_attribute", "memberOf"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_object_class", "inetOrgPerson"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_password_attribute", ""),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_real_name_attribute", "cn"),
-					resource.TestCheckResourceAttr(resourceNameLdap2, "user_subtree", "false"),
+					resource.TestCheckResourceAttrSet(resourceNameLdap1, "id"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "name", "Test LDAP Connection"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "protocol", common.PROTOCOL_LDAPS),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "hostname", "ldap.somewhere.tld"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "port", "636"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "auth_scheme", common.AUTH_SCHEME_NONE),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "connection_retry_delay", "60"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "connection_timeout", "10"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "nexus_trust_store_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "map_ldap_groups_to_roles", "true"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "search_base", "a-base"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "group_subtree", "false"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "group_type", common.LDAP_GROUP_MAPPING_DYNAMIC),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_base_dn", "ou=people"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_email_name_attribute", "mail"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_id_attribute", "uid"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_ldap_filter", ""),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_member_of_attribute", "memberOf"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_object_class", "inetOrgPerson"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_password_attribute", ""),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_real_name_attribute", "cn"),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_subtree", "false"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
