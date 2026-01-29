@@ -63,6 +63,7 @@ func (f *CustomS3RegionsCapability) DoCreateRequest(plan any, apiClient *v3.APIC
 func (f *CustomS3RegionsCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.CapabilityCustomS3RegionsModel)
+	planModel.Id = types.StringValue(capabilityId)
 
 	// Call API to Update
 	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
