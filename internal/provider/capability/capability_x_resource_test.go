@@ -257,8 +257,8 @@ resource "%s" "cap" {
 					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
 					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-1-%s", randomString)),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-2-%s", randomString)),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRegionsStar), fmt.Sprintf("somewhere-1-%s", randomString)),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRegionsStar), fmt.Sprintf("somewhere-2-%s", randomString)),
 				),
 			},
 			// Update testing
@@ -279,8 +279,8 @@ resource "%s" "cap" {
 					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
 					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
 					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-1-%s", randomString)),
-					resource.TestCheckTypeSetElemAttr(resourceName, "properties.regions.*", fmt.Sprintf("somewhere-2-%s", randomString)),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRegionsStar), fmt.Sprintf("somewhere-1-%s", randomString)),
+					resource.TestCheckTypeSetElemAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrRegionsStar), fmt.Sprintf("somewhere-2-%s", randomString)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

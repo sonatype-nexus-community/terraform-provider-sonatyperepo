@@ -45,6 +45,7 @@ const (
 	resourceAttrLongRequestTimeout          string = "long_request_timeout"
 	resourceAttrNames                       string = "names.*"
 	resourceAttrOverrideUrl                 string = "override_url"
+	resourceAttrRegionsStar                 string = "regions.*"
 	resourceAttrRepository                  string = "repository"
 	resourceAttrRequestTimeout              string = "request_timeout"
 	resourceAttrRole                        string = "role"
