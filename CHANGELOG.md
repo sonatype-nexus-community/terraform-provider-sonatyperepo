@@ -2,9 +2,26 @@
 
 ## UNRELEASED
 
+## 0.18.0 January 29, 2026
+
 ENHANCEMENTS:
 - Support for S3 Pre-signed URLs on `sonatyperepo_blob_store_s3` Data Source and Resource [GH-248]
 - Resource `sonatyperepo_role` now supports managing roles consisting of only privileges or only roles [GH-259]
+
+BUG FIXES:
+- The following resources could not be updated (missing `id` in API call) [GH-261]:
+  - `sonatyperepo_capability_base_url`
+  - `sonatyperepo_capability_custom_s3_regions`
+  - `sonatyperepo_capability_default_role`
+  - `sonatyperepo_capability_firewall_audit_and_quarantine`
+  - `sonatyperepo_capability_healthcheck`
+  - `sonatyperepo_capability_outreach_management`
+  - `sonatyperepo_capability_rut_auth`
+  - `sonatyperepo_capability_storage_settings`
+  - `sonatyperepo_capability_ui_branding`
+  - `sonatyperepo_capability_ui_settings`
+  - `sonatyperepo_capability_webhook_global`
+  - `sonatyperepo_capability_webhook_repository`
 
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.87.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-87-0-release-notes.html)
