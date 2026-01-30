@@ -3,12 +3,15 @@
 page_title: "sonatyperepo_system_config_ldap_connection Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Configure and LDAP connection
+  Configure and manage an LDAP connection.
+  WARNING: This does not work against Sonatype Nexus Repository 3.88.x due to a known bug in these versions.
 ---
 
 # sonatyperepo_system_config_ldap_connection (Resource)
 
-Configure and LDAP connection
+Configure and manage an LDAP connection.
+
+**WARNING: This does not work against Sonatype Nexus Repository 3.88.x due to a known bug in these versions.**
 
 
 

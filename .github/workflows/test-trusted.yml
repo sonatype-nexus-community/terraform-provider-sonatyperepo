@@ -80,7 +80,8 @@ jobs:
                     - '3.84.1-01' 
                     - '3.85.0-03'
                     - '3.86.2-01'
-                    - '3.87.1-01' # LATEST
+                    - '3.87.1-01'
+                    - '3.88.0-08' # LATEST
                 # list whatever Terraform versions here you would like to support
                 terraform:
                     # - '1.0.*' # Minimum
