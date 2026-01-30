@@ -18,6 +18,7 @@ package system_test
 
 import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -34,6 +35,18 @@ func TestAccSystemConfigLdapResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Broken in NXRM 3.88
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -119,5 +132,4 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap2" {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
-
 }
