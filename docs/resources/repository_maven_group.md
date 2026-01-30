@@ -17,6 +17,7 @@ Manage Group MAVEN2 Repositories
 
 ### Required
 
+- `group` (Attributes) Group specific configuration for this Repository (see [below for nested schema](#nestedatt--group))
 - `maven` (Attributes) Maven specific configuration for this Repository (see [below for nested schema](#nestedatt--maven))
 - `name` (String) Name of the Repository
 - `online` (Boolean) Whether this Repository is online and accepting incoming requests
@@ -25,12 +26,19 @@ Manage Group MAVEN2 Repositories
 ### Optional
 
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
-- `component` (Attributes) Component configuration for this Repository (see [below for nested schema](#nestedatt--component))
 - `url` (String) URL to access the Repository
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
+
+<a id="nestedatt--group"></a>
+### Nested Schema for `group`
+
+Optional:
+
+- `member_names` (List of String) Member repositories' names
+
 
 <a id="nestedatt--maven"></a>
 ### Nested Schema for `maven`
@@ -57,14 +65,6 @@ Required:
 Optional:
 
 - `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
-
-
-<a id="nestedatt--component"></a>
-### Nested Schema for `component`
-
-Optional:
-
-- `proprietary_components` (Boolean) Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)
 
 ## Import
 
