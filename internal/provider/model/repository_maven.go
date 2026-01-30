@@ -180,6 +180,7 @@ func (m *repositoryMavenSpecificModel) MapToApi(api *sonatyperepo.MavenAttribute
 // --------------------------------------------
 type RepositoryMavenGroupModel struct {
 	RepositoryGroupModel
+	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
 }
 
 func (m *RepositoryMavenGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
@@ -192,6 +193,9 @@ func (m *RepositoryMavenGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroup
 
 	// Group Attributes
 	m.Group.MapFromApi(&api.Group)
+
+	// Maven Specific
+	// m.Maven.MapFromApi(&api.Maven) - Not in API response currently
 }
 
 func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRepositoryApiRequest {
@@ -204,6 +208,9 @@ func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRe
 
 	// Group
 	m.Group.MapToApi(&apiModel.Group)
+
+	// Maven
+	m.Maven.MapToApi(&apiModel.Maven)
 
 	return apiModel
 }

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -57,6 +58,11 @@ resource "%s" "repo" {
   }
   group = {
 	member_names = []
+  }
+  maven = {
+	content_disposition = "ATTACHMENT"
+	layout_policy = "STRICT"
+	version_policy = "RELEASE"
   }
 }
 `, resourceTypeMavenGroup, randomString),
@@ -129,7 +135,11 @@ resource "%s" "repo" {
   group = {
 	member_names = ["maven-proxy-repo-%s"]
   }
-
+  maven = {
+	content_disposition = "ATTACHMENT"
+	layout_policy = "STRICT"
+	version_policy = "RELEASE"
+  }
   depends_on = [
 	%s.repo
   ]
@@ -177,6 +187,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttrSet(resourceMavenGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceMavenGroupName, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceMavenGroupName, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceMavenGroupName, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -289,6 +302,20 @@ func TestAccRepositoryMavenGroupImport(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Broken in NXRM 3.88 - NEXUS-50506
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 0,
+				Build: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 99,
+				Build: 127,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
@@ -318,6 +345,11 @@ resource "%s" "repo" {
   group = {
     member_names = ["%s"]
   }
+  maven = {
+    content_disposition = "ATTACHMENT"
+    layout_policy = "STRICT"
+    version_policy = "RELEASE"
+  }	
   depends_on = [%s.member]
 }
 `, resourceTypeMavenHosted, memberName, resourceTypeMavenGroup, repoName, memberName, resourceTypeMavenHosted),
