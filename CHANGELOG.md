@@ -2,7 +2,9 @@
 
 ## UNRELEASED
 
-_TBC_
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html)
+  * There is an API regression in NXRM 3.88 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource
 
 ## 0.18.1 January 29, 2026
 
