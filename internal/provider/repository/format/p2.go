@@ -84,6 +84,16 @@ func (f *P2RepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateP2ProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for P2 Proxy repositories
+func (f *P2RepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetP2ProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *P2RepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
@@ -112,16 +122,6 @@ func (f *P2RepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
-}
-
-// DoImportRequest implements the import functionality for P2 Proxy repositories
-func (f *P2RepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetP2ProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
 }
 
 // Repository Firewall not supported for P2

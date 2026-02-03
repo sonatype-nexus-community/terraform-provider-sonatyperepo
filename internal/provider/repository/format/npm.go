@@ -170,6 +170,16 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for NPM Proxy repositories
+func (f *NpmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *NpmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
@@ -200,16 +210,6 @@ func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
-// DoImportRequest implements the import functionality for NPM Proxy repositories
-func (f *NpmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
 // NPM Proxy Repositories support Repository Firewall PCCS
 func (f *NpmRepositoryFormatProxy) SupportsRepositoryFirewallPccs() bool {
 	return true
@@ -228,6 +228,18 @@ func (f *NpmRepositoryFormatProxy) UpateStateWithCapability(state any, capabilit
 	var stateModel = (state).(model.RepositoryNpmProxyModel)
 	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
 	return stateModel
+}
+
+func (f *NpmRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
 }
 
 func (f *NpmRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {

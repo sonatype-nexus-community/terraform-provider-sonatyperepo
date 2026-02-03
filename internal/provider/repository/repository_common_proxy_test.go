@@ -136,6 +136,44 @@ var proxyTestData = []repositoryProxyTestData{
 		RepoFormat: common.REPO_FORMAT_MAVEN,
 		SchemaFunc: repositoryProxyResourceConfig,
 	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_NPM_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_NPM,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	// Will fail without IQ Server Connection: "Unable to configure Repository Firewall as not connected to Sonatype IQ"
+	// {
+	// 	CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+	// 		return []resource.TestCheckFunc{
+	// 			resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+	// 			resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
+	// 		}
+	// 	},
+	// 	RemoteUrl:  TEST_DATA_NPM_PROXY_REMOTE_URL,
+	// 	RepoFormat: common.REPO_FORMAT_NPM,
+	// 	SchemaFunc: repositoryProxyResourceConfigWithFirewall,
+	// },
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NUGET_PROXY_NUGET_VERSION, common.NUGET_PROTOCOL_V3),
+			}
+		},
+		RemoteUrl:  TEST_DATA_NUGET_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_NUGET,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_P2_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_P2,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
 }
 
 // ------------------------------------------------------------
@@ -630,6 +668,37 @@ resource "%s" "repo" {
 `, resourceType, repoName, remoteUrl, formatSpecificConfig)
 }
 
+func repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "%s"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+  repository_firewall = {
+    enabled = true
+    quarantine = true
+  }
+  %s
+ }
+`, resourceType, repoName, remoteUrl, formatSpecificConfig)
+}
+
 func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
 	configBlock := formatSpecificProxyDefaultConfig(repoFormat)
 	if completeData {
@@ -641,4 +710,10 @@ func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl
 			resourceType, repoName, remoteUrl, configBlock,
 		)
 	}
+}
+
+func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
+	return repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(
+		resourceType, repoName, remoteUrl, formatSpecificProxyDefaultConfig(repoFormat),
+	)
 }

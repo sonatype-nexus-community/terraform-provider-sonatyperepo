@@ -71,12 +71,15 @@ const (
 	RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED             string = "replication.preemptive_pull_enabled"
 	RES_ATTR_REPLICATION_ASSET_PATH_REGEX                     string = "replication.asset_path_regex"
 	RES_ATTR_ROUTING_RULE_NAME                                string = "routing_rule"
+	RES_ATTR_REPOSITORY_FIREWALL_ENABLED                      string = "repository_firewall.enabled"
+	RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE                   string = "repository_firewall.quarantine"
 	RES_ATTR_APT_DISTRIBUTION                                 string = "apt.distribution"
 	RES_ATTR_CARGO_REQUIRE_AUTHENTICATION                     string = "cargo.require_authentication"
 	RES_ATTR_CONAN_PROXY_CONAN_VERSION                        string = "conan.conan_version"
 	RES_ATTR_MAVEN_CONTENT_DISPOSITION                        string = "maven.content_disposition"
 	RES_ATTR_MAVEN_LAYOUT_POLICY                              string = "maven.layout_policy"
 	RES_ATTR_MAVEN_VERSION_POLICY                             string = "maven.version_policy"
+	RES_ATTR_NUGET_PROXY_NUGET_VERSION                        string = "nuget_proxy.nuget_version"
 
 	TEST_DATA_APT_PROXY_REMOTE_URL          string = "https://archive.ubuntu.com/ubuntu/"
 	TEST_DATA_CARGO_PROXY_REMOTE_URL        string = "https://index.crates.io/"
@@ -89,6 +92,9 @@ const (
 	TEST_DATA_HELM_PROXY_REMOTE_URL         string = "https://charts.helm.sh/stable"
 	TEST_DATA_HUGGING_FACE_PROXY_REMOTE_URL string = "https://huggingface.co"
 	TEST_DATA_MAVEN_PROXY_REMOTE_URL        string = "https://repo.maven.apache.org/maven2"
+	TEST_DATA_NPM_PROXY_REMOTE_URL          string = "https://registry.npmjs.org"
+	TEST_DATA_NUGET_PROXY_REMOTE_URL        string = "https://api.nuget.org/v3/index.json"
+	TEST_DATA_P2_PROXY_REMOTE_URL           string = "https://download.eclipse.org/releases/2025-06"
 	TEST_DATA_TIMEOUT                       string = "1439"
 )
 
