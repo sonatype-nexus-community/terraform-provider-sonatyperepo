@@ -71,10 +71,69 @@ var proxyTestData = []repositoryProxyTestData{
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
-			return []resource.TestCheckFunc{}
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CONAN_PROXY_CONAN_VERSION, "V2"),
+			}
 		},
 		RemoteUrl:  TEST_DATA_CONAN_PROXY_REMOTE_URL,
 		RepoFormat: common.REPO_FORMAT_CONAN,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_CONDA_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_CONDA,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_PROXY_CACHE_FOREIGN_LAYERS, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_PROXY_INDEX_TYPE, "REGISTRY"),
+			}
+		},
+		RemoteUrl:  TEST_DATA_DOCKER_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_DOCKER,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_GO_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_GO,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_HELM_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_HELM,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_HUGGING_FACE_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_HUGGING_FACE,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_MAVEN_CONTENT_DISPOSITION),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_PERMISSIVE),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
+			}
+		},
+		RemoteUrl:  TEST_DATA_MAVEN_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_MAVEN,
 		SchemaFunc: repositoryProxyResourceConfig,
 	},
 }

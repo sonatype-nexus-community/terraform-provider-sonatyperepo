@@ -240,6 +240,42 @@ func (f *DockerRepositoryFormatProxy) ValidatePlanForNxrmVersion(plan any, versi
 	return nil
 }
 
+func (f *DockerRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *DockerRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryDockerProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+}
+
 // --------------------------------------------
 // GROUP Docker Format Functions
 // --------------------------------------------

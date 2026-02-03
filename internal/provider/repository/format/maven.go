@@ -207,6 +207,42 @@ func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
+func (f *MavenRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *MavenRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryMavenProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *MavenRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *MavenRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+}
+
 // --------------------------------------------
 // GROUP Maven Format Functions
 // --------------------------------------------
