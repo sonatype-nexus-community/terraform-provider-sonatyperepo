@@ -81,6 +81,16 @@ func (f *ComposerRepositoryFormat) DoUpdateRequest(plan any, state any, apiClien
 	return apiClient.RepositoryManagementAPI.UpdateComposerProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for NPM Proxy repositories
+func (f *ComposerRepositoryFormat) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetComposerProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *ComposerRepositoryFormat) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
@@ -102,7 +112,47 @@ func (f *ComposerRepositoryFormat) UpdatePlanForState(plan any) any {
 }
 
 func (f *ComposerRepositoryFormat) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryComposerProxyModel)
+	var stateModel model.RepositoryComposerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryComposerProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+func (f *ComposerRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryComposerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryComposerProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *ComposerRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryComposerProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *ComposerRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryComposerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryComposerProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *ComposerRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryComposerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryComposerProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }

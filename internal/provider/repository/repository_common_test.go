@@ -72,9 +72,12 @@ const (
 	RES_ATTR_APT_DISTRIBUTION                                 string = "apt.distribution"
 	RES_ATTR_CARGO_REQUIRE_AUTHENTICATION                     string = "cargo.require_authentication"
 
-	TEST_DATA_APT_PROXY_REMOTE_URL   string = "https://archive.ubuntu.com/ubuntu/"
-	TEST_DATA_CARGO_PROXY_REMOTE_URL string = "https://index.crates.io/"
-	TEST_DATA_TIMEOUT                string = "1439"
+	TEST_DATA_APT_PROXY_REMOTE_URL       string = "https://archive.ubuntu.com/ubuntu/"
+	TEST_DATA_CARGO_PROXY_REMOTE_URL     string = "https://index.crates.io/"
+	TEST_DATA_COCOAPODS_PROXY_REMOTE_URL string = "https://cdn.cocoapods.org/"
+	TEST_DATA_COMPOSER_PROXY_REMOTE_URL  string = "https://packagist.org/"
+	TEST_DATA_CONAN_PROXY_REMOTE_URL     string = "https://center2.conan.io"
+	TEST_DATA_TIMEOUT                    string = "1439"
 )
 
 var (

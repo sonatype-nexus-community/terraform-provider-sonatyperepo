@@ -94,6 +94,12 @@ func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiR
 		}
 	}
 
+	// Conan
+	if api.ConanProxy != nil {
+		m.Conan = &conanProxyAttributesModel{}
+		m.Conan.MapFromApi(api.ConanProxy)
+	}
+
 	// Firewall Audit and Quarantine
 	// This will be populated separately by the resource helper during Read operations
 	if m.FirewallAuditAndQuarantine == nil {

@@ -33,16 +33,16 @@ import (
 // Test Data Scenarios
 // ------------------------------------------------------------
 var proxyTestData = []repositoryProxyTestData{
-	// {
-	// 	CheckFunc: func(resourceName string) []resource.TestCheckFunc {
-	// 		return []resource.TestCheckFunc{
-	// 			resource.TestCheckResourceAttr(resourceName, RES_ATTR_APT_DISTRIBUTION, "bionic"),
-	// 		}
-	// 	},
-	// 	RemoteUrl:  TEST_DATA_APT_PROXY_REMOTE_URL,
-	// 	RepoFormat: common.REPO_FORMAT_APT,
-	// 	SchemaFunc: repositoryProxyResourceConfig,
-	// },
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_APT_DISTRIBUTION, "bionic"),
+			}
+		},
+		RemoteUrl:  TEST_DATA_APT_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_APT,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
@@ -51,6 +51,30 @@ var proxyTestData = []repositoryProxyTestData{
 		},
 		RemoteUrl:  TEST_DATA_CARGO_PROXY_REMOTE_URL,
 		RepoFormat: common.REPO_FORMAT_CARGO,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_COCOAPODS_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_COCOAPODS,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_COMPOSER_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_COMPOSER,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_CONAN_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_CONAN,
 		SchemaFunc: repositoryProxyResourceConfig,
 	},
 }

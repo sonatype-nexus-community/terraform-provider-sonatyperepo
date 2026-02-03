@@ -81,6 +81,16 @@ func (f *CocoaPodsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, ap
 	return apiClient.RepositoryManagementAPI.UpdateCocoapodsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for NPM Proxy repositories
+func (f *CocoaPodsRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCocoapodsProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *CocoaPodsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
@@ -102,7 +112,47 @@ func (f *CocoaPodsRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *CocoaPodsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryCocoaPodsProxyModel)
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
+}
+
+func (f *CocoaPodsRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *CocoaPodsRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *CocoaPodsRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *CocoaPodsRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
