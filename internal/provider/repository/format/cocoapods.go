@@ -82,7 +82,7 @@ func (f *CocoaPodsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, ap
 }
 
 func (f *CocoaPodsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *CocoaPodsRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

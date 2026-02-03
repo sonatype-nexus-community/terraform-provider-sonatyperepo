@@ -55,8 +55,7 @@ func (f *RubyGemsRepositoryFormat) Key() string {
 }
 
 func (f *RubyGemsRepositoryFormat) ResourceName(repoType RepositoryType) string {
-	// Override to maintain backward compatibility with resource name containing underscore
-	return resourceName("ruby_gems", repoType)
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -168,7 +167,7 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 }
 
 func (f *RubyGemsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *RubyGemsRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

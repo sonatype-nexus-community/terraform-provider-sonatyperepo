@@ -171,7 +171,7 @@ func (f *NugetRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *NugetRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, nugetProxySchemaAttributes())
 	return additionalAttributes
 }

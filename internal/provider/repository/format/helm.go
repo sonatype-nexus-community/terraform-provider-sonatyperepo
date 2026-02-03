@@ -157,7 +157,7 @@ func (f *HelmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *HelmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *HelmRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -194,4 +194,9 @@ func (f *HelmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCl
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
+}
+
+// Helm Proxy repos are not supported by Repository Firewall
+func (f *HelmRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
+	return false
 }

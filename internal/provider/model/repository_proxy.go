@@ -17,6 +17,7 @@
 package model
 
 import (
+	"strconv"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -152,8 +153,8 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 		m.EnableCookies = types.BoolValue(false)
 		m.UseTrustStore = types.BoolValue(false)
 		m.UserAgentSuffix = types.StringNull()
-		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES)
-		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT)
+		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES)
+		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT)
 		return
 	}
 
@@ -165,13 +166,13 @@ func (m *RepositoryHttpClientConnectionModel) MapFromApi(api *sonatyperepo.HttpC
 	if api.Retries != nil {
 		m.Retries = types.Int64Value(int64(*api.Retries))
 	} else {
-		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES)
+		m.Retries = types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES)
 	}
 
 	if api.Timeout != nil {
 		m.Timeout = types.Int64Value(int64(*api.Timeout))
 	} else {
-		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT)
+		m.Timeout = types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT)
 	}
 }
 
@@ -297,6 +298,67 @@ func (m *RepositoryReplicationModel) MapToApi(api *sonatyperepo.ReplicationAttri
 	api.PreemptivePullEnabled = m.PreemptivePullEnabled.ValueBool()
 	if m.AssetPathRegex.String() != "" {
 		api.AssetPathRegex = m.AssetPathRegex.ValueStringPointer()
+	}
+}
+
+// FirewallAuditAndQuarantineModel
+// --------------------------------------------------------
+type FirewallAuditAndQuarantineModel struct {
+	CapabilityId types.String `tfsdk:"capability_id"`
+	Enabled      types.Bool   `tfsdk:"enabled"`
+	Quarantine   types.Bool   `tfsdk:"quarantine"`
+}
+
+// IsConfigured returns true if the model has been explicitly configured by the user
+// func (m *FirewallAuditAndQuarantineModel) IsConfigured() bool {
+// 	return m != nil && (!m.Enabled.IsNull() || !m.CapabilityId.IsNull())
+// }
+
+// MapFromCapabilityDTO populates the model from a CapabilityDTO returned from the API
+func (m *FirewallAuditAndQuarantineModel) MapFromCapabilityDTO(api *sonatyperepo.CapabilityDTO) {
+	if api == nil {
+		return
+	}
+	m.CapabilityId = types.StringPointerValue(api.Id)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	if api.Properties != nil {
+		if quarantineStr, ok := (*api.Properties)["quarantine"]; ok {
+			if quarantine, err := strconv.ParseBool(quarantineStr); err == nil {
+				m.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+	}
+}
+
+// // MapToCapabilityDTO populates a CapabilityDTO for API calls
+// func (m *FirewallAuditAndQuarantineModel) MapToCapabilityDTO() map[string]interface{} {
+// 	return map[string]interface{}{
+// 		"capability_id": m.CapabilityId.ValueString(),
+// 		"enabled":       m.Enabled.ValueBool(),
+// 		"quarantine":    m.Quarantine.ValueBool(),
+// 	}
+// }
+
+// FirewallAuditAndQuarantineWithPccsModel
+// --------------------------------------------------------
+type FirewallAuditAndQuarantineWithPccsModel struct {
+	FirewallAuditAndQuarantineModel
+	PccsEnabled types.Bool `tfsdk:"pccs_enabled"`
+}
+
+// MapFromCapabilityDTO populates the model from a CapabilityDTO returned from the API
+func (m *FirewallAuditAndQuarantineWithPccsModel) MapFromCapabilityDTO(api *sonatyperepo.CapabilityDTO) {
+	if api == nil {
+		return
+	}
+	m.CapabilityId = types.StringPointerValue(api.Id)
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	if api.Properties != nil {
+		if quarantineStr, ok := (*api.Properties)["quarantine"]; ok {
+			if quarantine, err := strconv.ParseBool(quarantineStr); err == nil {
+				m.Quarantine = types.BoolValue(quarantine)
+			}
+		}
 	}
 }
 

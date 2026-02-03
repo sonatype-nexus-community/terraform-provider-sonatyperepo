@@ -18,7 +18,6 @@ package format
 
 import (
 	"context"
-	"maps"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -170,9 +169,7 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 }
 
 func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, pyPiSchemaAttributes())
-	return additionalAttributes
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *PyPiRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -209,6 +206,11 @@ func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCl
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
+}
+
+// PyPI Proxy Repositories support Repository Firewall PCCS
+func (f *PyPiRepositoryFormatProxy) SupportsRepositoryFirewallPccs() bool {
+	return true
 }
 
 // --------------------------------------------

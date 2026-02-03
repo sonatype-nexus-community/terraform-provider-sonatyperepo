@@ -167,8 +167,9 @@ func (m *dockerProxyAttributesModel) MapToApi(api *sonatyperepo.DockerProxyAttri
 
 type RepositoryDockerProxyModel struct {
 	RepositoryProxyModel
-	Docker      dockerAttributesModel      `tfsdk:"docker"`
-	DockerProxy dockerProxyAttributesModel `tfsdk:"docker_proxy"`
+	Docker                     dockerAttributesModel            `tfsdk:"docker"`
+	DockerProxy                dockerProxyAttributesModel       `tfsdk:"docker_proxy"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyApiRepository) {
@@ -204,6 +205,16 @@ func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyAp
 	// Docker Specific
 	m.Docker.MapFromApi(&api.Docker)
 	m.DockerProxy.MapFromApi(&api.DockerProxy)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
+	}
 }
 
 func (m *RepositoryDockerProxyModel) ToApiCreateModel() sonatyperepo.DockerProxyRepositoryApiRequest {

@@ -107,8 +107,10 @@ resource "%s" "repo" {
 		type = "username"
 	}
   }
-  npm = {
-	remove_quarrantined = true
+  repository_firewall = {
+    enabled = true
+    quarantine = true
+	pccs_enabled = true
   }
 }
 
@@ -165,7 +167,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceNpmProxyName, "replication.preemptive_pull_enabled", "false"),
 					resource.TestCheckNoResourceAttr(resourceNpmProxyName, "replication.asset_path_regex"),
 					resource.TestCheckNoResourceAttr(resourceNpmProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, "npm.remove_quarrantined", "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, "repository_firewall.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, "repository_firewall.quarantine", "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, "repository_firewall.pccs_enabled", "true"),
 
 					// Verify Group
 					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_NAME, fmt.Sprintf("npm-group-repo-%s", randomString)),

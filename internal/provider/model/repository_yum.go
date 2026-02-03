@@ -86,7 +86,8 @@ func (m *RepositoryYumHostedModel) ToApiUpdateModel() sonatyperepo.YumHostedRepo
 // ----------------------------------------
 type RepositoryYumProxyModel struct {
 	RepositoryProxyModel
-	Yum *yumSigningModel `tfsdk:"yum"`
+	Yum                        *yumSigningModel                 `tfsdk:"yum"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -121,6 +122,16 @@ func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRe
 
 	// YUM Specific
 	// NOT RETURNED BY GET API - yum field is optional and not populated during import
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
+	}
 }
 
 func (m *RepositoryYumProxyModel) ToApiCreateModel() sonatyperepo.YumProxyRepositoryApiRequest {

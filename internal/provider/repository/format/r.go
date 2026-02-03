@@ -147,7 +147,7 @@ func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient 
 }
 
 func (f *RRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *RRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

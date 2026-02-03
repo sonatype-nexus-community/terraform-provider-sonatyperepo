@@ -153,7 +153,7 @@ func (f *ConanRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 }
 
 func (f *ConanRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, conanProxySchemaAttributes())
 	return additionalAttributes
 }

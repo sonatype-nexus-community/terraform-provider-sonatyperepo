@@ -60,7 +60,8 @@ func (m *RepositorCargoHostedModel) ToApiUpdateModel() sonatyperepo.CargoHostedR
 // ----------------------------------------
 type RepositoryCargoProxyModel struct {
 	RepositoryProxyModel
-	Cargo *cargoAttributesModel `tfsdk:"cargo"`
+	Cargo                      *cargoAttributesModel            `tfsdk:"cargo"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryCargoProxyModel) FromApiModel(api sonatyperepo.CargoProxyApiRepository) {
@@ -83,13 +84,30 @@ func (m *RepositoryCargoProxyModel) FromApiModel(api sonatyperepo.CargoProxyApiR
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
 	}
 
 	// Cargo Specific
 	if api.Cargo != nil {
 		m.Cargo = &cargoAttributesModel{}
 		m.Cargo.MapFromApi(api.Cargo)
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
 	}
 }
 

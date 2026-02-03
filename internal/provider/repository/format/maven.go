@@ -58,8 +58,7 @@ func (f *MavenRepositoryFormat) Key() string {
 }
 
 func (f *MavenRepositoryFormat) ResourceName(repoType RepositoryType) string {
-	// Override to use "maven" instead of "maven2" for resource names
-	return resourceName("maven", repoType)
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -177,7 +176,7 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }

@@ -18,7 +18,6 @@ package format
 
 import (
 	"context"
-	"maps"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -30,8 +29,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
-	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type NpmRepositoryFormat struct {
@@ -174,9 +171,7 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 }
 
 func (f *NpmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
-	maps.Copy(additionalAttributes, npmSchemaAttributes())
-	return additionalAttributes
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *NpmRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -213,6 +208,44 @@ func (f *NpmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
+}
+
+// NPM Proxy Repositories support Repository Firewall PCCS
+func (f *NpmRepositoryFormatProxy) SupportsRepositoryFirewallPccs() bool {
+	return true
+}
+
+func (f *NpmRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *NpmRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryNpmProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *NpmRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+}
+
+func (f *NpmRepositoryFormatProxy) GetRepositoryFirewallPccsEnabled(state any) bool {
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
 }
 
 // --------------------------------------------
@@ -287,18 +320,4 @@ func (f *NpmRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCli
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// --------------------------------------------
-// Common Functions
-// --------------------------------------------
-func npmSchemaAttributes() map[string]tfschema.Attribute {
-	return map[string]tfschema.Attribute{
-		"npm": schema.ResourceOptionalSingleNestedAttribute(
-			"NPM specific configuration for this Repository",
-			map[string]tfschema.Attribute{
-				"remove_quarrantined": schema.ResourceRequiredBool("Remove Quarantined Versions"),
-			},
-		),
-	}
 }

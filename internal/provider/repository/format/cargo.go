@@ -149,8 +149,18 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for NPM Proxy repositories
+func (f *CargoRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *CargoRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, cargoSchemaAttributes())
 	return additionalAttributes
 }
@@ -172,13 +182,53 @@ func (f *CargoRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 }
 
 func (f *CargoRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryCargoProxyModel)
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.CargoProxyApiRepository))
 	return stateModel
 }
 
+func (f *CargoRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *CargoRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryCargoProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *CargoRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *CargoRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+}
+
 // --------------------------------------------
-// GORUP Cargo Format Functions
+// GROUP Cargo Format Functions
 // --------------------------------------------
 func (f *CargoRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type

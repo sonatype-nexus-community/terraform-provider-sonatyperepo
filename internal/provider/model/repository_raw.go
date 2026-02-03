@@ -84,7 +84,8 @@ func (m *RepositoryRawHostedModel) ToApiUpdateModel() sonatyperepo.RawHostedRepo
 // ----------------------------------------
 type RepositoryRawProxyModel struct {
 	RepositoryProxyModel
-	Raw RawRepositoryAttributesModel `tfsdk:"raw"`
+	Raw                        RawRepositoryAttributesModel     `tfsdk:"raw"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepository) {
@@ -119,6 +120,16 @@ func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepos
 
 	// Raw Specific
 	m.Raw.MapFromApi(&api.Raw)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
+	}
 }
 
 func (m *RepositoryRawProxyModel) ToApiCreateModel() sonatyperepo.RawProxyRepositoryApiRequest {

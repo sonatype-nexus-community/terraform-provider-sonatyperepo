@@ -60,7 +60,8 @@ func (m *RepositorConanHostedModel) ToApiUpdateModel() sonatyperepo.ConanHostedR
 // ----------------------------------------
 type RepositoryConanProxyModel struct {
 	RepositoryProxyModel
-	Conan *conanProxyAttributesModel `tfsdk:"conan"`
+	Conan                      *conanProxyAttributesModel       `tfsdk:"conan"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiRepository) {
@@ -83,7 +84,24 @@ func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiR
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
 	}
 }
 

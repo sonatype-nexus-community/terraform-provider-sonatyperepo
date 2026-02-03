@@ -18,13 +18,13 @@ Manage Hosted APT Repositories
 ### Required
 
 - `apt` (Attributes) APT specific configuration for this Repository (see [below for nested schema](#nestedatt--apt))
+- `apt_signing` (Attributes) APT signing configuration for this Repository (see [below for nested schema](#nestedatt--apt_signing))
 - `name` (String) Name of the Repository
 - `online` (Boolean) Whether this Repository is online and accepting incoming requests
 - `storage` (Attributes) Storage configuration for this Repository (see [below for nested schema](#nestedatt--storage))
 
 ### Optional
 
-- `apt_signing` (Attributes) APT signing configuration for this Repository (see [below for nested schema](#nestedatt--apt_signing))
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
 - `component` (Attributes) Component configuration for this Repository (see [below for nested schema](#nestedatt--component))
 - `url` (String) URL to access the Repository
@@ -41,6 +41,18 @@ Required:
 - `distribution` (String) Distribution to fetch
 
 
+<a id="nestedatt--apt_signing"></a>
+### Nested Schema for `apt_signing`
+
+Required:
+
+- `key_pair` (String) PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)
+
+Optional:
+
+- `passphrase` (String, Sensitive) Passphrase to access PGP signing key
+
+
 <a id="nestedatt--storage"></a>
 ### Nested Schema for `storage`
 
@@ -49,15 +61,6 @@ Required:
 - `blob_store_name` (String) Name of the Blob Store to use
 - `strict_content_type_validation` (Boolean) Whether this Repository validates that all content uploaded to this repository is of a MIME type appropriate for the repository format
 - `write_policy` (String) Controls if deployments of and updates to assets are allowed
-
-
-<a id="nestedatt--apt_signing"></a>
-### Nested Schema for `apt_signing`
-
-Required:
-
-- `key_pair` (String) PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)
-- `passphrase` (String, Sensitive) Passphrase to access PGP signing key
 
 
 <a id="nestedatt--cleanup"></a>

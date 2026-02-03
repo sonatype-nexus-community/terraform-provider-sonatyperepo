@@ -33,8 +33,8 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func commonProxySchemaAttributes() map[string]tfschema.Attribute {
-	return map[string]tfschema.Attribute{
+func commonProxySchemaAttributes(supportsRepositoryFirewall bool, supportsPccs bool) map[string]tfschema.Attribute {
+	thisAttr := map[string]tfschema.Attribute{
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Proxy specific configuration for this Repository",
 			map[string]tfschema.Attribute{
@@ -43,16 +43,26 @@ func commonProxySchemaAttributes() map[string]tfschema.Attribute {
 					regexp.MustCompile(`^https?://`),
 					"must be a valid HTTP URL (starting with http:// or https://)",
 				),
-				"content_max_age":  schema.ResourceRequiredInt64("How long to cache artifacts before rechecking the remote repository (in minutes)"),
-				"metadata_max_age": schema.ResourceRequiredInt64("How long to cache metadata before rechecking the remote repository (in minutes)"),
+				"content_max_age": schema.ResourceOptionalInt64WithDefault(
+					"How long to cache artifacts before rechecking the remote repository (in minutes)",
+					common.DEFAULT_PROXY_CONTENT_MAX_AGE,
+				),
+				"metadata_max_age": schema.ResourceOptionalInt64WithDefault(
+					"How long to cache metadata before rechecking the remote repository (in minutes)",
+					common.DEFAULT_PROXY_METADATA_MAX_AGE,
+				),
 			},
 		),
 		"negative_cache": schema.ResourceRequiredSingleNestedAttribute(
 			"Negative Cache configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"enabled": schema.ResourceRequiredBool("Whether to cache responses for content not present in the proxied repository"),
-				"time_to_live": schema.ResourceRequiredInt64WithValidators(
+				"enabled": schema.ResourceOptionalBoolWithDefault(
+					"Whether to cache responses for content not present in the proxied repository",
+					common.DEFAULT_PROXY_NEGATIVE_CACHE_ENABLED,
+				),
+				"time_to_live": schema.ResourceOptionalInt64WithDefaultAndValidators(
 					"How long to cache the fact that a file was not found in the repository (in minutes)",
+					common.DEFAULT_PROXY_NEGATIVE_CACHE_TTL,
 					[]validator.Int64{
 						int64validator.AtLeast(0),
 					}...,
@@ -71,6 +81,60 @@ func commonProxySchemaAttributes() map[string]tfschema.Attribute {
 		"routing_rule": schema.ResourceOptionalString("Routing Rule"),
 		"replication":  commonProxyReplicationAttribute(),
 	}
+
+	if supportsRepositoryFirewall {
+		thisAttr["repository_firewall"] = commonProxyFirewallAuditQuarantineAttribute(supportsPccs)
+	}
+
+	return thisAttr
+}
+
+func commonProxyFirewallAuditQuarantineAttribute(supportsPccs bool) tfschema.SingleNestedAttribute {
+	thisAttr := schema.ResourceOptionalSingleNestedAttribute(
+		"Sonatype Repository Firewall configuration for this Repository",
+		map[string]tfschema.Attribute{
+			"capability_id": schema.ResourceComputedStringWithDefault("Internal ID of the Audit & Quarantine Capability created for this Repository", ""),
+			"enabled":       schema.ResourceOptionalBoolWithDefault("Whether to enable Sonatype Repository Firewall for this Repository", false),
+			"quarantine":    schema.ResourceOptionalBoolWithDefault("Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).", false),
+		},
+	)
+	thisAttr.Computed = true
+
+	if supportsPccs {
+		thisAttr.Attributes["pccs_enabled"] = schema.ResourceOptionalBoolWithDefault(
+			`Whether Policy-Compliant Component Selection is enabled. See [documentatation](https://help.sonatype.com/en/policy-compliant-component-selection.html) for details.`,
+			false,
+		)
+		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
+			map[string]attr.Type{
+				"capability_id": types.StringType,
+				"enabled":       types.BoolType,
+				"quarantine":    types.BoolType,
+				"pccs_enabled":  types.BoolType,
+			},
+			map[string]attr.Value{
+				"capability_id": types.StringValue(""),
+				"enabled":       types.BoolValue(false),
+				"quarantine":    types.BoolValue(false),
+				"pccs_enabled":  types.BoolValue(false),
+			},
+		))
+	} else {
+		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
+			map[string]attr.Type{
+				"capability_id": types.StringType,
+				"enabled":       types.BoolType,
+				"quarantine":    types.BoolType,
+			},
+			map[string]attr.Value{
+				"capability_id": types.StringValue(""),
+				"enabled":       types.BoolValue(false),
+				"quarantine":    types.BoolValue(false),
+			},
+		))
+	}
+
+	return thisAttr
 }
 
 func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
@@ -79,7 +143,7 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 		map[string]tfschema.Attribute{
 			"retries": schema.ResourceOptionalInt64WithDefaultAndValidators(
 				"Total retries if the initial connection attempt suffers a timeout",
-				common.DEFAULT_HTTP_CONNECTION_RETRIES,
+				common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES,
 				[]validator.Int64{
 					int64validator.Between(
 						common.REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN,
@@ -90,7 +154,7 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 			"user_agent_suffix": schema.ResourceOptionalString("Custom fragment to append to User-Agent header in HTTP requests"),
 			"timeout": schema.ResourceOptionalInt64WithDefaultAndValidators(
 				"Seconds to wait for activity before stopping and retrying the connection",
-				common.DEFAULT_HTTP_CONNECTION_TIMEOUT,
+				common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT,
 				[]validator.Int64{
 					int64validator.Between(
 						common.REPOSITORY_HTTP_CLIENT_CONNECTION_TIMEOUT_MIN,
@@ -123,9 +187,9 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 			"use_trust_store":           types.BoolType,
 		},
 		map[string]attr.Value{
-			"retries":                   types.Int64Value(common.DEFAULT_HTTP_CONNECTION_RETRIES),
+			"retries":                   types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES),
 			"user_agent_suffix":         types.StringNull(),
-			"timeout":                   types.Int64Value(common.DEFAULT_HTTP_CONNECTION_TIMEOUT),
+			"timeout":                   types.Int64Value(common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT),
 			"enable_circular_redirects": types.BoolValue(false),
 			"enable_cookies":            types.BoolValue(false),
 			"use_trust_store":           types.BoolValue(false),

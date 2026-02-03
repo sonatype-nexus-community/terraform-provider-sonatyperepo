@@ -198,7 +198,7 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 }
 
 func (f *DockerRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	maps.Copy(additionalAttributes, dockerProxySchemaAttributes())
 	return additionalAttributes

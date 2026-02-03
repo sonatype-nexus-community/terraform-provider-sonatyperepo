@@ -82,7 +82,7 @@ func (f *HuggingFaceRepositoryFormatProxy) DoUpdateRequest(plan any, state any, 
 }
 
 func (f *HuggingFaceRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *HuggingFaceRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

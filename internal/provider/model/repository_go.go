@@ -28,6 +28,7 @@ import (
 // ----------------------------------------
 type RepositoryGoProxyModel struct {
 	RepositoryProxyModel
+	Firewall *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryGoProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -57,6 +58,16 @@ func (m *RepositoryGoProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRep
 		m.Replication = &RepositoryReplicationModel{
 			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
 			AssetPathRegex:        types.StringNull(),
+		}
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.Firewall == nil {
+		m.Firewall = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
 		}
 	}
 }

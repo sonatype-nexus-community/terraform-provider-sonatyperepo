@@ -28,6 +28,7 @@ Manage Proxy COCOAPODS Repositories
 
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
 - `replication` (Attributes) Replication configuration for this Repository (see [below for nested schema](#nestedatt--replication))
+- `repository_firewall` (Attributes) Sonatype Repository Firewall configuration for this Repository (see [below for nested schema](#nestedatt--repository_firewall))
 - `routing_rule` (String) Routing Rule
 - `url` (String) URL to access the Repository
 
@@ -79,7 +80,7 @@ Optional:
 <a id="nestedatt--negative_cache"></a>
 ### Nested Schema for `negative_cache`
 
-Required:
+Optional:
 
 - `enabled` (Boolean) Whether to cache responses for content not present in the proxied repository
 - `time_to_live` (Number) How long to cache the fact that a file was not found in the repository (in minutes)
@@ -90,9 +91,12 @@ Required:
 
 Required:
 
+- `remote_url` (String) Location of the remote repository being proxied
+
+Optional:
+
 - `content_max_age` (Number) How long to cache artifacts before rechecking the remote repository (in minutes)
 - `metadata_max_age` (Number) How long to cache metadata before rechecking the remote repository (in minutes)
-- `remote_url` (String) Location of the remote repository being proxied
 
 
 <a id="nestedatt--storage"></a>
@@ -122,3 +126,16 @@ Required:
 Optional:
 
 - `asset_path_regex` (String) Regular Expression of Asset Paths to pull pre-emptively pull
+
+
+<a id="nestedatt--repository_firewall"></a>
+### Nested Schema for `repository_firewall`
+
+Optional:
+
+- `enabled` (Boolean) Whether to enable Sonatype Repository Firewall for this Repository
+- `quarantine` (Boolean) Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).
+
+Read-Only:
+
+- `capability_id` (String) Internal ID of the Audit & Quarantine Capability created for this Repository

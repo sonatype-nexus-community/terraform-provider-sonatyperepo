@@ -85,7 +85,7 @@ func (f *P2RepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient
 }
 
 func (f *P2RepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *P2RepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -122,4 +122,9 @@ func (f *P2RepositoryFormatProxy) DoImportRequest(repositoryName string, apiClie
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
+}
+
+// Repository Firewall not supported for P2
+func (f *P2RepositoryFormatProxy) SupportsRepositoryFirewall() bool {
+	return false
 }

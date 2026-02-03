@@ -60,7 +60,8 @@ func (m *RepositoryNugetHostedModel) ToApiUpdateModel() sonatyperepo.NugetHosted
 // ----------------------------------------
 type RepositoryNugetProxyModel struct {
 	RepositoryProxyModel
-	NugetProxy *NugetProxyModel `tfsdk:"nuget_proxy"`
+	NugetProxy                 *NugetProxyModel                 `tfsdk:"nuget_proxy"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryNugetProxyModel) FromApiModel(api sonatyperepo.NugetProxyApiRepository) {
@@ -99,6 +100,16 @@ func (m *RepositoryNugetProxyModel) FromApiModel(api sonatyperepo.NugetProxyApiR
 		m.NugetProxy = &NugetProxyModel{}
 	}
 	m.NugetProxy.MapFromApi(api.NugetProxy)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
+			CapabilityId: types.StringValue(""),
+			Enabled:      types.BoolValue(false),
+			Quarantine:   types.BoolValue(false),
+		}
+	}
 }
 
 func (m *RepositoryNugetProxyModel) ToApiCreateModel() sonatyperepo.NugetProxyRepositoryApiRequest {

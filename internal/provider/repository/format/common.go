@@ -141,6 +141,34 @@ func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, e
 	return nil
 }
 
+func (f *BaseRepositoryFormat) SupportsRepositoryFirewall() bool {
+	return true
+}
+
+func (f *BaseRepositoryFormat) SupportsRepositoryFirewallPccs() bool {
+	return false
+}
+
+func (f *BaseRepositoryFormat) GetRepositoryId(state any) string {
+	panic("Unimplemented")
+}
+
+func (f *BaseRepositoryFormat) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	panic("Unimplemented")
+}
+
+func (f *BaseRepositoryFormat) GetRepositoryFirewallEnabled(state any) bool {
+	return false
+}
+
+func (f *BaseRepositoryFormat) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	return false
+}
+
+func (f *BaseRepositoryFormat) GetRepositoryFirewallPccsEnabled(state any) bool {
+	return false
+}
+
 // RepositoryFormat that all Repository Formats must implement
 // --------------------------------------------
 type RepositoryFormat interface {
@@ -162,6 +190,13 @@ type RepositoryFormat interface {
 	// Implementations MUST check for nil and create a new model instance if needed.
 	UpdateStateFromApi(state any, api any) any
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
+	SupportsRepositoryFirewall() bool
+	SupportsRepositoryFirewallPccs() bool
+	GetRepositoryId(state any) string
+	GetRepositoryFirewallEnabled(state any) bool
+	GetRepositoryFirewallQuarantineEnabled(state any) bool
+	GetRepositoryFirewallPccsEnabled(state any) bool
+	UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any
 }
 
 func resourceName(format string, repoType RepositoryType) string {
