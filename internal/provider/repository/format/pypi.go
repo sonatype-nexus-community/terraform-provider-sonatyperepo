@@ -29,8 +29,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
-	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
 type PyPiRepositoryFormat struct {
@@ -168,6 +166,16 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for PyPI Proxy repositories
+func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
@@ -198,19 +206,45 @@ func (f *PyPiRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
-// DoImportRequest implements the import functionality for PyPI Proxy repositories
-func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	return *apiResponse, httpResponse, nil
-}
-
 // PyPI Proxy Repositories support Repository Firewall PCCS
 func (f *PyPiRepositoryFormatProxy) SupportsRepositoryFirewallPccs() bool {
 	return true
+}
+
+func (f *PyPiRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *PyPiRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryPyPiProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
 
 // --------------------------------------------
@@ -285,18 +319,4 @@ func (f *PyPiRepositoryFormatGroup) DoImportRequest(repositoryName string, apiCl
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, nil
-}
-
-// --------------------------------------------
-// Common Functions
-// --------------------------------------------
-func pyPiSchemaAttributes() map[string]tfschema.Attribute {
-	return map[string]tfschema.Attribute{
-		"pypi": schema.ResourceRequiredSingleNestedAttribute(
-			"PyPi specific configuration for this Repository",
-			map[string]tfschema.Attribute{
-				"remove_quarrantined": schema.ResourceRequiredBool("Remove Quarantined Versions"),
-			},
-		),
-	}
 }

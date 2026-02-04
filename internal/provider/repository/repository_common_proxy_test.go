@@ -174,6 +174,46 @@ var proxyTestData = []repositoryProxyTestData{
 		RepoFormat: common.REPO_FORMAT_P2,
 		SchemaFunc: repositoryProxyResourceConfig,
 	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_PYPI_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_PYPI,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_R_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_R,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_RAW_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_RAW,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_RUBY_GEMS,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:  TEST_DATA_YUM_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_YUM,
+		SchemaFunc: repositoryProxyResourceConfig,
+	},
 }
 
 // ------------------------------------------------------------

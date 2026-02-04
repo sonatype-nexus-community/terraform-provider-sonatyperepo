@@ -249,7 +249,7 @@ func (f *NugetRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(stat
 }
 
 // --------------------------------------------
-// GORUP Nuget Format Functions
+// GROUP Nuget Format Functions
 // --------------------------------------------
 func (f *NugetRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type

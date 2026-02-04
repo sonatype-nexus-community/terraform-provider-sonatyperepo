@@ -95,6 +95,11 @@ const (
 	TEST_DATA_NPM_PROXY_REMOTE_URL          string = "https://registry.npmjs.org"
 	TEST_DATA_NUGET_PROXY_REMOTE_URL        string = "https://api.nuget.org/v3/index.json"
 	TEST_DATA_P2_PROXY_REMOTE_URL           string = "https://download.eclipse.org/releases/2025-06"
+	TEST_DATA_PYPI_PROXY_REMOTE_URL         string = "https://pypi.org/simple"
+	TEST_DATA_R_PROXY_REMOTE_URL            string = "https://cran.r-project.org/"
+	TEST_DATA_RAW_PROXY_REMOTE_URL          string = "https://nodejs.org/dist/"
+	TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL    string = "https://rubygems.org"
+	TEST_DATA_YUM_PROXY_REMOTE_URL          string = "http://mirror.centos.org/centos/"
 	TEST_DATA_TIMEOUT                       string = "1439"
 )
 
