@@ -103,14 +103,7 @@ func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRep
 	// Firewall Audit and Quarantine (with PCCS)
 	// This will be populated separately by the resource helper during Read operations
 	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineWithPccsModel{
-			FirewallAuditAndQuarantineModel: FirewallAuditAndQuarantineModel{
-				CapabilityId: types.StringValue(""),
-				Enabled:      types.BoolValue(false),
-				Quarantine:   types.BoolValue(false),
-			},
-			PccsEnabled: types.BoolValue(false),
-		}
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
 	}
 }
 

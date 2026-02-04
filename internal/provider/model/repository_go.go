@@ -64,11 +64,7 @@ func (m *RepositoryGoProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRep
 	// Firewall Audit and Quarantine
 	// This will be populated separately by the resource helper during Read operations
 	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = &FirewallAuditAndQuarantineModel{
-			CapabilityId: types.StringValue(""),
-			Enabled:      types.BoolValue(false),
-			Quarantine:   types.BoolValue(false),
-		}
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
 	}
 }
 

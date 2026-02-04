@@ -30,15 +30,6 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 )
 
-// Generic Capability DTO for when Firewall is not configured
-func FirewallCapabilityNotDefinedDTO() *v3.CapabilityDTO {
-	return &v3.CapabilityDTO{
-		Id:      nil,
-		Type:    common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE.StringPointer(),
-		Enabled: nil,
-	}
-}
-
 // CapabilityHelper provides reusable capability management functions for repository resources
 type CapabilityHelper struct {
 	client         *v3.APIClient

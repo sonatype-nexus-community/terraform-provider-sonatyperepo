@@ -286,12 +286,7 @@ type RepositoryReplicationModel struct {
 
 func (m *RepositoryReplicationModel) MapFromApi(api *sonatyperepo.ReplicationAttributes) {
 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
-	// if !api.PreemptivePullEnabled {
-	// 	m.PreemptivePullEnabled = types.BoolValue(false)
-	// } else {
-	// 	m.PreemptivePullEnabled = types.BoolValue(api.PreemptivePullEnabled)
 	m.AssetPathRegex = types.StringPointerValue(api.AssetPathRegex)
-	// }
 }
 
 func (m *RepositoryReplicationModel) MapToApi(api *sonatyperepo.ReplicationAttributes) {
@@ -309,10 +304,13 @@ type FirewallAuditAndQuarantineModel struct {
 	Quarantine   types.Bool   `tfsdk:"quarantine"`
 }
 
-// IsConfigured returns true if the model has been explicitly configured by the user
-// func (m *FirewallAuditAndQuarantineModel) IsConfigured() bool {
-// 	return m != nil && (!m.Enabled.IsNull() || !m.CapabilityId.IsNull())
-// }
+func NewFirewallAuditAndQuarantineModelWithDefaults() *FirewallAuditAndQuarantineModel {
+	return &FirewallAuditAndQuarantineModel{
+		CapabilityId: types.StringValue(""),
+		Enabled:      types.BoolValue(false),
+		Quarantine:   types.BoolValue(false),
+	}
+}
 
 // MapFromCapabilityDTO populates the model from a CapabilityDTO returned from the API
 func (m *FirewallAuditAndQuarantineModel) MapFromCapabilityDTO(api *sonatyperepo.CapabilityDTO) {
@@ -330,20 +328,18 @@ func (m *FirewallAuditAndQuarantineModel) MapFromCapabilityDTO(api *sonatyperepo
 	}
 }
 
-// // MapToCapabilityDTO populates a CapabilityDTO for API calls
-// func (m *FirewallAuditAndQuarantineModel) MapToCapabilityDTO() map[string]interface{} {
-// 	return map[string]interface{}{
-// 		"capability_id": m.CapabilityId.ValueString(),
-// 		"enabled":       m.Enabled.ValueBool(),
-// 		"quarantine":    m.Quarantine.ValueBool(),
-// 	}
-// }
-
 // FirewallAuditAndQuarantineWithPccsModel
 // --------------------------------------------------------
 type FirewallAuditAndQuarantineWithPccsModel struct {
 	FirewallAuditAndQuarantineModel
 	PccsEnabled types.Bool `tfsdk:"pccs_enabled"`
+}
+
+func NewFirewallAuditAndQuarantineWithPccsModelWithDefaults() *FirewallAuditAndQuarantineWithPccsModel {
+	return &FirewallAuditAndQuarantineWithPccsModel{
+		FirewallAuditAndQuarantineModel: *NewFirewallAuditAndQuarantineModelWithDefaults(),
+		PccsEnabled:                     types.BoolValue(false),
+	}
 }
 
 // MapFromCapabilityDTO populates the model from a CapabilityDTO returned from the API
