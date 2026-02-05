@@ -708,36 +708,37 @@ resource "%s" "repo" {
 `, resourceType, repoName, remoteUrl, formatSpecificConfig)
 }
 
-func repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "%s"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  repository_firewall = {
-    enabled = true
-    quarantine = true
-  }
-  %s
- }
-`, resourceType, repoName, remoteUrl, formatSpecificConfig)
-}
+// See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285
+// func repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
+// 	return fmt.Sprintf(utils_test.ProviderConfig+`
+// resource "%s" "repo" {
+//   name = "%s"
+//   online = true
+//   storage = {
+//     blob_store_name = "default"
+//     strict_content_type_validation = true
+//   }
+//   proxy = {
+//     remote_url = "%s"
+//     content_max_age = 1440
+//     metadata_max_age = 1440
+//   }
+//   negative_cache = {
+//     enabled = true
+//     time_to_live = 1440
+//   }
+//   http_client = {
+//     blocked = false
+//     auto_block = true
+//   }
+//   repository_firewall = {
+//     enabled = true
+//     quarantine = true
+//   }
+//   %s
+//  }
+// `, resourceType, repoName, remoteUrl, formatSpecificConfig)
+// }
 
 func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
 	configBlock := formatSpecificProxyDefaultConfig(repoFormat)
@@ -752,8 +753,9 @@ func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl
 	}
 }
 
-func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
-	return repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(
-		resourceType, repoName, remoteUrl, formatSpecificProxyDefaultConfig(repoFormat),
-	)
-}
+// See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285
+// func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
+// 	return repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(
+// 		resourceType, repoName, remoteUrl, formatSpecificProxyDefaultConfig(repoFormat),
+// 	)
+// }

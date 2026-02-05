@@ -102,7 +102,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	// If we are dealing with a PROXY and there is Firewall Configuration, first ensure there is a valid IQ Connection
 	if r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() && r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
 		iqCheckResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.VerifyIqConnection(ctx).Execute()
-		if err != nil || httpResponse.StatusCode != http.StatusOK || *iqCheckResponse.Success != true {
+		if err != nil || httpResponse.StatusCode != http.StatusOK || !*iqCheckResponse.Success {
 			resp.Diagnostics.AddError("Sonatype IQ Connection not successful", "Unable to configure Repository Firewall as not connected to Sonatype IQ Server")
 			return
 		}

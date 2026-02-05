@@ -129,7 +129,7 @@ func (ch *CapabilityHelper) UpdateCapability(capabilityId string, repositoryId s
 			httpResponse,
 			diags,
 		)
-		return nil, fmt.Errorf("Failed to update exisiting Capability")
+		return nil, fmt.Errorf("failed to update exisiting Capability")
 	}
 
 	return ch.FindCapabilityByRepositoryId(repositoryId, diags), nil
