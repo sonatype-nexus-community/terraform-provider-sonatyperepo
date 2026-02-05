@@ -72,46 +72,90 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 }
 
 func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Retrieve values from plan
-	plan, diags := r.RepositoryFormat.PlanAsModel(ctx, req.Plan)
-	resp.Diagnostics.Append(diags...)
-
-	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("Getting Plan data has errors: %v", resp.Diagnostics.Errors()))
+	// Parse and validate plan
+	plan, diags := r.validateAndParsePlan(ctx, req)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	planValidationMessagesForNxrmVersion := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
-	if len(planValidationMessagesForNxrmVersion) > 0 {
-		for _, m := range planValidationMessagesForNxrmVersion {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
-				m,
-			)
-		}
+	// Setup context with auth
+	ctx = r.setupAuthContext(ctx)
+
+	// Verify IQ connection if needed for firewall
+	if !r.verifyIQConnectionIfNeeded(ctx, plan, resp) {
 		return
 	}
 
-	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	// Create the repository
+	if !r.createRepository(ctx, plan, resp) {
+		return
+	}
 
-	// If we are dealing with a PROXY and there is Firewall Configuration, first ensure there is a valid IQ Connection
-	if r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() && r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
-		iqCheckResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.VerifyIqConnection(ctx).Execute()
-		if err != nil || httpResponse.StatusCode != http.StatusOK || !*iqCheckResponse.Success {
-			resp.Diagnostics.AddError("Sonatype IQ Connection not successful", "Unable to configure Repository Firewall as not connected to Sonatype IQ Server")
+	// Fetch complete data
+	apiResponse, ok := r.readCreatedRepository(ctx, plan, resp)
+	if !ok {
+		return
+	}
+
+	// Map to state
+	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
+	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
+
+	// Configure firewall if needed
+	if r.isProxyWithFirewall() {
+		stateModel = r.configureFirewall(ctx, plan, stateModel, resp)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	// Make API requet
-	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Client, ctx)
+	// Save to state
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
+}
 
-	// Handle Errors
+// validateAndParsePlan retrieves and validates the plan
+func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resource.CreateRequest) (interface{}, diag.Diagnostics) {
+	plan, diags := r.RepositoryFormat.PlanAsModel(ctx, req.Plan)
+	if diags.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting Plan data has errors: %v", diags.Errors()))
+		return nil, diags
+	}
+
+	messages := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
+	if len(messages) > 0 {
+		for _, m := range messages {
+			diags.AddError(
+				fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
+				m,
+			)
+		}
+	}
+	return plan, diags
+}
+
+// setupAuthContext adds authentication to the context
+func (r *repositoryResource) setupAuthContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
+}
+
+// verifyIQConnectionIfNeeded checks IQ connection for proxy repositories with firewall enabled
+func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, plan interface{}, resp *resource.CreateResponse) bool {
+	if r.RepositoryType != format.REPO_TYPE_PROXY || !r.RepositoryFormat.SupportsRepositoryFirewall() || !r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
+		return true
+	}
+
+	iqCheckResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.VerifyIqConnection(ctx).Execute()
+	if err != nil || httpResponse.StatusCode != http.StatusOK || !*iqCheckResponse.Success {
+		resp.Diagnostics.AddError("Sonatype IQ Connection not successful", "Unable to configure Repository Firewall as not connected to Sonatype IQ Server")
+		return false
+	}
+	return true
+}
+
+// createRepository creates the repository via API
+func (r *repositoryResource) createRepository(ctx context.Context, plan interface{}, resp *resource.CreateResponse) bool {
+	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Client, ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.Key(), r.RepositoryType.String()),
@@ -119,7 +163,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 			httpResponse,
 			&resp.Diagnostics,
 		)
-		return
+		return false
 	}
 	if !slices.Contains(r.RepositoryFormat.ApiCreateSuccessResponseCodes(), httpResponse.StatusCode) {
 		errors.HandleAPIError(
@@ -128,80 +172,86 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 			httpResponse,
 			&resp.Diagnostics,
 		)
+		return false
 	}
+	return true
+}
 
-	// Call Read API as that contains more complete information for mapping to State
+// readCreatedRepository fetches the created repository data
+func (r *repositoryResource) readCreatedRepository(ctx context.Context, plan interface{}, resp *resource.CreateResponse) (interface{}, bool) {
 	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
-
-	// Handle any errors
 	if err != nil {
-		if httpResponse.StatusCode == http.StatusNotFound {
-			resp.State.RemoveResource(ctx)
-			errors.HandleAPIWarning(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		} else {
-			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
-				&err,
-				httpResponse,
-				&resp.Diagnostics,
-			)
-		}
-		return
+		r.handleCreateReadError(ctx, httpResponse, err, resp)
+		return nil, false
+	}
+	return apiResponse, true
+}
+
+// handleCreateReadError handles errors from the read operation after create
+func (r *repositoryResource) handleCreateReadError(ctx context.Context, httpResponse *http.Response, err error, resp *resource.CreateResponse) {
+	if httpResponse.StatusCode == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		errors.HandleAPIWarning(
+			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
+	} else {
+		errors.HandleAPIError(
+			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),
+			&err,
+			httpResponse,
+			&resp.Diagnostics,
+		)
+	}
+}
+
+// isProxyWithFirewall checks if this is a proxy repository supporting firewall
+func (r *repositoryResource) isProxyWithFirewall() bool {
+	return r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall()
+}
+
+// configureFirewall handles firewall capability configuration for proxy repositories
+func (r *repositoryResource) configureFirewall(ctx context.Context, plan interface{}, stateModel interface{}, resp *resource.CreateResponse) interface{} {
+	if !r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
+		return r.RepositoryFormat.UpateStateWithCapability(stateModel, nil)
 	}
 
-	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
-	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
+	capabilityHelper := capability.NewCapabilityHelper(r.Client, &ctx, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
+	auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
 
-	// If Proxy Repository - Handle Repository Firewall configuration if present
-	if r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
-		if r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
-			// Create/Update Audit & Quarantine Capability
-			capabilityHelper := capability.NewCapabilityHelper(r.Client, &ctx, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
-			auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
-
-			if auditAndQuarantineCapability == nil {
-				auditAndQuarantineCapability = capabilityHelper.CreateCapability(
-					r.RepositoryFormat.GetRepositoryId(stateModel),
-					r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
-					&resp.Diagnostics,
-				)
-			} else {
-				auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
-					*auditAndQuarantineCapability.Id,
-					r.RepositoryFormat.GetRepositoryId(stateModel),
-					r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
-					&resp.Diagnostics,
-				)
-				if err != nil {
-					return
-				}
-			}
-			stateModel = r.RepositoryFormat.UpateStateWithCapability(stateModel, auditAndQuarantineCapability)
-
-			if r.RepositoryFormat.SupportsRepositoryFirewallPccs() && r.RepositoryFormat.GetRepositoryFirewallPccsEnabled(stateModel) {
-				// Update the Repository if PCCS supported
-				apiResponse, err := r.doUpdate(ctx, stateModel, stateModel, &resp.Diagnostics)
-				if err != nil {
-					return
-				}
-
-				stateModel = r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
-				stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
-			}
-		} else {
-			stateModel = r.RepositoryFormat.UpateStateWithCapability(stateModel, nil)
+	if auditAndQuarantineCapability == nil {
+		auditAndQuarantineCapability = capabilityHelper.CreateCapability(
+			r.RepositoryFormat.GetRepositoryId(stateModel),
+			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
+			&resp.Diagnostics,
+		)
+	} else {
+		var err error
+		auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
+			*auditAndQuarantineCapability.Id,
+			r.RepositoryFormat.GetRepositoryId(stateModel),
+			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
+			&resp.Diagnostics,
+		)
+		if err != nil {
+			return stateModel
 		}
 	}
+	stateModel = r.RepositoryFormat.UpateStateWithCapability(stateModel, auditAndQuarantineCapability)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Handle PCCS if supported
+	if r.RepositoryFormat.SupportsRepositoryFirewallPccs() && r.RepositoryFormat.GetRepositoryFirewallPccsEnabled(stateModel) {
+		apiResponse, err := r.doUpdate(ctx, stateModel, stateModel, &resp.Diagnostics)
+		if err != nil {
+			return stateModel
+		}
+		stateModel = r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
+		stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 	}
+
+	return stateModel
 }
 
 func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
