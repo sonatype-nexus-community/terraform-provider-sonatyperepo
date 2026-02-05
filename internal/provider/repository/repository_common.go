@@ -83,7 +83,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	ctx = r.setupAuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
-	if !r.verifyIQConnectionIfNeeded(ctx, plan, resp) {
+	if r.NxrmVersion.NewerThan(3, 84, 0, 0) && !r.verifyIQConnectionIfNeeded(ctx, plan, resp) {
 		return
 	}
 
@@ -103,7 +103,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
-	if r.isProxyWithFirewall() {
+	if r.NxrmVersion.NewerThan(3, 84, 0, 0) && r.isProxyWithFirewall() {
 		stateModel = r.configureFirewall(ctx, plan, stateModel, resp)
 		if resp.Diagnostics.HasError() {
 			return
@@ -140,7 +140,7 @@ func (r *repositoryResource) setupAuthContext(ctx context.Context) context.Conte
 }
 
 // verifyIQConnectionIfNeeded checks IQ connection for proxy repositories with firewall enabled
-func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, plan interface{}, resp *resource.CreateResponse) bool {
+func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, plan any, resp *resource.CreateResponse) bool {
 	if r.RepositoryType != format.REPO_TYPE_PROXY || !r.RepositoryFormat.SupportsRepositoryFirewall() || !r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
 		return true
 	}
@@ -154,7 +154,7 @@ func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, pla
 }
 
 // createRepository creates the repository via API
-func (r *repositoryResource) createRepository(ctx context.Context, plan interface{}, resp *resource.CreateResponse) bool {
+func (r *repositoryResource) createRepository(ctx context.Context, plan any, resp *resource.CreateResponse) bool {
 	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Client, ctx)
 	if err != nil {
 		errors.HandleAPIError(
