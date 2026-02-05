@@ -267,6 +267,11 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+			PreCheck: func() {
+				if td.TestPreCheck != nil {
+					td.TestPreCheck(t)()
+				}
+			},
 			Steps: []resource.TestStep{
 				// 1. Create with minimal configuration relying on defaults
 				{

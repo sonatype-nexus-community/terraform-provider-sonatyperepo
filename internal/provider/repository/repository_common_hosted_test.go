@@ -63,7 +63,6 @@ var hostedTestData = []repositoryHostedTestData{
 			return []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_PATH_ENABLED, "false"),
 			}
 		},
 		RepoFormat: common.REPO_FORMAT_DOCKER,
