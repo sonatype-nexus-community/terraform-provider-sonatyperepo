@@ -190,7 +190,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 					return
 				}
 
-				stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
+				stateModel = r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
 				stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 			}
 		} else {
