@@ -39,7 +39,6 @@ import (
 // --------------------------------------------
 type BaseCapabilityType struct {
 	capabilityType common.CapabilityType
-	deprecated     bool
 	publicName     string
 }
 
