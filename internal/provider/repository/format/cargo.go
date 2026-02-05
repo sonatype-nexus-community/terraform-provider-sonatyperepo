@@ -307,7 +307,9 @@ func cargoSchemaAttributes() map[string]tfschema.Attribute {
 		"cargo": schema.ResourceRequiredSingleNestedAttribute(
 			"Cargo specific configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"require_authentication": schema.ResourceRequiredBool("Indicates if this repository requires authentication overriding anonymous access."),
+				"require_authentication": schema.ResourceRequiredBool(`Indicates if this repository requires authentication overriding anonymous access.
+				
+_This fails to work during CREATE and IMPORT against Sonatype Nexus Repository 3.88.0 due to a bug in Sonatype Nexus Repository._`),
 			},
 		),
 	}
