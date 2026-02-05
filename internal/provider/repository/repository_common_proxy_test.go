@@ -657,7 +657,7 @@ resource "%s" "repo" {
 
 const (
 	configBlockProxyDefaultApt    string = "apt = { distribution = \"bionic\" }"
-	configBlockProxyDefaultCargo  string = "cargo = { require_authentication = true }"
+	configBlockProxyDefaultCargo  string = "cargo = { require_authentication = false }"
 	configBlockProxyDefaultConan  string = "conan = { conan_version = \"V2\" }"
 	configBlockProxyDefaultDocker string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
 	configBlockProxyDefaultMaven  string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
