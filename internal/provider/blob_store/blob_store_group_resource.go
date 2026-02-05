@@ -68,8 +68,8 @@ This resource does not support promoting a Blob Store to becoming a Group - see 
 			"members": schema.ResourceRequiredStringList("List of the names of blob stores that are members of this group"),
 			"fill_policy": schema.ResourceRequiredStringEnum(
 				"Fill Policy for this Blob Store - see [official documentation](https://help.sonatype.com/en/blob-stores.html#what-is-a-fill-policy-).",
-				BLOB_STORE_FILL_POLICY_ROUND_ROBIN,
-				BLOB_STORE_FILL_POLICY_WRITE_FIRST,
+				common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN,
+				common.BLOB_STORE_FILL_POLICY_WRITE_FIRST,
 			),
 			"last_updated": schema.ResourceLastUpdated(),
 		},

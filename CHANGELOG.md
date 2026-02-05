@@ -4,6 +4,13 @@
 
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html)
+  * There is an API regression in NXRM 3.88 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource
+
+## 0.18.1 January 29, 2026
+
+BUG FIXES:
+- Resolved inability to update resource `sonatyperepo_system_config_ldap_connection` [GH-271]
+- Unable to create resource `sonatyperepo_blob_store_s3` [GH-273]
 
 ## 0.18.0 January 29, 2026
 

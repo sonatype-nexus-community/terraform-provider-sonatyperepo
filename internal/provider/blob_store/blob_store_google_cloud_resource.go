@@ -67,8 +67,8 @@ func (r *blobStoreGoogleCloudResource) Schema(_ context.Context, _ resource.Sche
 				200,
 			),
 			"type": schema.ResourceOptionalStringWithDefault(
-				fmt.Sprintf("Type of this Blob Store - will always be '%s'", BLOB_STORE_TYPE_GOOGLE_CLOUD),
-				BLOB_STORE_TYPE_GOOGLE_CLOUD,
+				fmt.Sprintf("Type of this Blob Store - will always be '%s'", common.BLOB_STORE_TYPE_GOOGLE_CLOUD),
+				common.BLOB_STORE_TYPE_GOOGLE_CLOUD,
 			),
 			"last_updated": schema.ResourceLastUpdated(),
 		},
@@ -164,7 +164,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 
 	if apiResponse.StatusCode == http.StatusCreated {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-		plan.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
+		plan.Type = types.StringValue(common.BLOB_STORE_TYPE_GOOGLE_CLOUD)
 
 		if plan.BucketConfiguration.Bucket.Prefix.IsNull() {
 			plan.BucketConfiguration.Bucket.Prefix = types.StringValue("")
@@ -214,7 +214,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 	}
 
 	// Set basic fields
-	state.Type = types.StringValue(BLOB_STORE_TYPE_GOOGLE_CLOUD)
+	state.Type = types.StringValue(common.BLOB_STORE_TYPE_GOOGLE_CLOUD)
 
 	// Populate bucket configuration from API response
 	r.setBucketConfigurationFromResponse(&state, apiResponse)
@@ -294,7 +294,7 @@ func (r *blobStoreGoogleCloudResource) buildRequestPayload(ctx context.Context, 
 
 	requestPayload := sonatyperepo.GoogleCloudBlobstoreApiModel{
 		Name:                *plan.Name.ValueStringPointer(),
-		Type:                sonatyperepo.PtrString(BLOB_STORE_TYPE_GOOGLE_CLOUD),
+		Type:                sonatyperepo.PtrString(common.BLOB_STORE_TYPE_GOOGLE_CLOUD),
 		BucketConfiguration: bucketConfig,
 	}
 

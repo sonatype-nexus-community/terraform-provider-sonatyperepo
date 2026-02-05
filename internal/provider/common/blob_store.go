@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package blob_store
+package common
 
 // Blob Store Types.
 const (
