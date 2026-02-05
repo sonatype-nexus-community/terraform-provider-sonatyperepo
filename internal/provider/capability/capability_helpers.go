@@ -59,20 +59,33 @@ func (ch *CapabilityHelper) FindCapabilityByRepositoryId(repositoryId string, di
 		return nil
 	}
 
-	// Search for firewall audit and quarantine capability with matching repository ID
+	return ch.findMatchingCapability(capabilities, repositoryId)
+}
+
+// findMatchingCapability searches for a capability matching the given repository ID
+func (ch *CapabilityHelper) findMatchingCapability(capabilities []v3.CapabilityDTO, repositoryId string) *v3.CapabilityDTO {
 	for _, cap := range capabilities {
-		if cap.Type != nil && *cap.Type == ch.capabilityType.String() {
-			if cap.Properties != nil {
-				if repoId, ok := (*cap.Properties)["repository"]; ok {
-					if repoId == repositoryId {
-						return &cap
-					}
-				}
-			}
+		if ch.isCapabilityMatch(&cap, repositoryId) {
+			return &cap
 		}
 	}
-
 	return nil
+}
+
+// isCapabilityMatch checks if a capability matches the expected type and repository ID
+func (ch *CapabilityHelper) isCapabilityMatch(cap *v3.CapabilityDTO, repositoryId string) bool {
+	if cap.Type == nil {
+		return false
+	}
+	if *cap.Type != ch.capabilityType.String() {
+		return false
+	}
+	if cap.Properties == nil {
+		return false
+	}
+
+	repoId, ok := (*cap.Properties)["repository"]
+	return ok && repoId == repositoryId
 }
 
 // CapabilityExists checks if a capability exists for a repository
@@ -137,58 +150,68 @@ func (ch *CapabilityHelper) UpdateCapability(capabilityId string, repositoryId s
 
 // DeleteCapability deletes an existng capability with retry logic
 func (ch *CapabilityHelper) DeleteCapability(capabilityId string, diags *diag.Diagnostics) bool {
-	attempts := 1
-	maxAttempts := 3
+	const maxAttempts = 3
 
-	for attempts <= maxAttempts {
-		httpResponse, err := ch.client.CapabilitiesAPI.Delete4(*ch.ctx, capabilityId).Execute()
-
-		// Trap 500 Error as they occur when Repo is not in appropriate internal state
-		if httpResponse.StatusCode == http.StatusInternalServerError {
-			tflog.Info(*ch.ctx, fmt.Sprintf("Unexpected response when deleting capability %s (attempt %d)", capabilityId, attempts))
-			attempts++
-			if attempts <= maxAttempts {
-				time.Sleep(1 * time.Second)
-				continue
-			}
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if ch.attemptDeleteCapability(capabilityId, attempt, maxAttempts, diags) {
+			return true
 		}
+	}
+	return false
+}
 
-		if err != nil {
-			if httpResponse.StatusCode == http.StatusNotFound {
-				errors.HandleAPIWarning(
-					fmt.Sprintf("Firewall capability (ID=%s) did not exist to delete", capabilityId),
-					&err,
-					httpResponse,
-					diags,
-				)
-			} else {
-				errors.HandleAPIError(
-					fmt.Sprintf("Error deleting firewall capability (ID=%s)", capabilityId),
-					&err,
-					httpResponse,
-					diags,
-				)
-			}
-			return false
+// attemptDeleteCapability performs a single delete attempt and returns true if successful
+func (ch *CapabilityHelper) attemptDeleteCapability(capabilityId string, attempt int, maxAttempts int, diags *diag.Diagnostics) bool {
+	httpResponse, err := ch.client.CapabilitiesAPI.Delete4(*ch.ctx, capabilityId).Execute()
+
+	// Trap 500 Error as they occur when Repo is not in appropriate internal state
+	if httpResponse.StatusCode == http.StatusInternalServerError {
+		tflog.Info(*ch.ctx, fmt.Sprintf("Unexpected response when deleting capability %s (attempt %d)", capabilityId, attempt))
+		if attempt < maxAttempts {
+			time.Sleep(1 * time.Second)
 		}
+		return false
+	}
 
-		if httpResponse.StatusCode != http.StatusNoContent {
-			errors.HandleAPIError(
-				fmt.Sprintf("Unexpected response when deleting firewall capability %s (attempt %d)", capabilityId, attempts),
-				&err,
-				httpResponse,
-				diags,
-			)
-			attempts++
-			if attempts <= maxAttempts {
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			return false
-		}
+	// Handle errors other than success
+	if err != nil {
+		ch.handleDeleteError(err, httpResponse, capabilityId, diags)
+		return false
+	}
 
+	// Check for success
+	if httpResponse.StatusCode == http.StatusNoContent {
 		return true
 	}
 
+	// Unexpected status code - retry if attempts remaining
+	errors.HandleAPIError(
+		fmt.Sprintf("Unexpected response when deleting firewall capability %s (attempt %d)", capabilityId, attempt),
+		&err,
+		httpResponse,
+		diags,
+	)
+	if attempt < maxAttempts {
+		time.Sleep(1 * time.Second)
+	}
 	return false
+}
+
+// handleDeleteError handles errors from delete operations
+func (ch *CapabilityHelper) handleDeleteError(err error, httpResponse *http.Response, capabilityId string, diags *diag.Diagnostics) {
+	if httpResponse.StatusCode == http.StatusNotFound {
+		errors.HandleAPIWarning(
+			fmt.Sprintf("Firewall capability (ID=%s) did not exist to delete", capabilityId),
+			&err,
+			httpResponse,
+			diags,
+		)
+	} else {
+		errors.HandleAPIError(
+			fmt.Sprintf("Error deleting firewall capability (ID=%s)", capabilityId),
+			&err,
+			httpResponse,
+			diags,
+		)
+	}
 }

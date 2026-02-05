@@ -33,7 +33,7 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-func commonProxySchemaAttributes(supportsRepositoryFirewall bool, supportsPccs bool) map[string]tfschema.Attribute {
+func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs bool) map[string]tfschema.Attribute {
 	thisAttr := map[string]tfschema.Attribute{
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Proxy specific configuration for this Repository",
