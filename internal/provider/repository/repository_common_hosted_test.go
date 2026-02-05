@@ -209,7 +209,6 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 				)...,
 			),
 		})
-
 		// 3. Import and verify no changes
 		if td.TestImport {
 			steps = append(steps, resource.TestStep{
