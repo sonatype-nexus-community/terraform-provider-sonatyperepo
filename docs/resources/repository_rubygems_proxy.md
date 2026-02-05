@@ -28,7 +28,9 @@ Manage Proxy RUBYGEMS Repositories
 
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
 - `replication` (Attributes) Replication configuration for this Repository (see [below for nested schema](#nestedatt--replication))
-- `repository_firewall` (Attributes) Sonatype Repository Firewall configuration for this Repository (see [below for nested schema](#nestedatt--repository_firewall))
+- `repository_firewall` (Attributes) Sonatype Repository Firewall configuration for this Repository.
+		
+**Requires Sonatype Nexus Repository 3.84.0 or later. (see [below for nested schema](#nestedatt--repository_firewall))
 - `routing_rule` (String) Routing Rule
 - `url` (String) URL to access the Repository
 

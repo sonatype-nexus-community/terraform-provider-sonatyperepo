@@ -5,7 +5,9 @@
 ### Configuration for Sonatype Repository Firewall
 
 Prior to 1.0.0 of this provider, the consumer of this provider had to manage both a _proxy_ repository and a _capability_ in order to configure 
-the Sonatype Repository Firewall for that proxy repository. This was not ideal for two reasons:
+the Sonatype Repository Firewall for that proxy repository. This was only possible when running Sonatype Nexus Repository 3.84.0 or newer.
+
+This was not ideal for two reasons:
 1. You could configure Sonatype Repository Firewall for a proxy repository without Sonatype Nexus Repository being connected to a valid Sonatype IQ Server - hence it wouldn't actually function
 2. The delcarative configuration required for Terraform did not shield users from the internal requirements sufficiently
 
@@ -86,6 +88,8 @@ resource "sonatyperepo_repository_npm_proxy" "example" {
 Not all proxy repository formats support Sonatype Repository Firewall or [Policy-Compliant Component Selection (PCCS)](https://help.sonatype.com/en/policy-compliant-component-selection.html) - 
 see this provider's [documentation](https://registry.terraform.io/providers/sonatype-nexus-community/sonatyperepo/latest/) for more details.
 
+Sonatype Nexus Repository 3.84.0 or newer is still required.
+
 ### Resource Renaming
 
 The following resources have been renamed to improve consistency.
@@ -97,6 +101,11 @@ The following resources have been renamed to improve consistency.
 - Resource `sonatyperepo_repository_ruby_gems_hosted` has been renamed to `sonatyperepo_repository_rubygems_hosted`
 - Resource `sonatyperepo_repository_ruby_gems_proxy` has been renamed to `sonatyperepo_repository_rubygems_proxy`
 
+### Resources Deprecated
+
+- `sonatyperepo_capability_repository_firewall`
+
+
 ### Other Resource Schema Changes
 
 - Resource `sonatyperepo_repository_apt_hosted`: 
@@ -107,7 +116,6 @@ The following resources have been renamed to improve consistency.
   - `proxy.metadata_max_age` is now optional and has a default value (`1440`)
   - `negative_cache.enabled` is now optional and has a default value (`true`)
   - `negative_cache.time_to_live` is now optional and has a default value (`1440`)
-
 
 ## Improvements 
 

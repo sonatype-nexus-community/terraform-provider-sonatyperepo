@@ -91,7 +91,9 @@ func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs bool) 
 
 func commonProxyFirewallAuditQuarantineAttribute(supportsPccs bool) tfschema.SingleNestedAttribute {
 	thisAttr := schema.ResourceOptionalSingleNestedAttribute(
-		"Sonatype Repository Firewall configuration for this Repository",
+		`Sonatype Repository Firewall configuration for this Repository.
+		
+**Requires Sonatype Nexus Repository 3.84.0 or later.`,
 		map[string]tfschema.Attribute{
 			"capability_id": schema.ResourceComputedStringWithDefault("Internal ID of the Audit & Quarantine Capability created for this Repository", ""),
 			"enabled":       schema.ResourceOptionalBoolWithDefault("Whether to enable Sonatype Repository Firewall for this Repository", false),
