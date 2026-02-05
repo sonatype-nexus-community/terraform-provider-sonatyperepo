@@ -129,10 +129,11 @@ type repositoryHostedTestData struct {
 }
 
 type repositoryProxyTestData struct {
-	CheckFunc  func(resourceName string) []resource.TestCheckFunc
-	RemoteUrl  string
-	RepoFormat string
-	SchemaFunc func(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string
+	CheckFunc    func(resourceName string) []resource.TestCheckFunc
+	RemoteUrl    string
+	RepoFormat   string
+	SchemaFunc   func(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string
+	TestPreCheck func(t *testing.T) func()
 }
 
 func allRepositoryFormatsGroupGeneric() []string {

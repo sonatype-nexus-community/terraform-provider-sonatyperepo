@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -43,6 +44,30 @@ var proxyTestData = []repositoryProxyTestData{
 		RepoFormat: common.REPO_FORMAT_APT,
 		SchemaFunc: repositoryProxyResourceConfig,
 	},
+	// NEXUS-48088 prevented this working prior to NXRM 3.88.0
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CARGO_REQUIRE_AUTHENTICATION, "false"),
+			}
+		},
+		RemoteUrl:  TEST_DATA_CARGO_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_CARGO,
+		SchemaFunc: repositoryProxyResourceConfig,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 88,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 4,
+					Minor: 0,
+					Patch: 0,
+				})
+			}
+		},
+	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
@@ -52,6 +77,20 @@ var proxyTestData = []repositoryProxyTestData{
 		RemoteUrl:  TEST_DATA_CARGO_PROXY_REMOTE_URL,
 		RepoFormat: common.REPO_FORMAT_CARGO,
 		SchemaFunc: repositoryProxyResourceConfig,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.88.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 87,
+					Patch: 99,
+				})
+			}
+		},
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
