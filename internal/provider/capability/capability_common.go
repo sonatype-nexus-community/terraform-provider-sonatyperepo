@@ -376,6 +376,10 @@ func capabilitySchema(ct capabilitytype.CapabilityTypeI) tfschema.Schema {
 		},
 	}
 
+	if ct.DeprecationMessage() != nil {
+		baseSchema.DeprecationMessage = *ct.DeprecationMessage()
+	}
+
 	if len(propertiesAttributes) > 0 {
 		baseSchema.Attributes["properties"] = schema.ResourceRequiredSingleNestedAttribute("Properties specific to this Capability type", propertiesAttributes)
 	}

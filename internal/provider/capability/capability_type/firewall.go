@@ -18,6 +18,7 @@ package capabilitytype
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
@@ -49,7 +50,7 @@ func NewFirewallAuditQuarantineCapability() *FirewallAuditQuarantineCapability {
 }
 
 // --------------------------------------------
-// Capabiltiy Type: Base URL Functions
+// Capabiltiy Type: Firewall Audit & Quarantine Functions
 // --------------------------------------------
 func (f *FirewallAuditQuarantineCapability) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error) {
 	// Cast to correct Plan Model Type
@@ -109,4 +110,12 @@ func (f *FirewallAuditQuarantineCapability) UpdateStateFromPlanForUpdate(plan an
 	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	return planModel
+}
+
+func (f *FirewallAuditQuarantineCapability) GetMarkdownDescription() string {
+	return fmt.Sprintf("**DEPRECATED SINCE 1.0.0** Manage Capability: %s", f.publicName)
+}
+
+func (f *FirewallAuditQuarantineCapability) DeprecationMessage() *string {
+	return common.StringPointer("Deprecated since version 1.0.0 - use fields on the respective proxy repository resource.")
 }

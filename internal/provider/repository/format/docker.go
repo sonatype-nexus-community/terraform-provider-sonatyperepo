@@ -37,6 +37,8 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
+const pathEnabledSupportedError = "`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0"
+
 type DockerRepositoryFormat struct {
 	BaseRepositoryFormat
 }
@@ -149,9 +151,7 @@ func (f *DockerRepositoryFormatHosted) UpdateStateFromApi(state any, api any) an
 func (f *DockerRepositoryFormatHosted) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerHostedModel)
 	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{
-			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
-		}
+		return []string{pathEnabledSupportedError}
 	}
 	return nil
 }
@@ -198,7 +198,7 @@ func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 }
 
 func (f *DockerRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, dockerSchemaAttributes())
 	maps.Copy(additionalAttributes, dockerProxySchemaAttributes())
 	return additionalAttributes
@@ -233,11 +233,45 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 func (f *DockerRepositoryFormatProxy) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerProxyModel)
 	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{
-			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
-		}
+		return []string{pathEnabledSupportedError}
 	}
 	return nil
+}
+
+func (f *DockerRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *DockerRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryDockerProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
 
 // --------------------------------------------
@@ -316,9 +350,7 @@ func (f *DockerRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any
 func (f *DockerRepositoryFormatGroup) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerroupModel)
 	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{
-			"`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0",
-		}
+		return []string{pathEnabledSupportedError}
 	}
 	return nil
 }

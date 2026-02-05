@@ -60,7 +60,7 @@ func (m *RepositoryPyPiHostedModel) ToApiUpdateModel() sonatyperepo.PypiHostedRe
 // --------------------------------------------
 type RepositoryPyPiProxyModel struct {
 	RepositoryProxyModel
-	PyPi *ProxyRemoveQuarrantiedModel `tfsdk:"pypi"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineWithPccsModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRepository) {
@@ -93,12 +93,11 @@ func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRep
 		}
 	}
 
-	// PyPi
-	// pypi is required for PyPi proxy repositories, so always populate it
-	if m.PyPi == nil {
-		m.PyPi = &ProxyRemoveQuarrantiedModel{}
+	// Firewall Audit and Quarantine (with PCCS)
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
 	}
-	m.PyPi.MapFromPyPiApi(&api.Pypi)
 }
 
 func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepositoryApiRequest {
@@ -127,9 +126,6 @@ func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepo
 	}
 
 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
-
-	// PyPi
-	m.PyPi.MapToPyPiApi(apiModel.Pypi)
 
 	return apiModel
 }

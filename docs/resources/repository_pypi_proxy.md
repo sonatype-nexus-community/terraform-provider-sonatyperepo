@@ -22,13 +22,15 @@ Manage Proxy PYPI Repositories
 - `negative_cache` (Attributes) Negative Cache configuration for this Repository (see [below for nested schema](#nestedatt--negative_cache))
 - `online` (Boolean) Whether this Repository is online and accepting incoming requests
 - `proxy` (Attributes) Proxy specific configuration for this Repository (see [below for nested schema](#nestedatt--proxy))
-- `pypi` (Attributes) PyPi specific configuration for this Repository (see [below for nested schema](#nestedatt--pypi))
 - `storage` (Attributes) Storage configuration for this Repository (see [below for nested schema](#nestedatt--storage))
 
 ### Optional
 
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
 - `replication` (Attributes) Replication configuration for this Repository (see [below for nested schema](#nestedatt--replication))
+- `repository_firewall` (Attributes) Sonatype Repository Firewall configuration for this Repository.
+		
+**Requires Sonatype Nexus Repository 3.84.0 or later. (see [below for nested schema](#nestedatt--repository_firewall))
 - `routing_rule` (String) Routing Rule
 - `url` (String) URL to access the Repository
 
@@ -80,7 +82,7 @@ Optional:
 <a id="nestedatt--negative_cache"></a>
 ### Nested Schema for `negative_cache`
 
-Required:
+Optional:
 
 - `enabled` (Boolean) Whether to cache responses for content not present in the proxied repository
 - `time_to_live` (Number) How long to cache the fact that a file was not found in the repository (in minutes)
@@ -91,17 +93,12 @@ Required:
 
 Required:
 
-- `content_max_age` (Number) How long to cache artifacts before rechecking the remote repository (in minutes)
-- `metadata_max_age` (Number) How long to cache metadata before rechecking the remote repository (in minutes)
 - `remote_url` (String) Location of the remote repository being proxied
 
+Optional:
 
-<a id="nestedatt--pypi"></a>
-### Nested Schema for `pypi`
-
-Required:
-
-- `remove_quarrantined` (Boolean) Remove Quarantined Versions
+- `content_max_age` (Number) How long to cache artifacts before rechecking the remote repository (in minutes)
+- `metadata_max_age` (Number) How long to cache metadata before rechecking the remote repository (in minutes)
 
 
 <a id="nestedatt--storage"></a>
@@ -131,6 +128,20 @@ Required:
 Optional:
 
 - `asset_path_regex` (String) Regular Expression of Asset Paths to pull pre-emptively pull
+
+
+<a id="nestedatt--repository_firewall"></a>
+### Nested Schema for `repository_firewall`
+
+Optional:
+
+- `enabled` (Boolean) Whether to enable Sonatype Repository Firewall for this Repository
+- `pccs_enabled` (Boolean) Whether Policy-Compliant Component Selection is enabled. See [documentatation](https://help.sonatype.com/en/policy-compliant-component-selection.html) for details.
+- `quarantine` (Boolean) Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).
+
+Read-Only:
+
+- `capability_id` (String) Internal ID of the Audit & Quarantine Capability created for this Repository
 
 ## Import
 

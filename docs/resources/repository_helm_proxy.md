@@ -79,7 +79,7 @@ Optional:
 <a id="nestedatt--negative_cache"></a>
 ### Nested Schema for `negative_cache`
 
-Required:
+Optional:
 
 - `enabled` (Boolean) Whether to cache responses for content not present in the proxied repository
 - `time_to_live` (Number) How long to cache the fact that a file was not found in the repository (in minutes)
@@ -90,9 +90,12 @@ Required:
 
 Required:
 
+- `remote_url` (String) Location of the remote repository being proxied
+
+Optional:
+
 - `content_max_age` (Number) How long to cache artifacts before rechecking the remote repository (in minutes)
 - `metadata_max_age` (Number) How long to cache metadata before rechecking the remote repository (in minutes)
-- `remote_url` (String) Location of the remote repository being proxied
 
 
 <a id="nestedatt--storage"></a>
