@@ -93,13 +93,6 @@ func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRep
 		}
 	}
 
-	// PyPi
-	// pypi is required for PyPi proxy repositories, so always populate it
-	// if m.PyPi == nil {
-	// 	m.PyPi = &ProxyRemoveQuarrantiedModel{}
-	// }
-	// m.PyPi.MapFromPyPiApi(&api.Pypi)
-
 	// Firewall Audit and Quarantine (with PCCS)
 	// This will be populated separately by the resource helper during Read operations
 	if m.FirewallAuditAndQuarantine == nil {
@@ -133,9 +126,6 @@ func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepo
 	}
 
 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
-
-	// PyPi
-	// m.PyPi.MapToPyPiApi(apiModel.Pypi)
 
 	return apiModel
 }

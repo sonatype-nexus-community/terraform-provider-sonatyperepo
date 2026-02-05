@@ -89,6 +89,15 @@ func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient
 	return apiClient.RepositoryManagementAPI.UpdateRHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+func (f *RRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *RRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
@@ -110,7 +119,11 @@ func (f *RRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *RRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositoryRHostedModel)
+	var stateModel model.RepositoryRHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
 }

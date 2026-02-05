@@ -11,6 +11,8 @@ the Sonatype Repository Firewall for that proxy repository. This was not ideal f
 
 Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_repository_firewall` resource has been deprecated.
 
+Additionally - it is now required that a valid Sonatype IQ Connection is configured _PRIOR_ to mamnaging repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource.
+
 Example Terraform prior to 1.0.0:
 ```hcl
 resource "sonatyperepo_repository_npm_proxy" "example" {
@@ -91,6 +93,9 @@ The following resources have been renamed to improve consistency.
 - Resource `sonatyperepo_repository_maven_group` has been renamed to `sonatyperepo_repository_maven2_group`
 - Resource `sonatyperepo_repository_maven_hosted` has been renamed to `sonatyperepo_repository_maven2_hosted`
 - Resource `sonatyperepo_repository_maven_proxy` has been renamed to `sonatyperepo_repository_maven2_proxy`
+- Resource `sonatyperepo_repository_ruby_gems_group` has been renamed to `sonatyperepo_repository_rubygems_group`
+- Resource `sonatyperepo_repository_ruby_gems_hosted` has been renamed to `sonatyperepo_repository_rubygems_hosted`
+- Resource `sonatyperepo_repository_ruby_gems_proxy` has been renamed to `sonatyperepo_repository_rubygems_proxy`
 
 ### Other Resource Schema Changes
 
@@ -104,12 +109,15 @@ The following resources have been renamed to improve consistency.
   - `negative_cache.time_to_live` is now optional and has a default value (`1440`)
 
 
-## Improvements / Behaviour Changes in 1.0.0
+## Improvements 
 
 ### Resources now supporting Import
+- `sonatyperepo_repository_cargo_hosted`
 - `sonatyperepo_repository_cargo_proxy`
 - `sonatyperepo_repository_cocoapods_proxy`
+- `sonatyperepo_repository_conan_hosted`
 - `sonatyperepo_repository_composer_proxy`
 - `sonatyperepo_repository_conan_proxy`
-
-
+- `sonatyperepo_repository_gitlfs_hosted`
+- `sonatyperepo_repository_r_proxy`
+- `sonatyperepo_repository_r_hosted`

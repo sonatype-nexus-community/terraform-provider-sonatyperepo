@@ -95,6 +95,15 @@ func (f *ConanRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateConanHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+func (f *ConanRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetConanHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *ConanRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
@@ -116,7 +125,11 @@ func (f *ConanRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *ConanRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositorConanHostedModel)
+	var stateModel model.RepositorConanHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorConanHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
 }
@@ -152,7 +165,7 @@ func (f *ConanRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateConanProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-// DoImportRequest implements the import functionality for NPM Proxy repositories
+// DoImportRequest implements the import functionality for Conan Proxy repositories
 func (f *ConanRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetConanProxyRepository(ctx, repositoryName).Execute()

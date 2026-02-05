@@ -30,18 +30,7 @@ type RepositoryRHostedModel struct {
 }
 
 func (m *RepositoryRHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-	m.Name = types.StringPointerValue(api.Name)
-	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
-
-	// Cleanup
-	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = NewRepositoryCleanupModel()
-		mapCleanupFromApi(api.Cleanup, m.Cleanup)
-	}
-
-	// Storage
-	m.Storage.MapFromApi(&api.Storage)
+	m.mapSimpleApiHostedRepository(api)
 }
 
 func (m *RepositoryRHostedModel) ToApiCreateModel() sonatyperepo.RHostedRepositoryApiRequest {

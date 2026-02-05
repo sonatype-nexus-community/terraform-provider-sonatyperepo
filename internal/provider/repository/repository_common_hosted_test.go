@@ -42,16 +42,118 @@ var hostedTestData = []repositoryHostedTestData{
 		SchemaFunc: repositoryHostedResourceConfig,
 		TestImport: false, // TODO: Document this does not work based on NXRM 3.88
 	},
-	// {
-	// 	CheckFunc: func(resourceName string) []resource.TestCheckFunc {
-	// 		return []resource.TestCheckFunc{
-	// 			resource.TestCheckResourceAttr(resourceName, RES_ATTR_APT_DISTRIBUTION, "bionic"),
-	// 		}
-	// 	},
-	// 	RemoteUrl:  TEST_DATA_APT_PROXY_REMOTE_URL,
-	// 	RepoFormat: common.REPO_FORMAT_APT,
-	// 	SchemaFunc: repositoryProxyResourceConfig,
-	// },
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_CARGO,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_CONAN,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_PATH_ENABLED, "false"),
+			}
+		},
+		RepoFormat: common.REPO_FORMAT_DOCKER,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_GIT_LFS,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_HELM,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{
+				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_MAVEN_CONTENT_DISPOSITION),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_PERMISSIVE),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
+			}
+		},
+		RepoFormat: common.REPO_FORMAT_MAVEN,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_NPM,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_NUGET,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_PYPI,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_R,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_RAW,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_RUBY_GEMS,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat: common.REPO_FORMAT_YUM,
+		SchemaFunc: repositoryHostedResourceConfig,
+		TestImport: true,
+	},
 }
 
 // ------------------------------------------------------------
@@ -157,23 +259,50 @@ resource "%s" "repo" {
 }
 
 const (
-	configBlockHostedDefaultApt    string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
-	configBlockHostedDefaultDocker string = "docker = { force_basic_auth = false\nv1_enabled = false }"
-	configBlockHostedDefaultMaven  string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
-	configBlockHostedDefaultRaw    string = "raw = { content_disposition = \"ATTACHMENT\" }"
-	configBlockHostedDefaultYum    string = "yum = { repo_data_depth = 1 }"
+	configBlockHostedDefaultApt      string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
+	configBlockHostedDefaultCargo    string = ""
+	configBlockHostedDefaultConan    string = ""
+	configBlockHostedDefaultDocker   string = "docker = { force_basic_auth = false\nv1_enabled = false\npath_enabled = false }"
+	configBlockHostedDefaultGitLfs   string = ""
+	configBlockHostedDefaultHelm     string = ""
+	configBlockHostedDefaultMaven    string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
+	configBlockHostedDefaultNpm      string = ""
+	configBlockHostedDefaultNuget    string = ""
+	configBlockHostedDefaultPypi     string = ""
+	configBlockHostedDefaultR        string = ""
+	configBlockHostedDefaultRaw      string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockHostedDefaultRubyGems string = ""
+	configBlockHostedDefaultYum      string = "yum = { repo_data_depth = 1 }"
 )
 
 func formatSpecificHostedDefaultConfig(repoFormat string) string {
 	switch repoFormat {
 	case common.REPO_FORMAT_APT:
 		return configBlockHostedDefaultApt
+	case common.REPO_FORMAT_CARGO:
+		return configBlockHostedDefaultCargo
+	case common.REPO_FORMAT_CONAN:
+		return configBlockHostedDefaultConan
 	case common.REPO_FORMAT_DOCKER:
 		return configBlockHostedDefaultDocker
+	case common.REPO_FORMAT_GIT_LFS:
+		return configBlockHostedDefaultGitLfs
+	case common.REPO_FORMAT_HELM:
+		return configBlockHostedDefaultHelm
 	case common.REPO_FORMAT_MAVEN:
 		return configBlockHostedDefaultMaven
+	case common.REPO_FORMAT_NPM:
+		return configBlockHostedDefaultNpm
+	case common.REPO_FORMAT_NUGET:
+		return configBlockHostedDefaultNuget
+	case common.REPO_FORMAT_PYPI:
+		return configBlockHostedDefaultPypi
+	case common.REPO_FORMAT_R:
+		return configBlockHostedDefaultR
 	case common.REPO_FORMAT_RAW:
 		return configBlockHostedDefaultRaw
+	case common.REPO_FORMAT_RUBY_GEMS:
+		return configBlockHostedDefaultRubyGems
 	case common.REPO_FORMAT_YUM:
 		return configBlockHostedDefaultYum
 

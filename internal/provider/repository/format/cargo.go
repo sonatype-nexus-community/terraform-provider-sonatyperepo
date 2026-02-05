@@ -92,6 +92,15 @@ func (f *CargoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiCl
 	return apiClient.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+func (f *CargoRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *CargoRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	return commonHostedSchemaAttributes()
 }
@@ -113,7 +122,11 @@ func (f *CargoRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 }
 
 func (f *CargoRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.RepositorCargoHostedModel)
+	var stateModel model.RepositorCargoHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorCargoHostedModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
 	return stateModel
 }
@@ -149,7 +162,7 @@ func (f *CargoRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCli
 	return apiClient.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
-// DoImportRequest implements the import functionality for NPM Proxy repositories
+// DoImportRequest implements the import functionality for Cargo Proxy repositories
 func (f *CargoRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoProxyRepository(ctx, repositoryName).Execute()
