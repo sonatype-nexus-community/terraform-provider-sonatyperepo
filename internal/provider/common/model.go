@@ -129,6 +129,10 @@ func (s *SystemVersion) String() string {
 	return fmt.Sprintf("%d.%d.%d-%d (PRO=%t)", s.Major, s.Minor, s.Patch, s.Build, s.ProVersion)
 }
 
+func (s *SystemVersion) SupportsCapabilities() bool {
+	return s.NewerThan(3, 84, 0, 0)
+}
+
 func ParseServerHeaderToVersion(headerStr string) SystemVersion {
 	match := FindAllGroups(nxrmServerVersionExp, strings.ToUpper(headerStr))
 	sysVersion := SystemVersion{}

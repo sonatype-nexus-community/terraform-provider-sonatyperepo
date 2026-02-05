@@ -83,7 +83,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	ctx = r.setupAuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
-	if r.NxrmVersion.NewerThan(3, 84, 0, 0) && !r.verifyIQConnectionIfNeeded(ctx, plan, resp) {
+	if r.NxrmVersion.SupportsCapabilities() && !r.verifyIQConnectionIfNeeded(ctx, plan, resp) {
 		return
 	}
 
@@ -103,7 +103,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
-	if r.NxrmVersion.NewerThan(3, 84, 0, 0) && r.isProxyWithFirewall() {
+	if r.NxrmVersion.SupportsCapabilities() && r.isProxyWithFirewall() {
 		stateModel = r.configureFirewall(ctx, plan, stateModel, resp)
 		if resp.Diagnostics.HasError() {
 			return
@@ -524,7 +524,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// If PROXY that Supports Repository Firewall - check for any existing Capability
-	if r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
+	if r.NxrmVersion.SupportsCapabilities() && r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
 		// See if Capability alread exists
 		capabilityHelper := capability.NewCapabilityHelper(r.Client, &ctx, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
 		auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
