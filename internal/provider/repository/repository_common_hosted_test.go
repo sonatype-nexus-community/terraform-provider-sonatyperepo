@@ -261,7 +261,7 @@ const (
 	configBlockHostedDefaultApt      string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
 	configBlockHostedDefaultCargo    string = ""
 	configBlockHostedDefaultConan    string = ""
-	configBlockHostedDefaultDocker   string = "docker = { force_basic_auth = false\nv1_enabled = false\npath_enabled = false }"
+	configBlockHostedDefaultDocker   string = "docker = { force_basic_auth = false\nv1_enabled = false}"
 	configBlockHostedDefaultGitLfs   string = ""
 	configBlockHostedDefaultHelm     string = ""
 	configBlockHostedDefaultMaven    string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
