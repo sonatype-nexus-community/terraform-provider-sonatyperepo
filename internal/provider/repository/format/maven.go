@@ -285,9 +285,7 @@ func (f *MavenRepositoryFormatGroup) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, mavenSchemaAttributes())
-	return additionalAttributes
+	return commonGroupSchemaAttributes(false)
 }
 
 func (f *MavenRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

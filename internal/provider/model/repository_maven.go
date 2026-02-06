@@ -187,7 +187,6 @@ func (m *repositoryMavenSpecificModel) MapToApi(api *sonatyperepo.MavenAttribute
 // --------------------------------------------
 type RepositoryMavenGroupModel struct {
 	RepositoryGroupModel
-	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
 }
 
 func (m *RepositoryMavenGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
@@ -200,9 +199,6 @@ func (m *RepositoryMavenGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroup
 
 	// Group Attributes
 	m.Group.MapFromApi(&api.Group)
-
-	// Maven Specific
-	// m.Maven.MapFromApi(&api.Maven) - Not in API response currently
 }
 
 func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRepositoryApiRequest {
@@ -216,8 +212,11 @@ func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRe
 	// Group
 	m.Group.MapToApi(&apiModel.Group)
 
-	// Maven
-	m.Maven.MapToApi(&apiModel.Maven)
+	// Maven - Injected to keep NXRM 3.87 and earlier happy (they are in API, but not used)
+	apiModel.Maven = *sonatyperepo.NewMavenAttributesWithDefaults()
+	apiModel.Maven.ContentDisposition = common.StringPointer(common.MAVEN_CONTENT_DISPOSITION_INLINE)
+	apiModel.Maven.LayoutPolicy = common.StringPointer(common.MAVEN_LAYOUT_PERMISSIVE)
+	apiModel.Maven.VersionPolicy = common.StringPointer(common.MAVEN_VERSION_POLICY_MIXED)
 
 	return apiModel
 }

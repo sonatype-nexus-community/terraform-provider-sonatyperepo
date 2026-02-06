@@ -205,17 +205,17 @@ func TestAccRepositoryMavenGroupImport(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		PreCheck: func() {
-			// Broken in NXRM 3.88 - NEXUS-50506
+			// Maven Attributes removed from Maven Group in NXRM 3.88
 			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
 				Major: 3,
 				Minor: 88,
 				Patch: 0,
 				Build: 0,
 			}, &common.SystemVersion{
-				Major: 3,
-				Minor: 88,
-				Patch: 99,
-				Build: 127,
+				Major: 4,
+				Minor: 0,
+				Patch: 0,
+				Build: 0,
 			})
 		},
 		Steps: []resource.TestStep{
@@ -247,11 +247,6 @@ resource "%s" "repo" {
   group = {
     member_names = ["%s"]
   }
-  maven = {
-    content_disposition = "ATTACHMENT"
-    layout_policy = "STRICT"
-    version_policy = "RELEASE"
-  }	
   depends_on = [%s.member]
 }
 `, resourceTypeMavenHosted, memberName, resourceTypeMavenGroup, repoName, memberName, resourceTypeMavenHosted),
