@@ -91,7 +91,8 @@ func (m *RepositoryMavenHostedModel) ToApiUpdateModel() sonatyperepo.MavenHosted
 // --------------------------------------------
 type RepositoryMavenProxyModel struct {
 	RepositoryProxyModel
-	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
+	Maven                      repositoryMavenSpecificModel     `tfsdk:"maven"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiRepository) {
@@ -126,6 +127,12 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 
 	// Maven Specific
 	m.Maven.MapFromApi(&api.Maven)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
+	}
 }
 
 func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
