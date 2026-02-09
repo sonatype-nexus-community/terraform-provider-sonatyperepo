@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
-	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -191,20 +190,6 @@ func TestAccRepositoryMavenGroupImport(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			// Maven Attributes removed from Maven Group in NXRM 3.88
-			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
-				Major: 3,
-				Minor: 88,
-				Patch: 0,
-				Build: 0,
-			}, &common.SystemVersion{
-				Major: 4,
-				Minor: 0,
-				Patch: 0,
-				Build: 0,
-			})
-		},
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
