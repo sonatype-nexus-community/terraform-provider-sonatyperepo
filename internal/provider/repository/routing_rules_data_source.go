@@ -96,10 +96,10 @@ func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	tflog.Debug(ctx, fmt.Sprintf("Iterating %d routing rules", len(routingRulesResponse)))
 
-	state.RoutingRules = make([]model.RoutingRuleModel, 0)
+	state.RoutingRules = make([]model.RoutingRuleModelDS, 0)
 	for _, routingRule := range routingRulesResponse {
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s routing rule", *routingRule.Name))
-		newRr := model.RoutingRuleModel{}
+		newRr := model.RoutingRuleModelDS{}
 		newRr.MapFromApi(&routingRule)
 
 		state.RoutingRules = append(state.RoutingRules, newRr)

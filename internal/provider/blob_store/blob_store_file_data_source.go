@@ -72,7 +72,7 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 
 // Read refreshes the Terraform state with the latest data.
 func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreFileModel
+	var data model.BlobStoreFileModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -94,7 +94,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	state := model.BlobStoreFileModel{
+	state := model.BlobStoreFileModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 		Path: types.StringValue(*blobStore.Path),
 	}

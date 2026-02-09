@@ -69,7 +69,7 @@ func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaR
 
 // Read refreshes the Terraform state with the latest data.
 func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.RoutingRuleModel
+	var data model.RoutingRuleModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -86,7 +86,7 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	routingRuleResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRule(ctx, data.Name.ValueString()).Execute()
 
-	state := model.RoutingRuleModel{}
+	state := model.RoutingRuleModelDS{}
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			errors.HandleAPIWarning(

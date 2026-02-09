@@ -88,7 +88,7 @@ func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	// Map API response to state
-	var state model.SecurityUserTokenModel
+	var state model.SecurityUserTokenModelDS
 	state.MapFromApi(apiResponse)
 
 	// Set state

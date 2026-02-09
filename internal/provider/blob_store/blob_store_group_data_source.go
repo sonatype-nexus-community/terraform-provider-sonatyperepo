@@ -73,7 +73,7 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 
 // Read refreshes the Terraform state with the latest data.
 func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreGroupModel
+	var data model.BlobStoreGroupModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -100,7 +100,7 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	state := model.BlobStoreGroupModel{
+	state := model.BlobStoreGroupModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 	}
 

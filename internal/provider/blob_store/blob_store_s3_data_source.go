@@ -93,7 +93,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 
 // Read refreshes the Terraform state with the latest data.
 func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreS3Model
+	var data model.BlobStoreS3ModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -120,7 +120,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	state := model.BlobStoreS3Model{
+	state := model.BlobStoreS3ModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 		Type: types.StringValue(common.BLOB_STORE_TYPE_S3),
 		BucketConfiguration: &model.BlobStoreS3BucketConfigurationModel{

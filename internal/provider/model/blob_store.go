@@ -61,6 +61,12 @@ func (m *BlobStoreSoftQuota) MapToApi(api *v3.BlobStoreApiSoftQuota) {
 
 // BlobStoreFileModel
 // ------------------------------------
+type BlobStoreFileModelDS struct {
+	Name      types.String        `tfsdk:"name"`
+	Path      types.String        `tfsdk:"path"`
+	SoftQuota *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+}
+
 type BlobStoreFileModel struct {
 	Name        types.String        `tfsdk:"name"`
 	Path        types.String        `tfsdk:"path"`
@@ -70,6 +76,13 @@ type BlobStoreFileModel struct {
 
 // BlobStoreGroupModel
 // ------------------------------------
+type BlobStoreGroupModelDS struct {
+	Name       types.String        `tfsdk:"name"`
+	SoftQuota  *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	Members    []types.String      `tfsdk:"members"`
+	FillPolicy types.String        `tfsdk:"fill_policy"`
+}
+
 type BlobStoreGroupModel struct {
 	Name        types.String        `tfsdk:"name"`
 	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
@@ -121,6 +134,13 @@ func (m *BlobStoreGroupModel) mapCommonGroupFields(api interface {
 
 // BlobStoreS3Model
 // ------------------------------------
+type BlobStoreS3ModelDS struct {
+	Name                types.String                         `tfsdk:"name"`
+	Type                types.String                         `tfsdk:"type"`
+	SoftQuota           *BlobStoreSoftQuota                  `tfsdk:"soft_quota"`
+	BucketConfiguration *BlobStoreS3BucketConfigurationModel `tfsdk:"bucket_configuration"`
+}
+
 type BlobStoreS3ModelV0 struct {
 	Name                types.String                           `tfsdk:"name"`
 	Type                types.String                           `tfsdk:"type"`
