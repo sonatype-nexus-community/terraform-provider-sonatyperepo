@@ -138,6 +138,7 @@ type repositoryProxyTestData struct {
 	RemoteUrl            string
 	RepoFormat           string
 	SchemaFunc           func(resourceType, repoName, repoFormat, remoteUrl, randomString, formatSpecificConfig string, completeData bool) string
+	TestImport           bool
 	TestPreCheck         func(t *testing.T) func()
 }
 

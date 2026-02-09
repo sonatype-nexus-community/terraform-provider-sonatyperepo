@@ -150,3 +150,18 @@ Optional:
 Read-Only:
 
 - `capability_id` (String) Internal ID of the Audit & Quarantine Capability created for this Repository
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Existing proxy Conan repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your Sonatype Nexus Repository.
+#
+# NOTE: This does not work when running against Sonatype Nexus Repository version 3.85 or earlier.
+
+# Example
+terraform import sonatyperepo_repository_conan_proxy.example REPOSITORY_NAME
+```
