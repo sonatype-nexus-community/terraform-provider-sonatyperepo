@@ -62,11 +62,10 @@ func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.Schema
 				"List of Routing Rules",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"name":         schema.DataSourceComputedString("The name of the routing rule"),
-						"description":  schema.DataSourceComputedString("The description of the routing rule"),
-						"mode":         schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
-						"matchers":     schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
-						"last_updated": schema.DataSourceComputedString("Timestamp of last update"),
+						"name":        schema.DataSourceComputedString("The name of the routing rule"),
+						"description": schema.DataSourceComputedString("The description of the routing rule"),
+						"mode":        schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
+						"matchers":    schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
 					},
 				},
 			),

@@ -25,10 +25,6 @@ Use this data source to get a specific S3 Blob Store by it's name
 - `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 - `type` (String) Type of this Blob Store - will always be 's3'
 
-### Read-Only
-
-- `last_updated` (String) The timestamp of when the resource was last updated
-
 <a id="nestedatt--bucket_configuration"></a>
 ### Nested Schema for `bucket_configuration`
 
