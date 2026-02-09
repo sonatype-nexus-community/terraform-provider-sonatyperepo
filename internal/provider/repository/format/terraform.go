@@ -116,7 +116,7 @@ func (f *TerraformRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *TerraformRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+func (f *TerraformRepositoryFormatProxy) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryTerraformProxyModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
