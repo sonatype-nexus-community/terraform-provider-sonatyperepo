@@ -66,6 +66,7 @@ const (
 	REPO_FORMAT_RAW                                          string = "RAW"
 	REPO_FORMAT_R                                            string = "R"
 	REPO_FORMAT_RUBY_GEMS                                    string = "RUBYGEMS"
+	REPO_FORMAT_TERRAFORM                                    string = "TERRAFORM"
 	REPO_FORMAT_YUM                                          string = "YUM"
 	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN            int64  = 1
 	REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MAX            int64  = 10

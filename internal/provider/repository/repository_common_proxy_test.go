@@ -249,6 +249,28 @@ var proxyTestData = []repositoryProxyTestData{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
 		},
+		RemoteUrl:  TEST_DATA_TERRAFORM_PROXY_REMOTE_URL,
+		RepoFormat: common.REPO_FORMAT_TERRAFORM,
+		SchemaFunc: repositoryProxyResourceConfig,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.88.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 87,
+					Patch: 99,
+				})
+			}
+		},
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
 		RemoteUrl:  TEST_DATA_YUM_PROXY_REMOTE_URL,
 		RepoFormat: common.REPO_FORMAT_YUM,
 		SchemaFunc: repositoryProxyResourceConfig,
@@ -260,99 +282,101 @@ var proxyTestData = []repositoryProxyTestData{
 // ------------------------------------------------------------
 func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 	for _, td := range proxyTestData {
-		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
-		resourceName := fmt.Sprintf(repoNameFString, resourceType)
-		repoName := fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString)
+		t.Run(td.RepoFormat, func(t *testing.T) {
+			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+			resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
+			resourceName := fmt.Sprintf(repoNameFString, resourceType)
+			repoName := fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString)
 
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			PreCheck: func() {
-				if td.TestPreCheck != nil {
-					td.TestPreCheck(t)()
-				}
-			},
-			Steps: []resource.TestStep{
-				// 1. Create with minimal configuration relying on defaults
-				{
-					Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, false),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						append(
-							// Test Case Specific Checks
-							td.CheckFunc(resourceName),
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+				PreCheck: func() {
+					if td.TestPreCheck != nil {
+						td.TestPreCheck(t)()
+					}
+				},
+				Steps: []resource.TestStep{
+					// 1. Create with minimal configuration relying on defaults
+					{
+						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, false),
+						Check: resource.ComposeAggregateTestCheckFunc(
+							append(
+								// Test Case Specific Checks
+								td.CheckFunc(resourceName),
 
-							// Generic Checks
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-							resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-							// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_CONTENT_MAX_AGE)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_METADATA_MAX_AGE)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_ENABLED, fmt.Sprintf("%t", common.DEFAULT_PROXY_NEGATIVE_CACHE_ENABLED)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, fmt.Sprintf("%d", common.DEFAULT_PROXY_NEGATIVE_CACHE_TTL)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_AUTO_BLOCK)),
-							resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE)),
-							resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX),
-							resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-						)...,
-					),
-				},
-				// 2. Update to use full config
-				{
-					Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, true),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						append(
-							// Test Case Specific Checks
-							td.CheckFunc(resourceName),
+								// Generic Checks
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+								resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+								// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_CONTENT_MAX_AGE)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_METADATA_MAX_AGE)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_ENABLED, fmt.Sprintf("%t", common.DEFAULT_PROXY_NEGATIVE_CACHE_ENABLED)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, fmt.Sprintf("%d", common.DEFAULT_PROXY_NEGATIVE_CACHE_TTL)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_AUTO_BLOCK)),
+								resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE)),
+								resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX),
+								resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+							)...,
+						),
+					},
+					// 2. Update to use full config
+					{
+						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, true),
+						Check: resource.ComposeAggregateTestCheckFunc(
+							append(
+								// Test Case Specific Checks
+								td.CheckFunc(resourceName),
 
-							// Generic Checks
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-							resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-							// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
-							resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-							resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-							// resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
-						)...,
-					),
+								// Generic Checks
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+								resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+								// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
+								resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+								resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+								// resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
+							)...,
+						),
+					},
+					// 3. Import and verify no changes
+					{
+						ResourceName:                         resourceName,
+						ImportState:                          true,
+						ImportStateVerify:                    true,
+						ImportStateId:                        repoName,
+						ImportStateVerifyIdentifierAttribute: "name",
+						ImportStateVerifyIgnore:              []string{"last_updated"},
+					},
 				},
-				// 3. Import and verify no changes
-				{
-					ResourceName:                         resourceName,
-					ImportState:                          true,
-					ImportStateVerify:                    true,
-					ImportStateId:                        repoName,
-					ImportStateVerifyIdentifierAttribute: "name",
-					ImportStateVerifyIgnore:              []string{"last_updated"},
-				},
-			},
+			})
 		})
 	}
 }
@@ -656,13 +680,14 @@ resource "%s" "repo" {
 }
 
 const (
-	configBlockProxyDefaultApt    string = "apt = { distribution = \"bionic\" }"
-	configBlockProxyDefaultCargo  string = "cargo = { require_authentication = false }"
-	configBlockProxyDefaultConan  string = "conan = { conan_version = \"V2\" }"
-	configBlockProxyDefaultDocker string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
-	configBlockProxyDefaultMaven  string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
-	configBlockProxyDefaultNuget  string = "nuget_proxy = { nuget_version = \"V3\" }"
-	configBlockProxyDefaultRaw    string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockProxyDefaultApt       string = "apt = { distribution = \"bionic\" }"
+	configBlockProxyDefaultCargo     string = "cargo = { require_authentication = false }"
+	configBlockProxyDefaultConan     string = "conan = { conan_version = \"V2\" }"
+	configBlockProxyDefaultDocker    string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
+	configBlockProxyDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
+	configBlockProxyDefaultNuget     string = "nuget_proxy = { nuget_version = \"V3\" }"
+	configBlockProxyDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockProxyDefaultTerraform string = "terraform = { }"
 )
 
 func formatSpecificProxyDefaultConfig(repoFormat string) string {
@@ -681,6 +706,8 @@ func formatSpecificProxyDefaultConfig(repoFormat string) string {
 		return configBlockProxyDefaultNuget
 	case common.REPO_FORMAT_RAW:
 		return configBlockProxyDefaultRaw
+	case common.REPO_FORMAT_TERRAFORM:
+		return configBlockProxyDefaultTerraform
 
 	default:
 		return ""
