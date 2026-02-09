@@ -33,22 +33,20 @@ import (
 // CapabilityHelper provides reusable capability management functions for repository resources
 type CapabilityHelper struct {
 	client         *v3.APIClient
-	ctx            *context.Context
 	capabilityType common.CapabilityType
 }
 
 // NewCapabilityHelper creates a new capability helper
-func NewCapabilityHelper(client *v3.APIClient, ctx *context.Context, capabilityType common.CapabilityType) *CapabilityHelper {
+func NewCapabilityHelper(client *v3.APIClient, capabilityType common.CapabilityType) *CapabilityHelper {
 	return &CapabilityHelper{
 		client:         client,
-		ctx:            ctx,
 		capabilityType: capabilityType,
 	}
 }
 
 // FindCapabilityByRepositoryId searches for a firewall audit and quarantine capability for a given repository
-func (ch *CapabilityHelper) FindCapabilityByRepositoryId(repositoryId string, diags *diag.Diagnostics) *v3.CapabilityDTO {
-	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List(*ch.ctx).Execute()
+func (ch *CapabilityHelper) FindCapabilityByRepositoryId(ctx context.Context, repositoryId string, diags *diag.Diagnostics) *v3.CapabilityDTO {
+	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List(ctx).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error listing capabilities to find capability for repository %s", repositoryId),
@@ -89,12 +87,12 @@ func (ch *CapabilityHelper) isCapabilityMatch(cap *v3.CapabilityDTO, repositoryI
 }
 
 // CapabilityExists checks if a capability exists for a repository
-func (ch *CapabilityHelper) CapabilityExists(repositoryId string, diags *diag.Diagnostics) bool {
-	return ch.FindCapabilityByRepositoryId(repositoryId, diags) != nil
+func (ch *CapabilityHelper) CapabilityExists(ctx context.Context, repositoryId string, diags *diag.Diagnostics) bool {
+	return ch.FindCapabilityByRepositoryId(ctx, repositoryId, diags) != nil
 }
 
 // CreateCapability creates a capability for a repository
-func (ch *CapabilityHelper) CreateCapability(repositoryId string, quarantineEnabled bool, diags *diag.Diagnostics) *v3.CapabilityDTO {
+func (ch *CapabilityHelper) CreateCapability(ctx context.Context, repositoryId string, quarantineEnabled bool, diags *diag.Diagnostics) *v3.CapabilityDTO {
 	// Create the capability request
 	enabled := true
 	properties := map[string]string{
@@ -107,7 +105,7 @@ func (ch *CapabilityHelper) CreateCapability(repositoryId string, quarantineEnab
 		Properties: &properties,
 	}
 
-	apiResponse, httpResponse, err := ch.client.CapabilitiesAPI.Create3(*ch.ctx).Body(capabilityRequest).Execute()
+	apiResponse, httpResponse, err := ch.client.CapabilitiesAPI.Create3(ctx).Body(capabilityRequest).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s capability for repository %s", ch.capabilityType.String(), repositoryId),
@@ -122,7 +120,7 @@ func (ch *CapabilityHelper) CreateCapability(repositoryId string, quarantineEnab
 }
 
 // UpdateCapability updates an existing capability
-func (ch *CapabilityHelper) UpdateCapability(capabilityId string, repositoryId string, quarantineEnabled bool, diags *diag.Diagnostics) (*v3.CapabilityDTO, error) {
+func (ch *CapabilityHelper) UpdateCapability(ctx context.Context, capabilityId string, repositoryId string, quarantineEnabled bool, diags *diag.Diagnostics) (*v3.CapabilityDTO, error) {
 	enabled := true
 	properties := map[string]string{
 		"repository": repositoryId,
@@ -134,7 +132,7 @@ func (ch *CapabilityHelper) UpdateCapability(capabilityId string, repositoryId s
 		Properties: &properties,
 	}
 
-	httpResponse, err := ch.client.CapabilitiesAPI.Update3(*ch.ctx, capabilityId).Body(capabilityRequest).Execute()
+	httpResponse, err := ch.client.CapabilitiesAPI.Update3(ctx, capabilityId).Body(capabilityRequest).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error updating %s capability (ID=%s)", ch.capabilityType.String(), capabilityId),
@@ -145,15 +143,15 @@ func (ch *CapabilityHelper) UpdateCapability(capabilityId string, repositoryId s
 		return nil, fmt.Errorf("failed to update exisiting Capability")
 	}
 
-	return ch.FindCapabilityByRepositoryId(repositoryId, diags), nil
+	return ch.FindCapabilityByRepositoryId(ctx, repositoryId, diags), nil
 }
 
 // DeleteCapability deletes an existng capability with retry logic
-func (ch *CapabilityHelper) DeleteCapability(capabilityId string, diags *diag.Diagnostics) bool {
+func (ch *CapabilityHelper) DeleteCapability(ctx context.Context, capabilityId string, diags *diag.Diagnostics) bool {
 	const maxAttempts = 3
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		if ch.attemptDeleteCapability(capabilityId, attempt, maxAttempts, diags) {
+		if ch.attemptDeleteCapability(ctx, capabilityId, attempt, maxAttempts, diags) {
 			return true
 		}
 	}
@@ -161,12 +159,12 @@ func (ch *CapabilityHelper) DeleteCapability(capabilityId string, diags *diag.Di
 }
 
 // attemptDeleteCapability performs a single delete attempt and returns true if successful
-func (ch *CapabilityHelper) attemptDeleteCapability(capabilityId string, attempt int, maxAttempts int, diags *diag.Diagnostics) bool {
-	httpResponse, err := ch.client.CapabilitiesAPI.Delete4(*ch.ctx, capabilityId).Execute()
+func (ch *CapabilityHelper) attemptDeleteCapability(ctx context.Context, capabilityId string, attempt int, maxAttempts int, diags *diag.Diagnostics) bool {
+	httpResponse, err := ch.client.CapabilitiesAPI.Delete4(ctx, capabilityId).Execute()
 
 	// Trap 500 Error as they occur when Repo is not in appropriate internal state
 	if httpResponse.StatusCode == http.StatusInternalServerError {
-		tflog.Info(*ch.ctx, fmt.Sprintf("Unexpected response when deleting capability %s (attempt %d)", capabilityId, attempt))
+		tflog.Info(ctx, fmt.Sprintf("Unexpected response when deleting capability %s (attempt %d)", capabilityId, attempt))
 		if attempt < maxAttempts {
 			time.Sleep(1 * time.Second)
 		}

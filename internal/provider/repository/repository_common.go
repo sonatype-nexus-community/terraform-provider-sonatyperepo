@@ -218,11 +218,12 @@ func (r *repositoryResource) configureFirewall(ctx context.Context, plan interfa
 		return r.RepositoryFormat.UpateStateWithCapability(stateModel, nil)
 	}
 
-	capabilityHelper := capability.NewCapabilityHelper(r.Client, &ctx, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
-	auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
+	capabilityHelper := capability.NewCapabilityHelper(r.Client, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
+	auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(ctx, r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
 
 	if auditAndQuarantineCapability == nil {
 		auditAndQuarantineCapability = capabilityHelper.CreateCapability(
+			ctx,
 			r.RepositoryFormat.GetRepositoryId(stateModel),
 			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
 			&resp.Diagnostics,
@@ -230,6 +231,7 @@ func (r *repositoryResource) configureFirewall(ctx context.Context, plan interfa
 	} else {
 		var err error
 		auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
+			ctx,
 			*auditAndQuarantineCapability.Id,
 			r.RepositoryFormat.GetRepositoryId(stateModel),
 			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
@@ -526,10 +528,11 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	// If PROXY that Supports Repository Firewall - check for any existing Capability
 	if r.NxrmVersion.SupportsCapabilities() && r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
 		// See if Capability alread exists
-		capabilityHelper := capability.NewCapabilityHelper(r.Client, &ctx, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
-		auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
+		capabilityHelper := capability.NewCapabilityHelper(r.Client, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
+		auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(ctx, r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
 		if auditAndQuarantineCapability != nil {
 			auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
+				ctx,
 				*auditAndQuarantineCapability.Id,
 				r.RepositoryFormat.GetRepositoryId(stateModel),
 				r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(stateModel),
