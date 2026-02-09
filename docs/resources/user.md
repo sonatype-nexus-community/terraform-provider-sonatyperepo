@@ -79,6 +79,9 @@ resource "sonatyperepo_user" "saml_admin" {
 Import is supported using the following syntax:
 
 ```shell
+# Import Local user
+terraform import sonatyperepo_user.saml_user my-uid,DEFAULT
+
 # Import LDAP user
 terraform import sonatyperepo_user.saml_user my-ldap-uid,LDAP
 
