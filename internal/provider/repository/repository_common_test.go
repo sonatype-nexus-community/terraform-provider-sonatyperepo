@@ -60,6 +60,8 @@ const (
 	RES_ATTR_HTTP_CLIENT_BLOCKED                              string = "http_client.blocked"
 	RES_ATTR_HTTP_CLIENT_AUTO_BLOCK                           string = "http_client.auto_block"
 	RES_ATTR_HTTP_CLIENT_AUTHENTICATION                       string = "http_client.authentication"
+	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD              string = "http_client.authentication.password"
+	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME              string = "http_client.authentication.username"
 	RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS string = "http_client.connection.enable_circular_redirects"
 	RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES            string = "http_client.connection.enable_cookies"
 	RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE           string = "http_client.connection.use_trust_store"

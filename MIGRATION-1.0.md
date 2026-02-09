@@ -1,4 +1,17 @@
-# THIS IS TO BE FORMATTED
+# Migrating from v0.x.x to v1.x.x
+
+Release 1.x.x is a breaking-change release. This means that some ways of working / names and conventions have
+changed and are not backwards compatible with 0.x.x releases.
+
+Below is a summary of the key breaking changes with information on how you can update your Terraform HCL to work with 1.x.x releases.
+
+- [Breaking Changes in 1.0.0](#breaking-changes-in-100)
+  - [Configuration for Sonatype Repository Firewall](#configuration-for-sonatype-repository-firewall)
+  - [Resource Renaming](#resource-renaming)
+  - [Resources Deprecated](#resources-deprecated)
+  - [Other Resource Schema Changes](#other-resource-schema-changes)
+- [Improvements](#improvements)
+  - [Resources now supporting Import](#resources-now-supporting-import)
 
 ## Breaking Changes in 1.0.0
 
@@ -13,7 +26,7 @@ This was not ideal for two reasons:
 
 Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_repository_firewall` resource has been deprecated.
 
-Additionally - it is now required that a valid Sonatype IQ Connection is configured _PRIOR_ to mamnaging repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource.
+Additionally - it is now required that a valid Sonatype IQ Connection is configured **_PRIOR_** to mamnaging repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource to ensure this is configured.
 
 Example Terraform prior to 1.0.0:
 ```hcl

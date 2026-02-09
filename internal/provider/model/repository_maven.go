@@ -212,6 +212,12 @@ func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRe
 	// Group
 	m.Group.MapToApi(&apiModel.Group)
 
+	// Maven - Injected to keep NXRM 3.88 happy (they are in API, but not used)
+	apiModel.Maven = *sonatyperepo.NewMavenAttributesWithDefaults()
+	apiModel.Maven.ContentDisposition = common.StringPointer(common.MAVEN_CONTENT_DISPOSITION_INLINE)
+	apiModel.Maven.LayoutPolicy = common.StringPointer(common.MAVEN_LAYOUT_PERMISSIVE)
+	apiModel.Maven.VersionPolicy = common.StringPointer(common.MAVEN_VERSION_POLICY_MIXED)
+
 	return apiModel
 }
 

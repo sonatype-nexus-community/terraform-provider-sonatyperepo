@@ -129,7 +129,6 @@ resource "%s" "repo" {
   group = {
 	member_names = ["maven-proxy-repo-%s"]
   }
-
   depends_on = [
 	%s.repo
   ]
@@ -145,9 +144,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
 					resource.TestCheckNoResourceAttr(resourceMavenHostedName, RES_ATTR_CLEANUP),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_CONTENT_DISPOSITION, common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
 
 					// Verify Proxy
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NAME, fmt.Sprintf("maven-proxy-repo-%s", randomString)),
@@ -155,28 +154,28 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttrSet(resourceMavenProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_REMOTE_URL, "https://repo1.maven.org/maven2/"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
 
 					// Verify Group
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_NAME, fmt.Sprintf("maven-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_ONLINE, "true"),
 					resource.TestCheckResourceAttrSet(resourceMavenGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceMavenGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
