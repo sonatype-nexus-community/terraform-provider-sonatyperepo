@@ -162,74 +162,76 @@ var hostedTestData = []repositoryHostedTestData{
 // ------------------------------------------------------------
 func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 	for _, td := range hostedTestData {
-		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-		resourceType := fmt.Sprintf(resourceTypeHostedFString, strings.ToLower(td.RepoFormat))
-		resourceName := fmt.Sprintf(repoNameFString, resourceType)
-		repoName := fmt.Sprintf(hostedNameFString, td.RepoFormat, randomString)
+		t.Run(td.RepoFormat, func(t *testing.T) {
+			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+			resourceType := fmt.Sprintf(resourceTypeHostedFString, strings.ToLower(td.RepoFormat))
+			resourceName := fmt.Sprintf(repoNameFString, resourceType)
+			repoName := fmt.Sprintf(hostedNameFString, td.RepoFormat, randomString)
 
-		var steps []resource.TestStep
-		// 1. Create with minimal configuration relying on defaults
-		steps = append(steps, resource.TestStep{
-			Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, false),
-			Check: resource.ComposeAggregateTestCheckFunc(
-				append(
-					// Test Case Specific Checks
-					td.CheckFunc(resourceName),
-
-					// Generic Checks
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-					resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-				)...,
-			),
-		})
-		// 2. Update to use full config
-		steps = append(steps, resource.TestStep{
-			Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, true),
-			Check: resource.ComposeAggregateTestCheckFunc(
-				append(
-					// Test Case Specific Checks
-					td.CheckFunc(resourceName),
-
-					// Generic Checks
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-					resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "true"),
-				)...,
-			),
-		})
-		// 3. Import and verify no changes
-		if td.TestImport {
+			var steps []resource.TestStep
+			// 1. Create with minimal configuration relying on defaults
 			steps = append(steps, resource.TestStep{
-				ResourceName:                         resourceName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        repoName,
-				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
-			})
-		}
+				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					append(
+						// Test Case Specific Checks
+						td.CheckFunc(resourceName),
 
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			PreCheck: func() {
-				if td.TestPreCheck != nil {
-					td.TestPreCheck(t)()
-				}
-			},
-			Steps: steps,
+						// Generic Checks
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+						resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					)...,
+				),
+			})
+			// 2. Update to use full config
+			steps = append(steps, resource.TestStep{
+				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					append(
+						// Test Case Specific Checks
+						td.CheckFunc(resourceName),
+
+						// Generic Checks
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+						resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "true"),
+					)...,
+				),
+			})
+			// 3. Import and verify no changes
+			if td.TestImport {
+				steps = append(steps, resource.TestStep{
+					ResourceName:                         resourceName,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateId:                        repoName,
+					ImportStateVerifyIdentifierAttribute: "name",
+					ImportStateVerifyIgnore:              []string{"last_updated"},
+				})
+			}
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+				PreCheck: func() {
+					if td.TestPreCheck != nil {
+						td.TestPreCheck(t)()
+					}
+				},
+				Steps: steps,
+			})
 		})
 	}
 }
