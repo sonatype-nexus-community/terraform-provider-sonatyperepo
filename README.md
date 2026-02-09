@@ -30,6 +30,11 @@ We test on the latest patch release of each the earliest and latest version of T
 
 See our [documentation](./docs/index.md) and the [examples directory](./examples/).
 
+## Known Issues
+
+There are sometimes known issues that have no workaround - e.g. REST API does not return data. You can see the current known list
+[here](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues?q=is%3Aissue%20state%3Aopen%20label%3Aknown-issue).
+
 ## Development
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.

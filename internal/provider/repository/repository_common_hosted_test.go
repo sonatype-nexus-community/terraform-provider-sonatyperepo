@@ -40,7 +40,9 @@ var hostedTestData = []repositoryHostedTestData{
 		},
 		RepoFormat: common.REPO_FORMAT_APT,
 		SchemaFunc: repositoryHostedResourceConfig,
-		TestImport: false, // TODO: Document this does not work based on NXRM 3.88
+		// Import is broken for APT Hosted as aptSigning is never returned by API
+		// See: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/290
+		TestImport: false,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -222,7 +224,12 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-			Steps:                    steps,
+			PreCheck: func() {
+				if td.TestPreCheck != nil {
+					td.TestPreCheck(t)()
+				}
+			},
+			Steps: steps,
 		})
 	}
 }
