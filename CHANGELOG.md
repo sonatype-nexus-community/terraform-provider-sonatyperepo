@@ -2,9 +2,22 @@
 
 ## UNRELEASED
 
+BREAKING CHANGES:
+
+**See the [Migration Guide](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/blob/main/MIGRATION-1.0.md) for help migrating from v0.x.x versions of this provider.**
+
+* Sonatype Repository Firewall configuration is now part of the `sonatyperepo_repository_[FORMAT]_proxy` resources [GH-280]
+  * `sonatyperepo_system_iq_connection` resouce has been deprecated
+* Multiple resources have been renamed to improve consistency
+
+ENHANCEMENTS:
+* A number of properties on `sonatype_repository_[FORMAT]_proxy` now have default values and need not be defined
+* A number of `sonatype_repository_*` resources now support `import`
+
 NOTES:
-* Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html)
-  * There is an API regression in NXRM 3.88 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource
+* Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html) [GH-263]
+  * There is an API regression in NXRM 3.88 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
+* Import is noted as broken for `sonatype_repository_apt_hosted` resource [GH-290]
 
 ## 0.18.1 January 29, 2026
 
