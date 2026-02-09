@@ -18,7 +18,6 @@ Manage Group MAVEN2 Repositories
 ### Required
 
 - `group` (Attributes) Group specific configuration for this Repository (see [below for nested schema](#nestedatt--group))
-- `maven` (Attributes) Maven specific configuration for this Repository (see [below for nested schema](#nestedatt--maven))
 - `name` (String) Name of the Repository
 - `online` (Boolean) Whether this Repository is online and accepting incoming requests
 - `storage` (Attributes) Storage configuration for this Repository (see [below for nested schema](#nestedatt--storage))
@@ -38,16 +37,6 @@ Manage Group MAVEN2 Repositories
 Optional:
 
 - `member_names` (List of String) Member repositories' names
-
-
-<a id="nestedatt--maven"></a>
-### Nested Schema for `maven`
-
-Optional:
-
-- `content_disposition` (String) Add Content-Disposition header as 'ATTACHMENT' to disable some content from being inline in a browser.
-- `layout_policy` (String) Validate that all paths are maven artifact or metadata paths
-- `version_policy` (String) What type of artifacts does this repository store?
 
 
 <a id="nestedatt--storage"></a>
