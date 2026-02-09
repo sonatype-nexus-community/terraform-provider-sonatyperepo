@@ -131,7 +131,7 @@ func TestAccTaskRepositoryMavenRemoveSnapshotsResource(t *testing.T) {
 			// Create and Read testing
 			{
 				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "sonatyperepo_repository_maven_hosted" "repo" {
+resource "sonatyperepo_repository_maven2_hosted" "repo" {
    name = "maven-hosted-repo-test-%s"
    online = true
    storage = {
@@ -154,7 +154,7 @@ resource "%s" "test_task" {
     schedule = "manual"
   }
   properties = {
-    repository_name = sonatyperepo_repository_maven_hosted.repo.name
+    repository_name = sonatyperepo_repository_maven2_hosted.repo.name
   }
 }
 `, randomString, resourceType, randomString),

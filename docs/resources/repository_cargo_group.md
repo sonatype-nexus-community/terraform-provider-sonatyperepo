@@ -38,6 +38,8 @@ Manage Group CARGO Repositories
 Required:
 
 - `require_authentication` (Boolean) Indicates if this repository requires authentication overriding anonymous access.
+				
+_This fails to work during CREATE and IMPORT against Sonatype Nexus Repository 3.88.0 due to a bug in Sonatype Nexus Repository._
 
 
 <a id="nestedatt--group"></a>

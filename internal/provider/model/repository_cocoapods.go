@@ -26,6 +26,7 @@ import (
 // ----------------------------------------
 type RepositoryCocoaPodsProxyModel struct {
 	RepositoryProxyModel
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryCocoaPodsProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -48,7 +49,20 @@ func (m *RepositoryCocoaPodsProxyModel) FromApiModel(api sonatyperepo.SimpleApiP
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
 	}
 }
 

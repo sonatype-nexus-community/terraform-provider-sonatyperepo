@@ -92,6 +92,21 @@ func TestAccVersionInRangeTrue384001(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.True(t, inRange)
+
+	inRange, err = VersionInRange(
+		&testVer,
+		&common.SystemVersion{
+			Major: 3,
+			Minor: 84,
+			Patch: 0,
+		}, &common.SystemVersion{
+			Major: 3,
+			Minor: 84,
+			Patch: 99,
+		},
+	)
+	assert.Nil(t, err)
+	assert.True(t, inRange)
 }
 
 func TestAccVersionInRangeTrue382108(t *testing.T) {

@@ -55,8 +55,7 @@ func (f *RubyGemsRepositoryFormat) Key() string {
 }
 
 func (f *RubyGemsRepositoryFormat) ResourceName(repoType RepositoryType) string {
-	// Override to maintain backward compatibility with resource name containing underscore
-	return resourceName("ruby_gems", repoType)
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -167,8 +166,18 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 	return apiClient.RepositoryManagementAPI.UpdateRubygemsProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for RubyGems Proxy repositories
+func (f *RubyGemsRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (f *RubyGemsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes()
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 }
 
 func (f *RubyGemsRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -197,14 +206,40 @@ func (f *RubyGemsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) a
 	return stateModel
 }
 
-// DoImportRequest implements the import functionality for RubyGems Proxy repositories
-func (f *RubyGemsRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
-	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRubygemsProxyRepository(ctx, repositoryName).Execute()
-	if err != nil {
-		return nil, httpResponse, err
+func (f *RubyGemsRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
 	}
-	return *apiResponse, httpResponse, nil
+	return stateModel.Name.ValueString()
+}
+
+func (f *RubyGemsRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *RubyGemsRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *RubyGemsRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
 
 // --------------------------------------------

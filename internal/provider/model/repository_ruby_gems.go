@@ -60,6 +60,7 @@ func (m *RepositoryRubyGemsHostedModel) ToApiUpdateModel() sonatyperepo.RubyGems
 // --------------------------------------------
 type RepositorRubyGemsProxyModel struct {
 	RepositoryProxyModel
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositorRubyGemsProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -90,6 +91,12 @@ func (m *RepositorRubyGemsProxyModel) FromApiModel(api sonatyperepo.SimpleApiPro
 			PreemptivePullEnabled: types.BoolValue(common.DEFAULT_PROXY_PREEMPTIVE_PULL),
 			AssetPathRegex:        types.StringNull(),
 		}
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
 	}
 }
 

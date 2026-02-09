@@ -28,9 +28,9 @@ import (
 )
 
 const (
-	resourceTypeMavenGroup  = "sonatyperepo_repository_maven_group"
-	resourceTypeMavenHosted = "sonatyperepo_repository_maven_hosted"
-	resourceTypeMavenProxy  = "sonatyperepo_repository_maven_proxy"
+	resourceTypeMavenGroup  = "sonatyperepo_repository_maven2_group"
+	resourceTypeMavenHosted = "sonatyperepo_repository_maven2_hosted"
+	resourceTypeMavenProxy  = "sonatyperepo_repository_maven2_proxy"
 )
 
 var (
@@ -129,7 +129,6 @@ resource "%s" "repo" {
   group = {
 	member_names = ["maven-proxy-repo-%s"]
   }
-
   depends_on = [
 	%s.repo
   ]
@@ -145,9 +144,9 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
 					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
 					resource.TestCheckNoResourceAttr(resourceMavenHostedName, RES_ATTR_CLEANUP),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.content_disposition", common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.layout_policy", common.MAVEN_LAYOUT_STRICT),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, "maven.version_policy", common.MAVEN_VERSION_POLICY_RELEASE),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_CONTENT_DISPOSITION, common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_STRICT),
+					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
 
 					// Verify Proxy
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NAME, fmt.Sprintf("maven-proxy-repo-%s", randomString)),
@@ -155,129 +154,31 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttrSet(resourceMavenProxyName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.remote_url", "https://repo1.maven.org/maven2/"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.content_max_age", "1442"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "proxy.metadata_max_age", "1400"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "negative_cache.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "negative_cache.time_to_live", "1440"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.blocked", "false"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.auto_block", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.enable_circular_redirects", "false"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.enable_cookies", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.use_trust_store", "true"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.retries", "9"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.timeout", "999"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.connection.user_agent_suffix", "terraform"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.authentication.username", "user"),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, "http_client.authentication.password", "pass"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_REMOTE_URL, "https://repo1.maven.org/maven2/"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
 
 					// Verify Group
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_NAME, fmt.Sprintf("maven-group-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_ONLINE, "true"),
 					resource.TestCheckResourceAttrSet(resourceMavenGroupName, RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceMavenGroupName, "group.member_names.#", "1"),
+					resource.TestCheckResourceAttr(resourceMavenGroupName, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-func TestAccRepositoryMavenHostedImport(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("maven-hosted-import-%s", randomString)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create with minimal configuration
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-    write_policy = "ALLOW_ONCE"
-  }
-  maven = {
-    content_disposition = "ATTACHMENT"
-    layout_policy = "STRICT"
-    version_policy = "RELEASE"
-  }
-}
-`, resourceTypeMavenHosted, repoName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceMavenHostedName, RES_ATTR_ONLINE, "true"),
-				),
-			},
-			// Import and verify no changes
-			{
-				ResourceName:                         resourceMavenHostedName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        repoName,
-				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyImport(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	repoName := fmt.Sprintf("maven-proxy-import-%s", randomString)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create with minimal configuration
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo1.maven.org/maven2/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  maven = {
-    content_disposition = "ATTACHMENT"
-    layout_policy = "STRICT"
-    version_policy = "RELEASE"
-  }
-}
-`, resourceTypeMavenProxy, repoName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceMavenProxyName, RES_ATTR_ONLINE, "true"),
-				),
-			},
-			// Import and verify no changes
-			{
-				ResourceName:                         resourceMavenProxyName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        repoName,
-				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
 		},
 	})
 }
@@ -334,313 +235,6 @@ resource "%s" "repo" {
 				ImportStateId:                        repoName,
 				ImportStateVerifyIdentifierAttribute: "name",
 				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
-		},
-	})
-}
-func TestAccRepositoryMavenProxyInvalidRemoteUrl(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid remote URL (missing protocol)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "invalid-url-without-protocol"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "STRICT"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenHostedInvalidBlobStore(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid blob store name (non-existent)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-hosted-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "non-existent-blob-store"
-    strict_content_type_validation = true
-	write_policy = "ALLOW_ONCE"
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenHosted, randomString),
-				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenHostedMissingStorage(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Missing storage block (required field)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-hosted-repo-%s"
-  online = true
-  # Missing storage block
-}
-`, resourceTypeMavenHosted, randomString),
-				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyInvalidTimeoutTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too large, max is 3600)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-timeout-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 3601
-    }
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyInvalidTimeoutTooSmall(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too small, min is 1)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-timeout-small-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 0
-    }
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyInvalidRetriesTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (too large, max is 10)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-retries-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = 11
-    }
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyInvalidRetriesNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-retries-neg-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = -1
-    }
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryMavenProxyInvalidTimeToLiveNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid time_to_live (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "maven-proxy-repo-ttl-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = -1
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-  maven = {
-    version_policy = "RELEASE"
-    layout_policy = "PERMISSIVE"
-  }
-}
-`, resourceTypeMavenProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})

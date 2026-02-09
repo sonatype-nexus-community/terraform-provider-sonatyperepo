@@ -70,6 +70,10 @@ func (ct *BaseCapabilityType) MapFromPlanToState(plan any, state any) any {
 	return state
 }
 
+func (ct *BaseCapabilityType) DeprecationMessage() *string {
+	return nil
+}
+
 // --------------------------------------------
 // CapabilityTypeI that all Capability Types must implement
 // --------------------------------------------
@@ -89,6 +93,7 @@ type CapabilityTypeI interface {
 	UpdateStateFromApi(state any, api any) any
 	MapFromPlanToState(plan any, state any) any
 	UpdateStateFromPlanForUpdate(plan any, state any) any
+	DeprecationMessage() *string
 }
 
 // --------------------------------------------

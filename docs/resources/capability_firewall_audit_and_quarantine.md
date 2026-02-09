@@ -3,13 +3,13 @@
 page_title: "sonatyperepo_capability_firewall_audit_and_quarantine Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Capability: Firewall Audit and Quarantine
+  DEPRECATED SINCE 1.0.0 Manage Capability: Firewall Audit and Quarantine
   NOTE: Requires Sonatype Nexus Repostiory 3.84.0 or later.
 ---
 
 # sonatyperepo_capability_firewall_audit_and_quarantine (Resource)
 
-Manage Capability: Firewall Audit and Quarantine
+**DEPRECATED SINCE 1.0.0** Manage Capability: Firewall Audit and Quarantine
 		
 **NOTE:** Requires Sonatype Nexus Repostiory 3.84.0 or later.
 
