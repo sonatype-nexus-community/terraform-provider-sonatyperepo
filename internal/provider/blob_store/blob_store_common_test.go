@@ -31,6 +31,9 @@ const (
 	RES_ATTR_MEMBERS_COUNT    string = "members.#"
 	RES_ATTR_LAST_UPDATED     string = "last_updated"
 
+	RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED string = "bucket_configuration.pre_signed_url_enabled"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION      string = "bucket_configuration.bucket.region"
+
 	RES_NAME_FMT string = "%s.test"
 
 	RES_TYPE_BLOB_STORE_FILE  string = "sonatyperepo_blob_store_file"

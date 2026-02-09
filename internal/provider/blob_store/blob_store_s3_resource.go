@@ -53,8 +53,73 @@ func (r *blobStoreS3Resource) Metadata(_ context.Context, req resource.MetadataR
 
 // Schema defines the schema for the resource.
 func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = tfschema.Schema{
+	resp.Schema = blobStoreS3ResourceSchema(1)
+}
+
+func blobStoreS3ResourceSchema(version int64) tfschema.Schema {
+	bucketConfigurationSchema := schema.ResourceRequiredSingleNestedAttribute(
+		"Bucket Configuration for this Blob Store",
+		map[string]tfschema.Attribute{
+			"bucket": schema.ResourceRequiredSingleNestedAttribute(
+				"Main Bucket Configuration for this Blob Store",
+				map[string]tfschema.Attribute{
+					"region": schema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
+					"name":   schema.ResourceRequiredString("The name of the S3 bucket"),
+					"prefix": schema.ResourceStringWithDefault(
+						"The S3 blob store (i.e S3 object) key prefix",
+						"",
+					),
+				},
+			),
+			"encryption": schema.ResourceOptionalSingleNestedAttribute(
+				"Bucket Encryption Configuration for this Blob Store",
+				map[string]tfschema.Attribute{
+					"encryption_type": schema.ResourceStringEnum(
+						"The type of S3 server side encryption to use",
+						"s3ManagedEncryption",
+						"kmsManagedEncryption",
+					),
+					"encryption_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
+				},
+			),
+			"bucket_security": schema.ResourceOptionalSingleNestedAttribute(
+				"Bucket Security Configuration for this Blob Store",
+				map[string]tfschema.Attribute{
+					"access_key_id": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
+					"secret_access_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(
+						"The secret access key associated with the specified IAM access key ID",
+						1,
+					),
+					"role":          schema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
+					"session_token": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
+				},
+			),
+			"advanced_bucket_connection": schema.ResourceOptionalSingleNestedAttribute(
+				"Advanced Connection Configuration for this S3 Blob Store",
+				map[string]tfschema.Attribute{
+					"endpoint":    schema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
+					"signer_type": schema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
+					"force_path_style": schema.ResourceOptionalBool(
+						"Setting this flag will result in path-style access being used for all requests",
+					),
+					"max_connection_pool_size": schema.ResourceOptionalInt64(
+						"Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
+					),
+				},
+			),
+		},
+	)
+
+	if version == 1 {
+		bucketConfigurationSchema.Attributes["pre_signed_url_enabled"] = schema.ResourceOptionalBoolWithDefault(
+			"Whether pre-signed URL is enabled or not. **Requires Sonatype Nexus Repository Manager 3.79.0 PRO or later**",
+			false,
+		)
+	}
+
+	resourceSchema := tfschema.Schema{
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
+		Version:     version,
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.ResourceRequiredString("Name of the Blob Store"),
 			"type": schema.ResourceOptionalStringWithDefault(
@@ -68,65 +133,12 @@ func (r *blobStoreS3Resource) Schema(_ context.Context, _ resource.SchemaRequest
 					"limit": schema.ResourceOptionalInt64("Quota limit"),
 				},
 			),
-			"bucket_configuration": schema.ResourceRequiredSingleNestedAttribute(
-				"Bucket Configuration for this Blob Store",
-				map[string]tfschema.Attribute{
-					"bucket": schema.ResourceRequiredSingleNestedAttribute(
-						"Main Bucket Configuration for this Blob Store",
-						map[string]tfschema.Attribute{
-							"region": schema.ResourceRequiredString("The AWS region to create a new S3 bucket in or an existing S3 bucket's region"),
-							"name":   schema.ResourceRequiredString("The name of the S3 bucket"),
-							"prefix": schema.ResourceStringWithDefault(
-								"The S3 blob store (i.e S3 object) key prefix",
-								"",
-							),
-						},
-					),
-					"encryption": schema.ResourceOptionalSingleNestedAttribute(
-						"Bucket Encryption Configuration for this Blob Store",
-						map[string]tfschema.Attribute{
-							"encryption_type": schema.ResourceStringEnum(
-								"The type of S3 server side encryption to use",
-								"s3ManagedEncryption",
-								"kmsManagedEncryption",
-							),
-							"encryption_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("The encryption key", 1),
-						},
-					),
-					"bucket_security": schema.ResourceOptionalSingleNestedAttribute(
-						"Bucket Security Configuration for this Blob Store",
-						map[string]tfschema.Attribute{
-							"access_key_id": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An IAM access key ID for granting access to the S3 bucket", 1),
-							"secret_access_key": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(
-								"The secret access key associated with the specified IAM access key ID",
-								1,
-							),
-							"role":          schema.ResourceOptionalString("An IAM role to assume in order to access the S3 bucket"),
-							"session_token": schema.ResourceOptionalSensitiveStringWithLengthAtLeast("An AWS STS session token associated with temporary security credentials which grant access to the S3 bucket", 1),
-						},
-					),
-					"advanced_bucket_connection": schema.ResourceOptionalSingleNestedAttribute(
-						"Advanced Connection Configuration for this S3 Blob Store",
-						map[string]tfschema.Attribute{
-							"endpoint":    schema.ResourceOptionalString("A custom endpoint URL for third party object stores using the S3 API"),
-							"signer_type": schema.ResourceOptionalString("An API signature version which may be required for third party object stores using the S3 API"),
-							"force_path_style": schema.ResourceOptionalBool(
-								"Setting this flag will result in path-style access being used for all requests",
-							),
-							"max_connection_pool_size": schema.ResourceOptionalInt64(
-								"Setting this value will override the default connection pool size of Nexus of the s3 client for this blobstore",
-							),
-						},
-					),
-					"pre_signed_url_enabled": schema.ResourceOptionalBoolWithDefault(
-						"Whether pre-signed URL is enabled or not. **Requires Sonatype Nexus Repository Manager 3.79.0 PRO or later**",
-						false,
-					),
-				},
-			),
-			"last_updated": schema.ResourceLastUpdated(),
+			"bucket_configuration": bucketConfigurationSchema,
+			"last_updated":         schema.ResourceLastUpdated(),
 		},
 	}
+
+	return resourceSchema
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -331,4 +343,50 @@ func (r *blobStoreS3Resource) Delete(ctx context.Context, req resource.DeleteReq
 
 	// Delete API Call
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
+}
+
+// UpgradeState handles state migration from version 0 to version 1
+func (r *blobStoreS3Resource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	version0Schema := blobStoreS3ResourceSchema(0)
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &version0Schema,
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				tflog.Warn(ctx, "=== STATE UPGRADE STARTING (sonatyperepo_blob_store_s3): v0 to v1 ===")
+
+				var priorStateData model.BlobStoreS3ModelV0
+
+				resp.Diagnostics.Append(req.State.Get(ctx, &priorStateData)...)
+				if resp.Diagnostics.HasError() {
+					tflog.Error(ctx, fmt.Sprintf("Error reading prior state: %v", resp.Diagnostics.Errors()))
+					return
+				}
+
+				// Convert to v1 model and add the new field
+				newStateData := &model.BlobStoreS3Model{
+					Name:        priorStateData.Name,
+					Type:        priorStateData.Type,
+					SoftQuota:   priorStateData.SoftQuota,
+					LastUpdated: priorStateData.LastUpdated,
+				}
+
+				if priorStateData.BucketConfiguration != nil {
+					newStateData.BucketConfiguration = &model.BlobStoreS3BucketConfigurationModel{
+						Bucket:                   priorStateData.BucketConfiguration.Bucket,
+						Encryption:               priorStateData.BucketConfiguration.Encryption,
+						BucketSecurity:           priorStateData.BucketConfiguration.BucketSecurity,
+						AdvancedBucketConnection: priorStateData.BucketConfiguration.AdvancedBucketConnection,
+						PreSignedUrlEnabled:      types.BoolValue(false), // Add default for v0 → v1
+					}
+				}
+
+				tflog.Info(ctx, "Upgrading sonatyperepo_blob_store_s3 state from v0 to v1, setting pre_signed_url_enabled to false")
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, newStateData)...)
+				if resp.Diagnostics.HasError() {
+					tflog.Error(ctx, fmt.Sprintf("Error writing upgraded state: %v", resp.Diagnostics.Errors()))
+				}
+			},
+		},
+	}
 }
