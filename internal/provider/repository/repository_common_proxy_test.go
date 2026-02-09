@@ -30,6 +30,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	configBlockProxyDefaultApt       string = "apt = { distribution = \"bionic\" }"
+	configBlockProxyDefaultCargo     string = "cargo = { require_authentication = false }"
+	configBlockProxyDefaultConan     string = "conan = { conan_version = \"V2\" }"
+	configBlockProxyDefaultDocker    string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
+	configBlockProxyDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
+	configBlockProxyDefaultNuget     string = "nuget_proxy = { nuget_version = \"V3\" }"
+	configBlockProxyDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockProxyDefaultTerraform string = "terraform = { }"
+)
+
 // ------------------------------------------------------------
 // Test Data Scenarios
 // ------------------------------------------------------------
@@ -40,20 +51,22 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_APT_DISTRIBUTION, "bionic"),
 			}
 		},
-		RemoteUrl:  TEST_DATA_APT_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_APT,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultApt,
+		RemoteUrl:            TEST_DATA_APT_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_APT,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
-	// NEXUS-48088 prevented this working prior to NXRM 3.88.0
+	// NEXUS-48088 prevented this working prior to NXRM 3.88.0 (cargo.requireAuthentication was always returned as false)
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CARGO_REQUIRE_AUTHENTICATION, "false"),
 			}
 		},
-		RemoteUrl:  TEST_DATA_CARGO_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_CARGO,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultCargo,
+		RemoteUrl:            TEST_DATA_CARGO_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_CARGO,
+		SchemaFunc:           repositoryProxyResourceConfig,
 		TestPreCheck: func(t *testing.T) func() {
 			return func() {
 				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
@@ -74,9 +87,10 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CARGO_REQUIRE_AUTHENTICATION, "true"),
 			}
 		},
-		RemoteUrl:  TEST_DATA_CARGO_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_CARGO,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: "cargo = { require_authentication = true }",
+		RemoteUrl:            TEST_DATA_CARGO_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_CARGO,
+		SchemaFunc:           repositoryProxyResourceConfig,
 		TestPreCheck: func(t *testing.T) func() {
 			return func() {
 				// Only works on NXRM 3.88.0 or later
@@ -114,9 +128,10 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CONAN_PROXY_CONAN_VERSION, "V2"),
 			}
 		},
-		RemoteUrl:  TEST_DATA_CONAN_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_CONAN,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultConan,
+		RemoteUrl:            TEST_DATA_CONAN_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_CONAN,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -135,9 +150,10 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_PROXY_INDEX_TYPE, "REGISTRY"),
 			}
 		},
-		RemoteUrl:  TEST_DATA_DOCKER_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_DOCKER,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultDocker,
+		RemoteUrl:            TEST_DATA_DOCKER_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_DOCKER,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -171,9 +187,10 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
 			}
 		},
-		RemoteUrl:  TEST_DATA_MAVEN_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_MAVEN,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultMaven,
+		RemoteUrl:            TEST_DATA_MAVEN_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_MAVEN,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -201,9 +218,10 @@ var proxyTestData = []repositoryProxyTestData{
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NUGET_PROXY_NUGET_VERSION, common.NUGET_PROTOCOL_V3),
 			}
 		},
-		RemoteUrl:  TEST_DATA_NUGET_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_NUGET,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultNuget,
+		RemoteUrl:            TEST_DATA_NUGET_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_NUGET,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -233,9 +251,10 @@ var proxyTestData = []repositoryProxyTestData{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
 		},
-		RemoteUrl:  TEST_DATA_RAW_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_RAW,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultRaw,
+		RemoteUrl:            TEST_DATA_RAW_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_RAW,
+		SchemaFunc:           repositoryProxyResourceConfig,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
@@ -249,9 +268,10 @@ var proxyTestData = []repositoryProxyTestData{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
 		},
-		RemoteUrl:  TEST_DATA_TERRAFORM_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_TERRAFORM,
-		SchemaFunc: repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultTerraform,
+		RemoteUrl:            TEST_DATA_TERRAFORM_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_TERRAFORM,
+		SchemaFunc:           repositoryProxyResourceConfig,
 		TestPreCheck: func(t *testing.T) func() {
 			return func() {
 				// Only works on NXRM 3.88.0 or later
@@ -298,7 +318,7 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 				Steps: []resource.TestStep{
 					// 1. Create with minimal configuration relying on defaults
 					{
-						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, false),
+						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, false),
 						Check: resource.ComposeAggregateTestCheckFunc(
 							append(
 								// Test Case Specific Checks
@@ -333,7 +353,7 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 					},
 					// 2. Update to use full config
 					{
-						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, true),
+						Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, true),
 						Check: resource.ComposeAggregateTestCheckFunc(
 							append(
 								// Test Case Specific Checks
@@ -679,17 +699,6 @@ resource "%s" "repo" {
 	}
 }
 
-const (
-	configBlockProxyDefaultApt       string = "apt = { distribution = \"bionic\" }"
-	configBlockProxyDefaultCargo     string = "cargo = { require_authentication = false }"
-	configBlockProxyDefaultConan     string = "conan = { conan_version = \"V2\" }"
-	configBlockProxyDefaultDocker    string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
-	configBlockProxyDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
-	configBlockProxyDefaultNuget     string = "nuget_proxy = { nuget_version = \"V3\" }"
-	configBlockProxyDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
-	configBlockProxyDefaultTerraform string = "terraform = { }"
-)
-
 func formatSpecificProxyDefaultConfig(repoFormat string) string {
 	switch repoFormat {
 	case common.REPO_FORMAT_APT:
@@ -811,15 +820,14 @@ resource "%s" "repo" {
 // `, resourceType, repoName, remoteUrl, formatSpecificConfig)
 // }
 
-func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
-	configBlock := formatSpecificProxyDefaultConfig(repoFormat)
+func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString, formatSpecificConfig string, completeData bool) string {
 	if completeData {
 		return repositoryProxyResourceFullConfig(
-			resourceType, repoName, remoteUrl, configBlock,
+			resourceType, repoName, remoteUrl, formatSpecificConfig,
 		)
 	} else {
 		return repositoryProxyResourceMinimalConfigWithDefaults(
-			resourceType, repoName, remoteUrl, configBlock,
+			resourceType, repoName, remoteUrl, formatSpecificConfig,
 		)
 	}
 }

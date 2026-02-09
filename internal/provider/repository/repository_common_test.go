@@ -102,7 +102,7 @@ const (
 	TEST_DATA_RAW_PROXY_REMOTE_URL          string = "https://nodejs.org/dist/"
 	TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL    string = "https://rubygems.org"
 	TEST_DATA_TERRAFORM_PROXY_REMOTE_URL    string = "https://registry.terraform.io"
-	TEST_DATA_YUM_PROXY_REMOTE_URL          string = "http://mirror.centos.org/centos/"
+	TEST_DATA_YUM_PROXY_REMOTE_URL          string = "https://mirror.centos.org/centos/"
 	TEST_DATA_TIMEOUT                       string = "1439"
 )
 
@@ -133,11 +133,12 @@ type repositoryHostedTestData struct {
 }
 
 type repositoryProxyTestData struct {
-	CheckFunc    func(resourceName string) []resource.TestCheckFunc
-	RemoteUrl    string
-	RepoFormat   string
-	SchemaFunc   func(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string
-	TestPreCheck func(t *testing.T) func()
+	CheckFunc            func(resourceName string) []resource.TestCheckFunc
+	FormatSpecificConfig string
+	RemoteUrl            string
+	RepoFormat           string
+	SchemaFunc           func(resourceType, repoName, repoFormat, remoteUrl, randomString, formatSpecificConfig string, completeData bool) string
+	TestPreCheck         func(t *testing.T) func()
 }
 
 func allRepositoryFormatsGroupGeneric() []string {
