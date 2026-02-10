@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_r_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy R Repositories
+  Manage Proxy R Repositories.
 ---
 
 # sonatyperepo_repository_r_proxy (Resource)
 
-Manage Proxy R Repositories
+Manage Proxy R Repositories.
 
 
 

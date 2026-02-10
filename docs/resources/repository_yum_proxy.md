@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_yum_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy YUM Repositories
+  Manage Proxy YUM Repositories.
 ---
 
 # sonatyperepo_repository_yum_proxy (Resource)
 
-Manage Proxy YUM Repositories
+Manage Proxy YUM Repositories.
 
 
 

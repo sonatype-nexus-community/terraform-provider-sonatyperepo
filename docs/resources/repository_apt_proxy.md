@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_apt_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy APT Repositories
+  Manage Proxy APT Repositories.
 ---
 
 # sonatyperepo_repository_apt_proxy (Resource)
 
-Manage Proxy APT Repositories
+Manage Proxy APT Repositories.
 
 
 

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_raw_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted RAW Repositories
+  Manage Hosted RAW Repositories.
 ---
 
 # sonatyperepo_repository_raw_hosted (Resource)
 
-Manage Hosted RAW Repositories
+Manage Hosted RAW Repositories.
 
 
 

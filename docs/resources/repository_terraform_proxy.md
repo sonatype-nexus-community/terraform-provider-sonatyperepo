@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_terraform_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy TERRAFORM Repositories
+  Manage Proxy TERRAFORM Repositories.
 ---
 
 # sonatyperepo_repository_terraform_proxy (Resource)
 
-Manage Proxy TERRAFORM Repositories
+Manage Proxy TERRAFORM Repositories.
 
 
 

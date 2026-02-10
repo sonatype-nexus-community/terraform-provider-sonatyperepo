@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_cargo_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group CARGO Repositories
+  Manage Group CARGO Repositories.
 ---
 
 # sonatyperepo_repository_cargo_group (Resource)
 
-Manage Group CARGO Repositories
+Manage Group CARGO Repositories.
 
 
 

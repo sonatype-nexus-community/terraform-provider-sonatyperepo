@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_npm_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted NPM Repositories
+  Manage Hosted NPM Repositories.
 ---
 
 # sonatyperepo_repository_npm_hosted (Resource)
 
-Manage Hosted NPM Repositories
+Manage Hosted NPM Repositories.
 
 
 

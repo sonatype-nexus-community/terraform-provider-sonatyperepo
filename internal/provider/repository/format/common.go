@@ -169,6 +169,10 @@ func (f *BaseRepositoryFormat) GetRepositoryFirewallPccsEnabled(state any) bool 
 	return false
 }
 
+func (f *BaseRepositoryFormat) AdditionalSchemaDescription() string {
+	return ""
+}
+
 // RepositoryFormat that all Repository Formats must implement
 // --------------------------------------------
 type RepositoryFormat interface {
@@ -197,6 +201,7 @@ type RepositoryFormat interface {
 	GetRepositoryFirewallQuarantineEnabled(state any) bool
 	GetRepositoryFirewallPccsEnabled(state any) bool
 	UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any
+	AdditionalSchemaDescription() string
 }
 
 func resourceName(format string, repoType RepositoryType) string {

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_r_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted R Repositories
+  Manage Hosted R Repositories.
 ---
 
 # sonatyperepo_repository_r_hosted (Resource)
 
-Manage Hosted R Repositories
+Manage Hosted R Repositories.
 
 
 

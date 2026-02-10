@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_maven2_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy MAVEN2 Repositories
+  Manage Proxy MAVEN2 Repositories.
 ---
 
 # sonatyperepo_repository_maven2_proxy (Resource)
 
-Manage Proxy MAVEN2 Repositories
+Manage Proxy MAVEN2 Repositories.
 
 
 

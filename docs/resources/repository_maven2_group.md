@@ -3,12 +3,19 @@
 page_title: "sonatyperepo_repository_maven2_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group MAVEN2 Repositories
+  Manage Group MAVEN2 Repositories.
+  NOTE: This resource will not work against Sonatype Nexus Repository 3.88.x - see
+  here https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268
+  for details.
 ---
 
 # sonatyperepo_repository_maven2_group (Resource)
 
-Manage Group MAVEN2 Repositories
+Manage Group MAVEN2 Repositories.
+
+**NOTE:** This resource will not work against Sonatype Nexus Repository 3.88.x - see 
+[here](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268)
+for details.
 
 
 

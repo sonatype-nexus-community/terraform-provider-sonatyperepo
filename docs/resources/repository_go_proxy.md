@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_go_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy GO Repositories
+  Manage Proxy GO Repositories.
 ---
 
 # sonatyperepo_repository_go_proxy (Resource)
 
-Manage Proxy GO Repositories
+Manage Proxy GO Repositories.
 
 
 

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_pypi_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted PYPI Repositories
+  Manage Hosted PYPI Repositories.
 ---
 
 # sonatyperepo_repository_pypi_hosted (Resource)
 
-Manage Hosted PYPI Repositories
+Manage Hosted PYPI Repositories.
 
 
 

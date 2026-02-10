@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_yum_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted YUM Repositories
+  Manage Hosted YUM Repositories.
 ---
 
 # sonatyperepo_repository_yum_hosted (Resource)
 
-Manage Hosted YUM Repositories
+Manage Hosted YUM Repositories.
 
 
 

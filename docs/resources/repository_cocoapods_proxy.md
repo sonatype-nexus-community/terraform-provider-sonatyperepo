@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_cocoapods_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy COCOAPODS Repositories
+  Manage Proxy COCOAPODS Repositories.
 ---
 
 # sonatyperepo_repository_cocoapods_proxy (Resource)
 
-Manage Proxy COCOAPODS Repositories
+Manage Proxy COCOAPODS Repositories.
 
 
 

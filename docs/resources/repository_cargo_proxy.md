@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_cargo_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy CARGO Repositories
+  Manage Proxy CARGO Repositories.
 ---
 
 # sonatyperepo_repository_cargo_proxy (Resource)
 
-Manage Proxy CARGO Repositories
+Manage Proxy CARGO Repositories.
 
 
 

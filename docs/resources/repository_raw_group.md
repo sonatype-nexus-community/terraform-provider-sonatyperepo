@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_raw_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group RAW Repositories
+  Manage Group RAW Repositories.
 ---
 
 # sonatyperepo_repository_raw_group (Resource)
 
-Manage Group RAW Repositories
+Manage Group RAW Repositories.
 
 
 

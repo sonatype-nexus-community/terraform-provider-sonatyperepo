@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_go_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group GO Repositories
+  Manage Group GO Repositories.
 ---
 
 # sonatyperepo_repository_go_group (Resource)
 
-Manage Group GO Repositories
+Manage Group GO Repositories.
 
 
 

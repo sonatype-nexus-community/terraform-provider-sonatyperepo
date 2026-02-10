@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_helm_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted HELM Repositories
+  Manage Hosted HELM Repositories.
 ---
 
 # sonatyperepo_repository_helm_hosted (Resource)
 
-Manage Hosted HELM Repositories
+Manage Hosted HELM Repositories.
 
 
 

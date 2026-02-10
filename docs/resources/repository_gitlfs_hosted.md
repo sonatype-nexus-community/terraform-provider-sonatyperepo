@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_gitlfs_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted GITLFS Repositories
+  Manage Hosted GITLFS Repositories.
 ---
 
 # sonatyperepo_repository_gitlfs_hosted (Resource)
 
-Manage Hosted GITLFS Repositories
+Manage Hosted GITLFS Repositories.
 
 
 

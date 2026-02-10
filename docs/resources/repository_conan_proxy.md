@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_conan_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy CONAN Repositories
+  Manage Proxy CONAN Repositories.
 ---
 
 # sonatyperepo_repository_conan_proxy (Resource)
 
-Manage Proxy CONAN Repositories
+Manage Proxy CONAN Repositories.
 
 
 

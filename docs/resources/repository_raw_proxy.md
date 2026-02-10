@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_raw_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy RAW Repositories
+  Manage Proxy RAW Repositories.
 ---
 
 # sonatyperepo_repository_raw_proxy (Resource)
 
-Manage Proxy RAW Repositories
+Manage Proxy RAW Repositories.
 
 
 

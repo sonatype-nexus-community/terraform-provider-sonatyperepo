@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_conda_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy CONDA Repositories
+  Manage Proxy CONDA Repositories.
 ---
 
 # sonatyperepo_repository_conda_proxy (Resource)
 
-Manage Proxy CONDA Repositories
+Manage Proxy CONDA Repositories.
 
 
 

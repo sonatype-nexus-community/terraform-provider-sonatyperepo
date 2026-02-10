@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_docker_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy DOCKER Repositories
+  Manage Proxy DOCKER Repositories.
 ---
 
 # sonatyperepo_repository_docker_proxy (Resource)
 
-Manage Proxy DOCKER Repositories
+Manage Proxy DOCKER Repositories.
 
 
 
