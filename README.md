@@ -14,6 +14,10 @@ This Terraform Provider allows you to use Configuration-as-Code (CasC) practises
 
 This provider does not provide functionality for actually deploying Sonatype Nexus Repository Manager (i.e. Infrastructure or Application installation). For deployment and installation, see  the [official Help Documentation](https://help.sonatype.com/en/sonatype-nexus-repository.html).
 
+## Upgrading from v0.x.x to v1.x.x
+
+See the [Migration Guide](./MIGRATION-1.0.md).
+
 ## Version Support
 
 We test this Provider against a range of Terraform versions and Sonatype Nexus Repository Manager versions as noted below.

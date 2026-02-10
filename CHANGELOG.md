@@ -25,6 +25,7 @@ NOTES:
   * There is an API regression in NXRM 3.88.x that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
 * Tested against [Sonatype Nexus Repository Manager 3.89.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-89-0-release-notes.html) [GH-275]
   * There is an API regression in NXRM 3.89.0 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
+* Tested against Terraform 1.14.x [GH-255]
 * Import is noted as broken for `sonatype_repository_apt_hosted` resource [GH-290]
 * Multiple documentation and example updates [GH-283]
 
