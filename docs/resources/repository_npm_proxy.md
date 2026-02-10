@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_npm_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy NPM Repositories
+  Manage Proxy NPM Repositories.
 ---
 
 # sonatyperepo_repository_npm_proxy (Resource)
 
-Manage Proxy NPM Repositories
+Manage Proxy NPM Repositories.
 
 
 

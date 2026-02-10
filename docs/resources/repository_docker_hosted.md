@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_docker_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted DOCKER Repositories
+  Manage Hosted DOCKER Repositories.
 ---
 
 # sonatyperepo_repository_docker_hosted (Resource)
 
-Manage Hosted DOCKER Repositories
+Manage Hosted DOCKER Repositories.
 
 
 

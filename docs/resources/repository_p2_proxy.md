@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_p2_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy P2 Repositories
+  Manage Proxy P2 Repositories.
 ---
 
 # sonatyperepo_repository_p2_proxy (Resource)
 
-Manage Proxy P2 Repositories
+Manage Proxy P2 Repositories.
 
 
 

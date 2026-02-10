@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_nuget_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy NUGET Repositories
+  Manage Proxy NUGET Repositories.
 ---
 
 # sonatyperepo_repository_nuget_proxy (Resource)
 
-Manage Proxy NUGET Repositories
+Manage Proxy NUGET Repositories.
 
 
 

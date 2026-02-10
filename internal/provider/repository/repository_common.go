@@ -66,7 +66,7 @@ func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRe
 
 // Set Schema for this Resource
 func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := hostedStandardSchema(r.RepositoryFormat.Key(), r.RepositoryType)
+	schema := standardRepositorySchema(r.RepositoryFormat.Key(), r.RepositoryType, r.RepositoryFormat.AdditionalSchemaDescription())
 	maps.Copy(schema.Attributes, r.RepositoryFormat.FormatSchemaAttributes())
 	resp.Schema = schema
 }
@@ -549,7 +549,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 }
 
-func hostedStandardSchema(repoFormat string, repoType format.RepositoryType) tfschema.Schema {
+func standardRepositorySchema(repoFormat string, repoType format.RepositoryType, additionalDescription string) tfschema.Schema {
 	storageAttributes := map[string]tfschema.Attribute{
 		"blob_store_name": schema.ResourceRequiredString("Name of the Blob Store to use"),
 		"strict_content_type_validation": schema.ResourceRequiredBool(
@@ -575,7 +575,7 @@ func hostedStandardSchema(repoFormat string, repoType format.RepositoryType) tfs
 		)
 	}
 	return tfschema.Schema{
-		Description: fmt.Sprintf("Manage %s %s Repositories", cases.Title(language.Und).String(repoType.String()), repoFormat),
+		Description: fmt.Sprintf("Manage %s %s Repositories.%s", cases.Title(language.Und).String(repoType.String()), repoFormat, additionalDescription),
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.ResourceRequiredStringWithPlanModifier(
 				"Name of the Repository",

@@ -58,7 +58,7 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = tfschema.Schema{
 		MarkdownDescription: `Configure and manage an LDAP connection.
 
-**WARNING: This does not work against Sonatype Nexus Repository 3.88.x due to a known bug in these versions.**`,
+**WARNING: This does not work against Sonatype Nexus Repository 3.88.x - 3.89.0 due to a known bug in these versions.**`,
 		Attributes: map[string]tfschema.Attribute{
 			"id":   schema.ResourceComputedString("Internal LDAP server ID"),
 			"name": schema.ResourceRequiredString("LDAP connection name"),

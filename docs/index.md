@@ -13,7 +13,7 @@ The provider needs to be configured with the proper credentials before it can be
 
 ## Compatability
 
-This Provider is tested on Sonatype Nexus Repository Manager versions `3.79.1` through `3.88.0` currently.
+This Provider is tested on Sonatype Nexus Repository Manager versions `3.79.1` through `3.89.0` currently.
 
 Sonatype Nexus Repository must not be in read-only mode in order to use this Provider. This will be checked. 
 		

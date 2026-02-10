@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -44,6 +45,18 @@ func TestAccRepositoryMavenResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Skip these tests for NXRM 3.88.x due to https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -190,6 +203,18 @@ func TestAccRepositoryMavenGroupImport(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Skip these tests for NXRM 3.88.x due to https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{

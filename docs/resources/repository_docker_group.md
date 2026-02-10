@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_docker_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group DOCKER Repositories
+  Manage Group DOCKER Repositories.
 ---
 
 # sonatyperepo_repository_docker_group (Resource)
 
-Manage Group DOCKER Repositories
+Manage Group DOCKER Repositories.
 
 
 

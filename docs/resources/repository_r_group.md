@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_r_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group R Repositories
+  Manage Group R Repositories.
 ---
 
 # sonatyperepo_repository_r_group (Resource)
 
-Manage Group R Repositories
+Manage Group R Repositories.
 
 
 

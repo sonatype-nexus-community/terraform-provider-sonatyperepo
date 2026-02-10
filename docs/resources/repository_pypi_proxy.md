@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_pypi_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy PYPI Repositories
+  Manage Proxy PYPI Repositories.
 ---
 
 # sonatyperepo_repository_pypi_proxy (Resource)
 
-Manage Proxy PYPI Repositories
+Manage Proxy PYPI Repositories.
 
 
 

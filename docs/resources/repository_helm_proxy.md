@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_helm_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy HELM Repositories
+  Manage Proxy HELM Repositories.
 ---
 
 # sonatyperepo_repository_helm_proxy (Resource)
 
-Manage Proxy HELM Repositories
+Manage Proxy HELM Repositories.
 
 
 

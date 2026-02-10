@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_apt_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted APT Repositories
+  Manage Hosted APT Repositories.
 ---
 
 # sonatyperepo_repository_apt_hosted (Resource)
 
-Manage Hosted APT Repositories
+Manage Hosted APT Repositories.
 
 
 

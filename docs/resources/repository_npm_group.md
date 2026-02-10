@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_npm_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group NPM Repositories
+  Manage Group NPM Repositories.
 ---
 
 # sonatyperepo_repository_npm_group (Resource)
 
-Manage Group NPM Repositories
+Manage Group NPM Repositories.
 
 
 

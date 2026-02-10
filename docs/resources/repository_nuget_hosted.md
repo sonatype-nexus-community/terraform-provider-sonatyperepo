@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_nuget_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted NUGET Repositories
+  Manage Hosted NUGET Repositories.
 ---
 
 # sonatyperepo_repository_nuget_hosted (Resource)
 
-Manage Hosted NUGET Repositories
+Manage Hosted NUGET Repositories.
 
 
 

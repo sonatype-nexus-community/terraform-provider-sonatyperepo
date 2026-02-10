@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_conan_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group CONAN Repositories
+  Manage Group CONAN Repositories.
 ---
 
 # sonatyperepo_repository_conan_group (Resource)
 
-Manage Group CONAN Repositories
+Manage Group CONAN Repositories.
 
 
 

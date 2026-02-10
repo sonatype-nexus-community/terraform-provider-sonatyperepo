@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_yum_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group YUM Repositories
+  Manage Group YUM Repositories.
 ---
 
 # sonatyperepo_repository_yum_group (Resource)
 
-Manage Group YUM Repositories
+Manage Group YUM Repositories.
 
 
 

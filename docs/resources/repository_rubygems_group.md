@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_rubygems_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group RUBYGEMS Repositories
+  Manage Group RUBYGEMS Repositories.
 ---
 
 # sonatyperepo_repository_rubygems_group (Resource)
 
-Manage Group RUBYGEMS Repositories
+Manage Group RUBYGEMS Repositories.
 
 
 

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_cargo_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted CARGO Repositories
+  Manage Hosted CARGO Repositories.
 ---
 
 # sonatyperepo_repository_cargo_hosted (Resource)
 
-Manage Hosted CARGO Repositories
+Manage Hosted CARGO Repositories.
 
 
 

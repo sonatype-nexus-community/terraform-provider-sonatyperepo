@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_maven2_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted MAVEN2 Repositories
+  Manage Hosted MAVEN2 Repositories.
 ---
 
 # sonatyperepo_repository_maven2_hosted (Resource)
 
-Manage Hosted MAVEN2 Repositories
+Manage Hosted MAVEN2 Repositories.
 
 
 

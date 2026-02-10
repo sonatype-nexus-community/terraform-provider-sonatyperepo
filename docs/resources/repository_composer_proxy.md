@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_composer_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy COMPOSER Repositories
+  Manage Proxy COMPOSER Repositories.
 ---
 
 # sonatyperepo_repository_composer_proxy (Resource)
 
-Manage Proxy COMPOSER Repositories
+Manage Proxy COMPOSER Repositories.
 
 
 

@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_pypi_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group PYPI Repositories
+  Manage Group PYPI Repositories.
 ---
 
 # sonatyperepo_repository_pypi_group (Resource)
 
-Manage Group PYPI Repositories
+Manage Group PYPI Repositories.
 
 
 

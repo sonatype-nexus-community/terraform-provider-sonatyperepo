@@ -314,6 +314,14 @@ func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
+func (f *MavenRepositoryFormatGroup) AdditionalSchemaDescription() string {
+	return `
+
+**NOTE:** This resource will not work against Sonatype Nexus Repository 3.88.x - see 
+[here](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268)
+for details.`
+}
+
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------

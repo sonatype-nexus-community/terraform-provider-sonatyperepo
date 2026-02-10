@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_huggingface_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Proxy HUGGINGFACE Repositories
+  Manage Proxy HUGGINGFACE Repositories.
 ---
 
 # sonatyperepo_repository_huggingface_proxy (Resource)
 
-Manage Proxy HUGGINGFACE Repositories
+Manage Proxy HUGGINGFACE Repositories.
 
 
 

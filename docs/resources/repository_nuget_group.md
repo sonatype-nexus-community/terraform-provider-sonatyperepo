@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_nuget_group Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Group NUGET Repositories
+  Manage Group NUGET Repositories.
 ---
 
 # sonatyperepo_repository_nuget_group (Resource)
 
-Manage Group NUGET Repositories
+Manage Group NUGET Repositories.
 
 
 

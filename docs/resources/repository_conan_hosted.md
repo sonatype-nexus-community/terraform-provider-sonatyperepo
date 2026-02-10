@@ -3,12 +3,12 @@
 page_title: "sonatyperepo_repository_conan_hosted Resource - sonatyperepo"
 subcategory: ""
 description: |-
-  Manage Hosted CONAN Repositories
+  Manage Hosted CONAN Repositories.
 ---
 
 # sonatyperepo_repository_conan_hosted (Resource)
 
-Manage Hosted CONAN Repositories
+Manage Hosted CONAN Repositories.
 
 
 
