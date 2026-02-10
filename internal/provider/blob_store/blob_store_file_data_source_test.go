@@ -46,7 +46,6 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "name", "default"),
 					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "path", "default"),
-					resource.TestCheckResourceAttrSet(dataSourceBlobStoreFile, "last_updated"),
 					// Soft quota is absent in default config
 					resource.TestCheckNoResourceAttr(dataSourceBlobStoreFile, "soft_quota"),
 				),

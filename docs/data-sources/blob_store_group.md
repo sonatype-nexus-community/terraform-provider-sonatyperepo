@@ -22,7 +22,6 @@ Use this data source to get a specific File Blob Store by it's name
 ### Read-Only
 
 - `fill_policy` (String) Defines how writes are made to the member Blob Stores
-- `last_updated` (String) The timestamp of when the resource was last updated
 - `members` (Set of String) Set of the names of blob stores that are members of this group
 - `soft_quota` (Attributes) Soft Quota for this Blob Store (see [below for nested schema](#nestedatt--soft_quota))
 

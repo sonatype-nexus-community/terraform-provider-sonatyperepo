@@ -26,10 +26,31 @@ import (
 
 // RoutingRulesModel represents a list of routing rules for data source
 type RoutingRulesModel struct {
-	RoutingRules []RoutingRuleModel `tfsdk:"routing_rules"`
+	RoutingRules []RoutingRuleModelDS `tfsdk:"routing_rules"`
 }
 
 // RoutingRuleModel represents the Terraform model for a routing rule (used by data source)
+type RoutingRuleModelDS struct {
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Mode        types.String `tfsdk:"mode"`
+	Matchers    types.Set    `tfsdk:"matchers"`
+}
+
+// MapFromApi maps API response to model
+func (m *RoutingRuleModelDS) MapFromApi(api *sonatyperepo.RoutingRuleXO) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Description = types.StringPointerValue(api.Description)
+	m.Mode = types.StringPointerValue(api.Mode)
+
+	if api.Matchers != nil {
+		matchers, _ := types.SetValueFrom(context.Background(), types.StringType, api.Matchers)
+		m.Matchers = matchers
+	} else {
+		m.Matchers = types.SetNull(types.StringType)
+	}
+}
+
 type RoutingRuleModel struct {
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`

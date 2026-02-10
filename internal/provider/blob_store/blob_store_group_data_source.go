@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -58,10 +57,9 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific File Blob Store by it's name",
 		Attributes: map[string]tfschema.Attribute{
-			"name":         schema.DataSourceRequiredString("Name of the Blob Store Group"),
-			"fill_policy":  schema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
-			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
-			"members":      schema.ResourceComputedStringSet("Set of the names of blob stores that are members of this group"),
+			"name":        schema.DataSourceRequiredString("Name of the Blob Store Group"),
+			"fill_policy": schema.DataSourceComputedString("Defines how writes are made to the member Blob Stores"),
+			"members":     schema.ResourceComputedStringSet("Set of the names of blob stores that are members of this group"),
 			"soft_quota": schema.DataSourceComputedSingleNestedAttribute(
 				"Soft Quota for this Blob Store",
 				map[string]tfschema.Attribute{
@@ -75,7 +73,7 @@ func (d *groupBlobStoreDataSource) Schema(_ context.Context, req datasource.Sche
 
 // Read refreshes the Terraform state with the latest data.
 func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreGroupModel
+	var data model.BlobStoreGroupModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -102,7 +100,7 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	state := model.BlobStoreGroupModel{
+	state := model.BlobStoreGroupModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 	}
 
@@ -123,7 +121,6 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	// Set state
-	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

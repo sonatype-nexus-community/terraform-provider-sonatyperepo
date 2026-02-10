@@ -19,11 +19,9 @@ package system
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
@@ -64,7 +62,6 @@ func (d *securityUserTokenDataSource) Schema(_ context.Context, req datasource.S
 			"expiration_days":    schema.DataSourceComputedInt32("User token expiration days (1-999)"),
 			"expiration_enabled": schema.DataSourceComputedBool("Whether user tokens expiration is enabled"),
 			"protect_content":    schema.DataSourceComputedBool("Whether user tokens are required for repository authentication"),
-			"last_updated":       schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
@@ -91,9 +88,8 @@ func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	// Map API response to state
-	var state model.SecurityUserTokenModel
+	var state model.SecurityUserTokenModelDS
 	state.MapFromApi(apiResponse)
-	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	// Set state
 	diags := resp.State.Set(ctx, &state)

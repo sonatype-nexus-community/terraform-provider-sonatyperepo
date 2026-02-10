@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -58,9 +57,8 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a specific S3 Blob Store by it's name",
 		Attributes: map[string]tfschema.Attribute{
-			"name":         schema.DataSourceRequiredString("Name of the Blob Store"),
-			"type":         schema.DataSourceOptionalString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", common.BLOB_STORE_TYPE_S3)),
-			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
+			"name": schema.DataSourceRequiredString("Name of the Blob Store"),
+			"type": schema.DataSourceOptionalString(fmt.Sprintf("Type of this Blob Store - will always be '%s'", common.BLOB_STORE_TYPE_S3)),
 			"soft_quota": schema.DataSourceComputedOptionalSingleNestedAttribute("Soft Quota for this Blob Store", map[string]tfschema.Attribute{
 				"type":  schema.DataSourceOptionalString("Soft Quota type"),
 				"limit": schema.DataSourceOptionalInt64("Quota limit"),
@@ -95,7 +93,7 @@ func (d *s3BlobStoreDataSource) Schema(_ context.Context, req datasource.SchemaR
 
 // Read refreshes the Terraform state with the latest data.
 func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreS3Model
+	var data model.BlobStoreS3ModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -122,7 +120,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	state := model.BlobStoreS3Model{
+	state := model.BlobStoreS3ModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 		Type: types.StringValue(common.BLOB_STORE_TYPE_S3),
 		BucketConfiguration: &model.BlobStoreS3BucketConfigurationModel{
@@ -185,7 +183,6 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	// Set state
-	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

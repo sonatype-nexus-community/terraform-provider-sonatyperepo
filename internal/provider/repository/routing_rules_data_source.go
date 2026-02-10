@@ -62,11 +62,10 @@ func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.Schema
 				"List of Routing Rules",
 				tfschema.NestedAttributeObject{
 					Attributes: map[string]tfschema.Attribute{
-						"name":         schema.DataSourceComputedString("The name of the routing rule"),
-						"description":  schema.DataSourceComputedString("The description of the routing rule"),
-						"mode":         schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
-						"matchers":     schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
-						"last_updated": schema.DataSourceComputedString("Timestamp of last update"),
+						"name":        schema.DataSourceComputedString("The name of the routing rule"),
+						"description": schema.DataSourceComputedString("The description of the routing rule"),
+						"mode":        schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
+						"matchers":    schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
 					},
 				},
 			),
@@ -97,10 +96,10 @@ func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	tflog.Debug(ctx, fmt.Sprintf("Iterating %d routing rules", len(routingRulesResponse)))
 
-	state.RoutingRules = make([]model.RoutingRuleModel, 0)
+	state.RoutingRules = make([]model.RoutingRuleModelDS, 0)
 	for _, routingRule := range routingRulesResponse {
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s routing rule", *routingRule.Name))
-		newRr := model.RoutingRuleModel{}
+		newRr := model.RoutingRuleModelDS{}
 		newRr.MapFromApi(&routingRule)
 
 		state.RoutingRules = append(state.RoutingRules, newRr)
