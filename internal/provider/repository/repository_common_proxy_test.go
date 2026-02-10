@@ -367,7 +367,7 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 			resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
 			resourceName := fmt.Sprintf(repoNameFString, resourceType)
-			repoName := fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString)
+			repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString))
 
 			var steps []resource.TestStep
 
@@ -511,7 +511,7 @@ func TestAccRepositoryGenericProxyInvalidBlobStore(t *testing.T) {
 	for _, repoFormat := range common.AllProxyFormats() {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(repoFormat))
-		repoName := fmt.Sprintf(proxyNameFString, repoFormat, randomString)
+		repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, repoFormat, randomString))
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,

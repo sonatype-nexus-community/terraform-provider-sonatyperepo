@@ -240,7 +240,7 @@ func TestAccRepositoryGenericHostedInvalidBlobStore(t *testing.T) {
 	for _, repoFormat := range common.AllHostedFormats() {
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resourceType := fmt.Sprintf(resourceTypeHostedFString, strings.ToLower(repoFormat))
-		repoName := fmt.Sprintf(hostedNameFString, repoFormat, randomString)
+		repoName := strings.ToLower(fmt.Sprintf(hostedNameFString, repoFormat, randomString))
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
