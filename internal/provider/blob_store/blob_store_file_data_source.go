@@ -19,7 +19,6 @@ package blob_store
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -67,14 +66,13 @@ func (d *fileBlobStoreDataSource) Schema(_ context.Context, req datasource.Schem
 					"limit": schema.DataSourceComputedInt64("Quota limit"),
 				},
 			),
-			"last_updated": schema.DataSourceComputedString("The timestamp of when the resource was last updated"),
 		},
 	}
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.BlobStoreFileModel
+	var data model.BlobStoreFileModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -96,7 +94,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	state := model.BlobStoreFileModel{
+	state := model.BlobStoreFileModelDS{
 		Name: types.StringValue(data.Name.ValueString()),
 		Path: types.StringValue(*blobStore.Path),
 	}
@@ -110,7 +108,6 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	// Set state
-	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

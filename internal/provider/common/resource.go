@@ -27,9 +27,10 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &BaseResource{}
-	_ resource.ResourceWithConfigure   = &BaseResource{}
-	_ resource.ResourceWithImportState = &BaseResource{}
+	_ resource.Resource                 = &BaseResource{}
+	_ resource.ResourceWithConfigure    = &BaseResource{}
+	_ resource.ResourceWithImportState  = &BaseResource{}
+	_ resource.ResourceWithUpgradeState = &BaseResource{}
 )
 
 // BaseResource is the resource implementation for Sonatype Nexus Repository resources.
@@ -40,6 +41,11 @@ type BaseResource struct {
 	Client       *sonatyperepo.APIClient
 	NxrmVersion  SystemVersion
 	NxrmWritable bool
+}
+
+// UpgradeState implements resource.ResourceWithUpgradeState.
+func (r *BaseResource) UpgradeState(context.Context) map[int64]resource.StateUpgrader {
+	panic("unimplemented")
 }
 
 // ImportState implements resource.ResourceWithImportState.

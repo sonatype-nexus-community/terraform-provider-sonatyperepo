@@ -30,18 +30,7 @@ type RepositoryRHostedModel struct {
 }
 
 func (m *RepositoryRHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-	m.Name = types.StringPointerValue(api.Name)
-	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
-
-	// Cleanup
-	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = NewRepositoryCleanupModel()
-		mapCleanupFromApi(api.Cleanup, m.Cleanup)
-	}
-
-	// Storage
-	m.Storage.MapFromApi(&api.Storage)
+	m.mapSimpleApiHostedRepository(api)
 }
 
 func (m *RepositoryRHostedModel) ToApiCreateModel() sonatyperepo.RHostedRepositoryApiRequest {
@@ -71,6 +60,7 @@ func (m *RepositoryRHostedModel) ToApiUpdateModel() sonatyperepo.RHostedReposito
 // --------------------------------------------
 type RepositorRProxyModel struct {
 	RepositoryProxyModel
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositorRProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -93,7 +83,20 @@ func (m *RepositorRProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepos
 	m.HttpClient.MapFromApiHttpClientAttributes(&api.HttpClient)
 	m.RoutingRule = types.StringPointerValue(api.RoutingRuleName)
 	if api.Replication != nil {
+		m.Replication = &RepositoryReplicationModel{}
 		m.Replication.MapFromApi(api.Replication)
+	} else {
+		// Set default values when API doesn't provide replication data
+		m.Replication = &RepositoryReplicationModel{
+			PreemptivePullEnabled: types.BoolValue(false),
+			AssetPathRegex:        types.StringNull(),
+		}
+	}
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
 	}
 }
 

@@ -18,6 +18,7 @@ package system_test
 
 import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -32,6 +33,19 @@ const (
 func TestAccSystemConfigLdapResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Broken in NXRM 3.88.x - NXRM 3.89.0 (NEXUS-50487)
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 88,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 89,
+				Patch: 0,
+				Build: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{

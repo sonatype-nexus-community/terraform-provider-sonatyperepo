@@ -58,8 +58,7 @@ func (f *MavenRepositoryFormat) Key() string {
 }
 
 func (f *MavenRepositoryFormat) ResourceName(repoType RepositoryType) string {
-	// Override to use "maven" instead of "maven2" for resource names
-	return resourceName("maven", repoType)
+	return resourceName(f.Key(), repoType)
 }
 
 // --------------------------------------------
@@ -177,7 +176,7 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
 }
@@ -206,6 +205,42 @@ func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.MavenProxyApiRepository))
 	return stateModel
+}
+
+func (f *MavenRepositoryFormatProxy) GetRepositoryId(state any) string {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	return stateModel.Name.ValueString()
+}
+
+func (f *MavenRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
+	var stateModel = (state).(model.RepositoryMavenProxyModel)
+	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	return stateModel
+}
+
+func (f *MavenRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine == nil {
+		return false
+	}
+	return stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool()
+}
+
+func (f *MavenRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state any) bool {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
 
 // --------------------------------------------
@@ -277,6 +312,14 @@ func (f *MavenRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any 
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
 	return stateModel
+}
+
+func (f *MavenRepositoryFormatGroup) AdditionalSchemaDescription() string {
+	return `
+
+**NOTE:** This resource will not work against Sonatype Nexus Repository 3.88.x - see 
+[here](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/268)
+for details.`
 }
 
 // --------------------------------------------

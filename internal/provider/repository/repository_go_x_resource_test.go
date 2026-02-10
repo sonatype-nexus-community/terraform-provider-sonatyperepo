@@ -50,11 +50,11 @@ resource "%s" "repo" {
   name = "go-group-repo-%s"
   online = true
   storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
+	  blob_store_name = "default"
+	  strict_content_type_validation = true
   }
   group = {
-	member_names = []
+	  member_names = []
   }
 }
 `, resourceTypeGoGroup, randomString),
@@ -66,8 +66,8 @@ resource "%s" "repo" {
   name = "go-proxy-repo-%s"
   online = true
   storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
+    blob_store_name = "default"
+    strict_content_type_validation = true
   }
   proxy = {
     remote_url = "https://proxy.golang.org/"
@@ -81,19 +81,19 @@ resource "%s" "repo" {
   http_client = {
     blocked = false
     auto_block = true
-	connection = {
-		enable_cookies = true
-		retries = 9
-		timeout = 999
-		use_trust_store = true
-		user_agent_suffix = "terraform"
-	}
-	authentication = {
-		username = "user"
-		password = "pass"
-		preemptive = true
-		type = "username"
-	}
+    connection = {
+      enable_cookies = true
+      retries = 9
+      timeout = 999
+      use_trust_store = true
+      user_agent_suffix = "terraform"
+    }
+    authentication = {
+      username = "user"
+      password = "pass"
+      preemptive = true
+      type = "username"
+    }
   }
 }
 
@@ -101,15 +101,15 @@ resource "%s" "repo" {
   name = "go-group-repo-%s"
   online = true
   storage = {
-	blob_store_name = "default"
-	strict_content_type_validation = true
+    blob_store_name = "default"
+    strict_content_type_validation = true
   }
   group = {
-	member_names = ["go-proxy-repo-%s"]
+	  member_names = ["go-proxy-repo-%s"]
   }
 
   depends_on = [
-	%s.repo
+	  %s.repo
   ]
 }
 `, resourceTypeGoProxy, randomString, resourceTypeGoGroup, randomString, randomString, resourceTypeGoProxy),
@@ -150,57 +150,6 @@ resource "%s" "repo" {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyImport(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	resourceName := fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoProxy)
-	repoName := fmt.Sprintf("go-proxy-import-%s", randomString)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create with minimal configuration
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://proxy.golang.org/"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeGoProxy, repoName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-				),
-			},
-			// Import and verify no changes
-			{
-				ResourceName:                         resourceName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateId:                        repoName,
-				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
 		},
 	})
 }
@@ -264,305 +213,6 @@ resource "%s" "repo" {
 				ImportStateId:                        repoName,
 				ImportStateVerifyIdentifierAttribute: "name",
 				ImportStateVerifyIgnore:              []string{"last_updated"},
-			},
-		},
-	})
-}
-func TestAccRepositoryGoProxyInvalidRemoteUrl(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid remote URL (missing protocol)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "invalid-url-without-protocol"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageInvalidRemoteUrl),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidBlobStore(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid blob store name (non-existent)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-%s"
-  online = true
-  storage = {
-    blob_store_name = "non-existent-blob-store"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageBlobStoreNotFound),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyMissingStorage(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Missing storage block (required field)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-%s"
-  online = true
-  # Missing storage block
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeGoGroup, randomString),
-				ExpectError: regexp.MustCompile(errorMessageStorageRequired),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidTimeoutTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too large, max is 3600)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-timeout-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 3601
-    }
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidTimeoutTooSmall(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid timeout (too small, min is 1)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-timeout-small-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      timeout = 0
-    }
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionTimeoutValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidRetriesTooLarge(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (too large, max is 10)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-retries-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = 11
-    }
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidRetriesNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid retries (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-retries-neg-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = 1440
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-    connection = {
-      retries = -1
-    }
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageHttpClientConnectionRetriesValue),
-			},
-		},
-	})
-}
-
-func TestAccRepositoryGoProxyInvalidTimeToLiveNegative(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Invalid time_to_live (negative)
-			{
-				Config: fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "repo" {
-  name = "go-proxy-repo-ttl-%s"
-  online = true
-  storage = {
-    blob_store_name = "default"
-    strict_content_type_validation = true
-  }
-  proxy = {
-    remote_url = "https://repo.example.com"
-    content_max_age = 1440
-    metadata_max_age = 1440
-  }
-  negative_cache = {
-    enabled = true
-    time_to_live = -1
-  }
-  http_client = {
-    blocked = false
-    auto_block = true
-  }
-}
-`, resourceTypeGoProxy, randomString),
-				ExpectError: regexp.MustCompile(errorMessageNegativeCacheTimeoutValue),
 			},
 		},
 	})

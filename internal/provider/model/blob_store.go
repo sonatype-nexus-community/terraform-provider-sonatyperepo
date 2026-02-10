@@ -61,6 +61,12 @@ func (m *BlobStoreSoftQuota) MapToApi(api *v3.BlobStoreApiSoftQuota) {
 
 // BlobStoreFileModel
 // ------------------------------------
+type BlobStoreFileModelDS struct {
+	Name      types.String        `tfsdk:"name"`
+	Path      types.String        `tfsdk:"path"`
+	SoftQuota *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+}
+
 type BlobStoreFileModel struct {
 	Name        types.String        `tfsdk:"name"`
 	Path        types.String        `tfsdk:"path"`
@@ -70,6 +76,13 @@ type BlobStoreFileModel struct {
 
 // BlobStoreGroupModel
 // ------------------------------------
+type BlobStoreGroupModelDS struct {
+	Name       types.String        `tfsdk:"name"`
+	SoftQuota  *BlobStoreSoftQuota `tfsdk:"soft_quota"`
+	Members    []types.String      `tfsdk:"members"`
+	FillPolicy types.String        `tfsdk:"fill_policy"`
+}
+
 type BlobStoreGroupModel struct {
 	Name        types.String        `tfsdk:"name"`
 	SoftQuota   *BlobStoreSoftQuota `tfsdk:"soft_quota"`
@@ -121,13 +134,28 @@ func (m *BlobStoreGroupModel) mapCommonGroupFields(api interface {
 
 // BlobStoreS3Model
 // ------------------------------------
-type BlobStoreS3Model struct {
+type BlobStoreS3ModelDS struct {
+	Name                types.String                         `tfsdk:"name"`
+	Type                types.String                         `tfsdk:"type"`
+	SoftQuota           *BlobStoreSoftQuota                  `tfsdk:"soft_quota"`
+	BucketConfiguration *BlobStoreS3BucketConfigurationModel `tfsdk:"bucket_configuration"`
+}
+
+type BlobStoreS3ModelV0 struct {
+	Name                types.String                           `tfsdk:"name"`
+	Type                types.String                           `tfsdk:"type"`
+	SoftQuota           *BlobStoreSoftQuota                    `tfsdk:"soft_quota"`
+	BucketConfiguration *BlobStoreS3BucketConfigurationModelV0 `tfsdk:"bucket_configuration"`
+	LastUpdated         types.String                           `tfsdk:"last_updated"`
+}
+type BlobStoreS3ModelV1 struct {
 	Name                types.String                         `tfsdk:"name"`
 	Type                types.String                         `tfsdk:"type"`
 	SoftQuota           *BlobStoreSoftQuota                  `tfsdk:"soft_quota"`
 	BucketConfiguration *BlobStoreS3BucketConfigurationModel `tfsdk:"bucket_configuration"`
 	LastUpdated         types.String                         `tfsdk:"last_updated"`
 }
+type BlobStoreS3Model = BlobStoreS3ModelV1
 
 func (m *BlobStoreS3Model) MapFromApi(api *v3.S3BlobStoreApiModel) {
 	m.Name = types.StringValue(api.Name)
@@ -149,13 +177,20 @@ func (m *BlobStoreS3Model) MapToApi(api *v3.S3BlobStoreApiModel) {
 
 // BlobStoreS3BucketConfigurationModel
 // ------------------------------------
-type BlobStoreS3BucketConfigurationModel struct {
+type BlobStoreS3BucketConfigurationModelV0 struct {
+	Bucket                   BlobStoreS3BucketModel                    `tfsdk:"bucket"`
+	Encryption               *BlobStoreS3Encryption                    `tfsdk:"encryption"`
+	BucketSecurity           *BlobStoreS3BucketSecurityModel           `tfsdk:"bucket_security"`
+	AdvancedBucketConnection *BlobStoreS3AdvancedBucketConnectionModel `tfsdk:"advanced_bucket_connection"`
+}
+type BlobStoreS3BucketConfigurationModelV1 struct {
 	Bucket                   BlobStoreS3BucketModel                    `tfsdk:"bucket"`
 	Encryption               *BlobStoreS3Encryption                    `tfsdk:"encryption"`
 	BucketSecurity           *BlobStoreS3BucketSecurityModel           `tfsdk:"bucket_security"`
 	AdvancedBucketConnection *BlobStoreS3AdvancedBucketConnectionModel `tfsdk:"advanced_bucket_connection"`
 	PreSignedUrlEnabled      types.Bool                                `tfsdk:"pre_signed_url_enabled"`
 }
+type BlobStoreS3BucketConfigurationModel = BlobStoreS3BucketConfigurationModelV1
 
 func (m *BlobStoreS3BucketConfigurationModel) MapFromApi(api *v3.S3BlobStoreApiBucketConfiguration) {
 	m.Bucket.MapFromApi(&api.Bucket)
@@ -168,7 +203,11 @@ func (m *BlobStoreS3BucketConfigurationModel) MapFromApi(api *v3.S3BlobStoreApiB
 	if api.AdvancedBucketConnection != nil {
 		m.AdvancedBucketConnection.MapFromApi(api.AdvancedBucketConnection)
 	}
-	m.PreSignedUrlEnabled = types.BoolPointerValue(api.PreSignedUrlEnabled)
+	if api.PreSignedUrlEnabled == nil {
+		m.PreSignedUrlEnabled = types.BoolValue(false)
+	} else {
+		m.PreSignedUrlEnabled = types.BoolPointerValue(api.PreSignedUrlEnabled)
+	}
 }
 
 func (m *BlobStoreS3BucketConfigurationModel) MapToApi(api *v3.S3BlobStoreApiBucketConfiguration) {

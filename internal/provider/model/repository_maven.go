@@ -91,7 +91,8 @@ func (m *RepositoryMavenHostedModel) ToApiUpdateModel() sonatyperepo.MavenHosted
 // --------------------------------------------
 type RepositoryMavenProxyModel struct {
 	RepositoryProxyModel
-	Maven repositoryMavenSpecificModel `tfsdk:"maven"`
+	Maven                      repositoryMavenSpecificModel     `tfsdk:"maven"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiRepository) {
@@ -126,6 +127,12 @@ func (m *RepositoryMavenProxyModel) FromApiModel(api sonatyperepo.MavenProxyApiR
 
 	// Maven Specific
 	m.Maven.MapFromApi(&api.Maven)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
+	}
 }
 
 func (m *RepositoryMavenProxyModel) ToApiCreateModel() sonatyperepo.MavenProxyRepositoryApiRequest {
@@ -204,6 +211,13 @@ func (m *RepositoryMavenGroupModel) ToApiCreateModel() sonatyperepo.MavenGroupRe
 
 	// Group
 	m.Group.MapToApi(&apiModel.Group)
+
+	// Maven - Injected to keep NXRM 3.88 happy (they are in API, but not used)
+	// NXRM 3.89.0 removed these from the API...
+	// apiModel.Maven = *sonatyperepo.NewMavenAttributesWithDefaults()
+	// apiModel.Maven.ContentDisposition = common.StringPointer(common.MAVEN_CONTENT_DISPOSITION_INLINE)
+	// apiModel.Maven.LayoutPolicy = common.StringPointer(common.MAVEN_LAYOUT_PERMISSIVE)
+	// apiModel.Maven.VersionPolicy = common.StringPointer(common.MAVEN_VERSION_POLICY_MIXED)
 
 	return apiModel
 }

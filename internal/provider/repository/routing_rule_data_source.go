@@ -59,18 +59,17 @@ func (d *routingRuleDataSource) Schema(_ context.Context, req datasource.SchemaR
 	resp.Schema = tfschema.Schema{
 		Description: "Use this data source to get a single routing rule by name",
 		Attributes: map[string]tfschema.Attribute{
-			"name":         schema.DataSourceRequiredStringWithLengthAtLeast("The name of the routing rule", 1),
-			"description":  schema.DataSourceComputedString("The description of the routing rule"),
-			"mode":         schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
-			"matchers":     schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
-			"last_updated": schema.DataSourceComputedString("Timestamp of last update"),
+			"name":        schema.DataSourceRequiredStringWithLengthAtLeast("The name of the routing rule", 1),
+			"description": schema.DataSourceComputedString("The description of the routing rule"),
+			"mode":        schema.DataSourceComputedString("The mode of the routing rule (ALLOW or BLOCK)"),
+			"matchers":    schema.DataSourceComputedStringSet("Regular expressions used to identify request paths"),
 		},
 	}
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data model.RoutingRuleModel
+	var data model.RoutingRuleModelDS
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -87,7 +86,7 @@ func (d *routingRuleDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	routingRuleResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRule(ctx, data.Name.ValueString()).Execute()
 
-	state := model.RoutingRuleModel{}
+	state := model.RoutingRuleModelDS{}
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
 			errors.HandleAPIWarning(

@@ -187,7 +187,7 @@ func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 }
 
 func (f *AptRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes()
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
 	maps.Copy(additionalAttributes, aptSchemaAttributes(true))
 	return additionalAttributes
 }
@@ -218,6 +218,10 @@ func (f *AptRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *AptRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
+	return false
+}
+
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
@@ -240,11 +244,13 @@ func aptSchemaAttributes(isProxy bool) map[string]tfschema.Attribute {
 	}
 
 	if !isProxy {
-		attrs["apt_signing"] = schema.ResourceOptionalSingleNestedAttribute(
+		attrs["apt_signing"] = schema.ResourceRequiredSingleNestedAttribute(
 			"APT signing configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"key_pair":   schema.ResourceRequiredString("PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)"),
-				"passphrase": schema.ResourceSensitiveRequiredString("Passphrase to access PGP signing key"),
+				"key_pair": schema.ResourceRequiredString("PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)"),
+				"passphrase": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(
+					"Passphrase to access PGP signing key", 1,
+				),
 			},
 		)
 	}

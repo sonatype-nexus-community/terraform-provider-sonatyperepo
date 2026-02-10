@@ -167,8 +167,9 @@ func (m *dockerProxyAttributesModel) MapToApi(api *sonatyperepo.DockerProxyAttri
 
 type RepositoryDockerProxyModel struct {
 	RepositoryProxyModel
-	Docker      dockerAttributesModel      `tfsdk:"docker"`
-	DockerProxy dockerProxyAttributesModel `tfsdk:"docker_proxy"`
+	Docker                     dockerAttributesModel            `tfsdk:"docker"`
+	DockerProxy                dockerProxyAttributesModel       `tfsdk:"docker_proxy"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyApiRepository) {
@@ -204,6 +205,12 @@ func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyAp
 	// Docker Specific
 	m.Docker.MapFromApi(&api.Docker)
 	m.DockerProxy.MapFromApi(&api.DockerProxy)
+
+	// Firewall Audit and Quarantine
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
+	}
 }
 
 func (m *RepositoryDockerProxyModel) ToApiCreateModel() sonatyperepo.DockerProxyRepositoryApiRequest {
@@ -251,12 +258,12 @@ func (m *RepositoryDockerProxyModel) ToApiUpdateModel() sonatyperepo.DockerProxy
 
 // Docker Group
 // ----------------------------------------
-type RepositoryDockerroupModel struct {
+type RepositoryDockerGroupModel struct {
 	RepositoryGroupDeployModel
 	Docker dockerAttributesModel `tfsdk:"docker"`
 }
 
-func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.DockerGroupApiRepository) {
+func (m *RepositoryDockerGroupModel) FromApiModel(api sonatyperepo.DockerGroupApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
 	m.Url = types.StringPointerValue(api.Url)
@@ -271,7 +278,7 @@ func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.DockerGroupApi
 	m.Docker.MapFromApi(&api.Docker)
 }
 
-func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+func (m *RepositoryDockerGroupModel) ToApiCreateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
 	apiModel := sonatyperepo.DockerGroupRepositoryApiRequest{
 		Name:    m.Name.ValueString(),
 		Online:  m.Online.ValueBool(),
@@ -285,6 +292,6 @@ func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.DockerGroupR
 	return apiModel
 }
 
-func (m *RepositoryDockerroupModel) ToApiUpdateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+func (m *RepositoryDockerGroupModel) ToApiUpdateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }

@@ -60,7 +60,7 @@ func (m *RepositoryNpmHostedModel) ToApiUpdateModel() sonatyperepo.NpmHostedRepo
 // ----------------------------------------
 type RepositoryNpmProxyModel struct {
 	RepositoryProxyModel
-	Npm *ProxyRemoveQuarrantiedModel `tfsdk:"npm"`
+	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineWithPccsModel `tfsdk:"repository_firewall"`
 }
 
 func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepository) {
@@ -93,10 +93,10 @@ func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepos
 		}
 	}
 
-	// NPM Specific
-	// Only populate if npm was already in the plan/config or if API returns non-default values
-	if m.Npm != nil {
-		m.Npm.MapFromNpmApi(api.Npm)
+	// Firewall Audit and Quarantine (with PCCS)
+	// This will be populated separately by the resource helper during Read operations
+	if m.FirewallAuditAndQuarantine == nil {
+		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
 	}
 }
 
@@ -132,17 +132,15 @@ func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyReposi
 
 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
 
-	// NPM Specific
-	if m.Npm != nil {
-		apiModel.Npm = &sonatyperepo.NpmAttributes{}
-		m.Npm.MapToNpmApi(apiModel.Npm)
-	}
-
 	return apiModel
 }
 
 func (m *RepositoryNpmProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
-	return m.ToApiCreateModel()
+	model := m.ToApiCreateModel()
+	if m.FirewallAuditAndQuarantine != nil && m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool() {
+		model.Npm.RemoveQuarantined = m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
+	}
+	return model
 }
 
 // NPM Group

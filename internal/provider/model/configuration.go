@@ -286,6 +286,20 @@ func (model *LdapServerModel) ToApiUpdateModel() *sonatyperepo.UpdateLdapServerX
 
 // SecurityUserTokenModel
 // ------------------------------------------
+type SecurityUserTokenModelDS struct {
+	Enabled           types.Bool  `tfsdk:"enabled"`
+	ExpirationDays    types.Int32 `tfsdk:"expiration_days"`
+	ExpirationEnabled types.Bool  `tfsdk:"expiration_enabled"`
+	ProtectContent    types.Bool  `tfsdk:"protect_content"`
+}
+
+func (m *SecurityUserTokenModelDS) MapFromApi(api *sonatyperepo.UserTokensApiModel) {
+	m.Enabled = types.BoolPointerValue(api.Enabled)
+	m.ExpirationDays = types.Int32PointerValue(api.ExpirationDays)
+	m.ExpirationEnabled = types.BoolPointerValue(api.ExpirationEnabled)
+	m.ProtectContent = types.BoolPointerValue(api.ProtectContent)
+}
+
 type SecurityUserTokenModel struct {
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	ExpirationDays    types.Int32  `tfsdk:"expiration_days"`
