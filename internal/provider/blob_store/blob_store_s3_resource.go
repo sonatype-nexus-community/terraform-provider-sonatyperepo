@@ -364,11 +364,9 @@ func (r *blobStoreS3Resource) UpgradeState(ctx context.Context) map[int64]resour
 
 				// Convert to v1 model and add the new field
 				newStateData := &model.BlobStoreS3Model{
-					BlobStoreS3ModelDS: model.BlobStoreS3ModelDS{
-						Name:      priorStateData.Name,
-						Type:      priorStateData.Type,
-						SoftQuota: priorStateData.SoftQuota,
-					},
+					Name:        priorStateData.Name,
+					Type:        priorStateData.Type,
+					SoftQuota:   priorStateData.SoftQuota,
 					LastUpdated: priorStateData.LastUpdated,
 				}
 
