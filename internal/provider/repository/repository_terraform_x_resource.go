@@ -29,3 +29,11 @@ func NewRepositoryTerraformProxyResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
+
+// NewRepositoryTerraformHostedResource is a helper function to simplify the provider implementation.
+func NewRepositoryTerraformHostedResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.TerraformRepositoryFormatHosted{},
+		RepositoryType:   format.REPO_TYPE_HOSTED,
+	}
+}

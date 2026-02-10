@@ -24,18 +24,18 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-// Terraform Specific Model
-type repositoryTerraformSpecificModel struct {
+// Terraform Proxy Specific Model
+type repositoryTerraformProxySpecificModel struct {
 	RequireAuthentication types.Bool `tfsdk:"require_authentication"`
 }
 
-func (m *repositoryTerraformSpecificModel) FromApiModel(api *sonatyperepo.TerraformAttributes) {
+func (m *repositoryTerraformProxySpecificModel) FromApiModel(api *sonatyperepo.TerraformAttributes) {
 	if api != nil {
 		m.RequireAuthentication = types.BoolPointerValue(api.RequireAuthentication)
 	}
 }
 
-func (m *repositoryTerraformSpecificModel) MapToApi(api *sonatyperepo.TerraformAttributes) {
+func (m *repositoryTerraformProxySpecificModel) MapToApi(api *sonatyperepo.TerraformAttributes) {
 	api.RequireAuthentication = m.RequireAuthentication.ValueBoolPointer()
 }
 
@@ -43,7 +43,7 @@ func (m *repositoryTerraformSpecificModel) MapToApi(api *sonatyperepo.TerraformA
 // ----------------------------------------
 type RepositoryTerraformProxyModel struct {
 	RepositoryProxyModel
-	Terraform repositoryTerraformSpecificModel `tfsdk:"terraform"`
+	Terraform repositoryTerraformProxySpecificModel `tfsdk:"terraform"`
 }
 
 func (m *RepositoryTerraformProxyModel) FromApiModel(api sonatyperepo.TerraformProxyApiRepository) {
@@ -122,5 +122,80 @@ func (m *RepositoryTerraformProxyModel) ToApiCreateModel() sonatyperepo.Terrafor
 }
 
 func (m *RepositoryTerraformProxyModel) ToApiUpdateModel() sonatyperepo.TerraformProxyRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
+
+// Terraform Hosted Specific Model
+type repositoryTerraformHostedSpecificModel struct {
+	SigningKey types.String `tfsdk:"signing_key"`
+	Passphrase types.String `tfsdk:"passphrase"`
+}
+
+func (m *repositoryTerraformHostedSpecificModel) FromApiModel(api *sonatyperepo.TerraformSigningAttributes) {
+	if api != nil {
+		m.SigningKey = types.StringValue(api.Keypair)
+		m.Passphrase = types.StringPointerValue(api.Passphrase)
+	}
+}
+
+func (m *repositoryTerraformHostedSpecificModel) MapToApi(api *sonatyperepo.TerraformSigningAttributes) {
+	api.Keypair = m.SigningKey.ValueString()
+	api.Passphrase = m.Passphrase.ValueStringPointer()
+}
+
+// Terraform Hosted
+// ----------------------------------------
+type RepositoryTerraformHostedModel struct {
+	RepositoryHostedModel
+	TerraformSigning repositoryTerraformHostedSpecificModel `tfsdk:"terraform_signing"`
+}
+
+func (m *RepositoryTerraformHostedModel) FromApiModel(api sonatyperepo.TerraformHostedRepositoryApiRequest) {
+	m.Name = types.StringValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	}
+
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
+
+	// Terraform Specific
+	m.TerraformSigning.FromApiModel(&api.TerraformSigning)
+}
+
+func (m *RepositoryTerraformHostedModel) ToApiCreateModel() sonatyperepo.TerraformHostedRepositoryApiRequest {
+	apiModel := sonatyperepo.TerraformHostedRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.HostedStorageAttributes{},
+		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+
+	if m.Cleanup != nil {
+		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	}
+
+	// Terraform Specific
+	apiModel.TerraformSigning = sonatyperepo.TerraformSigningAttributes{}
+	m.TerraformSigning.MapToApi(&apiModel.TerraformSigning)
+
+	return apiModel
+}
+
+func (m *RepositoryTerraformHostedModel) ToApiUpdateModel() sonatyperepo.TerraformHostedRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }

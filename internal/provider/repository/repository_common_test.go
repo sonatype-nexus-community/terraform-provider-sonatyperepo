@@ -125,11 +125,12 @@ var (
 )
 
 type repositoryHostedTestData struct {
-	CheckFunc    func(resourceName string) []resource.TestCheckFunc
-	RepoFormat   string
-	SchemaFunc   func(resourceType, repoName, repoFormat, randomString string, completeData bool) string
-	TestImport   bool
-	TestPreCheck func(t *testing.T) func()
+	CheckFunc                     func(resourceName string) []resource.TestCheckFunc
+	RepoFormat                    string
+	SchemaFunc                    func(resourceType, repoName, repoFormat, randomString string, completeData, supportsProprietaryComponents bool) string
+	SupportsProprietaryComponents bool
+	TestImport                    bool
+	TestPreCheck                  func(t *testing.T) func()
 }
 
 type repositoryProxyTestData struct {

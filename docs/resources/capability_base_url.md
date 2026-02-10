@@ -16,11 +16,11 @@ Manage Capability: Base URL
 ## Example Usage
 
 ```terraform
-resource "sonatyperepo_capability_base_url" "cap_base_url" {
-  notes   = "These are notes from Terraform"
+resource "sonatyperepo_capability_base_url" "base_url_capability" {
   enabled = true
+  notes   = "Configured via Terraform"
   properties = {
-    url = "https://my.fqdn.tld"
+    url = "https://repo.example.com"
   }
 }
 ```
