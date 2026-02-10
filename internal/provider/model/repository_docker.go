@@ -258,12 +258,12 @@ func (m *RepositoryDockerProxyModel) ToApiUpdateModel() sonatyperepo.DockerProxy
 
 // Docker Group
 // ----------------------------------------
-type RepositoryDockerroupModel struct {
+type RepositoryDockerGroupModel struct {
 	RepositoryGroupDeployModel
 	Docker dockerAttributesModel `tfsdk:"docker"`
 }
 
-func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.DockerGroupApiRepository) {
+func (m *RepositoryDockerGroupModel) FromApiModel(api sonatyperepo.DockerGroupApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
 	m.Url = types.StringPointerValue(api.Url)
@@ -278,7 +278,7 @@ func (m *RepositoryDockerroupModel) FromApiModel(api sonatyperepo.DockerGroupApi
 	m.Docker.MapFromApi(&api.Docker)
 }
 
-func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+func (m *RepositoryDockerGroupModel) ToApiCreateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
 	apiModel := sonatyperepo.DockerGroupRepositoryApiRequest{
 		Name:    m.Name.ValueString(),
 		Online:  m.Online.ValueBool(),
@@ -292,6 +292,6 @@ func (m *RepositoryDockerroupModel) ToApiCreateModel() sonatyperepo.DockerGroupR
 	return apiModel
 }
 
-func (m *RepositoryDockerroupModel) ToApiUpdateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
+func (m *RepositoryDockerGroupModel) ToApiUpdateModel() sonatyperepo.DockerGroupRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
