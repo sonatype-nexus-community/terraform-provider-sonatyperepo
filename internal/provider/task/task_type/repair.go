@@ -67,7 +67,7 @@ func NewRepairRebuildBrowseNodesTask() *RepairRebuildBrowseNodesTask {
 // --------------------------------------------
 // Repair: Rebuild Repository Browse Nodes Functions
 // --------------------------------------------
-func (f *RepairRebuildBrowseNodesTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *RepairRebuildBrowseNodesTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskRepairCreateBrowseNodesModel)
 
@@ -110,8 +110,8 @@ func (f *RepairRebuildBrowseNodesTask) UpdatePlanForState(plan any) any {
 
 func (f *RepairRebuildBrowseNodesTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepairCreateBrowseNodesModel)
-	apiModel := (api).(v3.CreateTask201Response)
-	stateModel.Id = types.StringValue(apiModel.Id)
+	apiModel := (api).(v3.TaskXO)
+	stateModel.Id = types.StringPointerValue(apiModel.Id)
 	return stateModel
 }
 
