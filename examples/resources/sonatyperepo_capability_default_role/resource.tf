@@ -1,6 +1,6 @@
-resource "sonatyperepo_capability_default_role" "cap" {
+resource "sonatyperepo_capability_default_role" "default_role" {
   enabled = true
-  notes   = "These are notes from Terraform"
+  notes   = "Default role configuration"
   properties = {
     role = "nx-anonymous"
   }

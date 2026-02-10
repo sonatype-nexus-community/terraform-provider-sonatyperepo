@@ -1,10 +1,10 @@
-resource "sonatyperepo_capability_webhook_repository" "webhook" {
+resource "sonatyperepo_capability_webhook_repository" "webhook_repo" {
   enabled = true
-  notes   = "These are notes from Terraform"
+  notes   = "Repository webhook configuration"
   properties = {
     names      = ["component"]
-    url        = "https://test.tld"
-    secret     = "testing"
+    url        = "https://webhook.example.com/receive"
+    secret     = "[REDACTED:secret]"
     repository = "maven-central"
   }
 }

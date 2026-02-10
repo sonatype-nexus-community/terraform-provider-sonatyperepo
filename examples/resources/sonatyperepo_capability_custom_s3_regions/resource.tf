@@ -1,7 +1,11 @@
-resource "sonatyperepo_capability_custom_s3_regions" "cap" {
+resource "sonatyperepo_capability_custom_s3_regions" "custom_regions" {
   enabled = true
-  notes   = "These are notes from Terraform"
+  notes   = "Custom S3 regions configuration"
   properties = {
-    regions = ["somewhere-1", "somewhere-2"]
+    regions = [
+      "us-west-1",
+      "eu-west-1",
+      "ap-southeast-1"
+    ]
   }
 }

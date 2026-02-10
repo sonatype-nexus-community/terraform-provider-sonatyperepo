@@ -16,9 +16,9 @@ description: |-
 ## Example Usage
 
 ```terraform
-resource "sonatyperepo_capability_firewall_audit_and_quarantine" "cap" {
-  notes   = "These are notes from Terraform"
+resource "sonatyperepo_capability_firewall_audit_and_quarantine" "firewall_capability" {
   enabled = true
+  notes   = "Firewall audit and quarantine configuration"
   properties = {
     repository = "maven-central"
     quarantine = true

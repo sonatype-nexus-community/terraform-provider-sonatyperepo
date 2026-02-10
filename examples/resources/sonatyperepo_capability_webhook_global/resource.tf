@@ -1,11 +1,9 @@
-resource "sonatyperepo_capability_webhook_global" "webhook" {
+resource "sonatyperepo_capability_webhook_global" "webhook_global" {
   enabled = true
-  notes   = "These are notes from Terraform"
+  notes   = "Global webhook configuration"
   properties = {
-    names = [
-      "repository"
-    ]
-    url    = "https://test.tld"
-    secret = "super-secret-key"
+    names  = ["repository"]
+    url    = "https://webhook.example.com/receive"
+    secret = "[REDACTED:secret]"
   }
 }

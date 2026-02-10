@@ -16,12 +16,12 @@ Manage Capability: Outreach Management
 ## Example Usage
 
 ```terraform
-resource "sonatyperepo_capability_outreach_management" "cap" {
+resource "sonatyperepo_capability_outreach_management" "outreach_capability" {
   enabled = true
-  notes   = ""
+  notes   = "Outreach management configuration"
   properties = {
     always_remote = false
-    override_url  = "https://some.url.tld"
+    override_url  = "https://outreach.example.com"
   }
 }
 ```
