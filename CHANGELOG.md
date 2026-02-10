@@ -11,13 +11,20 @@ BREAKING CHANGES:
 * Multiple resources have been renamed to improve consistency
 
 ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_repository_terraform_proxy` [GH-262]
 * A number of properties on `sonatype_repository_[FORMAT]_proxy` now have default values and need not be defined
 * A number of `sonatype_repository_*` resources now support `import`
 
+BUG FIXES:
+* Resolved inability to manage S3 Blob Stores after introduction of `pre_signed_url_enabled` [GH-281]
+
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.88.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-88-0-release-notes.html) [GH-263]
-  * There is an API regression in NXRM 3.88 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
+  * There is an API regression in NXRM 3.88.x that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
+* Tested against [Sonatype Nexus Repository Manager 3.89.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-89-0-release-notes.html) [GH-275]
+  * There is an API regression in NXRM 3.89.0 that prevents use of the `sonatyperepo_system_config_ldap_connection` resource [GH-276]
 * Import is noted as broken for `sonatype_repository_apt_hosted` resource [GH-290]
+* Multiple documentation and example updates [GH-283]
 
 ## 0.18.1 January 29, 2026
 
