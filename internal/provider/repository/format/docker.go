@@ -20,9 +20,11 @@ import (
 	"context"
 	"maps"
 	"net/http"
+	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"time"
+	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -37,7 +39,10 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
-const pathEnabledSupportedError = "`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0"
+const (
+	lowercaseRepositoryNameRequiredError string = "Docker Repository Names must be lowercase for Sonatype Nexus Repository >= 3.89.0"
+	pathEnabledSupportedError            string = "`path_enabled` is only supported for Sonatype Nexus Repository >= 3.83.0"
+)
 
 type DockerRepositoryFormat struct {
 	BaseRepositoryFormat
@@ -150,10 +155,7 @@ func (f *DockerRepositoryFormatHosted) UpdateStateFromApi(state any, api any) an
 
 func (f *DockerRepositoryFormatHosted) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerHostedModel)
-	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{pathEnabledSupportedError}
-	}
-	return nil
+	return validatePlanForDockerRespository(version, planModel.Docker.PathEnabled, planModel.Name.ValueString())
 }
 
 // --------------------------------------------
@@ -232,10 +234,7 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 
 func (f *DockerRepositoryFormatProxy) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerProxyModel)
-	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{pathEnabledSupportedError}
-	}
-	return nil
+	return validatePlanForDockerRespository(version, planModel.Docker.PathEnabled, planModel.Name.ValueString())
 }
 
 func (f *DockerRepositoryFormatProxy) GetRepositoryId(state any) string {
@@ -348,11 +347,8 @@ func (f *DockerRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any
 }
 
 func (f *DockerRepositoryFormatGroup) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
-	var planModel = (plan).(model.RepositoryDockerroupModel)
-	if !planModel.Docker.PathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
-		return []string{pathEnabledSupportedError}
-	}
-	return nil
+	var planModel = (plan).(model.RepositoryDockerHostedModel)
+	return validatePlanForDockerRespository(version, planModel.Docker.PathEnabled, planModel.Name.ValueString())
 }
 
 // --------------------------------------------
@@ -403,4 +399,16 @@ func dockerProxySchemaAttributes() map[string]tfschema.Attribute {
 			},
 		),
 	}
+}
+
+func validatePlanForDockerRespository(version common.SystemVersion, pathEnabled types.Bool, repositoryName string) []string {
+	if version.RequiresLowerCaseRepostioryNameDocker() && strings.IndexFunc(repositoryName, unicode.IsUpper) != -1 {
+		return []string{lowercaseRepositoryNameRequiredError}
+	}
+
+	if !pathEnabled.IsNull() && version.OlderThan(3, 83, 0, 0) {
+		return []string{pathEnabledSupportedError}
+	}
+
+	return nil
 }
