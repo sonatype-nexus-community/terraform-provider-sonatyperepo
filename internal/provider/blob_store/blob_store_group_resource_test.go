@@ -81,15 +81,15 @@ resource "%s" "test" {
 `, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
 }
 
-func buildTestAccBlobStoreGroupResourceIneligibleMember(randomString string) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
-resource "%s" "test" {
-    name = "test-group-%s"
-    fill_policy = "%s"
-    members = [ "default" ]
-}
-`, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
-}
+// func buildTestAccBlobStoreGroupResourceIneligibleMember(randomString string) string {
+// 	return fmt.Sprintf(utils_test.ProviderConfig+`
+// resource "%s" "test" {
+//     name = "test-group-%s"
+//     fill_policy = "%s"
+//     members = [ "default" ]
+// }
+// `, RES_TYPE_BLOB_STORE_GROUP, randomString, common.BLOB_STORE_FILL_POLICY_ROUND_ROBIN)
+// }
 
 func buildTestAccBlobStoreGroupResourceNewMember(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
