@@ -43,6 +43,7 @@ func TestAccSystemConfigLdapResource(t *testing.T) {
 				Major: 3,
 				Minor: 89,
 				Patch: 0,
+				Build: 99,
 			})
 		},
 		Steps: []resource.TestStep{
