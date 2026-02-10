@@ -64,7 +64,7 @@ func (f *BaseTaskType) Type() common.TaskType {
 // TaskTypeI that all Repository Formats must implement
 // --------------------------------------------
 type TaskTypeI interface {
-	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error)
+	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error)
 	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	ApiCreateSuccessResponseCodes() []int
 	MarkdownDescription() string

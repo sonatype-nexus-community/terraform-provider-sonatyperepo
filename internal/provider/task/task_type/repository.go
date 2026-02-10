@@ -52,7 +52,7 @@ func NewRepositoryDockerGcTask() *RepositoryDockerGcTask {
 // --------------------------------------------
 // Docker Repository GC Format Functions
 // --------------------------------------------
-func (f *RepositoryDockerGcTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *RepositoryDockerGcTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskRepositoryDockerGcModel)
 
@@ -99,8 +99,8 @@ func (f *RepositoryDockerGcTask) UpdatePlanForState(plan any) any {
 
 func (f *RepositoryDockerGcTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryDockerGcModel)
-	apiModel := (api).(v3.CreateTask201Response)
-	stateModel.Id = types.StringValue(apiModel.Id)
+	apiModel := (api).(v3.TaskXO)
+	stateModel.Id = types.StringPointerValue(apiModel.Id)
 	return stateModel
 }
 
@@ -133,7 +133,7 @@ func NewRepositoryDockerUploadPurgeTaskTask() *RepositoryDockerUploadPurgeTask {
 // --------------------------------------------
 // Docker Repository GC Format Functions
 // --------------------------------------------
-func (f *RepositoryDockerUploadPurgeTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *RepositoryDockerUploadPurgeTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskRepositoryDockerUploadPurgeModel)
 
@@ -179,8 +179,8 @@ func (f *RepositoryDockerUploadPurgeTask) UpdatePlanForState(plan any) any {
 
 func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
-	apiModel := (api).(v3.CreateTask201Response)
-	stateModel.Id = types.StringValue(apiModel.Id)
+	apiModel := (api).(v3.TaskXO)
+	stateModel.Id = types.StringPointerValue(apiModel.Id)
 	return stateModel
 }
 
@@ -213,7 +213,7 @@ func NewRepositoryMavenRemoveSnapshotsTask() *RepositoryMavenRemoveSnapshotsTask
 // --------------------------------------------
 // Maven Repository Remove Snapshots Functions
 // --------------------------------------------
-func (f *RepositoryMavenRemoveSnapshotsTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CreateTask201Response, *http.Response, error) {
+func (f *RepositoryMavenRemoveSnapshotsTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskRepositoryMavenRemoveSnapshotsModel)
 
@@ -271,8 +271,8 @@ func (f *RepositoryMavenRemoveSnapshotsTask) UpdatePlanForState(plan any) any {
 
 func (f *RepositoryMavenRemoveSnapshotsTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryMavenRemoveSnapshotsModel)
-	apiModel := (api).(v3.CreateTask201Response)
-	stateModel.Id = types.StringValue(apiModel.Id)
+	apiModel := (api).(v3.TaskXO)
+	stateModel.Id = types.StringPointerValue(apiModel.Id)
 	return stateModel
 }
 
