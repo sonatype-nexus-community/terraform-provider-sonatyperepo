@@ -11,6 +11,7 @@ BREAKING CHANGES:
 * Multiple resources have been renamed to improve consistency
 
 ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_repository_terraform_hosted` [GH-309]
 * **New Resource:** `sonatyperepo_repository_terraform_proxy` [GH-262]
 * A number of properties on `sonatype_repository_[FORMAT]_proxy` now have default values and need not be defined
 * A number of `sonatype_repository_*` resources now support `import`
