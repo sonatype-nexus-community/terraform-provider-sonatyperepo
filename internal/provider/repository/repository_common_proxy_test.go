@@ -38,6 +38,7 @@ const (
 	configBlockProxyDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
 	configBlockProxyDefaultNuget     string = "nuget_proxy = { nuget_version = \"V3\" }"
 	configBlockProxyDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockProxyDefaultSwift     string = "swift = { }"
 	configBlockProxyDefaultTerraform string = "terraform = { }"
 )
 
@@ -321,6 +322,30 @@ var proxyTestData = []repositoryProxyTestData{
 		RemoteUrl:  TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL,
 		RepoFormat: common.REPO_FORMAT_RUBY_GEMS,
 		SchemaFunc: repositoryProxyResourceConfig,
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		FormatSpecificConfig: configBlockProxyDefaultSwift,
+		RemoteUrl:            TEST_DATA_SWIFT_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_SWIFT,
+		SchemaFunc:           repositoryProxyResourceConfig,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.89.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 88,
+					Patch: 99,
+				})
+			}
+		},
 		TestImport: true,
 	},
 	{

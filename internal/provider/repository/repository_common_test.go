@@ -101,6 +101,7 @@ const (
 	TEST_DATA_R_PROXY_REMOTE_URL            string = "https://cran.r-project.org/"
 	TEST_DATA_RAW_PROXY_REMOTE_URL          string = "https://nodejs.org/dist/"
 	TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL    string = "https://rubygems.org"
+	TEST_DATA_SWIFT_PROXY_REMOTE_URL        string = "https://github.com/"
 	TEST_DATA_TERRAFORM_PROXY_REMOTE_URL    string = "https://registry.terraform.io"
 	TEST_DATA_YUM_PROXY_REMOTE_URL          string = "https://mirror.centos.org/centos/"
 	TEST_DATA_TIMEOUT                       string = "1439"
