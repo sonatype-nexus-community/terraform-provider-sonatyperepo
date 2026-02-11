@@ -23,25 +23,37 @@ import (
 )
 
 // NewRepositoryRubyGemsHostedResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated ruby_gems_hosted resource name.
 func NewRepositoryRubyGemsHostedResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.RubyGemsRepositoryFormatHosted{},
-		RepositoryType:   format.REPO_TYPE_HOSTED,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.RubyGemsRepositoryFormatHosted{},
+			RepositoryType:   format.REPO_TYPE_HOSTED,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_ruby_gems_hosted"},
 	}
 }
 
 // NewRepositoryRubyGemsProxyResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated ruby_gems_proxy resource name.
 func NewRepositoryRubyGemsProxyResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.RubyGemsRepositoryFormatProxy{},
-		RepositoryType:   format.REPO_TYPE_PROXY,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.RubyGemsRepositoryFormatProxy{},
+			RepositoryType:   format.REPO_TYPE_PROXY,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_ruby_gems_proxy"},
 	}
 }
 
 // NewRepositoryRubyGemsGroupResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated ruby_gems_group resource name.
 func NewRepositoryRubyGemsGroupResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.RubyGemsRepositoryFormatGroup{},
-		RepositoryType:   format.REPO_TYPE_GROUP,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.RubyGemsRepositoryFormatGroup{},
+			RepositoryType:   format.REPO_TYPE_GROUP,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_ruby_gems_group"},
 	}
 }
