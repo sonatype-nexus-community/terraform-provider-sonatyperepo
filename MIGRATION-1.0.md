@@ -114,6 +114,148 @@ The following resources have been renamed to improve consistency.
 - Resource `sonatyperepo_repository_ruby_gems_hosted` has been renamed to `sonatyperepo_repository_rubygems_hosted`
 - Resource `sonatyperepo_repository_ruby_gems_proxy` has been renamed to `sonatyperepo_repository_rubygems_proxy`
 
+#### Migration Guide
+
+You have **two options** for handling these resource renames:
+
+##### Option 1: Continue Using Deprecated Names (No Action Required)
+
+The old resource names are maintained as **deprecated aliases** for backward compatibility. Your existing Terraform configurations will continue to work without any changes. However, we recommend migrating to the new names (Option 2) as the deprecated names will be removed in a future major version.
+
+##### Option 2: Migrate to New Resource Names (Recommended)
+
+To migrate your existing resources to the new names, use Terraform's [`moved` blocks](https://developer.hashicorp.com/terraform/language/modules/develop/refactoring).
+
+**Prerequisites:**
+- Terraform 1.8 or later (required for `moved` blocks)
+- Provider version v1.0.1 or later
+
+**Complete Resource Name Mapping:**
+
+| Old Name (Deprecated) | New Name |
+|----------------------|----------|
+| `sonatyperepo_repository_maven_group` | `sonatyperepo_repository_maven2_group` |
+| `sonatyperepo_repository_maven_hosted` | `sonatyperepo_repository_maven2_hosted` |
+| `sonatyperepo_repository_maven_proxy` | `sonatyperepo_repository_maven2_proxy` |
+| `sonatyperepo_repository_ruby_gems_group` | `sonatyperepo_repository_rubygems_group` |
+| `sonatyperepo_repository_ruby_gems_hosted` | `sonatyperepo_repository_rubygems_hosted` |
+| `sonatyperepo_repository_ruby_gems_proxy` | `sonatyperepo_repository_rubygems_proxy` |
+
+**Step-by-Step Migration Process:**
+
+**Example: Migrating a Maven Hosted Repository**
+
+1. **Current Configuration** (before migration):
+   ```hcl
+   resource "sonatyperepo_repository_maven_hosted" "my_repo" {
+     name = "my-maven-repo"
+     online = true
+     storage = {
+       blob_store_name = "default"
+       strict_content_type_validation = true
+       write_policy = "ALLOW"
+     }
+   }
+   ```
+
+2. **Update Resource Type** - Change the resource type to the new name:
+   ```hcl
+   resource "sonatyperepo_repository_maven2_hosted" "my_repo" {
+     name = "my-maven-repo"
+     online = true
+     storage = {
+       blob_store_name = "default"
+       strict_content_type_validation = true
+       write_policy = "ALLOW"
+     }
+   }
+   ```
+
+3. **Add `moved` Block** - Add this block to inform Terraform about the rename:
+   ```hcl
+   moved {
+     from = sonatyperepo_repository_maven_hosted.my_repo
+     to   = sonatyperepo_repository_maven2_hosted.my_repo
+   }
+   ```
+
+4. **Verify Migration** - Run `terraform plan`:
+   ```bash
+   terraform plan
+   ```
+
+   You should see output similar to:
+   ```
+   # sonatyperepo_repository_maven_hosted.my_repo has moved to sonatyperepo_repository_maven2_hosted.my_repo
+   resource "sonatyperepo_repository_maven2_hosted" "my_repo" {
+     name = "my-maven-repo"
+     # ... (no changes)
+   }
+   ```
+
+   **Important:** Terraform should indicate the resource will be **moved**, not destroyed and recreated. If you see destroy/create operations, do not proceed - review your configuration.
+
+5. **Apply Migration** - Execute the state migration:
+   ```bash
+   terraform apply
+   ```
+
+6. **Cleanup** - After successful migration, remove the `moved` block from your configuration. The block is no longer needed once the state has been migrated.
+
+**Example: Migrating Multiple Resources**
+
+If you have multiple repositories to migrate:
+
+```hcl
+# Maven resources
+resource "sonatyperepo_repository_maven2_hosted" "releases" {
+  name = "maven-releases"
+  # ... configuration ...
+}
+
+resource "sonatyperepo_repository_maven2_proxy" "central" {
+  name = "maven-central"
+  # ... configuration ...
+}
+
+# RubyGems resources
+resource "sonatyperepo_repository_rubygems_hosted" "gems" {
+  name = "rubygems-hosted"
+  # ... configuration ...
+}
+
+# Add moved blocks for all renamed resources
+moved {
+  from = sonatyperepo_repository_maven_hosted.releases
+  to   = sonatyperepo_repository_maven2_hosted.releases
+}
+
+moved {
+  from = sonatyperepo_repository_maven_proxy.central
+  to   = sonatyperepo_repository_maven2_proxy.central
+}
+
+moved {
+  from = sonatyperepo_repository_ruby_gems_hosted.gems
+  to   = sonatyperepo_repository_rubygems_hosted.gems
+}
+```
+
+**Troubleshooting:**
+
+- **Error: "No resource schema found"** - Ensure you're using provider version 1.0.0 or later
+- **Destroy/Create instead of Move** - Verify your `moved` block syntax matches the examples above
+- **Terraform version error** - Upgrade to Terraform 1.8+ to use `moved` blocks
+- **State already migrated** - If you see "moved to an address that doesn't exist", the migration may have already completed. Remove the `moved` block and run `terraform plan` again.
+
+**Important Notes:**
+
+- State migration is **safe** - no changes are made to your actual Nexus Repository resources
+- The `moved` block only updates Terraform state, not the infrastructure
+- You can migrate resources incrementally (one at a time) or all at once
+- The deprecated resource names will be removed in a future major version (v2.0.0 or later)
+- We recommend completing the migration during your next maintenance window
+
 ### Resources Deprecated
 
 - `sonatyperepo_capability_firewall_audit_and_quarantine`

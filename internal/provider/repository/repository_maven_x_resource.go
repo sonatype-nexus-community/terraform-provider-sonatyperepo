@@ -23,25 +23,37 @@ import (
 )
 
 // NewRepositoryMavenHostedResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated maven_hosted resource name.
 func NewRepositoryMavenHostedResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.MavenRepositoryFormatHosted{},
-		RepositoryType:   format.REPO_TYPE_HOSTED,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.MavenRepositoryFormatHosted{},
+			RepositoryType:   format.REPO_TYPE_HOSTED,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_maven_hosted"},
 	}
 }
 
-// NewRepositoryNpmProxyResource is a helper function to simplify the provider implementation.
+// NewRepositoryMavenProxyResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated maven_proxy resource name.
 func NewRepositoryMavenProxyResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.MavenRepositoryFormatProxy{},
-		RepositoryType:   format.REPO_TYPE_PROXY,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.MavenRepositoryFormatProxy{},
+			RepositoryType:   format.REPO_TYPE_PROXY,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_maven_proxy"},
 	}
 }
 
 // NewRepositoryMavenGroupResource is a helper function to simplify the provider implementation.
+// This resource supports state migration from the deprecated maven_group resource name.
 func NewRepositoryMavenGroupResource() resource.Resource {
-	return &repositoryResource{
-		RepositoryFormat: &format.MavenRepositoryFormatGroup{},
-		RepositoryType:   format.REPO_TYPE_GROUP,
+	return &repositoryResourceWithMoveState{
+		repositoryResource: repositoryResource{
+			RepositoryFormat: &format.MavenRepositoryFormatGroup{},
+			RepositoryType:   format.REPO_TYPE_GROUP,
+		},
+		sourceResourceNames: []string{"sonatyperepo_repository_maven_group"},
 	}
 }

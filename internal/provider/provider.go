@@ -288,6 +288,10 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryMavenGroupResource,
 		repository.NewRepositoryMavenHostedResource,
 		repository.NewRepositoryMavenProxyResource,
+		// Deprecated Maven resources (old names) - maintained for backward compatibility
+		repository.NewRepositoryMavenGroupDeprecated,
+		repository.NewRepositoryMavenHostedDeprecated,
+		repository.NewRepositoryMavenProxyDeprecated,
 		repository.NewRepositoryNpmGroupResource,
 		repository.NewRepositoryNpmHostedResource,
 		repository.NewRepositoryNpmProxyResource,
@@ -307,6 +311,10 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryRubyGemsHostedResource,
 		repository.NewRepositoryRubyGemsGroupResource,
 		repository.NewRepositoryRubyGemsProxyResource,
+		// Deprecated RubyGems resources (old names) - maintained for backward compatibility
+		repository.NewRepositoryRubyGemsGroupDeprecated,
+		repository.NewRepositoryRubyGemsHostedDeprecated,
+		repository.NewRepositoryRubyGemsProxyDeprecated,
 		repository.NewRepositorySwiftProxyResource,
 		repository.NewRepositoryTerraformHostedResource,
 		repository.NewRepositoryTerraformProxyResource,
