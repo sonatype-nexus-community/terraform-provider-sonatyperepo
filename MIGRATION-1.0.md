@@ -24,9 +24,9 @@ This was not ideal for two reasons:
 1. You could configure Sonatype Repository Firewall for a proxy repository without Sonatype Nexus Repository being connected to a valid Sonatype IQ Server - hence it wouldn't actually function
 2. The delcarative configuration required for Terraform did not shield users from the internal requirements sufficiently
 
-Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_repository_firewall` resource has been deprecated.
+Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_firewall_audit_and_quarantine` resource has been deprecated.
 
-Additionally - it is now required that a valid Sonatype IQ Connection is configured **_PRIOR_** to mamnaging repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource to ensure this is configured.
+Additionally - it is now required that a valid Sonatype IQ Connection is configured **_PRIOR_** to managing repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource to ensure this is configured.
 
 Example Terraform prior to 1.0.0:
 ```hcl
@@ -38,7 +38,7 @@ resource "sonatyperepo_repository_npm_proxy" "example" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "%s"
+    remote_url = "https://npm.server.tld"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -51,7 +51,7 @@ resource "sonatyperepo_repository_npm_proxy" "example" {
     auto_block = true
   }
 
-  # This config related to Repositort Firewall too!
+  # This config related to Repository Firewall too!
   npm = {
     remove_quarrantined = true    
   }
@@ -78,7 +78,7 @@ resource "sonatyperepo_repository_npm_proxy" "example" {
     strict_content_type_validation = true
   }
   proxy = {
-    remote_url = "%s"
+    remote_url = "https://npm.server.tld"
     content_max_age = 1440
     metadata_max_age = 1440
   }
@@ -116,7 +116,7 @@ The following resources have been renamed to improve consistency.
 
 ### Resources Deprecated
 
-- `sonatyperepo_capability_repository_firewall`
+- `sonatyperepo_capability_firewall_audit_and_quarantine`
 
 
 ### Other Resource Schema Changes
