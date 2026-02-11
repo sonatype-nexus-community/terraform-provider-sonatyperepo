@@ -24,7 +24,7 @@ This was not ideal for two reasons:
 1. You could configure Sonatype Repository Firewall for a proxy repository without Sonatype Nexus Repository being connected to a valid Sonatype IQ Server - hence it wouldn't actually function
 2. The delcarative configuration required for Terraform did not shield users from the internal requirements sufficiently
 
-Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_repository_firewall` resource has been deprecated.
+Since 1.0.0 - configuration of Sonatype Repository Firewall is now handled within the `sonatyperepo_repository_*_proxy` resources themselves and there is no requirement to manage a separate capability resource. The `sonatyperepo_capability_firewall_audit_and_quarantine` resource has been deprecated.
 
 Additionally - it is now required that a valid Sonatype IQ Connection is configured **_PRIOR_** to managing repository resources with Sonatype Repository Firewall configuration - use the `sonatyperepo_system_iq_connection` resource to ensure this is configured.
 
@@ -116,7 +116,7 @@ The following resources have been renamed to improve consistency.
 
 ### Resources Deprecated
 
-- `sonatyperepo_capability_repository_firewall`
+- `sonatyperepo_capability_firewall_audit_and_quarantine`
 
 
 ### Other Resource Schema Changes
