@@ -27,6 +27,11 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 )
 
+const (
+	deprecatedResourceExpected string = "Deprecated resource should use old name"
+	oneStateMoverExpected      string = "Should have one state mover"
+)
+
 func TestRepositoryResourceWithMoveStateMavenHosted(t *testing.T) {
 	// Create the new Maven2 hosted resource
 	res := NewRepositoryMavenHostedResource()
@@ -40,7 +45,7 @@ func TestRepositoryResourceWithMoveStateMavenHosted(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated maven_hosted resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 
 	// Verify the mover has a source schema
 	assert.NotNil(t, movers[0].SourceSchema, "State mover should have a source schema")
@@ -62,7 +67,7 @@ func TestRepositoryResourceWithMoveStateMavenProxy(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated maven_proxy resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 }
 
 func TestRepositoryResourceWithMoveStateMavenGroup(t *testing.T) {
@@ -78,7 +83,7 @@ func TestRepositoryResourceWithMoveStateMavenGroup(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated maven_group resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 }
 
 func TestRepositoryResourceWithMoveStateRubyGemsHosted(t *testing.T) {
@@ -94,7 +99,7 @@ func TestRepositoryResourceWithMoveStateRubyGemsHosted(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated ruby_gems_hosted resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 }
 
 func TestRepositoryResourceWithMoveStateRubyGemsProxy(t *testing.T) {
@@ -110,7 +115,7 @@ func TestRepositoryResourceWithMoveStateRubyGemsProxy(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated ruby_gems_proxy resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 }
 
 func TestRepositoryResourceWithMoveStateRubyGemsGroup(t *testing.T) {
@@ -126,7 +131,7 @@ func TestRepositoryResourceWithMoveStateRubyGemsGroup(t *testing.T) {
 	movers := moveStateResource.MoveState(ctx)
 
 	// Should have exactly one mover for the deprecated ruby_gems_group resource
-	assert.Len(t, movers, 1, "Should have one state mover")
+	assert.Len(t, movers, 1, oneStateMoverExpected)
 }
 
 func TestRepositoryResourceDeprecatedMavenHostedMetadata(t *testing.T) {
@@ -143,7 +148,7 @@ func TestRepositoryResourceDeprecatedMavenHostedMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_maven_hosted", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_maven_hosted", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedMavenProxyMetadata(t *testing.T) {
@@ -160,7 +165,7 @@ func TestRepositoryResourceDeprecatedMavenProxyMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_maven_proxy", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_maven_proxy", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedMavenGroupMetadata(t *testing.T) {
@@ -177,7 +182,7 @@ func TestRepositoryResourceDeprecatedMavenGroupMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_maven_group", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_maven_group", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedRubyGemsHostedMetadata(t *testing.T) {
@@ -194,7 +199,7 @@ func TestRepositoryResourceDeprecatedRubyGemsHostedMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_ruby_gems_hosted", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_ruby_gems_hosted", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedRubyGemsProxyMetadata(t *testing.T) {
@@ -211,7 +216,7 @@ func TestRepositoryResourceDeprecatedRubyGemsProxyMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_ruby_gems_proxy", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_ruby_gems_proxy", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedRubyGemsGroupMetadata(t *testing.T) {
@@ -228,7 +233,7 @@ func TestRepositoryResourceDeprecatedRubyGemsGroupMetadata(t *testing.T) {
 	res.Metadata(ctx, req, &resp)
 
 	// Verify the type name is set to the deprecated name
-	assert.Equal(t, "sonatyperepo_repository_ruby_gems_group", resp.TypeName, "Deprecated resource should use old name")
+	assert.Equal(t, "sonatyperepo_repository_ruby_gems_group", resp.TypeName, deprecatedResourceExpected)
 }
 
 func TestRepositoryResourceDeprecatedDelegatesSchema(t *testing.T) {

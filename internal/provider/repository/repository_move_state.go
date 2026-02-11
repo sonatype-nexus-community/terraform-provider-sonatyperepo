@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -35,65 +36,70 @@ type repositoryResourceWithMoveState struct {
 
 // MoveState returns the list of state movers for migrating from deprecated resource names
 func (r *repositoryResourceWithMoveState) MoveState(ctx context.Context) []resource.StateMover {
+	sourceSchema := r.getSourceSchema(ctx)
 	movers := make([]resource.StateMover, 0, len(r.sourceResourceNames))
 
-	// Get the schema for this resource to use as the source schema
-	// Since deprecated resources use the same schema, we can use the current resource's schema
-	var schemaResp resource.SchemaResponse
-	r.repositoryResource.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
-	sourceSchema := &schemaResp.Schema
-
 	for _, sourceResourceName := range r.sourceResourceNames {
-		// Capture the source name in the closure
-		sourceName := sourceResourceName
 		movers = append(movers, resource.StateMover{
-			// Provide the schema so SourceState will be populated
 			SourceSchema: sourceSchema,
-
-			StateMover: func(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-				// Check if this mover should handle the request by verifying the source type name
-				if req.SourceTypeName != sourceName {
-					// Not for this source type, skip
-					tflog.Debug(ctx, "Skipping state mover", map[string]interface{}{
-						"source_type_name": req.SourceTypeName,
-						"expected":         sourceName,
-					})
-					return
-				}
-
-				tflog.Info(ctx, "Migrating state from deprecated resource", map[string]interface{}{
-					"from": req.SourceTypeName,
-					"to":   r.repositoryResource.RepositoryFormat.ResourceName(r.repositoryResource.RepositoryType),
-				})
-
-				// The state structure is identical between deprecated and new resources
-				// Copy the source state to the target state
-				if req.SourceState != nil {
-					// Get the state model from the source
-					stateModel, diags := r.repositoryResource.RepositoryFormat.StateAsModel(ctx, *req.SourceState)
-					resp.Diagnostics.Append(diags...)
-					if resp.Diagnostics.HasError() {
-						tflog.Error(ctx, "Failed to read source state during migration")
-						return
-					}
-
-					// Set the state model into the target state
-					resp.Diagnostics.Append(resp.TargetState.Set(ctx, stateModel)...)
-					if !resp.Diagnostics.HasError() {
-						tflog.Info(ctx, "Successfully migrated state from deprecated resource", map[string]interface{}{
-							"from": req.SourceTypeName,
-						})
-					}
-				} else {
-					tflog.Error(ctx, "Source state is nil, cannot migrate")
-					resp.Diagnostics.AddError(
-						"State Migration Failed",
-						"Source state is nil, cannot migrate state from deprecated resource",
-					)
-				}
-			},
+			StateMover:   r.createStateMover(sourceResourceName),
 		})
 	}
 
 	return movers
+}
+
+// getSourceSchema retrieves the schema for state migration
+func (r *repositoryResourceWithMoveState) getSourceSchema(ctx context.Context) *schema.Schema {
+	var schemaResp resource.SchemaResponse
+	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
+	return &schemaResp.Schema
+}
+
+type moveStateFunc = func(context.Context, resource.MoveStateRequest, *resource.MoveStateResponse)
+
+// createStateMover creates a state mover function for a specific source resource name
+func (r *repositoryResourceWithMoveState) createStateMover(sourceName string) moveStateFunc {
+	return func(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
+		if req.SourceTypeName != sourceName {
+			tflog.Debug(ctx, "Skipping state mover", map[string]interface{}{
+				"source_type_name": req.SourceTypeName,
+				"expected":         sourceName,
+			})
+			return
+		}
+
+		r.migrateState(ctx, req, resp)
+	}
+}
+
+// migrateState performs the actual state migration from source to target
+func (r *repositoryResourceWithMoveState) migrateState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
+	tflog.Info(ctx, "Migrating state from deprecated resource", map[string]interface{}{
+		"from": req.SourceTypeName,
+		"to":   r.RepositoryFormat.ResourceName(r.RepositoryType),
+	})
+
+	if req.SourceState == nil {
+		tflog.Error(ctx, "Source state is nil, cannot migrate")
+		resp.Diagnostics.AddError(
+			"State Migration Failed",
+			"Source state is nil, cannot migrate state from deprecated resource",
+		)
+		return
+	}
+
+	stateModel, diags := r.RepositoryFormat.StateAsModel(ctx, *req.SourceState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, "Failed to read source state during migration")
+		return
+	}
+
+	resp.Diagnostics.Append(resp.TargetState.Set(ctx, stateModel)...)
+	if !resp.Diagnostics.HasError() {
+		tflog.Info(ctx, "Successfully migrated state from deprecated resource", map[string]interface{}{
+			"from": req.SourceTypeName,
+		})
+	}
 }

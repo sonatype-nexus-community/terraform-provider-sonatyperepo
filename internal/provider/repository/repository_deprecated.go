@@ -18,6 +18,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -36,6 +38,15 @@ type repositoryResourceDeprecated struct {
 func (r *repositoryResourceDeprecated) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	// Set the type name to the deprecated name
 	resp.TypeName = req.ProviderTypeName + "_repository_" + r.getShortName()
+}
+
+// Set Schema for this Resource
+func (r *repositoryResourceDeprecated) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	schema := standardRepositorySchema(r.RepositoryFormat.Key(), r.RepositoryType, r.RepositoryFormat.AdditionalSchemaDescription())
+	maps.Copy(schema.Attributes, r.RepositoryFormat.FormatSchemaAttributes())
+	schema.DeprecationMessage = fmt.Sprintf("This resource is deprecated - use instead `%s`", r.newName)
+	schema.MarkdownDescription = fmt.Sprintf("~> This resource is deprecated and will be removed in the next major version (v2.x.x) - see %s", r.newName)
+	resp.Schema = schema
 }
 
 // getShortName extracts the short name from the deprecated name
