@@ -4,6 +4,12 @@
 
 _TBC_
 
+## 1.0.1 February 11, 2026
+
+BUG FIXES:
+* There was no path forwards for the renamed resources in `v1.0.0` - this release adds support for migrating existing state - see the updated 
+[Migration Guide](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/blob/main/MIGRATION-1.0.md) for details [GH-315]
+
 ## 1.0.0 February 10, 2026
 
 BREAKING CHANGES:
