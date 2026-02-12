@@ -306,7 +306,7 @@ type FirewallAuditAndQuarantineModel struct {
 
 func NewFirewallAuditAndQuarantineModelWithDefaults() *FirewallAuditAndQuarantineModel {
 	return &FirewallAuditAndQuarantineModel{
-		CapabilityId: types.StringValue(""),
+		CapabilityId: types.StringNull(),
 		Enabled:      types.BoolValue(false),
 		Quarantine:   types.BoolValue(false),
 	}

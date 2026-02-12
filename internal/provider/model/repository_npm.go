@@ -137,7 +137,10 @@ func (m *RepositoryNpmProxyModel) ToApiCreateModel() sonatyperepo.NpmProxyReposi
 
 func (m *RepositoryNpmProxyModel) ToApiUpdateModel() sonatyperepo.NpmProxyRepositoryApiRequest {
 	model := m.ToApiCreateModel()
-	if m.FirewallAuditAndQuarantine != nil && m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool() {
+	if m.FirewallAuditAndQuarantine != nil && !m.FirewallAuditAndQuarantine.PccsEnabled.IsNull() && m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool() {
+		if model.Npm == nil {
+			model.Npm = &sonatyperepo.NpmAttributes{}
+		}
 		model.Npm.RemoveQuarantined = m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
 	}
 	return model
