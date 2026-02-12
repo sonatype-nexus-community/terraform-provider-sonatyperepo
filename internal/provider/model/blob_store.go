@@ -313,7 +313,9 @@ func (m *BlobStoreS3AdvancedBucketConnectionModel) MapToApi(api *v3.S3BlobStoreA
 	api.Endpoint = m.Endpoint.ValueStringPointer()
 	api.SignerType = m.SignerType.ValueStringPointer()
 	api.ForcePathStyle = m.ForcePathStyle.ValueBoolPointer()
-	api.MaxConnectionPoolSize = util.Int32ToPtr(int32(m.MaxConnectionPoolSize.ValueInt64()))
+	if !m.MaxConnectionPoolSize.IsNull() {
+		api.MaxConnectionPoolSize = util.Int32ToPtr(int32(m.MaxConnectionPoolSize.ValueInt64()))
+	}
 }
 
 // BlobStoreGoogleCloudModel

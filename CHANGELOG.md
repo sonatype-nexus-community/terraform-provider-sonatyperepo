@@ -4,6 +4,9 @@
 
 _TBC_
 
+BUG FIXES:
+* `null` value for `sonatyperepo_blob_store_s3.bucket_configuration.advanced_bucket_configuration.max_connection_pool_size` was interpretted as a `0` leading to inconsistent state [GH-314]
+
 ## 1.0.1 February 11, 2026
 
 BUG FIXES:
