@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
@@ -101,15 +102,21 @@ func (r *systemConfigLdapResource) Schema(_ context.Context, _ resource.SchemaRe
 				int32planmodifier.UseStateForUnknown(),
 			),
 			// User Mapping
-			"user_base_dn":              schema.ResourceOptionalString("The relative DN where user objects are found (e.g. ou=people). This value will have the Search base DN value appended to form the full User search base DN."),
-			"user_subtree":              schema.ResourceOptionalBoolWithDefault("Are users located in structures below the user base DN?", false),
-			"user_object_class":         schema.ResourceRequiredString("LDAP class for user objects - e.g. inetOrgPerson"),
-			"user_ldap_filter":          schema.ResourceOptionalString("LDAP search filter to limit user search - e.g. (|(mail=*@example.com)(uid=dom*))"),
+			"user_base_dn":      schema.ResourceOptionalString("The relative DN where user objects are found (e.g. ou=people). This value will have the Search base DN value appended to form the full User search base DN."),
+			"user_subtree":      schema.ResourceOptionalBoolWithDefault("Are users located in structures below the user base DN?", false),
+			"user_object_class": schema.ResourceRequiredString("LDAP class for user objects - e.g. inetOrgPerson"),
+			"user_ldap_filter": schema.ResourceOptionalStringWithValidators(
+				"LDAP search filter to limit user search - e.g. (|(mail=*@example.com)(uid=dom*))",
+				stringvalidator.LengthAtLeast(1),
+			),
 			"user_id_attribute":         schema.ResourceRequiredString("This is used to find a user given its user ID - e.g. uid"),
 			"user_real_name_attribute":  schema.ResourceRequiredString("This is used to find a real name given the user ID - e.g. cn"),
 			"user_email_name_attribute": schema.ResourceRequiredString("This is used to find an email address given the user ID - e.g. mail"),
-			"user_password_attribute":   schema.ResourceOptionalString("If this field is blank the user will be authenticated against a bind with the LDAP server"),
-			"map_ldap_groups_to_roles":  schema.ResourceOptionalBoolWithDefault("Denotes whether LDAP assigned roles are used as Nexus Repository Manager roles", false),
+			"user_password_attribute": schema.ResourceOptionalStringWithValidators(
+				"If this field is blank the user will be authenticated against a bind with the LDAP server",
+				stringvalidator.LengthAtLeast(1),
+			),
+			"map_ldap_groups_to_roles": schema.ResourceOptionalBoolWithDefault("Denotes whether LDAP assigned roles are used as Nexus Repository Manager roles", false),
 			// Group Mapping
 			"group_type": schema.ResourceStringEnum(
 				"Defines a type of groups used: static (a group contains a list of users) or dynamic (a user contains a list of groups). Required if ldapGroupsAsRoles is true.",

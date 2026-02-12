@@ -98,10 +98,10 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap1" {
 			  user_base_dn                 = "ou=people"
 			  user_email_name_attribute = "mail"
 			  user_id_attribute            = "uid"
-			  user_ldap_filter             = ""
+			  user_ldap_filter             = "(|(mail=@example.com)(uid=dom))"
 			  user_member_of_attribute     = "memberOf"
 			  user_object_class            = "inetOrgPerson"
-			  user_password_attribute      = ""
+			  user_password_attribute      = "password"
 			  user_real_name_attribute     = "cn"
 			  user_subtree                 = false
 			}				`,
@@ -123,10 +123,10 @@ resource "sonatyperepo_system_config_ldap_connection" "ldap1" {
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_base_dn", "ou=people"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_email_name_attribute", "mail"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_id_attribute", "uid"),
-					resource.TestCheckResourceAttr(resourceNameLdap1, "user_ldap_filter", ""),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_ldap_filter", "(|(mail=@example.com)(uid=dom))"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_member_of_attribute", "memberOf"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_object_class", "inetOrgPerson"),
-					resource.TestCheckResourceAttr(resourceNameLdap1, "user_password_attribute", ""),
+					resource.TestCheckResourceAttr(resourceNameLdap1, "user_password_attribute", "password"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_real_name_attribute", "cn"),
 					resource.TestCheckResourceAttr(resourceNameLdap1, "user_subtree", "false"),
 				),
