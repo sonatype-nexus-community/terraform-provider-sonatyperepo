@@ -4,8 +4,14 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* Added additional schema validation to prevent `pccs_enabled = true` when `repository_firewall.enabled = false` [GH-323]
+
 BUG FIXES:
 * `null` value for `sonatyperepo_blob_store_s3.bucket_configuration.advanced_bucket_configuration.max_connection_pool_size` was interpretted as a `0` leading to inconsistent state [GH-314]
+* SIGSEGV error when setting `pccs_enabled = true` for `sonatyperepo_repository_npm_proxy` resource [GH-319]
+* `pccs_enabled = true` had no effect for `sonatyperepo_repository_pypi_proxy` resource [GH-320]
+* Missing implementation meant it was impossible to add or update `repository_firewall` configuration after initial resource creation [GH-322]
 
 ## 1.0.1 February 11, 2026
 
