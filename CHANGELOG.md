@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.0.2 February 12, 2026
+
 ENHANCEMENTS:
 * Added additional schema validation to prevent `pccs_enabled = true` when `repository_firewall.enabled = false` [GH-323]
 
