@@ -4,6 +4,12 @@
 
 _TBC_
 
+## 1.0.3 February 12, 2026
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.89.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-89-0-release-notes.html) [GH-275]
+  * The API regression in 3.89.0 that prevented use of the `sonatyperepo_system_config_ldap_connection` resource has been fixed in 3.89.1 [GH-260]
+
 ## 1.0.2 February 12, 2026
 
 ENHANCEMENTS:
