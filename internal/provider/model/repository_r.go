@@ -92,12 +92,6 @@ func (m *RepositorRProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepos
 			AssetPathRegex:        types.StringNull(),
 		}
 	}
-
-	// Firewall Audit and Quarantine
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
-	}
 }
 
 func (m *RepositorRProxyModel) ToApiCreateModel() sonatyperepo.RProxyRepositoryApiRequest {

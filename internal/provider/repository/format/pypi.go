@@ -253,7 +253,11 @@ func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallPccsEnabled(state any) 
 	if state != nil {
 		stateModel = (state).(model.RepositoryPyPiProxyModel)
 	}
-	return stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
+	} else {
+		return false
+	}
 }
 
 // --------------------------------------------

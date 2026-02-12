@@ -19,6 +19,7 @@ package format
 import (
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -100,40 +101,17 @@ func commonProxyFirewallAuditQuarantineAttribute(supportsPccs bool) tfschema.Sin
 			"quarantine":    schema.ResourceOptionalBoolWithDefault("Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).", false),
 		},
 	)
-	thisAttr.Computed = true
 
 	if supportsPccs {
 		thisAttr.Attributes["pccs_enabled"] = schema.ResourceOptionalBoolWithDefault(
 			`Whether Policy-Compliant Component Selection is enabled. See [documentatation](https://help.sonatype.com/en/policy-compliant-component-selection.html) for details.`,
 			false,
 		)
-		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
-			map[string]attr.Type{
-				"capability_id": types.StringType,
-				"enabled":       types.BoolType,
-				"quarantine":    types.BoolType,
-				"pccs_enabled":  types.BoolType,
-			},
-			map[string]attr.Value{
-				"capability_id": types.StringNull(),
-				"enabled":       types.BoolValue(false),
-				"quarantine":    types.BoolValue(false),
-				"pccs_enabled":  types.BoolValue(false),
-			},
-		))
-	} else {
-		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
-			map[string]attr.Type{
-				"capability_id": types.StringType,
-				"enabled":       types.BoolType,
-				"quarantine":    types.BoolType,
-			},
-			map[string]attr.Value{
-				"capability_id": types.StringNull(),
-				"enabled":       types.BoolValue(false),
-				"quarantine":    types.BoolValue(false),
-			},
-		))
+
+		// Add the validator to enforce the constraint
+		thisAttr.Validators = []validator.Object{
+			validators.PccsEnabledRequiresFirewallEnabled(),
+		}
 	}
 
 	return thisAttr

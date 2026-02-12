@@ -94,9 +94,8 @@ func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepos
 	}
 
 	// Firewall Audit and Quarantine (with PCCS)
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
+	if api.Npm != nil && m.FirewallAuditAndQuarantine != nil {
+		m.FirewallAuditAndQuarantine.PccsEnabled = types.BoolValue(api.Npm.RemoveQuarantined)
 	}
 }
 

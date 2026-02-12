@@ -119,15 +119,6 @@ func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRe
 			AssetPathRegex:        types.StringNull(),
 		}
 	}
-
-	// YUM Specific
-	// NOT RETURNED BY GET API - yum field is optional and not populated during import
-
-	// Firewall Audit and Quarantine
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
-	}
 }
 
 func (m *RepositoryYumProxyModel) ToApiCreateModel() sonatyperepo.YumProxyRepositoryApiRequest {

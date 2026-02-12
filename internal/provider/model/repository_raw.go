@@ -120,12 +120,6 @@ func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepos
 
 	// Raw Specific
 	m.Raw.MapFromApi(&api.Raw)
-
-	// Firewall Audit and Quarantine
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
-	}
 }
 
 func (m *RepositoryRawProxyModel) ToApiCreateModel() sonatyperepo.RawProxyRepositoryApiRequest {

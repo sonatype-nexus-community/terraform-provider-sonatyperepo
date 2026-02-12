@@ -120,15 +120,15 @@ func (ch *CapabilityHelper) CreateCapability(ctx context.Context, repositoryId s
 }
 
 // UpdateCapability updates an existing capability
-func (ch *CapabilityHelper) UpdateCapability(ctx context.Context, capabilityId string, repositoryId string, quarantineEnabled bool, diags *diag.Diagnostics) (*v3.CapabilityDTO, error) {
-	enabled := true
+func (ch *CapabilityHelper) UpdateCapability(ctx context.Context, capabilityId string, repositoryId string, capabilityEnabled bool, quarantineEnabled bool, diags *diag.Diagnostics) (*v3.CapabilityDTO, error) {
 	properties := map[string]string{
 		"repository": repositoryId,
 		"quarantine": fmt.Sprintf("%t", quarantineEnabled),
 	}
 	capabilityRequest := v3.CapabilityDTO{
+		Id:         &capabilityId,
 		Type:       ch.capabilityType.StringPointer(),
-		Enabled:    &enabled,
+		Enabled:    &capabilityEnabled,
 		Properties: &properties,
 	}
 

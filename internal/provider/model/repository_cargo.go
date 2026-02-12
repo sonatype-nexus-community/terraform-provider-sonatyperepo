@@ -99,12 +99,6 @@ func (m *RepositoryCargoProxyModel) FromApiModel(api sonatyperepo.CargoProxyApiR
 		m.Cargo = &cargoAttributesModel{}
 		m.Cargo.MapFromApi(api.Cargo)
 	}
-
-	// Firewall Audit and Quarantine
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
-	}
 }
 
 func (m *RepositoryCargoProxyModel) ToApiCreateModel() sonatyperepo.CargoProxyRepositoryApiRequest {
