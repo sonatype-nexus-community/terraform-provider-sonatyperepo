@@ -247,6 +247,19 @@ func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state
 	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
 }
 
+func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallPccsEnabled(state any) bool {
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
+	} else {
+		return false
+	}
+}
+
 // --------------------------------------------
 // GORUP PyPi Format Functions
 // --------------------------------------------

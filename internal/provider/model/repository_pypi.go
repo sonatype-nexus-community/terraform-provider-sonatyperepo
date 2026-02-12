@@ -56,7 +56,7 @@ func (m *RepositoryPyPiHostedModel) ToApiUpdateModel() sonatyperepo.PypiHostedRe
 	return m.ToApiCreateModel()
 }
 
-// Proxy Maven
+// Proxy PyPI
 // --------------------------------------------
 type RepositoryPyPiProxyModel struct {
 	RepositoryProxyModel
@@ -94,9 +94,8 @@ func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRep
 	}
 
 	// Firewall Audit and Quarantine (with PCCS)
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
+	if m.FirewallAuditAndQuarantine != nil && api.Pypi.RemoveQuarantined {
+		m.FirewallAuditAndQuarantine.PccsEnabled = types.BoolValue(api.Pypi.RemoveQuarantined)
 	}
 }
 
@@ -131,10 +130,17 @@ func (m *RepositoryPyPiProxyModel) ToApiCreateModel() sonatyperepo.PypiProxyRepo
 }
 
 func (m *RepositoryPyPiProxyModel) ToApiUpdateModel() sonatyperepo.PypiProxyRepositoryApiRequest {
-	return m.ToApiCreateModel()
+	model := m.ToApiCreateModel()
+	if m.FirewallAuditAndQuarantine != nil && !m.FirewallAuditAndQuarantine.PccsEnabled.IsNull() && m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool() {
+		if model.Pypi == nil {
+			model.Pypi = &sonatyperepo.PyPiProxyAttributes{}
+		}
+		model.Pypi.RemoveQuarantined = m.FirewallAuditAndQuarantine.PccsEnabled.ValueBool()
+	}
+	return model
 }
 
-// Group PyPi
+// Group PyPI
 // --------------------------------------------
 type RepositoryPyPiGroupModel struct {
 	RepositoryGroupDeployModel

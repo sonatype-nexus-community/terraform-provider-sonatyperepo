@@ -19,6 +19,7 @@ package format
 import (
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -95,45 +96,22 @@ func commonProxyFirewallAuditQuarantineAttribute(supportsPccs bool) tfschema.Sin
 		
 **Requires Sonatype Nexus Repository 3.84.0 or later.`,
 		map[string]tfschema.Attribute{
-			"capability_id": schema.ResourceComputedStringWithDefault("Internal ID of the Audit & Quarantine Capability created for this Repository", ""),
+			"capability_id": schema.ResourceComputedString("Internal ID of the Audit & Quarantine Capability created for this Repository"),
 			"enabled":       schema.ResourceOptionalBoolWithDefault("Whether to enable Sonatype Repository Firewall for this Repository", false),
 			"quarantine":    schema.ResourceOptionalBoolWithDefault("Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).", false),
 		},
 	)
-	thisAttr.Computed = true
 
 	if supportsPccs {
 		thisAttr.Attributes["pccs_enabled"] = schema.ResourceOptionalBoolWithDefault(
 			`Whether Policy-Compliant Component Selection is enabled. See [documentatation](https://help.sonatype.com/en/policy-compliant-component-selection.html) for details.`,
 			false,
 		)
-		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
-			map[string]attr.Type{
-				"capability_id": types.StringType,
-				"enabled":       types.BoolType,
-				"quarantine":    types.BoolType,
-				"pccs_enabled":  types.BoolType,
-			},
-			map[string]attr.Value{
-				"capability_id": types.StringValue(""),
-				"enabled":       types.BoolValue(false),
-				"quarantine":    types.BoolValue(false),
-				"pccs_enabled":  types.BoolValue(false),
-			},
-		))
-	} else {
-		thisAttr.Default = objectdefault.StaticValue(types.ObjectValueMust(
-			map[string]attr.Type{
-				"capability_id": types.StringType,
-				"enabled":       types.BoolType,
-				"quarantine":    types.BoolType,
-			},
-			map[string]attr.Value{
-				"capability_id": types.StringValue(""),
-				"enabled":       types.BoolValue(false),
-				"quarantine":    types.BoolValue(false),
-			},
-		))
+
+		// Add the validator to enforce the constraint
+		thisAttr.Validators = []validator.Object{
+			validators.PccsEnabledRequiresFirewallEnabled(),
+		}
 	}
 
 	return thisAttr

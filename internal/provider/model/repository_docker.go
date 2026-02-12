@@ -205,12 +205,6 @@ func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyAp
 	// Docker Specific
 	m.Docker.MapFromApi(&api.Docker)
 	m.DockerProxy.MapFromApi(&api.DockerProxy)
-
-	// Firewall Audit and Quarantine
-	// This will be populated separately by the resource helper during Read operations
-	if m.FirewallAuditAndQuarantine == nil {
-		m.FirewallAuditAndQuarantine = NewFirewallAuditAndQuarantineModelWithDefaults()
-	}
 }
 
 func (m *RepositoryDockerProxyModel) ToApiCreateModel() sonatyperepo.DockerProxyRepositoryApiRequest {
