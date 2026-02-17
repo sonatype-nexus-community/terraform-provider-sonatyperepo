@@ -54,6 +54,15 @@ func TestAccBlobStoreFileResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(RES_NAME_BLOB_STORE_FILE, RES_ATTR_LAST_UPDATED),
 				),
 			},
+			// Import and verify no changes
+			{
+				ResourceName:                         RES_NAME_BLOB_STORE_FILE,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        fmt.Sprintf("test-%s", randomString),
+				ImportStateVerifyIdentifierAttribute: RES_ATTR_NAME,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
