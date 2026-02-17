@@ -45,3 +45,14 @@ Required:
 Optional:
 
 - `limit` (Number) Quota limit
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing Blob Store File into Terraform State.
+
+# Example
+terraform import sonatyperepo_blob_store_file.my_file BLOB_STORE_FILE_NAME
+```

@@ -25,6 +25,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -265,4 +266,10 @@ func (r *blobStoreFileResource) Delete(ctx context.Context, req resource.DeleteR
 
 	// Delete API Call
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
+}
+
+// This allows users to import existing File Blob Stores into Terraform state.
+func (r *blobStoreFileResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the Blob Store Name as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
