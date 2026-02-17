@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.1.0 February 17, 2026
+
 ENHANCEMENTS:
 * `sonatyperepo_blob_store_file` now supports import [GH-329] - thanks to @HazemElAgaty
 
