@@ -67,13 +67,13 @@ resource "sonatyperepo_user" "saml_admin" {
 
 - `password` (String, Sensitive) The password for the user.
 			
-  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.
-- `read_only` (Boolean) Whether the user is read-only
-- `source` (String) Source system managing this user
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users. Set to null rather than empty string.
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
+- `read_only` (Boolean) Whether the user is read-only
+- `source` (String) Source system managing this user
 
 ## Import
 
