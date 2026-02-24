@@ -19,8 +19,9 @@ resource "sonatyperepo_user" "test_user" {
   first_name    = "Testing"
   last_name     = "User"
   email_address = "test@local.user"
-  password      = "somethingSecurer"
-  status        = "active"
+  # If you wish to manage a user without it's password, set password = null
+  password = "somethingSecurer"
+  status   = "active"
   roles = [
     "nx-anonymous"
   ]
@@ -66,7 +67,7 @@ resource "sonatyperepo_user" "saml_admin" {
 
 - `password` (String, Sensitive) The password for the user.
 			
-  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users. Set to null rather than empty string.
 
 ### Read-Only
 

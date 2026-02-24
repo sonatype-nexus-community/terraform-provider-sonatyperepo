@@ -75,9 +75,9 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"email_address": schema.ResourceRequiredString(`The email address associated with the user.
 
   **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
-			"password": schema.ResourceSensitiveString(`The password for the user.
+			"password": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(`The password for the user.
 			
-  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`),
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users. Set to null rather than empty string.`, 1),
 			"status": schema.ResourceRequiredStringWithValidators(
 				`The user's status.
 				
