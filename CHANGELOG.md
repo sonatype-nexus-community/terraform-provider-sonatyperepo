@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.1.1 February 24, 2026
+
 BUG FIXES:
 - Use of empty string `password` for `sonatyperepo_user` showed plan changed that resulted in a provider crash [GH-334]
 
