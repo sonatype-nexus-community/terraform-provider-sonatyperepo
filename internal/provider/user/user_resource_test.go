@@ -78,6 +78,15 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameUser, attrRolesCount, "2"),
 				),
 			},
+			// Import to confirm no state changes
+			{
+				ResourceName:                         resourceNameUser,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        fmt.Sprintf("acc-test-user-complete-%s,default", randomString),
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateVerifyIgnore:              []string{"password", "last_updated"},
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

@@ -19,8 +19,9 @@ resource "sonatyperepo_user" "test_user" {
   first_name    = "Testing"
   last_name     = "User"
   email_address = "test@local.user"
-  password      = "somethingSecurer"
-  status        = "active"
+  # If you wish to manage a user without it's password, set password = null
+  password = "somethingSecurer"
+  status   = "active"
   roles = [
     "nx-anonymous"
   ]
@@ -67,12 +68,12 @@ resource "sonatyperepo_user" "saml_admin" {
 - `password` (String, Sensitive) The password for the user.
 			
   **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.
+- `read_only` (Boolean) Whether the user is read-only
+- `source` (String) Source system managing this user
 
 ### Read-Only
 
 - `last_updated` (String) String representation of the date/time the resource was last changed
-- `read_only` (Boolean) Whether the user is read-only
-- `source` (String) Source system managing this user
 
 ## Import
 

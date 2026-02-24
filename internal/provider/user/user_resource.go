@@ -75,9 +75,9 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"email_address": schema.ResourceRequiredString(`The email address associated with the user.
 
   **Note:** This can only be managed for local users - and not LDAP, CROWD or SAML users.`),
-			"password": schema.ResourceSensitiveString(`The password for the user.
+			"password": schema.ResourceOptionalSensitiveStringWithLengthAtLeast(`The password for the user.
 			
-  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`),
+  **Note:** This is required for LOCAL users and must not be supplied for LDAP, CROWD or SAML users.`, 1),
 			"status": schema.ResourceRequiredStringWithValidators(
 				`The user's status.
 				
@@ -87,8 +87,8 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				),
 			),
 			"roles":        schema.ResourceRequiredStringSet("The list of roles assigned to this User."),
-			"read_only":    schema.ResourceComputedBool("Whether the user is read-only"),
-			"source":       schema.ResourceComputedString("Source system managing this user"),
+			"read_only":    schema.ResourceComputedOptionalBool("Whether the user is read-only"),
+			"source":       schema.ResourceComputedOptionalString("Source system managing this user"),
 			"last_updated": schema.ResourceLastUpdated(),
 		},
 	}

@@ -4,8 +4,9 @@ resource "sonatyperepo_user" "test_user" {
   first_name    = "Testing"
   last_name     = "User"
   email_address = "test@local.user"
-  password      = "somethingSecurer"
-  status        = "active"
+  # If you wish to manage a user without it's password, set password = null
+  password = "somethingSecurer"
+  status   = "active"
   roles = [
     "nx-anonymous"
   ]
