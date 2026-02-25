@@ -113,9 +113,9 @@ jobs:
             
             - name: Create database
               run: |
+                psql -c "CREATE USER nexus WITH PASSWORD 'somepassword';"
                 psql -c "CREATE DATABASE nexus OWNER nexus ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;"
-                psql -d nexus -c "CREATE SCHEMA nexus;"
-                psql -d nexus -c "CREATE USER nexus WITH PASSWORD 'somepassword';"
+                psql -d nexus -c "CREATE SCHEMA nexus AUTHORIZATION nexus;"
                 psql -d nexus -c "GRANT ALL PRIVILEGES ON DATABASE nexus TO nexus; GRANT ALL PRIVILEGES ON SCHEMA nexus TO nexus;"
                 psql -d nexus -c "CREATE EXTENSION pg_trgm SCHEMA nexus;"
               env:
