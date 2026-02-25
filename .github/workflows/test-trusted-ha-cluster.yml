@@ -1,5 +1,5 @@
 # Terraform Provider testing workflow.
-name: Test (Trusted)
+name: Test HA (Trusted)
 
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
@@ -86,14 +86,14 @@ jobs:
                 sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/node-01/nexus-${{ matrix.nxrm }}/bin/nexus
                 sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/node-02/nexus-${{ matrix.nxrm }}/bin/nexus
                 sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/node-03/nexus-${{ matrix.nxrm }}/bin/nexus
-                echo "username=nexus" > ${{ github.workspace }}nexus-store.properties
+                echo "username=nexus" > ${{ github.workspace }}/nexus-store.properties
                 echo "password=somepassword" >> ${{ github.workspace }}/nexus-store.properties
                 echo "jdbcUrl=jdbc:postgresql://localhost/nexus" >> ${{ github.workspace }}/nexus-store.properties
                 mkdir -p ${{ github.workspace }}/node-01/sonatype-work/nexus3/etc/fabric
                 mkdir -p ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/fabric
                 mkdir -p ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/fabric
                 echo "application-port=8082" > ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/nexus-default.properties
-                echo "application-port=8083" > ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/nexus-default.properties
+                echo "application-port=8083" > ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/nexus-default.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-01/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/fabric/nexus-store.properties
