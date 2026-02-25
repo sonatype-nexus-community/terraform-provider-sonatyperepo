@@ -131,10 +131,11 @@ jobs:
 
             - name: Configure Sonatype Nexus Repository Manager to use PostgreSQL
               run: |
-                echo "username=nexus" > nexus-store.properties
-                echo "password=somepassword" >> nexus-store.properties
-                echo "jdbcUrl="jdbc:postgresql://localhost/nexus" >> nexus-store.properties
-              working-directory: "${{ github.workspace }}/sonatype-work/nexus3/etc/fabric"
+                mkdir -p etc/fabric
+                echo "username=nexus" > etc/fabric/nexus-store.properties
+                echo "password=somepassword" >> etc/fabric/nexus-store.properties
+                echo "jdbcUrl="jdbc:postgresql://localhost/nexus" >> etc/fabric/nexus-store.properties
+              working-directory: "${{ github.workspace }}/sonatype-work/nexus3"
 
             - name: Start Sonatype Nexus Repository Manager
               run: ./nexus start
