@@ -101,6 +101,10 @@ jobs:
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/fabric/nexus-store.properties
 
+            - name: Create directories for shared storage
+              run: |
+                mkdir -p ${{ github.workspace }}/storage/default
+
             - name: Start Sonatype Nexus Repository Manager (Node 1)
               run: ./nexus start
               working-directory: "${{ github.workspace }}/node-01/nexus-${{ matrix.nxrm }}/bin"
@@ -202,7 +206,8 @@ jobs:
                   NXRM_SERVER_PASSWORD: "admin123"
                   NXRM_VERSION: "${{ matrix.nxrm }}"
                   TF_ACC: '1'
-                  TF_ACC_SINGLE_HIT: '1'
+                  TF_ACC_HA_MODE: '1'
+                  TF_ACC_HA_BLOB_STORE_PATH: "${{ github.workspace }}/storage/default"
               run: go test -v -cover ./...
               timeout-minutes: 10
 
