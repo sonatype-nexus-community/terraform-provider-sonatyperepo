@@ -134,7 +134,7 @@ jobs:
                 mkdir -p etc/fabric
                 echo "username=nexus" > etc/fabric/nexus-store.properties
                 echo "password=somepassword" >> etc/fabric/nexus-store.properties
-                echo "jdbcUrl="jdbc:postgresql://localhost/nexus" >> etc/fabric/nexus-store.properties
+                echo "jdbcUrl=jdbc:postgresql://localhost/nexus" >> etc/fabric/nexus-store.properties
               working-directory: "${{ github.workspace }}/sonatype-work/nexus3"
 
             - name: Start Sonatype Nexus Repository Manager
