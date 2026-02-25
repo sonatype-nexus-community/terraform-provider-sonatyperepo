@@ -95,8 +95,8 @@ jobs:
                 echo "nexus.datastore.clustered.enabled = true" > ${{ github.workspace }}/node-01/sonatype-work/nexus3/etc/nexus.properties
                 echo "nexus.datastore.clustered.enabled = true" > ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/nexus.properties
                 echo "nexus.datastore.clustered.enabled = true" > ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/nexus.properties
-                echo "application-port=8082" > ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/nexus-default.properties
-                echo "application-port=8083" > ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/nexus-default.properties
+                echo "application-port=8082" > ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/nexus.properties
+                echo "application-port=8083" > ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/nexus.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-01/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/fabric/nexus-store.properties
