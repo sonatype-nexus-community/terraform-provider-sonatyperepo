@@ -105,6 +105,22 @@ jobs:
               with:
                 ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
 
+            - name: Setup PostgreSQL
+              id: setup-postgresql
+              uses: ikalnytskyi/action-setup-postgres@c4dda34aae1c821e3a771b68b73b13af3198a7ee # v8
+              with:
+                postgres-version: 17
+            
+            - name: Create database
+              run: |
+                psql -c "CREATE USER nexus WITH PASSWORD 'somepassword';"
+                psql -c "CREATE DATABASE nexus OWNER nexus ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;"
+                psql -d nexus -c "CREATE SCHEMA nexus AUTHORIZATION nexus;"
+                psql -d nexus -c "GRANT ALL PRIVILEGES ON DATABASE nexus TO nexus; GRANT ALL PRIVILEGES ON SCHEMA nexus TO nexus;"
+                psql -d nexus -c "CREATE EXTENSION pg_trgm SCHEMA nexus;"
+              env:
+                PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
+
             - name: Download & Unpack Sonatype Nexus Repository Manager
               run: |
                   echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
@@ -112,6 +128,14 @@ jobs:
                   tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
                   sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
                   head -5 ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
+
+            - name: Configure Sonatype Nexus Repository Manager to use PostgreSQL
+              run: |
+                mkdir -p etc/fabric
+                echo "username=nexus" > etc/fabric/nexus-store.properties
+                echo "password=somepassword" >> etc/fabric/nexus-store.properties
+                echo "jdbcUrl=jdbc:postgresql://localhost/nexus" >> etc/fabric/nexus-store.properties
+              working-directory: "${{ github.workspace }}/sonatype-work/nexus3"
 
             - name: Start Sonatype Nexus Repository Manager
               run: ./nexus start
