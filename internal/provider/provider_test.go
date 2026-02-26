@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -46,20 +47,35 @@ func TestMain(m *testing.M) {
 		)
 
 		// Create Default Blobstore
-		nxrmClient.BlobStoreAPI.CreateFileBlobStore(ctx).Body(
+		httpResponse, err := nxrmClient.BlobStoreAPI.CreateFileBlobStore(ctx).Body(
 			v3.FileBlobStoreApiCreateRequest{
 				Name: v3.PtrString("default"),
 				Path: v3.PtrString(os.Getenv("TF_ACC_HA_BLOB_STORE_PATH")),
 			},
 		).Execute()
+		if err != nil || (httpResponse != nil && httpResponse.StatusCode != http.StatusCreated) {
+			log.Printf("Failed to create default Blob Store: %v", err)
+			if httpResponse != nil {
+				log.Printf("API Response: %d", httpResponse.StatusCode)
+			}
+		}
 
 		// Create Maven Central Proxy Repository
-		nxrmClient.RepositoryManagementAPI.CreateMavenProxyRepository(ctx).Body(
+		httpResponse, err = nxrmClient.RepositoryManagementAPI.CreateMavenProxyRepository(ctx).Body(
 			v3.MavenProxyRepositoryApiRequest{
-				Name:   "maven-central",
-				Online: true,
+				Name:       "maven-central",
+				Online:     true,
+				HttpClient: *v3.NewHttpClientAttributesWithPreemptiveAuth(true, false),
+				NegativeCache: v3.NegativeCacheAttributes{
+					Enabled:    true,
+					TimeToLive: 1440,
+				},
 				Proxy: v3.ProxyAttributes{
 					RemoteUrl: v3.PtrString("https://repo1.maven.org/maven2/"),
+				},
+				Storage: v3.StorageAttributes{
+					BlobStoreName:               "default",
+					StrictContentTypeValidation: true,
 				},
 				Maven: v3.MavenAttributes{
 					ContentDisposition: v3.PtrString("INLINE"),
@@ -68,6 +84,13 @@ func TestMain(m *testing.M) {
 				},
 			},
 		).Execute()
+
+		if err != nil || (httpResponse != nil && httpResponse.StatusCode != http.StatusCreated) {
+			log.Printf("Failed to create maven-central Proxy Repository: %v", err)
+			if httpResponse != nil {
+				log.Printf("API Response: %d", httpResponse.StatusCode)
+			}
+		}
 	} else {
 		log.Println("Continuing in non-HA Mode...")
 	}
