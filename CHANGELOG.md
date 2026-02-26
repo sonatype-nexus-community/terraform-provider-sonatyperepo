@@ -4,6 +4,9 @@
 
 _TBC_
 
+BUG FIXES:
+* Prevent provide crash when adding/removing `repository_firewall` configuration for proxy repositories [GH-333]
+
 NOTES:
 * Acceptance Testing is now performed against Sonatype Nexus Repository backed by PostgreSQL [GH-282]
 * Acceptance Testing is now additionally performed against a 3-node HA Cluster of Sonatype Nexus Repository (latest supported version) [GH-335]
