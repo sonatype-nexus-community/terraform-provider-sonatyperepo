@@ -339,6 +339,9 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Map to state
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
+	// Copy various fields not returned by a READ from Plan
+	stateModel = r.RepositoryFormat.UpdateStateFromPlanForNonApiFields(planModel, stateModel)
+	// Update State finally for Plan
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
