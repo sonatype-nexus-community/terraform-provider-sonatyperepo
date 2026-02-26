@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.2.0 February 26, 2026
+
 ENHANCEMENTS:
 * `sonatyperepo_cleanup_policy` now supports the following formats: `cargo`, `composer`, `huggingface`, `swift` and `terraform` [GH-340]
 
