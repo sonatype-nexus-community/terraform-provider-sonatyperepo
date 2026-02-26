@@ -4,9 +4,13 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* `sonatyperepo_cleanup_policy` now supports the following formats: `cargo`, `composer`, `huggingface`, `swift` and `terraform` [GH-340]
+
 BUG FIXES:
 * Prevent provide crash when adding/removing `repository_firewall` configuration for proxy repositories [GH-333]
 * Resolved `inconsistent result` that could be seen when managing Proxy Repositories with HTTP Client Authentication [GH-339]
+* Resolved `inconsistent result` for `sonatyperepo_repository_*` resources that support Cleanup Policies [GH-340]
 
 NOTES:
 * Acceptance Testing is now performed against Sonatype Nexus Repository backed by PostgreSQL [GH-282]
