@@ -6,6 +6,7 @@ _TBC_
 
 BUG FIXES:
 * Prevent provide crash when adding/removing `repository_firewall` configuration for proxy repositories [GH-333]
+* Resolved `inconsistent result` that could be seen when managing Proxy Repositories with HTTP Client Authentication [GH-339]
 
 NOTES:
 * Acceptance Testing is now performed against Sonatype Nexus Repository backed by PostgreSQL [GH-282]
