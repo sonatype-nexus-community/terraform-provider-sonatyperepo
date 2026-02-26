@@ -80,7 +80,7 @@ func (r *cleanupPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 			"notes": schema.ResourceOptionalString("Notes for the cleanup policy"),
 			"format": schema.ResourceRequiredStringEnum(
 				"Repository format that this cleanup policy applies to",
-				"apt", "bower", "cocoapods", "conan", "conda", "docker", "gitlfs", "go", "helm", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "swift", "terraform", "yum",
+				"apt", "cargo", "cocoapods", "composer", "conan", "conda", "docker", "gitlfs", "go", "helm", "huggingface", "maven2", "npm", "nuget", "p2", "pypi", "r", "raw", "rubygems", "swift", "terraform", "yum",
 			),
 			"criteria": schema.ResourceRequiredSingleNestedAttribute(
 				"Cleanup criteria for this policy - at least one criterion must be specified",
