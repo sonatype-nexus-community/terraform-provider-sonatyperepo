@@ -121,6 +121,18 @@ func (f *CondaRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
+func (f *CondaRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryCondaProxyModel)
+	var stateModel model.RepositoryCondaProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCondaProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *CondaRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryCondaProxyModel
 	// During import, state might be nil, so we create a new model

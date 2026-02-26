@@ -207,6 +207,18 @@ func (f *MavenRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
+func (f *MavenRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryMavenProxyModel)
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *MavenRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryMavenProxyModel
 	// During import, state might be nil, so we create a new model

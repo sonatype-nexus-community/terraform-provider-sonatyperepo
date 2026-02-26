@@ -46,6 +46,10 @@ type RepositorySwiftProxyModel struct {
 	Swift repositorySwiftProxySpecificModel `tfsdk:"swift"`
 }
 
+func (m *RepositorySwiftProxyModel) MapMissingApiFieldsFromPlan(planModel RepositorySwiftProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositorySwiftProxyModel) FromApiModel(api sonatyperepo.SwiftProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

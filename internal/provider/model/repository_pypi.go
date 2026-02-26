@@ -63,6 +63,10 @@ type RepositoryPyPiProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineWithPccsModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryPyPiProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryPyPiProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryPyPiProxyModel) FromApiModel(api sonatyperepo.PyPiProxyApiRepository) {
 	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

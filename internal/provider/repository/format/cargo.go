@@ -204,6 +204,18 @@ func (f *CargoRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any 
 	return stateModel
 }
 
+func (f *CargoRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryCargoProxyModel)
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *CargoRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryCargoProxyModel
 	// During import, state might be nil, so we create a new model

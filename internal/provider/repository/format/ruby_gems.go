@@ -206,6 +206,18 @@ func (f *RubyGemsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) a
 	return stateModel
 }
 
+func (f *RubyGemsRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositorRubyGemsProxyModel)
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *RubyGemsRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositorRubyGemsProxyModel
 	// During import, state might be nil, so we create a new model

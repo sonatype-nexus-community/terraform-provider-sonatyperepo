@@ -121,6 +121,18 @@ func (f *HuggingFaceRepositoryFormatProxy) UpdateStateFromApi(state any, api any
 	return stateModel
 }
 
+func (f *HuggingFaceRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryHuggingFaceProxyModel)
+	var stateModel model.RepositoryHuggingFaceProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHuggingFaceProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *HuggingFaceRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryHuggingFaceProxyModel
 	// During import, state might be nil, so we create a new model

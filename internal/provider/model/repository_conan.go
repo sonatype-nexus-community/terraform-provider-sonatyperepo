@@ -64,6 +64,10 @@ type RepositoryConanProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryConanProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryConanProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiRepository) {
 	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

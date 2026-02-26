@@ -214,6 +214,18 @@ func (f *YumRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *YumRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryYumProxyModel)
+	var stateModel model.RepositoryYumProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *YumRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryYumProxyModel
 	// During import, state might be nil, so we create a new model

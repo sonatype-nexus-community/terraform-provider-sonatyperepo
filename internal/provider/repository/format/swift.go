@@ -125,6 +125,18 @@ func (f *SwiftRepositoryFormatProxy) UpdateStateFromApi(state, api any) any {
 	return stateModel
 }
 
+func (f *SwiftRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositorySwiftProxyModel)
+	var stateModel model.RepositorySwiftProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorySwiftProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *SwiftRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
 	return false
 }

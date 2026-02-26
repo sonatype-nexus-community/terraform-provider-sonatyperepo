@@ -210,6 +210,18 @@ func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *NpmRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryNpmProxyModel)
+	var stateModel model.RepositoryNpmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryNpmProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 // NPM Proxy Repositories support Repository Firewall PCCS
 func (f *NpmRepositoryFormatProxy) SupportsRepositoryFirewallPccs() bool {
 	return true

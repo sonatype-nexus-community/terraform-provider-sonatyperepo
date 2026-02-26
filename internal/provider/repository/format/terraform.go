@@ -130,6 +130,18 @@ func (f *TerraformRepositoryFormatProxy) UpdateStateFromApi(state, api any) any 
 	return stateModel
 }
 
+func (f *TerraformRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryTerraformProxyModel)
+	var stateModel model.RepositoryTerraformProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryTerraformProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *TerraformRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
 	return false
 }

@@ -121,6 +121,18 @@ func (f *CocoaPodsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) 
 	return stateModel
 }
 
+func (f *CocoaPodsRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryCocoaPodsProxyModel)
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *CocoaPodsRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryCocoaPodsProxyModel
 	// During import, state might be nil, so we create a new model
