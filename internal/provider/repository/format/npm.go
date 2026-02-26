@@ -230,7 +230,6 @@ func (f *NpmRepositoryFormatProxy) UpateStateWithCapability(state any, capabilit
 		if stateModel.FirewallAuditAndQuarantine == nil {
 			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
 		}
-
 		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
 	}
 	return stateModel

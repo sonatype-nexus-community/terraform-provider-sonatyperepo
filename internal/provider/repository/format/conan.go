@@ -218,7 +218,12 @@ func (f *ConanRepositoryFormatProxy) GetRepositoryId(state any) string {
 
 func (f *ConanRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
 	var stateModel = (state).(model.RepositoryConanProxyModel)
-	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	if capability != nil {
+		if stateModel.FirewallAuditAndQuarantine == nil {
+			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+		}
+		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	}
 	return stateModel
 }
 

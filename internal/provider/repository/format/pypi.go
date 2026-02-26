@@ -222,7 +222,12 @@ func (f *PyPiRepositoryFormatProxy) GetRepositoryId(state any) string {
 
 func (f *PyPiRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
 	var stateModel = (state).(model.RepositoryPyPiProxyModel)
-	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	if capability != nil {
+		if stateModel.FirewallAuditAndQuarantine == nil {
+			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
+		}
+		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	}
 	return stateModel
 }
 

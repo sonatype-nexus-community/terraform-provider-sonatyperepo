@@ -132,7 +132,12 @@ func (f *ComposerRepositoryFormatProxy) GetRepositoryId(state any) string {
 
 func (f *ComposerRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
 	var stateModel = (state).(model.RepositoryComposerProxyModel)
-	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	if capability != nil {
+		if stateModel.FirewallAuditAndQuarantine == nil {
+			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+		}
+		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	}
 	return stateModel
 }
 

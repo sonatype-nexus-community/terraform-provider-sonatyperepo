@@ -132,7 +132,12 @@ func (f *HuggingFaceRepositoryFormatProxy) GetRepositoryId(state any) string {
 
 func (f *HuggingFaceRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
 	var stateModel = (state).(model.RepositoryHuggingFaceProxyModel)
-	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	if capability != nil {
+		if stateModel.FirewallAuditAndQuarantine == nil {
+			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+		}
+		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	}
 	return stateModel
 }
 

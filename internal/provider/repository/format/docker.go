@@ -248,7 +248,12 @@ func (f *DockerRepositoryFormatProxy) GetRepositoryId(state any) string {
 
 func (f *DockerRepositoryFormatProxy) UpateStateWithCapability(state any, capability *sonatyperepo.CapabilityDTO) any {
 	var stateModel = (state).(model.RepositoryDockerProxyModel)
-	stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	if capability != nil {
+		if stateModel.FirewallAuditAndQuarantine == nil {
+			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+		}
+		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	}
 	return stateModel
 }
 
