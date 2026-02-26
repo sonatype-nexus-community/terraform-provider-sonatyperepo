@@ -455,6 +455,10 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, common.HTTP_AUTH_TYPE_USERNAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "false"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
@@ -468,7 +472,43 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 				),
 			})
 
-			// 3. Import and verify no changes
+			// 3. Revert back to Simple Config
+			steps = append(steps, resource.TestStep{
+				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					append(
+						// Test Case Specific Checks
+						td.CheckFunc(resourceName),
+
+						// Generic Checks
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+						resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_CONTENT_MAX_AGE)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, fmt.Sprintf("%d", common.DEFAULT_PROXY_METADATA_MAX_AGE)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_ENABLED, fmt.Sprintf("%t", common.DEFAULT_PROXY_NEGATIVE_CACHE_ENABLED)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, fmt.Sprintf("%d", common.DEFAULT_PROXY_NEGATIVE_CACHE_TTL)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_AUTO_BLOCK)),
+						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_RETRIES)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, fmt.Sprintf("%d", common.DEFAULT_HTTP_CLIENT_CONNECTION_TIMEOUT)),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE)),
+						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX),
+						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+					)...,
+				),
+			})
+
+			// 4. Import and verify no changes
 			if td.TestImport {
 				steps = append(steps, resource.TestStep{
 					ResourceName:                         resourceName,
@@ -836,6 +876,12 @@ resource "%s" "repo" {
   http_client = {
     blocked = false
     auto_block = false
+	authentication = {
+	  type = "username"
+      preemptive = false
+      password    = "pass"
+      username    = "user"
+	}
     connection = {
 	  enable_circular_redirects = true
 	  enable_cookies = true

@@ -46,6 +46,10 @@ type RepositoryTerraformProxyModel struct {
 	Terraform repositoryTerraformProxySpecificModel `tfsdk:"terraform"`
 }
 
+func (m *RepositoryTerraformProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryTerraformProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryTerraformProxyModel) FromApiModel(api sonatyperepo.TerraformProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

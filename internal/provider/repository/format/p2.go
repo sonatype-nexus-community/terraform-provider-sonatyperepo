@@ -124,6 +124,18 @@ func (f *P2RepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *P2RepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryP2ProxyModel)
+	var stateModel model.RepositoryP2ProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryP2ProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 // Repository Firewall not supported for P2
 func (f *P2RepositoryFormatProxy) SupportsRepositoryFirewall() bool {
 	return false

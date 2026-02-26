@@ -121,6 +121,18 @@ func (f *ComposerRepositoryFormat) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *ComposerRepositoryFormat) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryComposerProxyModel)
+	var stateModel model.RepositoryComposerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryComposerProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *ComposerRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositoryComposerProxyModel
 	// During import, state might be nil, so we create a new model

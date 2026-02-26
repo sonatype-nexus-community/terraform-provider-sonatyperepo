@@ -173,6 +173,10 @@ func (f *BaseRepositoryFormat) AdditionalSchemaDescription() string {
 	return ""
 }
 
+func (f *BaseRepositoryFormat) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	return state
+}
+
 // RepositoryFormat that all Repository Formats must implement
 // --------------------------------------------
 type RepositoryFormat interface {
@@ -193,6 +197,7 @@ type RepositoryFormat interface {
 	// IMPORTANT: state parameter may be nil (during import operations).
 	// Implementations MUST check for nil and create a new model instance if needed.
 	UpdateStateFromApi(state any, api any) any
+	UpdateStateFromPlanForNonApiFields(plan, state any) any
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 	SupportsRepositoryFirewall() bool
 	SupportsRepositoryFirewallPccs() bool

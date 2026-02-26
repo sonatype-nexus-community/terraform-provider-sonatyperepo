@@ -63,6 +63,10 @@ type RepositorRubyGemsProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositorRubyGemsProxyModel) MapMissingApiFieldsFromPlan(planModel RepositorRubyGemsProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositorRubyGemsProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

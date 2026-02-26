@@ -62,6 +62,10 @@ type RepositoryHelmProxyModel struct {
 	RepositoryProxyModel
 }
 
+func (m *RepositoryHelmProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryHelmProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryHelmProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

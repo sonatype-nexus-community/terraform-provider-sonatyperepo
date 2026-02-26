@@ -198,6 +198,18 @@ func (f *RRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *RRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositorRProxyModel)
+	var stateModel model.RepositorRProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *RRepositoryFormatProxy) GetRepositoryId(state any) string {
 	var stateModel model.RepositorRProxyModel
 	// During import, state might be nil, so we create a new model

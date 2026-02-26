@@ -63,6 +63,10 @@ type RepositoryNpmProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineWithPccsModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryNpmProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryNpmProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

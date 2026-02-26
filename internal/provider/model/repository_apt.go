@@ -140,6 +140,10 @@ type RepositoryAptProxyModel struct {
 	Apt aptSpecificProxyModel `tfsdk:"apt"`
 }
 
+func (m *RepositoryAptProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryAptProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryAptProxyModel) FromApiModel(api sonatyperepo.AptProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

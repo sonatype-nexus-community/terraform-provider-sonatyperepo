@@ -232,6 +232,18 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	return stateModel
 }
 
+func (f *DockerRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryDockerProxyModel)
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *DockerRepositoryFormatProxy) ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string {
 	var planModel = (plan).(model.RepositoryDockerProxyModel)
 	return validatePlanForDockerRespository(version, planModel.Docker.PathEnabled, planModel.Name.ValueString())

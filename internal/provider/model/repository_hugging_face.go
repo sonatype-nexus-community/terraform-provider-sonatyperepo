@@ -31,6 +31,10 @@ type RepositoryHuggingFaceProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryHuggingFaceProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryHuggingFaceProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryHuggingFaceProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

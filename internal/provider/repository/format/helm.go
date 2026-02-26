@@ -196,6 +196,18 @@ func (f *HelmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *HelmRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryHelmProxyModel)
+	var stateModel model.RepositoryHelmProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHelmProxyModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 // Helm Proxy repos are not supported by Repository Firewall
 func (f *HelmRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
 	return false

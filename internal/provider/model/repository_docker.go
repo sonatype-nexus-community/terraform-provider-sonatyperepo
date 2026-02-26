@@ -172,6 +172,10 @@ type RepositoryDockerProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryDockerProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryDockerProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryDockerProxyModel) FromApiModel(api sonatyperepo.DockerProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

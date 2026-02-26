@@ -64,6 +64,10 @@ type RepositoryCargoProxyModel struct {
 	FirewallAuditAndQuarantine *FirewallAuditAndQuarantineModel `tfsdk:"repository_firewall"`
 }
 
+func (m *RepositoryCargoProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryCargoProxyModel) {
+	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+}
+
 func (m *RepositoryCargoProxyModel) FromApiModel(api sonatyperepo.CargoProxyApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

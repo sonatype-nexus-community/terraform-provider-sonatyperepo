@@ -79,6 +79,8 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 			m.Authentication = &RepositoryHttpClientAuthenticationModel{}
 		}
 		m.Authentication.MapFromApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
+	} else {
+		m.Authentication = nil
 	}
 }
 
@@ -109,6 +111,12 @@ func (m *repositoryHttpClientModel) MapToApiHttpClientAttributesWithPreemptiveAu
 	if m.Authentication != nil {
 		api.Authentication = &sonatyperepo.HttpClientConnectionAuthenticationAttributesWithPreemptive{}
 		m.Authentication.MapToApiHttpClientConnectionAuthenticationAttributesWithPreemptive(api.Authentication)
+	}
+}
+
+func (m *repositoryHttpClientModel) MapMissingApiFieldsFromPlan(planModel repositoryHttpClientModel) {
+	if planModel.Authentication != nil {
+		m.Authentication.MapMissingApiFieldsFromPlan(planModel.Authentication)
 	}
 }
 
@@ -274,6 +282,13 @@ func (m *RepositoryHttpClientAuthenticationModel) MapToApiHttpClientConnectionAu
 			api.NtlmDomain = m.NtlmDomain.ValueStringPointer()
 			api.NtlmHost = m.NtlmHost.ValueStringPointer()
 		}
+	}
+}
+
+func (m *RepositoryHttpClientAuthenticationModel) MapMissingApiFieldsFromPlan(planModel *RepositoryHttpClientAuthenticationModel) {
+	m.Password = planModel.Password
+	if !planModel.Preemptive.ValueBool() {
+		m.Preemptive = planModel.Preemptive
 	}
 }
 
