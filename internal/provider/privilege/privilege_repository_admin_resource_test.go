@@ -61,8 +61,8 @@ func TestAccPrivilegeRepositoryAdminResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "read_only", "false"),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "type", privilege_type.TypeRepositoryAdmin.String()),
 					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "actions.#", "2"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "nuget"),
-					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "nuget.org-proxy"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "format", "maven2"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeRepoAdmin, "repository", "maven-central"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -92,7 +92,7 @@ resource "%s" "p" {
     	"BROWSE",
     	"ADD"
   	]
-	format = "nuget"
-	repository = "nuget.org-proxy"
+	format = "maven2"
+	repository = "maven-central"
 }`, resourceTypePrivilegeRepoAdmin, randomString)
 }
