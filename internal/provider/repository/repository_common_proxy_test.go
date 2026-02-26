@@ -447,7 +447,7 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 						// resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "1"),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
 						resource.TestCheckResourceAttr(resourceName, RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
@@ -855,14 +855,25 @@ func formatSpecificProxyDefaultConfig(repoFormat string) string {
 	}
 }
 
-func repositoryProxyResourceFullConfig(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
+func repositoryProxyResourceFullConfig(resourceType, repoName, remoteUrl, formatSpecificConfig, formatType string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_cleanup_policy" "my_policy" {
+  name = "cleanup-policy-%s"
+  format = "%s"
+  criteria = {
+    asset_regex = "something-here"
+  }
+}
+
 resource "%s" "repo" {
   name = "%s"
   online = true
   storage = {
     blob_store_name = "default"
     strict_content_type_validation = true
+  }
+  cleanup = {
+	policy_names = [ "cleanup-policy-%s" ]
   }
   proxy = {
     remote_url = "%s"
@@ -895,8 +906,9 @@ resource "%s" "repo" {
     preemptive_pull_enabled = false
   }
   %s
+  depends_on = [ sonatyperepo_cleanup_policy.my_policy ]
  }
-`, resourceType, repoName, remoteUrl, formatSpecificConfig)
+`, formatType, formatType, resourceType, repoName, formatType, remoteUrl, formatSpecificConfig)
 }
 
 func repositoryProxyResourceMinimalConfigWithDefaults(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
@@ -961,7 +973,7 @@ resource "%s" "repo" {
 func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString, formatSpecificConfig string, completeData bool) string {
 	if completeData {
 		return repositoryProxyResourceFullConfig(
-			resourceType, repoName, remoteUrl, formatSpecificConfig,
+			resourceType, repoName, remoteUrl, formatSpecificConfig, strings.ToLower(repoFormat),
 		)
 	} else {
 		return repositoryProxyResourceMinimalConfigWithDefaults(
