@@ -76,6 +76,8 @@ func (m *RepositorRProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepos
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage

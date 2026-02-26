@@ -40,6 +40,8 @@ func (m *RepositoryYumHostedModel) FromApiModel(api sonatyperepo.YumHostedApiRep
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage
@@ -103,6 +105,8 @@ func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRe
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage

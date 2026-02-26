@@ -76,6 +76,8 @@ func (m *RepositoryHostedModel) mapSimpleApiHostedRepository(api sonatyperepo.Si
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = &RepositoryCleanupModel{}
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Component

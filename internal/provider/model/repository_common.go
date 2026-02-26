@@ -45,6 +45,16 @@ type RepositoryCleanupModel struct {
 	PolicyNames []types.String `tfsdk:"policy_names"`
 }
 
+func (m *RepositoryCleanupModel) MapFromApi(api *sonatyperepo.CleanupPolicyAttributes) RepositoryCleanupModel {
+	if api != nil && len(api.PolicyNames) > 0 {
+		m = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api, m)
+	} else {
+		m = nil
+	}
+	return *m
+}
+
 func NewRepositoryCleanupModel() *RepositoryCleanupModel {
 	return &RepositoryCleanupModel{
 		PolicyNames: make([]types.String, 0),

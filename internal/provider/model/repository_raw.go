@@ -41,6 +41,8 @@ func (m *RepositoryRawHostedModel) FromApiModel(api sonatyperepo.RawHostedApiRep
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = &RepositoryCleanupModel{}
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Component
@@ -101,6 +103,8 @@ func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepos
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage

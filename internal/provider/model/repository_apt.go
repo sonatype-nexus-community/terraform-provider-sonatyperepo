@@ -66,8 +66,10 @@ func (m *RepositoryAptHostedModel) FromApiModel(api sonatyperepo.AptHostedApiRep
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = NewRepositoryCleanupModel()
+		m.Cleanup = &RepositoryCleanupModel{}
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage
@@ -151,8 +153,10 @@ func (m *RepositoryAptProxyModel) FromApiModel(api sonatyperepo.AptProxyApiRepos
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
-		m.Cleanup = NewRepositoryCleanupModel()
+		m.Cleanup = &RepositoryCleanupModel{}
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage

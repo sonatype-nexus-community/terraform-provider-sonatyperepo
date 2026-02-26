@@ -77,6 +77,8 @@ func (m *RepositoryConanProxyModel) FromApiModel(api sonatyperepo.ConanProxyApiR
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
 		m.Cleanup = NewRepositoryCleanupModel()
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
 	}
 
 	// Storage
