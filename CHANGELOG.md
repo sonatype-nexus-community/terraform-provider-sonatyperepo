@@ -4,6 +4,10 @@
 
 _TBC_
 
+NOTES:
+* Acceptance Testing is now performed against Sonatype Nexus Repository backed by PostgreSQL [GH-282]
+* Acceptance Testing is now additionally performed against a 3-node HA Cluster of Sonatype Nexus Repository (latest supported version) [GH-335]
+
 ## 1.1.1 February 24, 2026
 
 BUG FIXES:
