@@ -52,6 +52,22 @@ func TestMain(m *testing.M) {
 				Path: v3.PtrString(os.Getenv("TF_ACC_HA_BLOB_STORE_PATH")),
 			},
 		).Execute()
+
+		// Create Maven Central Proxy Repository
+		nxrmClient.RepositoryManagementAPI.CreateMavenProxyRepository(ctx).Body(
+			v3.MavenProxyRepositoryApiRequest{
+				Name:   "maven-central",
+				Online: true,
+				Proxy: v3.ProxyAttributes{
+					RemoteUrl: v3.PtrString("https://repo1.maven.org/maven2/"),
+				},
+				Maven: v3.MavenAttributes{
+					ContentDisposition: v3.PtrString("INLINE"),
+					LayoutPolicy:       v3.PtrString("STRICT"),
+					VersionPolicy:      v3.PtrString("RELEASE"),
+				},
+			},
+		).Execute()
 	} else {
 		log.Println("Continuing in non-HA Mode...")
 	}

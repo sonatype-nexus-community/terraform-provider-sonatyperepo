@@ -17,6 +17,7 @@
 package blob_store_test
 
 import (
+	"os"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
@@ -30,6 +31,10 @@ const (
 )
 
 func TestAccBlobStoreFileDataSource(t *testing.T) {
+	var expectedPath = os.Getenv("TF_ACC_HA_BLOB_STORE_PATH")
+	if expectedPath == "" {
+		expectedPath = "default"
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -45,7 +50,7 @@ func TestAccBlobStoreFileDataSource(t *testing.T) {
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "name", "default"),
-					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "path", "default"),
+					resource.TestCheckResourceAttr(dataSourceBlobStoreFile, "path", expectedPath),
 					// Soft quota is absent in default config
 					resource.TestCheckNoResourceAttr(dataSourceBlobStoreFile, "soft_quota"),
 				),
