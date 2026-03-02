@@ -153,6 +153,19 @@ func (f *CondaRepositoryFormatProxy) UpateStateWithCapability(state any, capabil
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *CondaRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryCondaProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCondaProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *CondaRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryCondaProxyModel
 	// During import, state might be nil, so we create a new model

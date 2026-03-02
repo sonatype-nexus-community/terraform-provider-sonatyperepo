@@ -97,7 +97,7 @@ func commonProxyFirewallAuditQuarantineAttribute(supportsPccs bool) tfschema.Sin
 **Requires Sonatype Nexus Repository 3.84.0 or later.`,
 		map[string]tfschema.Attribute{
 			"capability_id": schema.ResourceComputedString("Internal ID of the Audit & Quarantine Capability created for this Repository"),
-			"enabled":       schema.ResourceOptionalBoolWithDefault("Whether to enable Sonatype Repository Firewall for this Repository", false),
+			"enabled":       schema.ResourceRequiredBool("Whether to enable Sonatype Repository Firewall for this Repository"),
 			"quarantine":    schema.ResourceOptionalBoolWithDefault("Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).", false),
 		},
 	)

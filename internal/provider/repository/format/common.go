@@ -157,6 +157,11 @@ func (f *BaseRepositoryFormat) UpateStateWithCapability(state any, capability *s
 	panic("Unimplemented")
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *BaseRepositoryFormat) HasFirewallConfig(state any) bool {
+	return false
+}
+
 func (f *BaseRepositoryFormat) GetRepositoryFirewallEnabled(state any) bool {
 	return false
 }
@@ -202,6 +207,7 @@ type RepositoryFormat interface {
 	SupportsRepositoryFirewall() bool
 	SupportsRepositoryFirewallPccs() bool
 	GetRepositoryId(state any) string
+	HasFirewallConfig(state any) bool
 	GetRepositoryFirewallEnabled(state any) bool
 	GetRepositoryFirewallQuarantineEnabled(state any) bool
 	GetRepositoryFirewallPccsEnabled(state any) bool

@@ -146,7 +146,7 @@ func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 }
 
 // --------------------------------------------
-// PROXY Maven Format Functions
+// PROXY APT Format Functions
 // --------------------------------------------
 func (f *AptRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
