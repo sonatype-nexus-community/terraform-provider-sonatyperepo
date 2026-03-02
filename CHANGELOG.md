@@ -4,6 +4,12 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* `enabled` is now a required property of `repository_firewall` for resources `sonatyperepo_repository_*` where this is supported [GH-345]
+
+BUG FIXES:
+- Provider crashes due to `repository_firewall` block being removed resolved [GH-345]
+
 ## 1.2.0 February 26, 2026
 
 ENHANCEMENTS:
