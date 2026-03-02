@@ -157,6 +157,19 @@ func (f *GoRepositoryFormatProxy) UpateStateWithCapability(state any, capability
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *GoRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryGoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryGoProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *GoRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryGoProxyModel
 	// During import, state might be nil, so we create a new model

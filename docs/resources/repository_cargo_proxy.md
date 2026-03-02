@@ -178,9 +178,12 @@ Optional:
 <a id="nestedatt--repository_firewall"></a>
 ### Nested Schema for `repository_firewall`
 
-Optional:
+Required:
 
 - `enabled` (Boolean) Whether to enable Sonatype Repository Firewall for this Repository
+
+Optional:
+
 - `quarantine` (Boolean) Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).
 
 Read-Only:

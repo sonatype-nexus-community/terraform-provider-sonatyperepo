@@ -239,6 +239,19 @@ func (f *MavenRepositoryFormatProxy) UpateStateWithCapability(state any, capabil
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *MavenRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryMavenProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryMavenProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *MavenRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryMavenProxyModel
 	// During import, state might be nil, so we create a new model
