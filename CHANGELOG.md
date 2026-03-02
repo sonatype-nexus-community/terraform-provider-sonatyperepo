@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.3.0 March 02, 2026
+
 ENHANCEMENTS:
 * `enabled` is now a required property of `repository_firewall` for resources `sonatyperepo_repository_*` where this is supported [GH-345]
 
