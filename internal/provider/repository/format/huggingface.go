@@ -153,6 +153,19 @@ func (f *HuggingFaceRepositoryFormatProxy) UpateStateWithCapability(state any, c
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *HuggingFaceRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryHuggingFaceProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryHuggingFaceProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *HuggingFaceRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryHuggingFaceProxyModel
 	// During import, state might be nil, so we create a new model

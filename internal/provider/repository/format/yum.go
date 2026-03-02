@@ -246,6 +246,19 @@ func (f *YumRepositoryFormatProxy) UpateStateWithCapability(state any, capabilit
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *YumRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryYumProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *YumRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryYumProxyModel
 	// During import, state might be nil, so we create a new model

@@ -238,6 +238,19 @@ func (f *RubyGemsRepositoryFormatProxy) UpateStateWithCapability(state any, capa
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *RubyGemsRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositorRubyGemsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRubyGemsProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *RubyGemsRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositorRubyGemsProxyModel
 	// During import, state might be nil, so we create a new model

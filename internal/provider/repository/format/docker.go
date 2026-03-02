@@ -265,8 +265,23 @@ func (f *DockerRepositoryFormatProxy) UpateStateWithCapability(state any, capabi
 			stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
 		}
 		stateModel.FirewallAuditAndQuarantine.MapFromCapabilityDTO(capability)
+	} else {
+		stateModel.FirewallAuditAndQuarantine = nil
 	}
 	return stateModel
+}
+
+// Returns true only if `repository_firewall` block is supplied
+func (f *DockerRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryDockerProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryDockerProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
 }
 
 func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
@@ -287,7 +302,10 @@ func (f *DockerRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(sta
 	if state != nil {
 		stateModel = (state).(model.RepositoryDockerProxyModel)
 	}
-	return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool()
+	}
+	return false
 }
 
 // --------------------------------------------

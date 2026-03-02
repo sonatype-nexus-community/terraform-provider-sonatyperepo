@@ -245,6 +245,19 @@ func (f *RawRepositoryFormatProxy) UpateStateWithCapability(state any, capabilit
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *RawRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryRawProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryRawProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *RawRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryRawProxyModel
 	// During import, state might be nil, so we create a new model

@@ -243,6 +243,19 @@ func (f *PyPiRepositoryFormatProxy) UpateStateWithCapability(state any, capabili
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *PyPiRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryPyPiProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryPyPiProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *PyPiRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryPyPiProxyModel
 	// During import, state might be nil, so we create a new model

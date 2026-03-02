@@ -153,6 +153,19 @@ func (f *CocoaPodsRepositoryFormatProxy) UpateStateWithCapability(state any, cap
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *CocoaPodsRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryCocoaPodsProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCocoaPodsProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *CocoaPodsRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryCocoaPodsProxyModel
 	// During import, state might be nil, so we create a new model

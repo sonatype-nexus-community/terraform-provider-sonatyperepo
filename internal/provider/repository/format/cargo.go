@@ -236,6 +236,19 @@ func (f *CargoRepositoryFormatProxy) UpateStateWithCapability(state any, capabil
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *CargoRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryCargoProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryCargoProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *CargoRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryCargoProxyModel
 	// During import, state might be nil, so we create a new model

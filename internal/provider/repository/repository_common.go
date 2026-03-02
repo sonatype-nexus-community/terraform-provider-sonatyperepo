@@ -218,25 +218,33 @@ func (r *repositoryResource) configureFirewall(ctx context.Context, plan interfa
 	capabilityHelper := capability.NewCapabilityHelper(r.Client, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
 	auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(ctx, r.RepositoryFormat.GetRepositoryId(stateModel), respDiags)
 
-	if auditAndQuarantineCapability == nil && r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
+	if auditAndQuarantineCapability == nil && r.RepositoryFormat.HasFirewallConfig(plan) {
 		auditAndQuarantineCapability = capabilityHelper.CreateCapability(
 			ctx,
-			r.RepositoryFormat.GetRepositoryId(plan),
-			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(plan),
-			respDiags,
-		)
-	} else if auditAndQuarantineCapability != nil {
-		var err error
-		auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
-			ctx,
-			*auditAndQuarantineCapability.Id,
 			r.RepositoryFormat.GetRepositoryId(plan),
 			r.RepositoryFormat.GetRepositoryFirewallEnabled(plan),
 			r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(plan),
 			respDiags,
 		)
-		if err != nil {
-			return stateModel
+	} else if auditAndQuarantineCapability != nil {
+		if !r.RepositoryFormat.HasFirewallConfig(plan) {
+			capabilityHelper.DeleteCapability(ctx, *auditAndQuarantineCapability.Id, respDiags)
+
+			// Refresh the Audit & Quarantine Capability - should be nil
+			auditAndQuarantineCapability = capabilityHelper.FindCapabilityByRepositoryId(ctx, r.RepositoryFormat.GetRepositoryId(stateModel), respDiags)
+		} else {
+			var err error
+			auditAndQuarantineCapability, err = capabilityHelper.UpdateCapability(
+				ctx,
+				*auditAndQuarantineCapability.Id,
+				r.RepositoryFormat.GetRepositoryId(plan),
+				r.RepositoryFormat.GetRepositoryFirewallEnabled(plan),
+				r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(plan),
+				respDiags,
+			)
+			if err != nil {
+				return stateModel
+			}
 		}
 	}
 	stateModel = r.RepositoryFormat.UpateStateWithCapability(stateModel, auditAndQuarantineCapability)

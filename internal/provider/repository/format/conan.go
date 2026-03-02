@@ -239,6 +239,19 @@ func (f *ConanRepositoryFormatProxy) UpateStateWithCapability(state any, capabil
 	return stateModel
 }
 
+// Returns true only if `repository_firewall` block is supplied
+func (f *ConanRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositoryConanProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryConanProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *ConanRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositoryConanProxyModel
 	// During import, state might be nil, so we create a new model

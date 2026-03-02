@@ -230,6 +230,18 @@ func (f *RRepositoryFormatProxy) UpateStateWithCapability(state any, capability 
 	return stateModel
 }
 
+func (f *RRepositoryFormatProxy) HasFirewallConfig(state any) bool {
+	var stateModel model.RepositorRProxyModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositorRProxyModel)
+	}
+	if stateModel.FirewallAuditAndQuarantine != nil {
+		return true
+	}
+	return false
+}
+
 func (f *RRepositoryFormatProxy) GetRepositoryFirewallEnabled(state any) bool {
 	var stateModel model.RepositorRProxyModel
 	// During import, state might be nil, so we create a new model
