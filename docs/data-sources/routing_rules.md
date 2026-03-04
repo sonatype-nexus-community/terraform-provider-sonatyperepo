@@ -13,8 +13,7 @@ Use this data source to get all routing rules
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_routing_rules" "all" {
-}
+data "sonatyperepo_routing_rules" "all" {}
 
 output "routing_rules" {
   value = data.sonatyperepo_routing_rules.all.routing_rules

@@ -13,8 +13,7 @@ Use this data source to get all Blob Stores
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_blob_stores" "all" {
-}
+data "sonatyperepo_blob_stores" "all" {}
 
 output "blob_stores" {
   value = data.sonatyperepo_blob_stores.all.blob_stores

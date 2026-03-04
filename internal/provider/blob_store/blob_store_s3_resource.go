@@ -118,7 +118,7 @@ func blobStoreS3ResourceSchema(version int64) tfschema.Schema {
 	}
 
 	resourceSchema := tfschema.Schema{
-		Description: "Use this data source to get a specific S3 Blob Store by it's name",
+		Description: "Use this resource to create a S3 Blob Store",
 		Version:     version,
 		Attributes: map[string]tfschema.Attribute{
 			"name": schema.ResourceRequiredString("Name of the Blob Store"),

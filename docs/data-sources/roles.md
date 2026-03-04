@@ -13,8 +13,7 @@ Use this data source to get all Roles
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_roles" "all" {
-}
+data "sonatyperepo_roles" "all" {}
 
 output "roles" {
   value = data.sonatyperepo_roles.all.roles

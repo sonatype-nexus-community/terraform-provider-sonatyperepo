@@ -13,8 +13,7 @@ Use this data source to get all Tasks
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_tasks" "all" {
-}
+data "sonatyperepo_tasks" "all" {}
 
 output "tasks" {
   value = data.sonatyperepo_tasks.all.tasks
