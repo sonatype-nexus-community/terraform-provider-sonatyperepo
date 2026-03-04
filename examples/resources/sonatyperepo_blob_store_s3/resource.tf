@@ -9,7 +9,7 @@ resource "sonatyperepo_blob_store_s3" "s3_blob_store" {
 
   bucket_security = {
     access_key_id     = "AKIAIOSFODNN7EXAMPLE"
-    secret_access_key = "[REDACTED:secret]"
+    secret_access_key = "SECRET_EXAMPLE"
   }
 
   encryption = {
