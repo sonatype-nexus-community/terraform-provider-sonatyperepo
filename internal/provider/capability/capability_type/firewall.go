@@ -57,7 +57,7 @@ func (f *FirewallAuditQuarantineCapability) DoCreateRequest(plan any, apiClient 
 	planModel := (plan).(model.CapabilityFirewallAuditQuarantineModel)
 
 	// Call API to Create
-	return apiClient.CapabilitiesAPI.Create3(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return apiClient.CapabilitiesAPI.Create4(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
 func (f *FirewallAuditQuarantineCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {

@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
-	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.0
+	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.1
 	github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/text v0.35.0

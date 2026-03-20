@@ -46,7 +46,7 @@ func NewCapabilityHelper(client *v3.APIClient, capabilityType common.CapabilityT
 
 // FindCapabilityByRepositoryId searches for a firewall audit and quarantine capability for a given repository
 func (ch *CapabilityHelper) FindCapabilityByRepositoryId(ctx context.Context, repositoryId string, diags *diag.Diagnostics) *v3.CapabilityDTO {
-	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List(ctx).Execute()
+	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List1(ctx).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error listing capabilities to find capability for repository %s", repositoryId),
@@ -104,7 +104,7 @@ func (ch *CapabilityHelper) CreateCapability(ctx context.Context, repositoryId s
 		Properties: &properties,
 	}
 
-	apiResponse, httpResponse, err := ch.client.CapabilitiesAPI.Create3(ctx).Body(capabilityRequest).Execute()
+	apiResponse, httpResponse, err := ch.client.CapabilitiesAPI.Create4(ctx).Body(capabilityRequest).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s capability for repository %s", ch.capabilityType.String(), repositoryId),
@@ -159,7 +159,7 @@ func (ch *CapabilityHelper) DeleteCapability(ctx context.Context, capabilityId s
 
 // attemptDeleteCapability performs a single delete attempt and returns true if successful
 func (ch *CapabilityHelper) attemptDeleteCapability(ctx context.Context, capabilityId string, attempt int, maxAttempts int, diags *diag.Diagnostics) bool {
-	httpResponse, err := ch.client.CapabilitiesAPI.Delete4(ctx, capabilityId).Execute()
+	httpResponse, err := ch.client.CapabilitiesAPI.Delete5(ctx, capabilityId).Execute()
 
 	// Trap 500 Error as they occur when Repo is not in appropriate internal state
 	if httpResponse.StatusCode == http.StatusInternalServerError {

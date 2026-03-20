@@ -172,12 +172,6 @@ func (m *RepositoryTerraformHostedModel) FromApiModel(api sonatyperepo.Terraform
 	// Storage
 	m.Storage.MapFromApi(&api.Storage)
 
-	// Component
-	if api.Component != nil {
-		m.Component = &RepositoryComponentModel{}
-		m.Component.MapFromApi(api.Component)
-	}
-
 	// Terraform Specific
 	m.TerraformSigning.FromApiModel(&api.TerraformSigning)
 }

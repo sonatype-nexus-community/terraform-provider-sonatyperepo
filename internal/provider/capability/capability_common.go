@@ -280,7 +280,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	success := false
 
 	for !success && attempts < maxAttempts {
-		httpResponse, err := c.Client.CapabilitiesAPI.Delete4(ctx, capabilityId.ValueString()).Execute()
+		httpResponse, err := c.Client.CapabilitiesAPI.Delete5(ctx, capabilityId.ValueString()).Execute()
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
@@ -329,7 +329,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	ctx = c.AuthContext(ctx)
 
 	// Make API Request
-	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List(ctx).Execute()
+	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List1(ctx).Execute()
 
 	// Handle any errors
 	if err != nil {

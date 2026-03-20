@@ -37,11 +37,11 @@ type aptSpecificHostedModel struct {
 }
 
 func (m *aptSpecificHostedModel) MapFromApi(api *sonatyperepo.AptHostedRepositoriesAttributes) {
-	m.Distribution = types.StringPointerValue(api.Distribution)
+	m.Distribution = types.StringValue(api.Distribution)
 }
 
 func (m *aptSpecificHostedModel) MapToApi(api *sonatyperepo.AptHostedRepositoriesAttributes) {
-	api.Distribution = m.Distribution.ValueStringPointer()
+	api.Distribution = m.Distribution.ValueString()
 }
 
 type aptSigningModel struct {
@@ -100,7 +100,7 @@ func (m *RepositoryAptHostedModel) ToApiCreateModel() sonatyperepo.AptHostedRepo
 		Cleanup: &sonatyperepo.CleanupPolicyAttributes{
 			PolicyNames: make([]string, 0),
 		},
-		Apt:        *sonatyperepo.NewAptHostedRepositoriesAttributes(),
+		Apt:        *sonatyperepo.NewAptHostedRepositoriesAttributes(m.Apt.Distribution.String()),
 		AptSigning: *sonatyperepo.NewAptSigningRepositoriesAttributes(),
 	}
 	m.Storage.MapToApi(&apiModel.Storage)

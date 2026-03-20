@@ -54,7 +54,7 @@ func (f *WebhookRepositoryCapability) DoCreateRequest(plan any, apiClient *v3.AP
 	planModel := (plan).(model.WebhookRepositoryCapabilityModel)
 
 	// Call API to Create
-	return apiClient.CapabilitiesAPI.Create3(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return apiClient.CapabilitiesAPI.Create4(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
 func (f *WebhookRepositoryCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {

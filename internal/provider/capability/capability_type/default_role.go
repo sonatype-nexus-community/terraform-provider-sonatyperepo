@@ -56,7 +56,7 @@ func (f *DefaultRoleCapability) DoCreateRequest(plan any, apiClient *v3.APIClien
 	planModel := (plan).(model.CapabilityCoreDefaultRoleModel)
 
 	// Call API to Create
-	return apiClient.CapabilitiesAPI.Create3(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return apiClient.CapabilitiesAPI.Create4(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
 func (f *DefaultRoleCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {

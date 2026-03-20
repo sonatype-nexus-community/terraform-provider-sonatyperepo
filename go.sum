@@ -356,6 +356,8 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.89.2 h1:Znk/t
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.89.2/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.0 h1:A8/KFVlWwlmz1HVoAjGvv2BlXceTUxGJxWi0162+jOo=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.0/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.1 h1:DNIwVeGyp7dPMtTyA7/ZwcH3MIxOgM6kSTKjn7l3KiA=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.90.1/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4 h1:U7pdTOdwl/RS+5Zvz7mUE01XrS5ntONzxD9OmN6ymJw=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
