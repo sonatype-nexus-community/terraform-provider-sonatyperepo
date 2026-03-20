@@ -13,8 +13,7 @@ Use this data source to get all Users
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_users" "all" {
-}
+data "sonatyperepo_users" "all" {}
 
 output "users" {
   value = data.sonatyperepo_users.all.users

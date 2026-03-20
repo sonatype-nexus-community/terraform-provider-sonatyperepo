@@ -1,13 +1,13 @@
 // Simplest example
-resource "sonatyperepo_blob_store_group" "test_group" {
-  name        = "test-group"
+resource "sonatyperepo_blob_store_group" "example_group" {
+  name        = "example-group"
   fill_policy = "roundRobin"
   members     = ["test1", "test2"]
 }
 
 // Depend on Blob Store resources
-resource "sonatyperepo_blob_store_group" "test_group" {
-  name        = "test-group"
+resource "sonatyperepo_blob_store_group" "example_group" {
+  name        = "example-group"
   fill_policy = "writeToFirst"
   members = [
     sonatyperepo_blob_store.test1.name,

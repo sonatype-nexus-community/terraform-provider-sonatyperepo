@@ -13,8 +13,7 @@ Use this data source to get all Privileges
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_privileges" "all" {
-}
+data "sonatyperepo_privileges" "all" {}
 
 output "privileges" {
   value = data.sonatyperepo_privileges.all.privileges

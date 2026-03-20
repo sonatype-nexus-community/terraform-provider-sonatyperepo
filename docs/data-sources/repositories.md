@@ -13,8 +13,7 @@ Use this data source to get all Repositories
 ## Example Usage
 
 ```terraform
-data "sonatyperepo_repositories" "all" {
-}
+data "sonatyperepo_repositories" "all" {}
 
 output "repositories" {
   value = data.sonatyperepo_repositories.all.repositories
