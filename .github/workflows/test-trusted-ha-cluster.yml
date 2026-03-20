@@ -42,7 +42,8 @@ jobs:
             fail-fast: false
             matrix:
                 nxrm:
-                    - '3.89.1-02' # LATEST
+                    - '3.89.1-02'
+                    - '3.90.1-01' # LATEST
                 terraform:
                     - '1.14.*' # Latest
         steps:
