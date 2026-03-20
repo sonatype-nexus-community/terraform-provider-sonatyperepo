@@ -26,21 +26,19 @@ env:
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
     INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
 
-# Testing only needs permissions to read the repository contents.
-permissions:
-    contents: read
-
 jobs:
     sonatype:
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
         name: Sonatype Scan
         runs-on: ubuntu-latest
+        permissions:
+          contents: read
         steps:
-            - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                 ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
               
-            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                 go-version-file: 'go.mod'
                 cache: true
@@ -68,6 +66,8 @@ jobs:
             - sonatype
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        permissions:
+          contents: read
         strategy:
             fail-fast: false
             matrix:
@@ -101,7 +101,7 @@ jobs:
                 echo "TF_SAFE_VERSION=$TF_SAFE_VERSION" >> "$GITHUB_ENV"
                 
             - name: Checkout Source
-              uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                 ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
 
@@ -165,13 +165,13 @@ jobs:
                     fi
                   done
 
-            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
                   cache: true
 
             - name: Setup Terraform
-              uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+              uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
               with:
                   terraform_version: ${{ matrix.terraform }}
                   terraform_wrapper: false

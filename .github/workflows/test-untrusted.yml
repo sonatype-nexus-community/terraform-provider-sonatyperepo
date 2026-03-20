@@ -16,44 +16,41 @@ on:
             - 'CHANGELOG.md'
             - 'README.md'
 
-# Testing only needs permissions to read the repository contents.
-permissions:
-    contents: read
-
 jobs:
     # Ensure project builds before running testing matrix
     build:
         name: Build
         runs-on: ubuntu-latest
         timeout-minutes: 5
+        permissions:
+            contents: read
         steps:
-            - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
-            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
                   cache: true
             - run: go mod download
             - run: go build -v .
             - name: Run linters
-              uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9 # v8
+              uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
               with:
                   version: latest
 
     docs-check:
         name: Ensure Docs are Generated
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
-            - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v5
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               
-            - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
                   cache: true
 
-            - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-            #   with:
-            #     terraform_version: 1.14
-            #     terraform_wrapper: false
+            - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
             
             - name: Generate Docs
               run: go generate ./...
