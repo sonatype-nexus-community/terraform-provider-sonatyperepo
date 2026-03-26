@@ -41,7 +41,7 @@ var hostedTestData = []repositoryHostedTestData{
 		},
 		RepoFormat:                    common.REPO_FORMAT_APT,
 		SchemaFunc:                    repositoryHostedResourceConfig,
-		SupportsProprietaryComponents: false,
+		SupportsProprietaryComponents: true,
 		// Import is broken for APT Hosted as aptSigning is never returned by API
 		// See: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/290
 		TestImport: false,
