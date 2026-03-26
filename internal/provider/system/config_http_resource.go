@@ -65,7 +65,7 @@ func (r *systemConfigHttpResource) Schema(_ context.Context, _ resource.SchemaRe
 	authenticationAttribute := schema.ResourceOptionalSingleNestedAttribute(
 		"Proxy Authentication settings",
 		map[string]tfschema.Attribute{
-			"enabled":     schema.ResourceOptionalBoolWithDefault("Proxy Authentication enabled", false),
+			"enabled":     schema.ResourceRequiredBool("Proxy Authentication enabled"),
 			"username":    schema.ResourceOptionalString("Proxy Username"),
 			"password":    schema.ResourceOptionalSensitiveStringWithLengthAtLeast("Proxy Password", 1),
 			"ntlm_host":   schema.ResourceOptionalStringWithDefault("Proxy NTLM Host", ""),
