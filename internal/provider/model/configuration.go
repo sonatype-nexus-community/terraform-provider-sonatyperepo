@@ -370,8 +370,8 @@ func (m *ProxySettingsModel) MapToApi(api *sonatyperepo.ProxySettingsXo) {
 	api.Enabled = m.Enabled.ValueBool()
 	api.Host = m.Host.ValueString()
 	api.Port = util.Int32ToString(m.Port.ValueInt32())
-	api.AuthInfo = *sonatyperepo.NewAuthSettingsXoWithDefaults()
 	if m.Authentication != nil {
+		api.AuthInfo = *sonatyperepo.NewAuthSettingsXoWithDefaults()
 		m.Authentication.MapToApi(&api.AuthInfo)
 	}
 }
@@ -387,7 +387,9 @@ func (m *ProxySettingsModel) MapFromApi(api *sonatyperepo.ProxySettingsXo) {
 	if m.Authentication == nil {
 		m.Authentication = &ProxyAuthSettingsModel{}
 	}
-	m.Authentication.MapFromApi(&api.AuthInfo)
+	if api.AuthInfo.GetUsername() != "" {
+		m.Authentication.MapFromApi(&api.AuthInfo)
+	}
 }
 
 // HttpConfigurationModel
@@ -427,10 +429,16 @@ func (m *HttpConfigurationModel) MapToApi(api *sonatyperepo.HttpSettingsXo) {
 
 func (m *HttpConfigurationModel) MapFromApi(api *sonatyperepo.HttpSettingsXo) {
 	if api.HttpProxy.IsSet() && api.HttpProxy.Get() != nil {
-		m.HttpProxy.MapFromApi(api.HttpProxy.Get())
+		httpProxy := api.HttpProxy.Get()
+		if httpProxy.GetHost() != "" && httpProxy.GetPort() != "" {
+			m.HttpProxy.MapFromApi(api.HttpProxy.Get())
+		}
 	}
 	if api.HttpsProxy.IsSet() && api.HttpsProxy.Get() != nil {
-		m.HttpsProxy.MapFromApi(api.HttpsProxy.Get())
+		httpsProxy := api.HttpsProxy.Get()
+		if httpsProxy.GetHost() != "" && httpsProxy.GetPort() != "" {
+			m.HttpsProxy.MapFromApi(api.HttpsProxy.Get())
+		}
 	}
 	m.NonProxyHosts = make([]types.String, len(api.NonProxyHosts))
 	for i, host := range api.NonProxyHosts {

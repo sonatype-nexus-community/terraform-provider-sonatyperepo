@@ -41,7 +41,7 @@ var hostedTestData = []repositoryHostedTestData{
 		},
 		RepoFormat:                    common.REPO_FORMAT_APT,
 		SchemaFunc:                    repositoryHostedResourceConfig,
-		SupportsProprietaryComponents: false,
+		SupportsProprietaryComponents: true,
 		// Import is broken for APT Hosted as aptSigning is never returned by API
 		// See: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/290
 		TestImport: false,
@@ -207,47 +207,56 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 			repoName := strings.ToLower(fmt.Sprintf(hostedNameFString, td.RepoFormat, randomString))
 
 			var steps []resource.TestStep
+
 			// 1. Create with minimal configuration relying on defaults
+			step1Checks := append(
+				// Test Case Specific Checks
+				td.CheckFunc(resourceName),
+
+				// Generic Checks
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+				resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+			)
+			if td.SupportsProprietaryComponents {
+				step1Checks = append(step1Checks, resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"))
+			} else {
+				step1Checks = append(step1Checks, resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
+			}
 			steps = append(steps, resource.TestStep{
 				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, false, td.SupportsProprietaryComponents),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					append(
-						// Test Case Specific Checks
-						td.CheckFunc(resourceName),
-
-						// Generic Checks
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					)...,
-				),
+				Check:  resource.ComposeAggregateTestCheckFunc(step1Checks...),
 			})
+
 			// 2. Update to use full config
+			step2Checks := append(
+				// Test Case Specific Checks
+				td.CheckFunc(resourceName),
+
+				// Generic Checks
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+				resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+			)
+			if td.SupportsProprietaryComponents {
+				step2Checks = append(step2Checks, resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, fmt.Sprintf("%t", td.SupportsProprietaryComponents)))
+			} else {
+				step2Checks = append(step2Checks, resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
+			}
+
 			steps = append(steps, resource.TestStep{
 				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, true, td.SupportsProprietaryComponents),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					append(
-						// Test Case Specific Checks
-						td.CheckFunc(resourceName),
-
-						// Generic Checks
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-						resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
-						resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, fmt.Sprintf("%t", td.SupportsProprietaryComponents)),
-					)...,
-				),
+				Check:  resource.ComposeAggregateTestCheckFunc(step2Checks...),
 			})
 			// 3. Import and verify no changes
 			if td.TestImport {
@@ -397,7 +406,8 @@ func formatSpecificHostedDefaultConfig(repoFormat string) string {
 }
 
 func repositoryHostedResourceFullConfig(resourceType, repoName, formatSpecificConfig string, supportsProprietaryComponents bool) string {
-	return fmt.Sprintf(utils_test.ProviderConfig+`
+	if supportsProprietaryComponents {
+		return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "repo" {
   name = "%s"
   online = true
@@ -412,6 +422,21 @@ resource "%s" "repo" {
   %s
  }
 `, resourceType, repoName, supportsProprietaryComponents, formatSpecificConfig)
+	} else {
+		return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+	write_policy = "ALLOW_ONCE"
+  }
+  %s
+ }
+`, resourceType, repoName, formatSpecificConfig)
+	}
+
 }
 
 func repositoryHostedResourceMinimalConfigWithDefaults(resourceType, repoName, formatSpecificConfig string) string {

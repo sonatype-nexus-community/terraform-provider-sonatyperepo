@@ -4,6 +4,12 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* `sonatyperepo_repository_terraform_hosted` has had `component` property removed as Terraform Hosted repositories do not support Proprietary Components
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.90.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-90-0-release-notes.html) [GH-295]
+
 ## 1.3.0 March 02, 2026
 
 ENHANCEMENTS:

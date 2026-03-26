@@ -56,7 +56,7 @@ func (f *HealthcheckCapability) DoCreateRequest(plan any, apiClient *v3.APIClien
 	planModel := (plan).(model.CapabilityHealthcheckModel)
 
 	// Call API to Create
-	return apiClient.CapabilitiesAPI.Create3(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return apiClient.CapabilitiesAPI.Create4(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
 }
 
 func (f *HealthcheckCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {

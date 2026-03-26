@@ -152,7 +152,7 @@ func (m *repositoryTerraformHostedSpecificModel) MapToApi(api *sonatyperepo.Terr
 // Terraform Hosted
 // ----------------------------------------
 type RepositoryTerraformHostedModel struct {
-	RepositoryHostedModel
+	RepositoryHostedWithoutComponentModel
 	TerraformSigning repositoryTerraformHostedSpecificModel `tfsdk:"terraform_signing"`
 }
 
@@ -171,12 +171,6 @@ func (m *RepositoryTerraformHostedModel) FromApiModel(api sonatyperepo.Terraform
 
 	// Storage
 	m.Storage.MapFromApi(&api.Storage)
-
-	// Component
-	if api.Component != nil {
-		m.Component = &RepositoryComponentModel{}
-		m.Component.MapFromApi(api.Component)
-	}
 
 	// Terraform Specific
 	m.TerraformSigning.FromApiModel(&api.TerraformSigning)
