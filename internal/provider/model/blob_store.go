@@ -266,6 +266,9 @@ func (m *BlobStoreS3Encryption) MapFromApi(api *v3.S3BlobStoreApiEncryption) {
 }
 
 func (m *BlobStoreS3Encryption) MapToApi(api *v3.S3BlobStoreApiEncryption) {
+	if api == nil {
+		api = v3.NewS3BlobStoreApiEncryptionWithDefaults()
+	}
 	api.EncryptionType = m.EncryptionType.ValueStringPointer()
 	api.EncryptionKey = m.EncryptionKey.ValueStringPointer()
 }
