@@ -22,10 +22,14 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-type RepositoryHostedModel struct {
+type RepositoryHostedWithoutComponentModel struct {
 	BasicRepositoryModel
-	Storage   repositoryStorageModelHosted `tfsdk:"storage"`
-	Component *RepositoryComponentModel    `tfsdk:"component"`
+	Storage repositoryStorageModelHosted `tfsdk:"storage"`
+}
+
+type RepositoryHostedModel struct {
+	RepositoryHostedWithoutComponentModel
+	Component *RepositoryComponentModel `tfsdk:"component"`
 }
 
 // repositoryStorageModelHosted

@@ -188,9 +188,7 @@ func (f *TerraformRepositoryFormatHosted) DoImportRequest(repositoryName string,
 }
 
 func (f *TerraformRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, terraformHostedSchemaAttributes())
-	return additionalAttributes
+	return terraformHostedSchemaAttributes()
 }
 
 func (f *TerraformRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
