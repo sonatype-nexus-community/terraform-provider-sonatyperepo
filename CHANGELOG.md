@@ -4,7 +4,7 @@
 
 _TBC_
 
-## 1.340 March 27, 2026
+## 1.4.0 March 27, 2026
 
 ENHANCEMENTS:
 * `sonatyperepo_repository_terraform_hosted` has had `component` property removed as Terraform Hosted repositories do not support Proprietary Components
