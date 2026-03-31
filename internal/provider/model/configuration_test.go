@@ -7,7 +7,7 @@ import (
       "github.com/hashicorp/terraform-plugin-framework/types"
       sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
-func TestIqConnectionModelMapToApi_NexusTrustStoreEnabled(t *testing.T) {
+func TestIqConnectionModelMapToApiNexusTrustStoreEnabled(t *testing.T) {
       m := model.IqConnectionModel{
               Enabled:                types.BoolValue(true),
               Url:                    types.StringValue("https://nexus-iq.example.com"),
