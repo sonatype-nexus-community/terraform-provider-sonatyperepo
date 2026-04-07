@@ -17,6 +17,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
@@ -39,7 +41,8 @@ type SecuritySslTruststoreModel struct {
 
 func (m *SecuritySslTruststoreModel) MapFromApi(api *sonatyperepo.ApiCertificate) {
 	m.Id = types.StringPointerValue(api.Id)
-	m.Pem = types.StringPointerValue(api.Pem)
+	// Normalise the PEM
+	m.Pem = types.StringValue(strings.TrimRight(*api.Pem, "\n") + "\n")
 	m.Fingerprint = types.StringPointerValue(api.Fingerprint)
 	m.SerialNumber = types.StringPointerValue(api.SerialNumber)
 	m.SubjectCommonName = types.StringPointerValue(api.SubjectCommonName)

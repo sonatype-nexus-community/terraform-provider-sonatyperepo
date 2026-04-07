@@ -20,15 +20,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -40,8 +42,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &securitySslTruststoreResource{}
-	_ resource.ResourceWithImportState = &securitySslTruststoreResource{}
+	_        resource.Resource                = &securitySslTruststoreResource{}
+	_        resource.ResourceWithImportState = &securitySslTruststoreResource{}
+	pemRegex                                  = regexp.MustCompile(`-----END CERTIFICATE-----\r?\n$`)
 )
 
 // securitySslTruststoreResource is the resource implementation.
@@ -64,10 +67,14 @@ func (r *securitySslTruststoreResource) Schema(_ context.Context, _ resource.Sch
 	resp.Schema = tfschema.Schema{
 		Description: "Manage SSL certificates in the Nexus truststore.",
 		Attributes: map[string]tfschema.Attribute{
-			"pem": schema.ResourceRequiredStringWithPlanModifier(
-				"PEM-encoded certificate to add to the truststore",
-				[]planmodifier.String{stringplanmodifier.RequiresReplace()},
-			),
+			"pem": func() tfschema.StringAttribute {
+				attr := schema.ResourceRequiredStringWithValidators(
+					"PEM-encoded certificate to add to the truststore",
+					stringvalidator.RegexMatches(pemRegex, "PEM data not in expected format - only a single newline character at the end is permissible."),
+				)
+				attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplace())
+				return attr
+			}(),
 			"id":                          schema.ResourceComputedString("Certificate ID"),
 			"fingerprint":                 schema.ResourceComputedString("SHA-1 fingerprint of the certificate"),
 			"serial_number":               schema.ResourceComputedString("Serial number of the certificate"),
@@ -99,13 +106,12 @@ func (r *securitySslTruststoreResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	// Normalize the PEM value to ensure consistent format
+	pemValue := plan.Pem.ValueString()
+	pemValue = strings.TrimRight(pemValue, "\n") + "\n"
+	plan.Pem = types.StringValue(pemValue)
 
-	apiResponse, httpResponse, err := r.Client.SecurityCertificatesAPI.AddCertificate(ctx).Body(plan.Pem.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Client.SecurityCertificatesAPI.AddCertificate(r.AuthContext(ctx)).Body(pemValue).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusForbidden {
@@ -190,8 +196,32 @@ func (r *securitySslTruststoreResource) Read(ctx context.Context, req resource.R
 	}
 }
 
-func (r *securitySslTruststoreResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
-	// No-op: pem has RequiresReplace, so Terraform will never call Update.
+func (r *securitySslTruststoreResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan model.SecuritySslTruststoreModel
+	var state model.SecuritySslTruststoreModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// PEM is immutable - compare normalized values
+	planPem := strings.TrimRight(plan.Pem.ValueString(), "\n") + "\n"
+	statePem := strings.TrimRight(state.Pem.ValueString(), "\n") + "\n"
+
+	if planPem != statePem {
+		resp.Diagnostics.AddError(
+			"PEM Cannot Be Changed",
+			"The PEM certificate cannot be updated. Please delete this resource and create a new one with the different certificate.",
+		)
+		return
+	}
+
+	// No actual changes needed, just update last_updated and normalize PEM
+	state.Pem = types.StringValue(planPem)
+	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
