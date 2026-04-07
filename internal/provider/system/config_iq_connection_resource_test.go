@@ -85,6 +85,22 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
 				),
 			},
+			// Test that nexus_trust_store_enabled is applied
+			{
+			Config: systemIqConnectionWithTrustStoreConfig(randomString, true),
+			    Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+			"nexus_trust_store_enabled", "true"),
+			    ),
+			},
+			// Verify it can be set back to false
+			{
+			    Config: systemIqConnectionWithTrustStoreConfig(randomString, false),
+			    Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+			"nexus_trust_store_enabled", "false"),
+			    ),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -120,3 +136,19 @@ resource "%s" "iq" {
 }
 `, resourceTypeSysIqConnection, randomString, showIqLink)
 }
+
+func systemIqConnectionWithTrustStoreConfig(randomString string, nexusTrustStoreEnabled bool) string {
+        return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "iq" {
+  authentication_method     = "USER"
+  enabled                   = false
+  fail_open_mode_enabled    = false
+  nexus_trust_store_enabled = %t
+  url                       = "https://%s.somewhere.tld"
+  username                  = "user"
+  password                  = "token"
+  show_iq_server_link       = false
+}
+`, resourceTypeSysIqConnection, nexusTrustStoreEnabled, randomString)
+}
+

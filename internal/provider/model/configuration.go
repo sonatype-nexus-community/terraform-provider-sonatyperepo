@@ -146,6 +146,7 @@ func (m *IqConnectionModel) MapToApi(api *sonatyperepo.IqConnectionXo) {
 	api.Properties = m.Properties.ValueStringPointer()
 	api.ShowLink = m.ShowIQServerLink.ValueBoolPointer()
 	api.FailOpenModeEnabled = m.FailOpenModeEnabled.ValueBoolPointer()
+	api.UseTrustStoreForUrl = m.NexusTrustStoreEnabled.ValueBoolPointer()
 }
 
 // LdapServerModel
