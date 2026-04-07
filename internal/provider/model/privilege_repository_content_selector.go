@@ -40,6 +40,7 @@ func (p *PrivilegeRepositoryContentSelectorModel) FromApiModel(api sonatyperepo.
 	p.Format = types.StringPointerValue(api.Format)
 	p.Repository = types.StringPointerValue(api.Repository)
 	p.ContentSelector = types.StringPointerValue(api.ContentSelector)
+	p.Type = types.StringValue(api.Type)
 }
 
 func (p *PrivilegeRepositoryContentSelectorModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeRepositoryContentSelectorRequest {
