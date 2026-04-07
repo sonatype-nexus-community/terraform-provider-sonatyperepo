@@ -201,3 +201,47 @@ func (m *RepositoryTerraformHostedModel) ToApiCreateModel() sonatyperepo.Terrafo
 func (m *RepositoryTerraformHostedModel) ToApiUpdateModel() sonatyperepo.TerraformHostedRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
+
+// Group Terraform
+// --------------------------------------------
+type RepositoryTerraformGroupModel struct {
+	RepositoryGroupModel
+	Terraform repositoryTerraformProxySpecificModel `tfsdk:"terraform"`
+}
+
+func (m *RepositoryTerraformGroupModel) FromApiModel(api sonatyperepo.TerraformGroupApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+
+	// Storage
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Group Attributes
+	m.Group.MapFromApi(&api.Group)
+
+	// Terraform Specific
+	m.Terraform.FromApiModel(&api.Terraform)
+}
+
+func (m *RepositoryTerraformGroupModel) ToApiCreateModel() sonatyperepo.TerraformGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.TerraformGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+
+	// Group
+	m.Group.MapToApi(&apiModel.Group)
+
+	// Terraform Specific
+	apiModel.Terraform = &sonatyperepo.TerraformAttributes{}
+	m.Terraform.MapToApi(apiModel.Terraform)
+
+	return apiModel
+}
+
+func (m *RepositoryTerraformGroupModel) ToApiUpdateModel() sonatyperepo.TerraformGroupRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}

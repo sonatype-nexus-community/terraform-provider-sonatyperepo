@@ -37,3 +37,11 @@ func NewRepositoryTerraformHostedResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_HOSTED,
 	}
 }
+
+// NewRepositoryTerraformGroupResource is a helper function to simplify the provider implementation.
+func NewRepositoryTerraformGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.TerraformRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

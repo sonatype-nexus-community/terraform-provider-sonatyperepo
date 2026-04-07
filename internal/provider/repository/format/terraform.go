@@ -46,6 +46,10 @@ type TerraformRepositoryFormatHosted struct {
 	TerraformRepositoryFormat
 }
 
+type TerraformRepositoryFormatGroup struct {
+	TerraformRepositoryFormat
+}
+
 // --------------------------------------------
 // Generic Terraform Format Functions
 // --------------------------------------------
@@ -215,6 +219,87 @@ func (f *TerraformRepositoryFormatHosted) UpdateStateFromApi(state, api any) any
 	}
 	stateModel.FromApiModel((api).(sonatyperepo.TerraformHostedRepositoryApiRequest))
 	return stateModel
+}
+
+// --------------------------------------------
+// GROUP Terraform Format Functions
+// --------------------------------------------
+func (f *TerraformRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryTerraformGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateTerraformGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
+
+func (f *TerraformRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryTerraformGroupModel)
+
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetTerraformGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	return *apiResponse, httpResponse, err
+}
+
+func (f *TerraformRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryTerraformGroupModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryTerraformGroupModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.UpdateTerraformGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+// DoImportRequest implements the import functionality for Maven Group repositories
+func (f *TerraformRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetTerraformGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+func (f *TerraformRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	additionalAttributes := commonGroupSchemaAttributes(false)
+	maps.Copy(additionalAttributes, terraformProxySchemaAttributes())
+	return additionalAttributes
+}
+
+func (f *TerraformRepositoryFormatGroup) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryTerraformGroupModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *TerraformRepositoryFormatGroup) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryTerraformGroupModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *TerraformRepositoryFormatGroup) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryTerraformGroupModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *TerraformRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+	var stateModel model.RepositoryTerraformGroupModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryTerraformGroupModel)
+	}
+	stateModel.FromApiModel((api).(sonatyperepo.TerraformGroupApiRepository))
+	return stateModel
+}
+
+func (f *TerraformRepositoryFormatGroup) AdditionalSchemaDescription() string {
+	return `
+
+**NOTE:** This resource requires against Sonatype Nexus Repository 3.90.x or later - see 
+[here](https://help.sonatype.com/en/sonatype-nexus-repository-3-90-0-release-notes.html)
+for details.`
 }
 
 // --------------------------------------------

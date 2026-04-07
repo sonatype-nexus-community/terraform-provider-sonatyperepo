@@ -316,6 +316,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryRubyGemsHostedDeprecated,
 		repository.NewRepositoryRubyGemsProxyDeprecated,
 		repository.NewRepositorySwiftProxyResource,
+		repository.NewRepositoryTerraformGroupResource,
 		repository.NewRepositoryTerraformHostedResource,
 		repository.NewRepositoryTerraformProxyResource,
 		repository.NewRepositoryYumGroupResource,

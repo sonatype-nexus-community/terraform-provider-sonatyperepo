@@ -5,6 +5,7 @@
 _TBC_
 
 ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_repository_terraform_group` [GH-372]
 * **New Resource:** `sonatyperepo_security_ssl_truststore` [GH-362] - thanks to @HazemElAgaty
 * The following resources now support `terraform import` [GH-368]:
   * `sonatyperepo_privilege_application` 
