@@ -33,6 +33,7 @@ func (p *PrivilegeWildcardModel) FromApiModel(api sonatyperepo.ApiPrivilegeReque
 	p.Description = types.StringPointerValue(api.Description)
 	p.ReadOnly = types.BoolPointerValue(api.ReadOnly)
 	p.Pattern = types.StringPointerValue(api.Pattern)
+	p.Type = types.StringValue(api.Type)
 }
 
 func (p *PrivilegeWildcardModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeWildcardRequest {
