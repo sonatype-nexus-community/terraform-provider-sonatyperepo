@@ -64,6 +64,15 @@ func TestAccPrivilegeApplicationResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+			// ImportState testing
+			{
+				ResourceName:                         resourceNamePrivilegeApplication,
+				ImportStateId:                        fmt.Sprintf("test-priv-app-%s", randomString),
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
 		},
 	})
 }

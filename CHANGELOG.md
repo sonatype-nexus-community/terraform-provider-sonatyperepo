@@ -7,7 +7,11 @@ _TBC_
 ENHANCEMENTS:
 * **New Resource:** `sonatyperepo_security_ssl_truststore` [GH-362] - thanks to @HazemElAgaty
 * The following resources now support `terraform import` [GH-368]:
+  * `sonatyperepo_privilege_application` 
+  * `sonatyperepo_privilege_repository_admin`
   * `sonatyperepo_privilege_repository_content_selector`
+  * `sonatyperepo_privilege_repository_view`
+  * `sonatyperepo_privilege_wildcard`
 
 BUG FIXES:
 * Setting `nexus_trust_store_enabled` on `sonatyperepo_system_iq_connection` resource had no effect [GH-365] - thanks to @gcroucher

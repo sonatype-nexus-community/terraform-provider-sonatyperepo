@@ -61,6 +61,16 @@ func (pt *RepositoryViewPrivilegeType) DoUpdateRequest(plan any, state any, apiC
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryViewPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality
+func (f *RepositoryViewPrivilegeType) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.SecurityManagementPrivilegesAPI.GetPrivilege(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (pt *RepositoryViewPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return schemaAttributesActionFormatRepository()
 }
@@ -82,7 +92,10 @@ func (pt *RepositoryViewPrivilegeType) UpdatePlanForState(plan any) any {
 }
 
 func (pt *RepositoryViewPrivilegeType) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.PrivilegeRepositoryViewModel)
+	var stateModel model.PrivilegeRepositoryViewModel
+	if state != nil {
+		stateModel = (state).(model.PrivilegeRepositoryViewModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.ApiPrivilegeRequest))
 	return stateModel
 }

@@ -26,18 +26,6 @@ type PrivilegeRepositoryViewModel struct {
 	PrivilegeRepositoryAdminModel
 }
 
-// func (p *PrivilegeRepositoryViewModel) FromApiModel(api sonatyperepo.ApiPrivilegeRequest) {
-// 	p.Name = types.StringValue(api.Name)
-// 	p.Description = types.StringPointerValue(api.Description)
-// 	p.ReadOnly = types.BoolPointerValue(api.ReadOnly)
-// 	p.Actions = make([]types.String, 0)
-// 	for _, a := range api.Actions {
-// 		p.Actions = append(p.Actions, types.StringValue(a))
-// 	}
-// 	p.Format = types.StringPointerValue(api.Format)
-// 	p.Repository = types.StringPointerValue(api.Repository)
-// }
-
 func (p *PrivilegeRepositoryViewModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeRepositoryViewRequest {
 	apiModel := sonatyperepo.NewApiPrivilegeRepositoryViewRequest()
 	p.MapToApi(apiModel)

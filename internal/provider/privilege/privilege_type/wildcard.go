@@ -63,6 +63,16 @@ func (pt *WildcardPrivilegeType) DoUpdateRequest(plan any, state any, apiClient 
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateWildcardPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality
+func (f *WildcardPrivilegeType) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.SecurityManagementPrivilegesAPI.GetPrivilege(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (pt *WildcardPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"pattern": schema.ResourceRequiredString("A colon separated list of parts that create a permission string."),
@@ -86,7 +96,10 @@ func (pt *WildcardPrivilegeType) UpdatePlanForState(plan any) any {
 }
 
 func (pt *WildcardPrivilegeType) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.PrivilegeWildcardModel)
+	var stateModel model.PrivilegeWildcardModel
+	if state != nil {
+		stateModel = (state).(model.PrivilegeWildcardModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.ApiPrivilegeRequest))
 	return stateModel
 }

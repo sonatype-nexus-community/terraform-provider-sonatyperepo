@@ -41,3 +41,14 @@ resource "sonatyperepo_privilege_repository_admin" "repo_admin_privilege" {
 - `last_updated` (String) String representation of the date/time the resource was last changed
 - `read_only` (Boolean) Indicates whether the privilege can be changed. External values supplied to this will be ignored by the system.
 - `type` (String) The type of privilege, each type covers different portions of the system. External values supplied to this will be ignored by the system.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing Privilege of type Repository Admin
+
+# Example
+terraform import sonatyperepo_privilege_repository_admin.priv PRIVILEGE-NAME
+```

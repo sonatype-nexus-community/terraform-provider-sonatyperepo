@@ -39,7 +39,7 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with minimal configuration
 			{
-				Config: buildRepositortyContentSelectorResourceMinimal(randomString),
+				Config: buildPrivilegeWildcardResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal configuration
 					resource.TestCheckResourceAttr(resourceNameRepositoryContentSelector, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
@@ -51,7 +51,7 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 			},
 			// Update to full configuration
 			{
-				Config: buildRepositoryContentSelectorResourceComplete(randomString),
+				Config: buildPrivilegeWildcardResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full configuration
 					resource.TestCheckResourceAttr(resourceNameRepositoryContentSelector, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
@@ -62,6 +62,15 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+			// ImportState testing
+			{
+				ResourceName:                         resourceNameRepositoryContentSelector,
+				ImportStateId:                        fmt.Sprintf("test-priv-wildcard-%s", randomString),
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
 		},
 	})
 }

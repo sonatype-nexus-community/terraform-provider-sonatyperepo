@@ -66,6 +66,16 @@ func (pt *ApplicationPrivilegeType) DoUpdateRequest(plan any, state any, apiClie
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateApplicationPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Hosted repositories
+func (f *ApplicationPrivilegeType) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.SecurityManagementPrivilegesAPI.GetPrivilege(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (pt *ApplicationPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"domain": schema.ResourceRequiredString("The domain (i.e. 'blobstores', 'capabilities' or even '*' for all) that this privilege is granting access to. Note that creating new privileges with a domain is only necessary when using plugins that define their own domain(s)."),
@@ -97,7 +107,10 @@ func (pt *ApplicationPrivilegeType) UpdatePlanForState(plan any) any {
 }
 
 func (pt *ApplicationPrivilegeType) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.PrivilegeApplicationModel)
+	var stateModel model.PrivilegeApplicationModel
+	if state != nil {
+		stateModel = (state).(model.PrivilegeApplicationModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.ApiPrivilegeRequest))
 	return stateModel
 }
