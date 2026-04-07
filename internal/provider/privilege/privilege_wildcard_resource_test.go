@@ -28,7 +28,7 @@ import (
 
 var (
 	resourceTypePrivilegeWildcard = "sonatyperepo_privilege_wildcard"
-	resourceNamePrivilegeWildcard = fmt.Sprintf("%s.p", resourceTypeRepositoryContentSelector)
+	resourceNamePrivilegeWildcard = fmt.Sprintf("%s.p", resourceTypePrivilegeWildcard)
 )
 
 func TestAccPrivilegeWildcardResource(t *testing.T) {
