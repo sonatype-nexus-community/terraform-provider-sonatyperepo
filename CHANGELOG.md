@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.5.0 April 07, 2026
+
 ENHANCEMENTS:
 * **New Resource:** `sonatyperepo_repository_terraform_group` [GH-372]
 * **New Resource:** `sonatyperepo_security_ssl_truststore` [GH-362] - thanks to @HazemElAgaty
@@ -16,7 +18,6 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * Setting `nexus_trust_store_enabled` on `sonatyperepo_system_iq_connection` resource had no effect [GH-365] - thanks to @gcroucher
-
 
 ## 1.4.0 March 27, 2026
 
