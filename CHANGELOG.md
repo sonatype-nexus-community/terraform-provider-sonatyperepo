@@ -4,6 +4,9 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* **New Resource:** `sonatyperepo_security_ssl_truststore` [GH-362] - thanks to @HazemElAgaty
+
 ## 1.4.0 March 27, 2026
 
 ENHANCEMENTS:
