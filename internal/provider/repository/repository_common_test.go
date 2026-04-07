@@ -85,6 +85,8 @@ const (
 	RES_ATTR_MAVEN_LAYOUT_POLICY                              string = "maven.layout_policy"
 	RES_ATTR_MAVEN_VERSION_POLICY                             string = "maven.version_policy"
 	RES_ATTR_NUGET_PROXY_NUGET_VERSION                        string = "nuget_proxy.nuget_version"
+	RES_ATTR_TERRAFORM_REQUIRE_AUTH                           string = "terraform.require_authentication"
+	RES_ATTR_TERRAFORM_SIGNING_SIGNING_KEY                    string = "terraform_signing.signing_key"
 
 	TEST_DATA_APT_PROXY_REMOTE_URL          string = "https://archive.ubuntu.com/ubuntu/"
 	TEST_DATA_CARGO_PROXY_REMOTE_URL        string = "https://index.crates.io/"
