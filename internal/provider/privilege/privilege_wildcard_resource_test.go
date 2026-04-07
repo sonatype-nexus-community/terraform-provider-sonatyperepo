@@ -42,11 +42,11 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 				Config: buildPrivilegeWildcardResourceMinimal(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify minimal configuration
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "description", "some description"),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "read_only", "false"),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "pattern", "test-pattern"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "description", "some description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "pattern", "test-pattern"),
 				),
 			},
 			// Update to full configuration
@@ -54,17 +54,17 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 				Config: buildPrivilegeWildcardResourceComplete(randomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify full configuration
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "description", "updated description"),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "read_only", "false"),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
-					resource.TestCheckResourceAttr(resourceTypePrivilegeWildcard, "pattern", "updated-pattern-*"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "name", fmt.Sprintf("test-priv-wildcard-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "read_only", "false"),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "type", privilege_type.TypeWildcard.String()),
+					resource.TestCheckResourceAttr(resourceNamePrivilegeWildcard, "pattern", "updated-pattern-*"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
 			// ImportState testing
 			{
-				ResourceName:                         resourceTypePrivilegeWildcard,
+				ResourceName:                         resourceNamePrivilegeWildcard,
 				ImportStateId:                        fmt.Sprintf("test-priv-wildcard-%s", randomString),
 				ImportState:                          true,
 				ImportStateVerify:                    true,
