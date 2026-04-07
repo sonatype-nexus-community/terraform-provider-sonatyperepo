@@ -61,6 +61,16 @@ func (pt *RepositoryAdminPrivilegeType) DoUpdateRequest(plan any, state any, api
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryAdminPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Hosted repositories
+func (f *RepositoryAdminPrivilegeType) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.SecurityManagementPrivilegesAPI.GetPrivilege(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (pt *RepositoryAdminPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	return schemaAttributesActionFormatRepository()
 }
@@ -82,7 +92,10 @@ func (pt *RepositoryAdminPrivilegeType) UpdatePlanForState(plan any) any {
 }
 
 func (pt *RepositoryAdminPrivilegeType) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.PrivilegeRepositoryAdminModel)
+	var stateModel model.PrivilegeRepositoryAdminModel
+	if state != nil {
+		stateModel = (state).(model.PrivilegeRepositoryAdminModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.ApiPrivilegeRequest))
 	return stateModel
 }

@@ -39,6 +39,7 @@ func (p *PrivilegeApplicationModel) FromApiModel(api sonatyperepo.ApiPrivilegeRe
 	for _, a := range api.Actions {
 		p.Actions = append(p.Actions, types.StringValue(a))
 	}
+	p.Type = types.StringValue(api.Type)
 }
 
 func (p *PrivilegeApplicationModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeApplicationRequest {

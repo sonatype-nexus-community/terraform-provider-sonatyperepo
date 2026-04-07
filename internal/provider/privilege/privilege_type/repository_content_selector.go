@@ -63,6 +63,16 @@ func (pt *RepositoryContentSelectorPrivilegeType) DoUpdateRequest(plan any, stat
 	return apiClient.SecurityManagementPrivilegesAPI.UpdateRepositoryContentSelectorPrivilege(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiCreateModel()).Execute()
 }
 
+// DoImportRequest implements the import functionality for APT Hosted repositories
+func (f *RepositoryContentSelectorPrivilegeType) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.SecurityManagementPrivilegesAPI.GetPrivilege(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
 func (pt *RepositoryContentSelectorPrivilegeType) PrivilegeTypeSchemaAttributes() map[string]tfschema.Attribute {
 	attributes := schemaAttributesActionFormatRepository()
 	attributes["content_selector"] = schema.ResourceRequiredString("The name of a content selector that will be used to grant access to content via this privilege.")
@@ -86,7 +96,10 @@ func (pt *RepositoryContentSelectorPrivilegeType) UpdatePlanForState(plan any) a
 }
 
 func (pt *RepositoryContentSelectorPrivilegeType) UpdateStateFromApi(state any, api any) any {
-	stateModel := (state).(model.PrivilegeRepositoryContentSelectorModel)
+	var stateModel model.PrivilegeRepositoryContentSelectorModel
+	if state != nil {
+		stateModel = (state).(model.PrivilegeRepositoryContentSelectorModel)
+	}
 	stateModel.FromApiModel((api).(sonatyperepo.ApiPrivilegeRequest))
 	return stateModel
 }

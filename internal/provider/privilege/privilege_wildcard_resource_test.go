@@ -62,6 +62,15 @@ func TestAccPrivilegeWildcardResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+			// ImportState testing
+			{
+				ResourceName:                         resourceNamePrivilegeWildcard,
+				ImportStateId:                        fmt.Sprintf("test-priv-wildcard-%s", randomString),
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
 		},
 	})
 }

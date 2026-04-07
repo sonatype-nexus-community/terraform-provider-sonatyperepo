@@ -66,6 +66,15 @@ func TestAccPrivilegeRepositoryAdminResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+			// ImportState testing
+			{
+				ResourceName:                         resourceNamePrivilegeRepoAdmin,
+				ImportStateId:                        fmt.Sprintf("test-priv-repo-admin-%s", randomString),
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
 		},
 	})
 }

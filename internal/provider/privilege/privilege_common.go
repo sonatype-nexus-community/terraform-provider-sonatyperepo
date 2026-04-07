@@ -274,6 +274,49 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
+// ImportState imports the resource by name.
+func (r *privilegeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// The import ID is the Privilege name
+	privilegeName := req.ID
+
+	if privilegeName == "" {
+		resp.Diagnostics.AddError("Invalid Import ID", "Import ID cannot be empty.")
+		return
+	}
+
+	// Call format-specific import request to fetch repository data from API
+	apiResponse, httpResponse, err := r.PrivilegeType.DoImportRequest(privilegeName, r.Client, r.AuthContext(ctx))
+
+	// Handle errors
+	if err != nil {
+		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Privilege '%s' not found", privilegeName),
+				fmt.Sprintf("The %s privilege '%s' does not exist or you do not have permission to access it.",
+					r.PrivilegeTypeType.String(), privilegeName),
+			)
+		} else {
+			errors.HandleAPIError(
+				fmt.Sprintf("Error importing %s %s privilege", privilegeName, r.PrivilegeTypeType.String()),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
+		}
+		return
+	}
+
+	// UpdateStateFromApi expects an empty instance of the proper model type and returns a populated one
+	// Pass nil as the first parameter - UpdateStateFromApi will create the proper model type
+	stateModel := r.PrivilegeType.UpdateStateFromApi(nil, apiResponse)
+
+	// Update plan for state (sets last_updated timestamp)
+	stateModel = r.PrivilegeType.UpdatePlanForState(stateModel)
+
+	// Set the state
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
+}
+
 func basePrivilegeSchema(privilegeTypeType privilege_type.PrivilegeTypeType) tfschema.Schema {
 	return tfschema.Schema{
 		Description: fmt.Sprintf("Manage a Privilege of type %s", privilegeTypeType.String()),

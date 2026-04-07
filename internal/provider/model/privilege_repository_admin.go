@@ -41,6 +41,7 @@ func (p *PrivilegeRepositoryAdminModel) FromApiModel(api sonatyperepo.ApiPrivile
 	}
 	p.Format = types.StringPointerValue(api.Format)
 	p.Repository = types.StringPointerValue(api.Repository)
+	p.Type = types.StringValue(api.Type)
 }
 
 func (p *PrivilegeRepositoryAdminModel) ToApiCreateModel() sonatyperepo.ApiPrivilegeRepositoryAdminRequest {
