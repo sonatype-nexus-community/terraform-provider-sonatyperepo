@@ -19,6 +19,7 @@ package repository_test
 import (
 	"fmt"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -43,6 +44,18 @@ func TestAccRepositoryTerraformResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Only works on NXRM 3.90.0 or later
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 89,
+				Patch: 99,
+			})
+		},
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
