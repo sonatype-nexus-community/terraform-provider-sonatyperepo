@@ -161,7 +161,13 @@ func (m *BlobStoreS3Model) MapFromApi(api *v3.S3BlobStoreApiModel) {
 	m.Name = types.StringValue(api.Name)
 	m.Type = types.StringValue(common.BLOB_STORE_TYPE_S3)
 	if api.SoftQuota != nil {
+		if m.SoftQuota == nil {
+			m.SoftQuota = &BlobStoreSoftQuota{}
+		}
 		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	if m.BucketConfiguration == nil {
+		m.BucketConfiguration = &BlobStoreS3BucketConfigurationModel{}
 	}
 	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
 }
@@ -170,6 +176,7 @@ func (m *BlobStoreS3Model) MapToApi(api *v3.S3BlobStoreApiModel) {
 	api.Name = m.Name.ValueString()
 	// api.Type = m.Type.ValueStringPointer()
 	if m.SoftQuota != nil {
+		api.SoftQuota = v3.NewBlobStoreApiSoftQuotaWithDefaults()
 		m.SoftQuota.MapToApi(api.SoftQuota)
 	}
 	m.BucketConfiguration.MapToApi(&api.BucketConfiguration)
@@ -195,12 +202,21 @@ type BlobStoreS3BucketConfigurationModel = BlobStoreS3BucketConfigurationModelV1
 func (m *BlobStoreS3BucketConfigurationModel) MapFromApi(api *v3.S3BlobStoreApiBucketConfiguration) {
 	m.Bucket.MapFromApi(&api.Bucket)
 	if api.Encryption != nil {
+		if m.Encryption == nil {
+			m.Encryption = &BlobStoreS3Encryption{}
+		}
 		m.Encryption.MapFromApi(api.Encryption)
 	}
 	if api.BucketSecurity != nil {
+		if m.BucketSecurity == nil {
+			m.BucketSecurity = &BlobStoreS3BucketSecurityModel{}
+		}
 		m.BucketSecurity.MapFromApi(api.BucketSecurity)
 	}
 	if api.AdvancedBucketConnection != nil {
+		if m.AdvancedBucketConnection == nil {
+			m.AdvancedBucketConnection = &BlobStoreS3AdvancedBucketConnectionModel{}
+		}
 		m.AdvancedBucketConnection.MapFromApi(api.AdvancedBucketConnection)
 	}
 	if api.PreSignedUrlEnabled == nil {

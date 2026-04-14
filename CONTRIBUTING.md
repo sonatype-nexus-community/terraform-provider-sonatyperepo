@@ -34,7 +34,13 @@ To run Integration Tests locally, set the following 3 environment variables and 
 It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
 
 Some Acceptance Tests rely on AWS or GCP credentials to be run and be successful (in Sonatype Nexus Repository). These are disabled by default and can be enabled by setting the following environment variables:
+
 - `TF_ACC_S3_BLOB_STORE=1` to enable S3 blob store tests
+  The following additional environment variables are required to authenticate with AWS:
+
+  - `TF_ACC_AWS_ACCESS_KEY_ID`
+  - `TF_ACC_AWS_ACCESS_SECRET_KEY`
+
 - `TF_ACC_GCP_BLOB_STORE=1` to enable GCP blob store tests
 
 ## Standardised Development Patterns

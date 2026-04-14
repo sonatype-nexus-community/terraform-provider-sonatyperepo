@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -343,6 +344,12 @@ func (r *blobStoreS3Resource) Delete(ctx context.Context, req resource.DeleteReq
 
 	// Delete API Call
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)
+}
+
+// This allows users to import existing S3 Blob Stores into Terraform state.
+func (r *blobStoreS3Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Use the Blob Store Name as the import identifier
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
 
 // UpgradeState handles state migration from version 0 to version 1
