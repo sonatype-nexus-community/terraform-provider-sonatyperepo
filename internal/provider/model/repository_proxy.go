@@ -62,8 +62,8 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 		return
 	}
 
-	m.AutoBlock = types.BoolValue(api.AutoBlock)
-	m.Blocked = types.BoolValue(api.Blocked)
+	m.AutoBlock = types.BoolPointerValue(api.AutoBlock)
+	m.Blocked = types.BoolPointerValue(api.Blocked)
 
 	// Initialize Connection if it's nil
 	if m.Connection == nil {
@@ -85,8 +85,8 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 }
 
 func (m *repositoryHttpClientModel) MapToApiHttpClientAttributes(api *sonatyperepo.HttpClientAttributes) {
-	api.AutoBlock = m.AutoBlock.ValueBool()
-	api.Blocked = m.Blocked.ValueBool()
+	api.AutoBlock = m.AutoBlock.ValueBoolPointer()
+	api.Blocked = m.Blocked.ValueBoolPointer()
 
 	if m.Connection != nil {
 		api.Connection = &sonatyperepo.HttpClientConnectionAttributes{}
@@ -100,8 +100,8 @@ func (m *repositoryHttpClientModel) MapToApiHttpClientAttributes(api *sonatypere
 }
 
 func (m *repositoryHttpClientModel) MapToApiHttpClientAttributesWithPreemptiveAuth(api *sonatyperepo.HttpClientAttributesWithPreemptiveAuth) {
-	api.AutoBlock = m.AutoBlock.ValueBool()
-	api.Blocked = m.Blocked.ValueBool()
+	api.AutoBlock = m.AutoBlock.ValueBoolPointer()
+	api.Blocked = m.Blocked.ValueBoolPointer()
 
 	if m.Connection != nil {
 		api.Connection = &sonatyperepo.HttpClientConnectionAttributes{}

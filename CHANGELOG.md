@@ -4,6 +4,10 @@
 
 _TBC_
 
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.91.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-91-0-release-notes.html) [GH-379]
+
 ## 1.5.0 April 07, 2026
 
 ENHANCEMENTS:
