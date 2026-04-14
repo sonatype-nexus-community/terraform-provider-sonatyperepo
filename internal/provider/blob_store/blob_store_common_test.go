@@ -21,8 +21,13 @@ import "fmt"
 const (
 	errMessageBlobStoreGroupNoMembers        string = "cannot be empty"
 	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group"
+	errMessageBlobStoreS3ErrorCreating       string = "Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"
 
 	awsRegionEuWest2 string = "eu-west-2"
+
+	testS3NamePresigned       string = "test-s3-presigned-%s"
+	testS3BucketPrefix        string = "prefix-%s"
+	testS3BucketNamePresigned string = "nexus-bucket-presigned-%s"
 
 	RES_ATTR_NAME             string = "name"
 	RES_ATTR_PATH             string = "path"

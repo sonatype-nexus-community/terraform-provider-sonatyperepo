@@ -41,7 +41,7 @@ func TestAccBlobStoreS3ResourceValidation(t *testing.T) {
 			// Test schema validation - will fail at API call without AWS credentials
 			{
 				Config:      buildS3ResourceConfig("test-validation"),
-				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+				ExpectError: regexp.MustCompile(errMessageBlobStoreS3ErrorCreating),
 			},
 		},
 	})
@@ -137,17 +137,17 @@ func TestAccBlobStoreS3ResourcePreSignedUrlValidation(t *testing.T) {
 			// Test with pre_signed_url_enabled = true
 			{
 				Config:      buildS3ResourcePreSignedUrlConfig("test-presigned-true", true),
-				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+				ExpectError: regexp.MustCompile(errMessageBlobStoreS3ErrorCreating),
 			},
 			// Test with pre_signed_url_enabled = false
 			{
 				Config:      buildS3ResourcePreSignedUrlConfig("test-presigned-false", false),
-				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+				ExpectError: regexp.MustCompile(errMessageBlobStoreS3ErrorCreating),
 			},
 			// Test with pre_signed_url_enabled omitted (should default to false)
 			{
 				Config:      buildS3ResourcePreSignedUrlConfigOmitted("test-presigned-default", "rubbish", "invalid"),
-				ExpectError: regexp.MustCompile("Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"),
+				ExpectError: regexp.MustCompile(errMessageBlobStoreS3ErrorCreating),
 			},
 		},
 	})
@@ -170,10 +170,10 @@ func TestAccBlobStoreS3ResourcePreSignedUrlWithCredentials(t *testing.T) {
 			{
 				Config: buildS3ResourcePreSignedUrlCompleteConfig(randomString, awsAccessKeyId, awsAccessSecretKey, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED, "false"),
@@ -186,10 +186,10 @@ func TestAccBlobStoreS3ResourcePreSignedUrlWithCredentials(t *testing.T) {
 			{
 				Config: buildS3ResourcePreSignedUrlCompleteConfig(randomString, awsAccessKeyId, awsAccessSecretKey, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED, "true"),
@@ -202,10 +202,10 @@ func TestAccBlobStoreS3ResourcePreSignedUrlWithCredentials(t *testing.T) {
 			{
 				Config: buildS3ResourcePreSignedUrlCompleteConfig(randomString, awsAccessKeyId, awsAccessSecretKey, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED, "false"),
@@ -244,10 +244,10 @@ func TestAccBlobStoreS3ResourcePreSignedUrlDefault(t *testing.T) {
 			{
 				Config: buildS3ResourcePreSignedUrlCompleteConfigOmitted(randomString, awsAccessKeyId, awsAccessSecretKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED, "false"),
@@ -279,12 +279,12 @@ func TestAccBlobStoreS3ResourceStateUpgradeV0ToV1(t *testing.T) {
 						VersionConstraint: "0.17.0", // Last version without pre_signed_url_enabled
 					},
 				},
-				Config: buildS3ResourcePreSignedUrlConfigOmitted("upgrade-v0-v1", awsAccessKeyId, awsAccessSecretKey),
+				Config: buildS3ResourcePreSignedUrlConfigOmitted(randomString, awsAccessKeyId, awsAccessSecretKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckNoResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED),
@@ -298,12 +298,12 @@ func TestAccBlobStoreS3ResourceStateUpgradeV0ToV1(t *testing.T) {
 				ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 					"sonatyperepo": providerserver.NewProtocol6WithError(provider.New("test")()),
 				},
-				Config: buildS3ResourcePreSignedUrlConfigOmitted("upgrade-v0-v1", awsAccessKeyId, awsAccessSecretKey),
+				Config: buildS3ResourcePreSignedUrlConfigOmitted(randomString, awsAccessKeyId, awsAccessSecretKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf("test-s3-presigned-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_NAME, fmt.Sprintf(testS3NamePresigned, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION, awsRegionEuWest2),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf("nexus-bucket-presigned-%s", randomString)),
-					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf("prefix-%s", randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME, fmt.Sprintf(testS3BucketNamePresigned, randomString)),
+					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX, fmt.Sprintf(testS3BucketPrefix, randomString)),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID, awsAccessKeyId),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY, awsAccessSecretKey),
 					resource.TestCheckResourceAttr(RES_NAME_BLOB_STORE_S3, RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED, "false"),
