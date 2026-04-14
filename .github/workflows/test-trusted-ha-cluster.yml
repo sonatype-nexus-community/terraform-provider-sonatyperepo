@@ -188,6 +188,36 @@ jobs:
                     fi
                   done
 
+            - name: Install & configure nginx load balancer
+              run: |
+                sudo apt-get install -y nginx
+                sudo tee /etc/nginx/sites-available/nxrm-lb > /dev/null <<'EOF'
+                upstream nxrm_cluster {
+                    server localhost:8081;
+                    server localhost:8082;
+                    server localhost:8083;
+                }
+
+                server {
+                    listen 8080;
+
+                    location / {
+                        proxy_pass         http://nxrm_cluster;
+                        proxy_set_header   Host              $host;
+                        proxy_set_header   X-Real-IP         $remote_addr;
+                        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+                        proxy_set_header   X-Forwarded-Proto $scheme;
+                        proxy_read_timeout  300s;
+                        proxy_connect_timeout 30s;
+                        proxy_send_timeout  300s;
+                    }
+                }
+                EOF
+                sudo rm -f /etc/nginx/sites-enabled/default
+                sudo ln -s /etc/nginx/sites-available/nxrm-lb /etc/nginx/sites-enabled/nxrm-lb
+                sudo nginx -t
+                sudo systemctl start nginx
+
             - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
@@ -200,7 +230,7 @@ jobs:
                   terraform_wrapper: false
             - run: go mod download
             - env:
-                  NXRM_SERVER_URL: "http://localhost:8081"
+                  NXRM_SERVER_URL: "http://localhost:8080"
                   NXRM_SERVER_USERNAME: "admin"
                   NXRM_SERVER_PASSWORD: "admin123"
                   NXRM_VERSION: "${{ matrix.nxrm }}"
@@ -230,3 +260,10 @@ jobs:
               with:
                 name: "nexus-node-03.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/node-03/sonatype-work/nexus3/log/nexus.log"
+
+            - name: Store nginx access log
+              if: success() || failure()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              with:
+                name: "nginx-access.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
+                path: "/var/log/nginx/access.log"
