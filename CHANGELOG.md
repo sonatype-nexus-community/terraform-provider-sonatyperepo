@@ -4,6 +4,11 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* Resource `sonatyperepo_blob_store_s3` now supports `terraform import` [GH-374]
+
+BUG FIXES:
+* `softQuota` was never applied for resource `sonatyperepo_blob_store_s3` [GH-381]
 
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.91.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-91-0-release-notes.html) [GH-379]
