@@ -78,11 +78,14 @@ func createDefaultBlobStore(nxrmClient *v3.APIClient, ctx *context.Context) {
 }
 
 func createMavenCentralProxy(nxrmClient *v3.APIClient, ctx *context.Context) {
+	httpClient := v3.NewHttpClientAttributesWithPreemptiveAuth()
+	httpClient.AutoBlock = v3.PtrBool(true)
+	httpClient.Blocked = v3.PtrBool(false)
 	httpResponse, err := nxrmClient.RepositoryManagementAPI.CreateMavenProxyRepository(*ctx).Body(
 		v3.MavenProxyRepositoryApiRequest{
 			Name:       "maven-central",
 			Online:     true,
-			HttpClient: *v3.NewHttpClientAttributesWithPreemptiveAuth(true, false),
+			HttpClient: *httpClient,
 			NegativeCache: v3.NegativeCacheAttributes{
 				Enabled:    true,
 				TimeToLive: 1440,
