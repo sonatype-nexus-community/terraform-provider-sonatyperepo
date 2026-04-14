@@ -193,9 +193,9 @@ jobs:
                 sudo apt-get install -y nginx
                 sudo tee /etc/nginx/sites-available/nxrm-lb > /dev/null <<'EOF'
                 upstream nxrm_cluster {
-                    server localhost:8081;
-                    server localhost:8082;
-                    server localhost:8083;
+                    server localhost:8081 max_fails=0;
+                    server localhost:8082 max_fails=0;
+                    server localhost:8083 max_fails=0;
                 }
 
                 server {
