@@ -6,6 +6,7 @@ _TBC_
 
 ENHANCEMENTS:
 * Resource `sonatyperepo_blob_store_s3` now supports `terraform import` [GH-374]
+* Resource `sonatyperepo_system_config_http` now support `terraform import` [GH-376]
 
 BUG FIXES:
 * `softQuota` was never applied for resource `sonatyperepo_blob_store_s3` [GH-381]

@@ -396,13 +396,13 @@ func (m *ProxySettingsModel) MapFromApi(api *sonatyperepo.ProxySettingsXo) {
 // HttpConfigurationModel
 // ------------------------------------------
 type HttpConfigurationModel struct {
-	HttpProxy     ProxySettingsModel `tfsdk:"http_proxy"`
-	HttpsProxy    ProxySettingsModel `tfsdk:"https_proxy"`
-	NonProxyHosts []types.String     `tfsdk:"non_proxy_hosts"`
-	Retries       types.Int32        `tfsdk:"retries"`
-	Timeout       types.Int32        `tfsdk:"timeout"`
-	UserAgent     types.String       `tfsdk:"user_agent"`
-	LastUpdated   types.String       `tfsdk:"last_updated"`
+	HttpProxy     *ProxySettingsModel `tfsdk:"http_proxy"`
+	HttpsProxy    *ProxySettingsModel `tfsdk:"https_proxy"`
+	NonProxyHosts []types.String      `tfsdk:"non_proxy_hosts"`
+	Retries       types.Int32         `tfsdk:"retries"`
+	Timeout       types.Int32         `tfsdk:"timeout"`
+	UserAgent     types.String        `tfsdk:"user_agent"`
+	LastUpdated   types.String        `tfsdk:"last_updated"`
 }
 
 func (m *HttpConfigurationModel) MapToApi(api *sonatyperepo.HttpSettingsXo) {
@@ -432,12 +432,18 @@ func (m *HttpConfigurationModel) MapFromApi(api *sonatyperepo.HttpSettingsXo) {
 	if api.HttpProxy.IsSet() && api.HttpProxy.Get() != nil {
 		httpProxy := api.HttpProxy.Get()
 		if httpProxy.GetHost() != "" && httpProxy.GetPort() != "" {
+			if m.HttpProxy == nil {
+				m.HttpProxy = &ProxySettingsModel{}
+			}
 			m.HttpProxy.MapFromApi(api.HttpProxy.Get())
 		}
 	}
 	if api.HttpsProxy.IsSet() && api.HttpsProxy.Get() != nil {
 		httpsProxy := api.HttpsProxy.Get()
 		if httpsProxy.GetHost() != "" && httpsProxy.GetPort() != "" {
+			if m.HttpsProxy == nil {
+				m.HttpsProxy = &ProxySettingsModel{}
+			}
 			m.HttpsProxy.MapFromApi(api.HttpsProxy.Get())
 		}
 	}

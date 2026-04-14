@@ -24,6 +24,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -222,6 +223,24 @@ func (r *systemConfigHttpResource) Delete(ctx context.Context, req resource.Dele
 
 	// Remove resource from State
 	resp.State.RemoveResource(ctx)
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *systemConfigHttpResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Since this is a singleton resource (system http configuration),
+	// we don't need to validate the ID - any non-empty string is acceptable
+	if req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Invalid Import ID",
+			"Import ID cannot be empty. Use any non-empty string (e.g., 'system-http-config') to import the system HTTP configuration.",
+		)
+		return
+	}
+
+	// Set the ID to a fixed value since this is a singleton resource
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_updated"), types.StringValue(time.Now().Format(time.RFC850)))...)
+
+	tflog.Info(ctx, fmt.Sprintf("Imported system HTTP configuration with ID: %s", req.ID))
 }
 
 func (r *systemConfigHttpResource) updateHttpSettings(ctx context.Context, plan *model.HttpConfigurationModel, respDiags *diag.Diagnostics, respState *tfsdk.State) {

@@ -81,6 +81,19 @@ func TestAccSystemConfigHttpResource(t *testing.T) {
 					resource.TestCheckResourceAttr(RES_NAME_CONFIG_HTTP, RES_ATTR_USER_AGENT, fmt.Sprintf("test-%s", randomString)),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:                         RES_NAME_CONFIG_HTTP,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_agent",
+				ImportStateVerifyIgnore: []string{
+					"last_updated",
+					"http_proxy.authentication.password",
+					"https_proxy.authentication.password",
+				},
+				ImportStateId: "system-http-config",
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
