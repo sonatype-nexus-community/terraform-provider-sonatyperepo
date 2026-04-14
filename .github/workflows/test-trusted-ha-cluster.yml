@@ -61,6 +61,7 @@ jobs:
               uses: ikalnytskyi/action-setup-postgres@c4dda34aae1c821e3a771b68b73b13af3198a7ee # v8
               with:
                 postgres-version: 17
+                postgres-options: "-c max_connections=500"
             
             - name: Create database
               run: |
