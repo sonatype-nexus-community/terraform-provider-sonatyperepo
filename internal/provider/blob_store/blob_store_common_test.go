@@ -22,6 +22,8 @@ const (
 	errMessageBlobStoreGroupNoMembers        string = "cannot be empty"
 	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group"
 
+	awsRegionEuWest2 string = "eu-west-2"
+
 	RES_ATTR_NAME             string = "name"
 	RES_ATTR_PATH             string = "path"
 	RES_ATTR_SOFT_QUOTA       string = "soft_quota"
@@ -31,8 +33,13 @@ const (
 	RES_ATTR_MEMBERS_COUNT    string = "members.#"
 	RES_ATTR_LAST_UPDATED     string = "last_updated"
 
-	RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED string = "bucket_configuration.pre_signed_url_enabled"
-	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION      string = "bucket_configuration.bucket.region"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION                     string = "bucket_configuration.bucket.region"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME                       string = "bucket_configuration.bucket.name"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX                     string = "bucket_configuration.bucket.prefix"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_EXPIRATION                 string = "bucket_configuration.bucket.expiration"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_KEY_ID     string = "bucket_configuration.bucket_security.access_key_id"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_SECURITY_ACCESS_SECRET_KEY string = "bucket_configuration.bucket_security.secret_access_key"
+	RES_ATTR_S3_BUCKET_CONFIGURATION_PRE_SIGNED_ENABLED                string = "bucket_configuration.pre_signed_url_enabled"
 
 	RES_NAME_FMT string = "%s.test"
 
