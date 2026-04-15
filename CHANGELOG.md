@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.6.0 April 15, 2026
+
 ENHANCEMENTS:
 * Resource `sonatyperepo_blob_store_s3` now supports `terraform import` [GH-374]
 * Resource `sonatyperepo_system_config_http` now support `terraform import` [GH-376]
