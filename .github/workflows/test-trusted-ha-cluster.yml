@@ -65,7 +65,7 @@ jobs:
             - name: Increase PostgreSQL max_connections
               run: |
                 psql -c "ALTER SYSTEM SET max_connections = 600;"
-                sudo systemctl restart postgresql
+                pg_ctl restart -D "$RUNNER_TEMP/pgdata"
               env:
                 PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
 
