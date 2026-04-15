@@ -14,6 +14,7 @@ BUG FIXES:
 
 NOTES:
 * Tested against [Sonatype Nexus Repository Manager 3.91.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-91-0-release-notes.html) [GH-379]
+* **Given the fixes related to Acceptance Testing included in this release we are aware that there can be issues using this Provider against NXRM HA Clusters - this is being tracked in [GH-386]**
 
 ## 1.5.0 April 07, 2026
 
