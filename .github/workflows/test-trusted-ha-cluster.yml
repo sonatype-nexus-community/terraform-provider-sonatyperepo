@@ -61,8 +61,14 @@ jobs:
               uses: ikalnytskyi/action-setup-postgres@c4dda34aae1c821e3a771b68b73b13af3198a7ee # v8
               with:
                 postgres-version: 17
-                postgres-options: "-c max_connections=500"
             
+            - name: Increase PostgreSQL max_connections
+              run: |
+                psql -c "ALTER SYSTEM SET max_connections = 600;"
+                sudo systemctl restart postgresql
+              env:
+                PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
+
             - name: Create database
               run: |
                 psql -c "CREATE USER nexus WITH PASSWORD 'somepassword';"
