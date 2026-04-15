@@ -119,6 +119,7 @@ jobs:
               run: |
                   set +e
                   sleep 20
+                  READY=false
                   for i in {1..5}; do
                     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status")
                     CURL_EXIT=$?
@@ -128,6 +129,7 @@ jobs:
                     if [ "$CURL_EXIT" -eq 0 ]; then
                       if [ "$STATUS" -eq 200 ]; then
                           echo "✅ Received 200 OK from http://localhost:8081/service/rest/v1/status"
+                          READY=true
                           break
                       else
                           echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8081/service/rest/v1/status"
@@ -138,6 +140,10 @@ jobs:
                       sleep 5
                     fi
                   done
+                  if [ "$READY" != "true" ]; then                           
+                    echo "❌ Node 1 failed to become ready after 5 attempts"
+                    exit 1                                                  
+                  fi  
 
             - name: Start Sonatype Nexus Repository Manager (Node 2)
               run: ./nexus start
@@ -147,6 +153,7 @@ jobs:
               run: |
                   set +e
                   sleep 20
+                  READY=false
                   for i in {1..5}; do
                     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8082/service/rest/v1/status")
                     CURL_EXIT=$?
@@ -156,6 +163,7 @@ jobs:
                     if [ "$CURL_EXIT" -eq 0 ]; then
                       if [ "$STATUS" -eq 200 ]; then
                           echo "✅ Received 200 OK from http://localhost:8082/service/rest/v1/status"
+                          READY=true
                           break
                       else
                           echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8082/service/rest/v1/status"
@@ -166,6 +174,10 @@ jobs:
                       sleep 5
                     fi
                   done
+                  if [ "$READY" != "true" ]; then                           
+                    echo "❌ Node 2 failed to become ready after 5 attempts"
+                    exit 1                                                  
+                  fi  
 
             - name: Start Sonatype Nexus Repository Manager (Node 3)
               run: ./nexus start
@@ -175,6 +187,7 @@ jobs:
               run: |
                   set +e
                   sleep 20
+                  READY=false
                   for i in {1..5}; do
                     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8083/service/rest/v1/status")
                     CURL_EXIT=$?
@@ -184,6 +197,7 @@ jobs:
                     if [ "$CURL_EXIT" -eq 0 ]; then
                       if [ "$STATUS" -eq 200 ]; then
                           echo "✅ Received 200 OK from http://localhost:8083/service/rest/v1/status"
+                          READY=true
                           break
                       else
                           echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8083/service/rest/v1/status"
@@ -194,6 +208,10 @@ jobs:
                       sleep 5
                     fi
                   done
+                  if [ "$READY" != "true" ]; then                           
+                    echo "❌ Node 3 failed to become ready after 5 attempts"
+                    exit 1                                                  
+                  fi 
 
             - name: Install & configure nginx load balancer
               run: |
