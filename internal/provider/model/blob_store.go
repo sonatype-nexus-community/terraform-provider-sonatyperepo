@@ -21,6 +21,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/util"
 )
@@ -376,4 +377,61 @@ type BlobStoreGoogleCloudAuthentication struct {
 type BlobStoreGoogleCloudEncryption struct {
 	EncryptionType types.String `tfsdk:"encryption_type"`
 	EncryptionKey  types.String `tfsdk:"encryption_key"`
+}
+
+// BlobStoreAcsModelDS
+// ------------------------------------
+type BlobStoreAcsModelDS struct {
+	Name                types.String                          `tfsdk:"name"`
+	SoftQuota           *BlobStoreSoftQuota                   `tfsdk:"soft_quota"`
+	BucketConfiguration *blobStoreAcsBucketConfigurationModel `tfsdk:"bucket_configuration"`
+}
+
+func (m *BlobStoreAcsModelDS) MapFromApi(api *sonatyperepo.AzureBlobStoreApiModel) {
+	m.Name = types.StringValue(api.Name)
+	m.SoftQuota = nil
+	if api.SoftQuota != nil {
+		m.SoftQuota = &BlobStoreSoftQuota{}
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
+}
+
+// blobStoreAcsBucketConfigurationModel
+// ------------------------------------
+type blobStoreAcsBucketConfigurationModel struct {
+	AccountName    types.String                     `tfsdk:"account_name"`
+	ContainerName  types.String                     `tfsdk:"container_name"`
+	Authentication *blobStoreAcsAuthenticationModel `tfsdk:"authentication"`
+}
+
+func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiBucketConfiguration) {
+	m.AccountName = types.StringValue(api.AccountName)
+	m.ContainerName = types.StringValue(api.ContainerName)
+	m.Authentication = &blobStoreAcsAuthenticationModel{}
+	m.Authentication.MapFromApi(&api.Authentication)
+}
+
+func (m *blobStoreAcsBucketConfigurationModel) MapToApi(api *sonatyperepo.AzureBlobStoreApiBucketConfiguration) {
+	api.AccountName = m.AccountName.ValueString()
+	api.ContainerName = m.ContainerName.ValueString()
+	api.Authentication = *sonatyperepo.NewAzureBlobStoreApiAuthenticationWithDefaults()
+	m.Authentication.MapFromApi(&api.Authentication)
+}
+
+// blobStoreAcsAuthenticationModel
+// ------------------------------------
+type blobStoreAcsAuthenticationModel struct {
+	AuthenticationMethod types.String `tfsdk:"authentication_method"`
+	AccountKey           types.String `tfsdk:"account_key"`
+}
+
+func (m *blobStoreAcsAuthenticationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {
+	m.AuthenticationMethod = types.StringValue(api.AuthenticationMethod)
+	m.AccountKey = types.StringPointerValue(api.AccountKey)
+}
+
+func (m *blobStoreAcsAuthenticationModel) MapToApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {
+	api.AuthenticationMethod = m.AuthenticationMethod.ValueString()
+	api.AccountKey = m.AccountKey.ValueStringPointer()
 }
