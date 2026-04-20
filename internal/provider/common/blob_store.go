@@ -18,9 +18,12 @@ package common
 
 // Blob Store Types.
 const (
-	BLOB_STORE_TYPE_FILE               string = "file"
-	BLOB_STORE_TYPE_S3                 string = "s3"
-	BLOB_STORE_TYPE_GOOGLE_CLOUD       string = "gc_storage"
-	BLOB_STORE_FILL_POLICY_ROUND_ROBIN string = "roundRobin"
-	BLOB_STORE_FILL_POLICY_WRITE_FIRST string = "writeToFirst"
+	BLOB_STORE_ACS_AUTH_METHOD_ACCOUNT_KEY          string = "ACCOUNTKEY"
+	BLOB_STORE_ACS_AUTH_METHOD_ENVIRONMENT_VARIABLE string = "ENVIRONMENTVARIABLE"
+	BLOB_STORE_ACS_AUTH_METHOD_MANAGED_IDENTITY     string = "MANAGEDIDENTITY"
+	BLOB_STORE_TYPE_FILE                            string = "file"
+	BLOB_STORE_TYPE_S3                              string = "s3"
+	BLOB_STORE_TYPE_GOOGLE_CLOUD                    string = "gc_storage"
+	BLOB_STORE_FILL_POLICY_ROUND_ROBIN              string = "roundRobin"
+	BLOB_STORE_FILL_POLICY_WRITE_FIRST              string = "writeToFirst"
 )

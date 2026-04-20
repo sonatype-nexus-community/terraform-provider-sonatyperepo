@@ -377,3 +377,95 @@ type BlobStoreGoogleCloudEncryption struct {
 	EncryptionType types.String `tfsdk:"encryption_type"`
 	EncryptionKey  types.String `tfsdk:"encryption_key"`
 }
+
+// BlobStoreAcsModelDS
+// ------------------------------------
+type BlobStoreAcsModelDS struct {
+	Name                types.String                          `tfsdk:"name"`
+	SoftQuota           *BlobStoreSoftQuota                   `tfsdk:"soft_quota"`
+	BucketConfiguration *blobStoreAcsBucketConfigurationModel `tfsdk:"bucket_configuration"`
+}
+
+func (m *BlobStoreAcsModelDS) MapFromApi(api *v3.AzureBlobStoreApiModel) {
+	m.Name = types.StringValue(api.Name)
+	m.SoftQuota = nil
+	if api.SoftQuota != nil {
+		m.SoftQuota = &BlobStoreSoftQuota{}
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
+}
+
+// BlobStoreAcsModel
+// ------------------------------------
+type BlobStoreAcsModel struct {
+	Name                types.String                          `tfsdk:"name"`
+	SoftQuota           *BlobStoreSoftQuota                   `tfsdk:"soft_quota"`
+	BucketConfiguration *blobStoreAcsBucketConfigurationModel `tfsdk:"bucket_configuration"`
+	LastUpdated         types.String                          `tfsdk:"last_updated"`
+}
+
+func (m *BlobStoreAcsModel) MapFromApi(api *v3.AzureBlobStoreApiModel) {
+	m.Name = types.StringValue(api.Name)
+	m.SoftQuota = nil
+	if api.SoftQuota != nil {
+		m.SoftQuota = &BlobStoreSoftQuota{}
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	if m.BucketConfiguration == nil {
+		m.BucketConfiguration = &blobStoreAcsBucketConfigurationModel{}
+	}
+	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
+}
+
+func (m *BlobStoreAcsModel) MapToApi() *v3.AzureBlobStoreApiModel {
+	api := v3.NewAzureBlobStoreApiModelWithDefaults()
+	api.Name = m.Name.ValueString()
+	if m.SoftQuota != nil {
+		api.SoftQuota = v3.NewBlobStoreApiSoftQuotaWithDefaults()
+		m.SoftQuota.MapToApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapToApi(&api.BucketConfiguration)
+	return api
+}
+
+// blobStoreAcsBucketConfigurationModel
+// ------------------------------------
+type blobStoreAcsBucketConfigurationModel struct {
+	AccountName    types.String                     `tfsdk:"account_name"`
+	ContainerName  types.String                     `tfsdk:"container_name"`
+	Authentication *blobStoreAcsAuthenticationModel `tfsdk:"authentication"`
+}
+
+func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *v3.AzureBlobStoreApiBucketConfiguration) {
+	m.AccountName = types.StringValue(api.AccountName)
+	m.ContainerName = types.StringValue(api.ContainerName)
+	if m.Authentication == nil {
+		m.Authentication = &blobStoreAcsAuthenticationModel{}
+	}
+	m.Authentication.MapFromApi(&api.Authentication)
+}
+
+func (m *blobStoreAcsBucketConfigurationModel) MapToApi(api *v3.AzureBlobStoreApiBucketConfiguration) {
+	api.AccountName = m.AccountName.ValueString()
+	api.ContainerName = m.ContainerName.ValueString()
+	api.Authentication = *v3.NewAzureBlobStoreApiAuthenticationWithDefaults()
+	m.Authentication.MapToApi(&api.Authentication)
+}
+
+// blobStoreAcsAuthenticationModel
+// ------------------------------------
+type blobStoreAcsAuthenticationModel struct {
+	AuthenticationMethod types.String `tfsdk:"authentication_method"`
+	AccountKey           types.String `tfsdk:"account_key"`
+}
+
+func (m *blobStoreAcsAuthenticationModel) MapFromApi(api *v3.AzureBlobStoreApiAuthentication) {
+	m.AuthenticationMethod = types.StringValue(api.AuthenticationMethod)
+	// AccountKey is never returned by API
+}
+
+func (m *blobStoreAcsAuthenticationModel) MapToApi(api *v3.AzureBlobStoreApiAuthentication) {
+	api.AuthenticationMethod = m.AuthenticationMethod.ValueString()
+	api.AccountKey = m.AccountKey.ValueStringPointer()
+}

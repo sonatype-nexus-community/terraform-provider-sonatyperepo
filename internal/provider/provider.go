@@ -241,6 +241,7 @@ func (p *SonatypeRepoProvider) checkVersion(ctx context.Context, ds *common.Sona
 
 func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		blob_store.NewBlobStoreAcsResource,
 		blob_store.NewBlobStoreFileResource,
 		blob_store.NewBlobStoreGroupResource,
 		blob_store.NewBlobStoreS3Resource,
@@ -349,6 +350,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 func (p *SonatypeRepoProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		blob_store.BlobStoresDataSource,
+		blob_store.BlobStoreAcsDataSource,
 		blob_store.BlobStoreFileDataSource,
 		blob_store.BlobStoreGroupDataSource,
 		blob_store.BlobStoreS3DataSource,
