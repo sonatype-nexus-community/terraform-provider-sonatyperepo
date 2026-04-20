@@ -21,7 +21,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/util"
 )
@@ -387,7 +386,7 @@ type BlobStoreAcsModelDS struct {
 	BucketConfiguration *blobStoreAcsBucketConfigurationModel `tfsdk:"bucket_configuration"`
 }
 
-func (m *BlobStoreAcsModelDS) MapFromApi(api *sonatyperepo.AzureBlobStoreApiModel) {
+func (m *BlobStoreAcsModelDS) MapFromApi(api *v3.AzureBlobStoreApiModel) {
 	m.Name = types.StringValue(api.Name)
 	m.SoftQuota = nil
 	if api.SoftQuota != nil {
@@ -406,7 +405,7 @@ type BlobStoreAcsModel struct {
 	LastUpdated         types.String                          `tfsdk:"last_updated"`
 }
 
-func (m *BlobStoreAcsModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiModel) {
+func (m *BlobStoreAcsModel) MapFromApi(api *v3.AzureBlobStoreApiModel) {
 	m.Name = types.StringValue(api.Name)
 	m.SoftQuota = nil
 	if api.SoftQuota != nil {
@@ -419,11 +418,11 @@ func (m *BlobStoreAcsModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiModel)
 	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
 }
 
-func (m *BlobStoreAcsModel) MapToApi() *sonatyperepo.AzureBlobStoreApiModel {
+func (m *BlobStoreAcsModel) MapToApi() *v3.AzureBlobStoreApiModel {
 	api := v3.NewAzureBlobStoreApiModelWithDefaults()
 	api.Name = m.Name.ValueString()
 	if m.SoftQuota != nil {
-		api.SoftQuota = sonatyperepo.NewBlobStoreApiSoftQuotaWithDefaults()
+		api.SoftQuota = v3.NewBlobStoreApiSoftQuotaWithDefaults()
 		m.SoftQuota.MapToApi(api.SoftQuota)
 	}
 	m.BucketConfiguration.MapToApi(&api.BucketConfiguration)
@@ -438,7 +437,7 @@ type blobStoreAcsBucketConfigurationModel struct {
 	Authentication *blobStoreAcsAuthenticationModel `tfsdk:"authentication"`
 }
 
-func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiBucketConfiguration) {
+func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *v3.AzureBlobStoreApiBucketConfiguration) {
 	m.AccountName = types.StringValue(api.AccountName)
 	m.ContainerName = types.StringValue(api.ContainerName)
 	if m.Authentication == nil {
@@ -447,10 +446,10 @@ func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *sonatyperepo.Azur
 	m.Authentication.MapFromApi(&api.Authentication)
 }
 
-func (m *blobStoreAcsBucketConfigurationModel) MapToApi(api *sonatyperepo.AzureBlobStoreApiBucketConfiguration) {
+func (m *blobStoreAcsBucketConfigurationModel) MapToApi(api *v3.AzureBlobStoreApiBucketConfiguration) {
 	api.AccountName = m.AccountName.ValueString()
 	api.ContainerName = m.ContainerName.ValueString()
-	api.Authentication = *sonatyperepo.NewAzureBlobStoreApiAuthenticationWithDefaults()
+	api.Authentication = *v3.NewAzureBlobStoreApiAuthenticationWithDefaults()
 	m.Authentication.MapToApi(&api.Authentication)
 }
 
@@ -461,12 +460,12 @@ type blobStoreAcsAuthenticationModel struct {
 	AccountKey           types.String `tfsdk:"account_key"`
 }
 
-func (m *blobStoreAcsAuthenticationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {
+func (m *blobStoreAcsAuthenticationModel) MapFromApi(api *v3.AzureBlobStoreApiAuthentication) {
 	m.AuthenticationMethod = types.StringValue(api.AuthenticationMethod)
 	// AccountKey is never returned by API
 }
 
-func (m *blobStoreAcsAuthenticationModel) MapToApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {
+func (m *blobStoreAcsAuthenticationModel) MapToApi(api *v3.AzureBlobStoreApiAuthentication) {
 	api.AuthenticationMethod = m.AuthenticationMethod.ValueString()
 	api.AccountKey = m.AccountKey.ValueStringPointer()
 }
