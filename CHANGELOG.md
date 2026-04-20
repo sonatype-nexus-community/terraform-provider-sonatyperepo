@@ -4,6 +4,10 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* **New Data Source:** `sonatyperepo_blob_store_acs` [GH-378]
+* **New Resource:** `sonatyperepo_blob_store_acs` [GH-378]
+
 ## 1.6.0 April 15, 2026
 
 ENHANCEMENTS:
