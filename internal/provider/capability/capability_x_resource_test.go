@@ -547,6 +547,26 @@ resource "%s" "cap" {
 					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrOverrideUrl), "https://some.url.tld"),
 				),
 			},
+			// Update testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "cap" {
+  notes = "example-notes-%s-updated"
+  enabled = true
+  properties = {
+    always_remote = true
+    override_url  = ""
+  }
+}
+`, resourceOutreachManagement, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, resourceAttrId),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrNotes, fmt.Sprintf(notesUpdatedFString, randomString)),
+					resource.TestCheckResourceAttr(resourceName, resourceAttrEnabled, "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrAlwaysRemote), "true"),
+					resource.TestCheckResourceAttr(resourceName, fmt.Sprintf(resourceAttrPropertiesFormat, resourceAttrOverrideUrl), ""),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

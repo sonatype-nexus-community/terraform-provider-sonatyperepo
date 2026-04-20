@@ -78,8 +78,8 @@ func (f *OutreachCapability) PropertiesSchema() map[string]tfschema.Attribute {
 	return map[string]tfschema.Attribute{
 		"override_url": schema.ResourceOptionalStringWithRegex(
 			"Override external URL for downloading new Outreach content.",
-			regexp.MustCompile(`^https?://[^\s]+$`),
-			"Must be a valid http:// or https:// URL",
+			regexp.MustCompile(`^(https?://[^\s]+|)$`),
+			"Must be a valid http:// or https:// URL or empty string.",
 		),
 		"always_remote": schema.ResourceOptionalBoolWithDefault(
 			"Always check the remote server for updates.",
