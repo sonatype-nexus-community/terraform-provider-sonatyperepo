@@ -19,6 +19,7 @@ package blob_store_test
 import "fmt"
 
 const (
+	errMessageBlobStoreAcsErrorCreating      string = "Error creating Azure Cloud Storage Blob Store"
 	errMessageBlobStoreGroupNoMembers        string = "cannot be empty"
 	errMessageBlobStoreGroupIneligibleMember string = "is not eligible to be a group"
 	errMessageBlobStoreS3ErrorCreating       string = "Error creating S3 Blob Store|InvalidAccessKeyId|NoSuchBucket"
@@ -38,6 +39,10 @@ const (
 	RES_ATTR_MEMBERS_COUNT    string = "members.#"
 	RES_ATTR_LAST_UPDATED     string = "last_updated"
 
+	RES_ATTR_ACS_BUCKET_CONFIGURATION_ACCOUNT_NAME                     string = "bucket_configuration.account_name"
+	RES_ATTR_ACS_BUCKET_CONFIGURATION_CONTAINER_NAME                   string = "bucket_configuration.container_name"
+	RES_ATTR_ACS_BUCKET_CONFIGURATION_AUTH_AUTHENTICATION_METHOD       string = "bucket_configuration.authentication.authentication_method"
+	RES_ATTR_ACS_BUCKET_CONFIGURATION_AUTH_ACCOUNT_KEY                 string = "bucket_configuration.authentication.account_key"
 	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_REGION                     string = "bucket_configuration.bucket.region"
 	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_NAME                       string = "bucket_configuration.bucket.name"
 	RES_ATTR_S3_BUCKET_CONFIGURATION_BUCKET_PREFIX                     string = "bucket_configuration.bucket.prefix"
@@ -48,6 +53,7 @@ const (
 
 	RES_NAME_FMT string = "%s.test"
 
+	RES_TYPE_BLOB_STORE_ACS   string = "sonatyperepo_blob_store_acs"
 	RES_TYPE_BLOB_STORE_FILE  string = "sonatyperepo_blob_store_file"
 	RES_TYPE_BLOB_STORE_GCS   string = "sonatyperepo_blob_store_gcs"
 	RES_TYPE_BLOB_STORE_GROUP string = "sonatyperepo_blob_store_group"
@@ -55,6 +61,7 @@ const (
 )
 
 var (
+	RES_NAME_BLOB_STORE_ACS   string = fmt.Sprintf(RES_NAME_FMT, RES_TYPE_BLOB_STORE_ACS)
 	RES_NAME_BLOB_STORE_FILE  string = fmt.Sprintf(RES_NAME_FMT, RES_TYPE_BLOB_STORE_FILE)
 	RES_NAME_BLOB_STORE_GCS   string = fmt.Sprintf(RES_NAME_FMT, RES_TYPE_BLOB_STORE_GCS)
 	RES_NAME_BLOB_STORE_GROUP string = fmt.Sprintf(RES_NAME_FMT, RES_TYPE_BLOB_STORE_GROUP)

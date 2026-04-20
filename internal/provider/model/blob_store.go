@@ -397,6 +397,39 @@ func (m *BlobStoreAcsModelDS) MapFromApi(api *sonatyperepo.AzureBlobStoreApiMode
 	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
 }
 
+// BlobStoreAcsModel
+// ------------------------------------
+type BlobStoreAcsModel struct {
+	Name                types.String                          `tfsdk:"name"`
+	SoftQuota           *BlobStoreSoftQuota                   `tfsdk:"soft_quota"`
+	BucketConfiguration *blobStoreAcsBucketConfigurationModel `tfsdk:"bucket_configuration"`
+	LastUpdated         types.String                          `tfsdk:"last_updated"`
+}
+
+func (m *BlobStoreAcsModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiModel) {
+	m.Name = types.StringValue(api.Name)
+	m.SoftQuota = nil
+	if api.SoftQuota != nil {
+		m.SoftQuota = &BlobStoreSoftQuota{}
+		m.SoftQuota.MapFromApi(api.SoftQuota)
+	}
+	if m.BucketConfiguration == nil {
+		m.BucketConfiguration = &blobStoreAcsBucketConfigurationModel{}
+	}
+	m.BucketConfiguration.MapFromApi(&api.BucketConfiguration)
+}
+
+func (m *BlobStoreAcsModel) MapToApi() *sonatyperepo.AzureBlobStoreApiModel {
+	api := v3.NewAzureBlobStoreApiModelWithDefaults()
+	api.Name = m.Name.ValueString()
+	if m.SoftQuota != nil {
+		api.SoftQuota = sonatyperepo.NewBlobStoreApiSoftQuotaWithDefaults()
+		m.SoftQuota.MapToApi(api.SoftQuota)
+	}
+	m.BucketConfiguration.MapToApi(&api.BucketConfiguration)
+	return api
+}
+
 // blobStoreAcsBucketConfigurationModel
 // ------------------------------------
 type blobStoreAcsBucketConfigurationModel struct {
@@ -408,7 +441,9 @@ type blobStoreAcsBucketConfigurationModel struct {
 func (m *blobStoreAcsBucketConfigurationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiBucketConfiguration) {
 	m.AccountName = types.StringValue(api.AccountName)
 	m.ContainerName = types.StringValue(api.ContainerName)
-	m.Authentication = &blobStoreAcsAuthenticationModel{}
+	if m.Authentication == nil {
+		m.Authentication = &blobStoreAcsAuthenticationModel{}
+	}
 	m.Authentication.MapFromApi(&api.Authentication)
 }
 
@@ -416,7 +451,7 @@ func (m *blobStoreAcsBucketConfigurationModel) MapToApi(api *sonatyperepo.AzureB
 	api.AccountName = m.AccountName.ValueString()
 	api.ContainerName = m.ContainerName.ValueString()
 	api.Authentication = *sonatyperepo.NewAzureBlobStoreApiAuthenticationWithDefaults()
-	m.Authentication.MapFromApi(&api.Authentication)
+	m.Authentication.MapToApi(&api.Authentication)
 }
 
 // blobStoreAcsAuthenticationModel
@@ -428,7 +463,7 @@ type blobStoreAcsAuthenticationModel struct {
 
 func (m *blobStoreAcsAuthenticationModel) MapFromApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {
 	m.AuthenticationMethod = types.StringValue(api.AuthenticationMethod)
-	m.AccountKey = types.StringPointerValue(api.AccountKey)
+	// AccountKey is never returned by API
 }
 
 func (m *blobStoreAcsAuthenticationModel) MapToApi(api *sonatyperepo.AzureBlobStoreApiAuthentication) {

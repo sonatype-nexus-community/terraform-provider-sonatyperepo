@@ -33,15 +33,30 @@ To run Integration Tests locally, set the following 3 environment variables and 
 
 It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
 
-Some Acceptance Tests rely on AWS or GCP credentials to be run and be successful (in Sonatype Nexus Repository). These are disabled by default and can be enabled by setting the following environment variables:
+Some Acceptance Tests rely on AWS or GCP credentials to be run and be successful (in Sonatype Nexus Repository). These are disabled by default and can be enabled by setting the following environment variables per provder.
 
-- `TF_ACC_S3_BLOB_STORE=1` to enable S3 blob store tests
-  The following additional environment variables are required to authenticate with AWS:
+### ACS (Azure Cloud Storage) Tests
 
-  - `TF_ACC_AWS_ACCESS_KEY_ID`
-  - `TF_ACC_AWS_ACCESS_SECRET_KEY`
+Set `TF_ACC_ACS_BLOB_STORE=1` to enable ACS blob store tests.
 
-- `TF_ACC_GCP_BLOB_STORE=1` to enable GCP blob store tests
+The following additional environment variables are required to authenticate with Azure:
+
+- `TF_ACC_AZURE_ACCOUNT_KEY` - Account key found under Access keys for the storage account
+- `TF_ACC_AZURE_STORAGE_ACCOUNT_NAME` - Storage Account Name
+
+### AWS (S3) Tests
+
+Set `TF_ACC_S3_BLOB_STORE=1` to enable S3 blob store tests.
+
+The following additional environment variables are required to authenticate with AWS:
+
+- `TF_ACC_AWS_ACCESS_KEY_ID`
+- `TF_ACC_AWS_ACCESS_SECRET_KEY`
+
+
+### GCS (Google Cloud Storage) Tests
+
+Set `TF_ACC_GCP_BLOB_STORE=1` to enable GCP blob store tests
 
 ## Standardised Development Patterns
 

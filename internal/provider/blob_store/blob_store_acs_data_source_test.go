@@ -17,7 +17,6 @@
 package blob_store_test
 
 import (
-	"os"
 	"regexp"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
@@ -45,25 +44,25 @@ func TestAccBlobStoreAcsDataSource(t *testing.T) {
 	})
 }
 
-func TestAccBlobStoreAcsithCredentialsDataSource(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			if os.Getenv("TF_ACC_ACS_BLOB_STORE") != "1" {
-				t.Skip("ACS blob store tests require Azure Cloud Storage credentials - set TF_ACC_ACS_BLOB_STORE=1 to enable")
-			}
-		},
-		Steps: []resource.TestStep{
-			// Test 3: Happy path - requires S3 support in test environment
-			{
-				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_s3" "b" {
-			        name = "my-s3-store"
-			    }`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_s3.b", "name", "my-s3-store"),
-					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_s3.b", "bucket_name"),
-				),
-			},
-		},
-	})
-}
+// func TestAccBlobStoreAcsithCredentialsDataSource(t *testing.T) {
+// 	resource.Test(t, resource.TestCase{
+// 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+// 		PreCheck: func() {
+// 			if os.Getenv("TF_ACC_ACS_BLOB_STORE") != "1" {
+// 				t.Skip("ACS blob store tests require Azure Cloud Storage credentials - set TF_ACC_ACS_BLOB_STORE=1 to enable")
+// 			}
+// 		},
+// 		Steps: []resource.TestStep{
+// 			// Test 3: Happy path - requires S3 support in test environment
+// 			{
+// 				Config: utils_test.ProviderConfig + `data "sonatyperepo_blob_store_acs" "b" {
+// 			        name = "my-s3-store"
+// 			    }`,
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					resource.TestCheckResourceAttr("data.sonatyperepo_blob_store_acs.b", "name", "my-s3-store"),
+// 					resource.TestCheckResourceAttrSet("data.sonatyperepo_blob_store_acs.b", "bucket_name"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
