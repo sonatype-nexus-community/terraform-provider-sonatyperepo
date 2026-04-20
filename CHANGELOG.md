@@ -8,6 +8,9 @@ ENHANCEMENTS:
 * **New Data Source:** `sonatyperepo_blob_store_acs` [GH-378]
 * **New Resource:** `sonatyperepo_blob_store_acs` [GH-378]
 
+BUG FIXES:
+* Empty `override_url` is now acceptable for `sonatyperepo_capability_outreach_management` [GH-375]
+
 ## 1.6.0 April 15, 2026
 
 ENHANCEMENTS:
