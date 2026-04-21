@@ -67,7 +67,7 @@ type SonatypeRepoProviderModel struct {
 	Username                    types.String `tfsdk:"username"`
 	Password                    types.String `tfsdk:"password"`
 	ApiBasePath                 types.String `tfsdk:"api_base_path"`
-	ClusterStabilisationDelayMs types.Int32  `tfsdk:"cluster_stablisation_delay_ms"`
+	ClusterStabilisationDelayMs types.Int32  `tfsdk:"cluster_stabilisation_delay_ms"`
 	VersionHint                 types.String `tfsdk:"version_hint"`
 }
 
@@ -96,7 +96,7 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 				Optional:            true,
 				MarkdownDescription: "Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
 			},
-			"cluster_stablisation_delay_ms": schema.Int32Attribute{
+			"cluster_stabilisation_delay_ms": schema.Int32Attribute{
 				Optional: true,
 				MarkdownDescription: fmt.Sprintf(`Delay after write requests to allow for multi-node Cluster stabilisation before read requests. Only applies when running against a cluster with >1 active node.
 				
