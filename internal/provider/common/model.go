@@ -31,11 +31,46 @@ import (
 )
 
 type SonatypeDataSourceData struct {
-	Auth         sonatyperepo.BasicAuth
-	BaseUrl      string
-	Client       *sonatyperepo.APIClient
-	NxrmVersion  SystemVersion
-	NxrmWritable bool
+	Auth                          sonatyperepo.BasicAuth
+	BaseUrl                       string
+	Client                        *sonatyperepo.APIClient
+	ClusterSynchronisationDelayMs int32
+	NodeCount                     int32
+	NxrmVersion                   SystemVersion
+	NxrmWritable                  bool
+}
+
+// AuthContext returns a new context with authentication set up for API calls
+func (r *SonatypeDataSourceData) AuthContext(ctx context.Context) context.Context {
+	return WithAuth(ctx, r.Auth)
+}
+
+func (p *SonatypeDataSourceData) ClusterNodeCount(ctx context.Context, respDiags *diag.Diagnostics) {
+	apiResponse, httpResponse, err := p.Client.StatusAPI.GetClusterSystemStatusChecks(p.AuthContext(ctx)).Execute()
+
+	if err != nil {
+		sharederr.HandleAPIError(
+			"Unable to check Sonatype Nexus Repository Cluster Node Count",
+			&err,
+			httpResponse,
+			respDiags,
+		)
+		return
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		sharederr.HandleAPIWarning(
+			"Unexpected response checking Sonatype Nexus Repository Cluster Node Count - assuming a single node",
+			&err,
+			httpResponse,
+			respDiags,
+		)
+		p.NodeCount = 1
+		return
+	}
+
+	p.NodeCount = int32(len(apiResponse))
+	tflog.Info(ctx, fmt.Sprintf("Determined Sonatype Nexus Repository Cluster to have %d Nodes", p.NodeCount))
 }
 
 func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics, versionHint *string) {
