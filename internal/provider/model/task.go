@@ -94,8 +94,10 @@ func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
 	api := v3.NewTaskTemplateXOWithDefaults()
 	api.Name = m.Name.ValueString()
 	api.Enabled = m.Enabled.ValueBool()
-	api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
-	m.Frequency.ToApiModel(&api.Frequency)
+	if m.Frequency != nil {
+		api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+		m.Frequency.ToApiModel(&api.Frequency)
+	}
 	api.AlertEmail = m.AlertEmail.ValueStringPointer()
 	api.NotificationCondition = m.NotificationCondition.ValueString()
 	return api
@@ -105,8 +107,10 @@ func (m *BaseTaskModel) toApiUpdateModel() *v3.UpdateTaskRequest {
 	api := v3.NewUpdateTaskRequestWithDefaults()
 	api.Name = m.Name.ValueString()
 	api.Enabled = m.Enabled.ValueBool()
-	api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
-	m.Frequency.ToApiModel(&api.Frequency)
+	if m.Frequency != nil {
+		api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+		m.Frequency.ToApiModel(&api.Frequency)
+	}
 	api.AlertEmail = m.AlertEmail.ValueStringPointer()
 	api.NotificationCondition = m.NotificationCondition.ValueString()
 	return api

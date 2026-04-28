@@ -73,3 +73,19 @@ Optional:
 Optional:
 
 - `age` (Number) Delete incomplete docker uploads that are older than the specified age in hours.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing 'repository.docker.upload-purge' Task into Terraform State.
+
+# Example
+terraform import sonatyperepo_task_repository_docker_upload_purge.task TASK_ID
+
+# Note: the public REST API does not return `properties` or full `frequency` for
+# a Task, so the next `terraform plan` will show those fields as a diff against
+# your configuration. The first `terraform apply` after import re-asserts them
+# in Nexus to match your HCL.
+```

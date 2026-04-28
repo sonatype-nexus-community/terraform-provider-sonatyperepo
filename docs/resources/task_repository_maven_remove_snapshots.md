@@ -83,3 +83,19 @@ Optional:
 - `minimum_retained` (Number) Minimum number of snapshots to keep for one GAV.
 - `remove_if_released` (Boolean) Delete all snapshots that have a corresponding release.
 - `snapshot_retention_days` (Number) Delete all snapshots older than this, provided we still keep the minimum number specified.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing 'repository.maven.remove-snapshots' Task into Terraform State.
+
+# Example
+terraform import sonatyperepo_task_repository_maven_remove_snapshots.task TASK_ID
+
+# Note: the public REST API does not return `properties` or full `frequency` for
+# a Task, so the next `terraform plan` will show those fields as a diff against
+# your configuration. The first `terraform apply` after import re-asserts them
+# in Nexus to match your HCL.
+```

@@ -78,3 +78,19 @@ Optional:
 - `blobs_older_than` (Number) The number of days a blob should kept before permanent deletion (default 0).
 			
 **Supported in Sonatype Nexus Repository Manager 3.80.0+** - see [here](https://help.sonatype.com/en/sonatype-nexus-repository-3-80-0-release-notes.html#simplified-cleanup-for-s3-blob-stores-with-compact-blob-store-task-and-retention-property).
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing 'blobstore.compact' Task into Terraform State.
+
+# Example
+terraform import sonatyperepo_task_blobstore_compact.task_bc TASK_ID
+
+# Note: the public REST API does not return `properties` or full `frequency` for
+# a Task, so the next `terraform plan` will show those fields as a diff against
+# your configuration. The first `terraform apply` after import re-asserts them
+# in Nexus to match your HCL.
+```

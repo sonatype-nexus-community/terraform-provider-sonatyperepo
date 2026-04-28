@@ -116,7 +116,61 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (t *taskResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// EMPTY
+	// Retrieve values from state
+	stateModel, diags := t.TaskType.StateAsModel(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting state data has errors: %v", resp.Diagnostics.Errors()))
+		return
+	}
+
+	// Extract Task ID from State (matches the reflection used by Delete)
+	taskIdStructField := reflect.Indirect(reflect.ValueOf(stateModel)).FieldByName("Id").Interface()
+	taskId, ok := taskIdStructField.(basetypes.StringValue)
+	if !ok || taskId.IsNull() || taskId.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Failed to determine Task ID to read from State",
+			fmt.Sprintf("%s %s", TASK_ERROR_RESPONSE_PREFIX, taskIdStructField),
+		)
+		return
+	}
+
+	// Request Context
+	ctx = context.WithValue(
+		ctx,
+		sonatyperepo.ContextBasicAuth,
+		t.Auth,
+	)
+
+	// Make API request
+	apiResponse, httpResponse, err := t.Client.TasksAPI.GetTaskById(ctx, taskId.ValueString()).Execute()
+
+	if err != nil {
+		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			errors.HandleAPIWarning(
+				fmt.Sprintf(TASK_ERROR_DID_NOT_EXIST, t.TaskType.Type().String(), "read"),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
+		} else {
+			errors.HandleAPIError(
+				fmt.Sprintf("Error reading %s Task", t.TaskType.Type().String()),
+				&err,
+				httpResponse,
+				&resp.Diagnostics,
+			)
+		}
+		return
+	}
+
+	// The public REST API only returns id/name/type/schedule for a Task; nested
+	// `properties` and `frequency` cannot be refreshed here, so drift on those
+	// fields is not detected. Apply re-asserts the configured values.
+	stateModel = t.TaskType.UpdateStateFromApi(stateModel, *apiResponse)
+	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
 }
 
 func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -127,6 +181,12 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	// Retrieve values from state
 	stateModel, diags := t.TaskType.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
+
+	// Bail out before issuing the API request if Plan/State could not be read,
+	if resp.Diagnostics.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Getting plan or state data has errors: %v", resp.Diagnostics.Errors()))
+		return
+	}
 
 	// Request Context
 	ctx = context.WithValue(

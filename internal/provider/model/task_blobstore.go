@@ -44,18 +44,22 @@ func (p *TaskPropertiesBlobstoreCompact) GetFilteredPropertiesAsMap(version comm
 // ----------------------------------------
 type TaskBlobstoreCompactModel struct {
 	BaseTaskModel
-	Properties TaskPropertiesBlobstoreCompact `tfsdk:"properties"`
+	Properties *TaskPropertiesBlobstoreCompact `tfsdk:"properties"`
 }
 
 func (m *TaskBlobstoreCompactModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_BLOBSTORE_COMPACT.String()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
 func (m *TaskBlobstoreCompactModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
