@@ -19,6 +19,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
@@ -33,7 +34,9 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/system"
 	"terraform-provider-sonatyperepo/internal/provider/task"
 	"terraform-provider-sonatyperepo/internal/provider/user"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -60,11 +63,12 @@ type SonatypeRepoProvider struct {
 
 // SonatypeRepoProviderModel describes the provider data model.
 type SonatypeRepoProviderModel struct {
-	Url         types.String `tfsdk:"url"`
-	Username    types.String `tfsdk:"username"`
-	Password    types.String `tfsdk:"password"`
-	ApiBasePath types.String `tfsdk:"api_base_path"`
-	VersionHint types.String `tfsdk:"version_hint"`
+	Url                         types.String `tfsdk:"url"`
+	Username                    types.String `tfsdk:"username"`
+	Password                    types.String `tfsdk:"password"`
+	ApiBasePath                 types.String `tfsdk:"api_base_path"`
+	ClusterStabilisationDelayMs types.Int32  `tfsdk:"cluster_stabilisation_delay_ms"`
+	VersionHint                 types.String `tfsdk:"version_hint"`
 }
 
 func (p *SonatypeRepoProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -91,6 +95,16 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 			"api_base_path": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Base Path at which the API is present - defaults to `/service/rest`. This only needs to be set if you run Sonatype Nexus Repository at a Base Path that is not `/`.",
+			},
+			"cluster_stabilisation_delay_ms": schema.Int32Attribute{
+				Optional: true,
+				MarkdownDescription: fmt.Sprintf(`Delay after write requests to allow for multi-node Cluster stabilisation before read requests. Only applies when running against a cluster with >1 active node.
+				
+> [!NOTE]
+> Only set this if you are experiencing issues - the default value (%d) should suffice for most scenarios.`, common.DEFAULT_CLUSTER_STABILISATION_MS),
+				Validators: []validator.Int32{
+					int32validator.Between(10, 5000),
+				},
 			},
 			"version_hint": schema.StringAttribute{
 				MarkdownDescription: `You can set this to the full version string (e.g. "3.85.0-03 (PRO)" or "3.80.0-06 (OSS)") of Sonatype Nexus Repository that you are connecting to.
@@ -129,26 +143,32 @@ func (p *SonatypeRepoProvider) Configure(ctx context.Context, req provider.Confi
 		return
 	}
 
-	nxrmUrl, username, password, apiBasePath, versionHint := p.parseConfig(&config)
+	nxrmUrl, username, password, apiBasePath, clusterStabilisationDelayMs, versionHint := p.parseConfig(&config)
 
 	p.validateConfig(resp, nxrmUrl, &config)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ds := p.createClient(nxrmUrl, username, password, apiBasePath)
+	ds := p.createBootstrapClient(nxrmUrl, username, password, apiBasePath, clusterStabilisationDelayMs)
 
+	// Do Checks
 	p.checkVersion(ctx, &ds, resp, versionHint)
+	ds.ClusterNodeCount(ctx, &resp.Diagnostics)
+
+	// Upate to real Client
+	p.createRealClient(nxrmUrl, apiBasePath, &ds)
 
 	resp.DataSourceData = ds
 	resp.ResourceData = ds
 }
 
-func (p *SonatypeRepoProvider) parseConfig(config *SonatypeRepoProviderModel) (string, string, string, string, *string) {
+func (p *SonatypeRepoProvider) parseConfig(config *SonatypeRepoProviderModel) (string, string, string, string, int32, *string) {
 	nxrmUrl := os.Getenv("NXRM_SERVER_URL")
 	username := os.Getenv("NXRM_SERVER_USERNAME")
 	password := os.Getenv("NXRM_SERVER_PASSWORD")
 	apiBasePath := "/service/rest"
+	var clusterStabilisationDelayMs = common.DEFAULT_CLUSTER_STABILISATION_MS
 	var versionHint *string
 
 	if !config.Url.IsNull() && len(config.Url.ValueString()) > 0 {
@@ -167,12 +187,16 @@ func (p *SonatypeRepoProvider) parseConfig(config *SonatypeRepoProviderModel) (s
 		apiBasePath = config.ApiBasePath.ValueString()
 	}
 
+	if !config.ClusterStabilisationDelayMs.IsNull() {
+		clusterStabilisationDelayMs = config.ClusterStabilisationDelayMs.ValueInt32()
+	}
+
 	if !config.VersionHint.IsNull() && len(config.VersionHint.ValueString()) > 0 {
 		v := fmt.Sprintf("Nexus/%s", config.VersionHint.ValueString())
 		versionHint = &v
 	}
 
-	return nxrmUrl, username, password, apiBasePath, versionHint
+	return nxrmUrl, username, password, apiBasePath, clusterStabilisationDelayMs, versionHint
 }
 
 func (p *SonatypeRepoProvider) validateConfig(resp *provider.ConfigureResponse, nxrmUrl string, config *SonatypeRepoProviderModel) {
@@ -209,7 +233,7 @@ func (p *SonatypeRepoProvider) validateConfig(resp *provider.ConfigureResponse, 
 	}
 }
 
-func (p *SonatypeRepoProvider) createClient(nxrmUrl, username, password, apiBasePath string) common.SonatypeDataSourceData {
+func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath string) *sonatyperepo.Configuration {
 	configuration := sonatyperepo.NewConfiguration()
 	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
 	configuration.Servers = []sonatyperepo.ServerConfiguration{
@@ -218,13 +242,64 @@ func (p *SonatypeRepoProvider) createClient(nxrmUrl, username, password, apiBase
 			Description: "Sonatype Nexus Repository Server",
 		},
 	}
+	return configuration
+}
 
+func (p *SonatypeRepoProvider) createBootstrapClient(nxrmUrl, username, password, apiBasePath string, clusterStabilisationDelayMs int32) common.SonatypeDataSourceData {
+	configuration := p.apiClientConfiguration(nxrmUrl, apiBasePath)
 	client := sonatyperepo.NewAPIClient(configuration)
+
 	return common.SonatypeDataSourceData{
-		Auth:    sonatyperepo.BasicAuth{UserName: username, Password: password},
-		BaseUrl: strings.TrimRight(nxrmUrl, "/"),
-		Client:  client,
+		Auth:                          sonatyperepo.BasicAuth{UserName: username, Password: password},
+		BaseUrl:                       strings.TrimRight(nxrmUrl, "/"),
+		Client:                        client,
+		ClusterSynchronisationDelayMs: clusterStabilisationDelayMs,
 	}
+}
+
+func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds *common.SonatypeDataSourceData) {
+	configuration := p.apiClientConfiguration(nxrmUrl, apiBasePath)
+
+	// 1. Initialize the custom transport
+	customTransport := &MiddlewareTransport{
+		Base:                        http.DefaultTransport,
+		ClusterStabilisationDelayMs: ds.ClusterSynchronisationDelayMs,
+		NodeCount:                   ds.NodeCount,
+	}
+
+	// 2. Create an HTTP client using the custom transport
+	configuration.HTTPClient = &http.Client{
+		Transport: customTransport,
+	}
+
+	ds.Client = sonatyperepo.NewAPIClient(configuration)
+}
+
+// MiddlewareTransport wraps an existing RoundTripper to inject custom logic
+type MiddlewareTransport struct {
+	Base                        http.RoundTripper
+	ClusterStabilisationDelayMs int32
+	NodeCount                   int32
+}
+
+func (t *MiddlewareTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// 1. Send the request and wait for the result
+	// The Base transport performs the actual network call
+	resp, err := t.Base.RoundTrip(req)
+
+	// 2. Implement Cluster Synchronisation Delay if a WRITE call and NODE COUNT > 1 (and API call was not in error)
+	if req.Method == http.MethodPost || req.Method == http.MethodPut || req.Method == http.MethodDelete {
+		if err == nil {
+			if t.NodeCount > 1 {
+				tflog.Info(req.Context(), fmt.Sprintf("Performing Cluster Synchronisation Delay of %dms", t.ClusterStabilisationDelayMs))
+				time.Sleep(time.Millisecond * time.Duration(t.ClusterStabilisationDelayMs))
+				tflog.Debug(req.Context(), "Completed Cluster Synchronisation Delay")
+			}
+		}
+	}
+
+	// 3. Return the response to the caller
+	return resp, err
 }
 
 func (p *SonatypeRepoProvider) checkVersion(ctx context.Context, ds *common.SonatypeDataSourceData, resp *provider.ConfigureResponse, versionHint *string) {
