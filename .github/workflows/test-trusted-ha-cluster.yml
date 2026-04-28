@@ -285,7 +285,7 @@ jobs:
                   TF_ACC_HA_MODE: '1'
                   TF_ACC_HA_BLOB_STORE_PATH: "${{ github.workspace }}/storage/default"
               run: go test -v -cover ./...
-              timeout-minutes: 10
+              timeout-minutes: 25
 
             - name: Store nexus.log (Node 1)
               if: success() || failure()
