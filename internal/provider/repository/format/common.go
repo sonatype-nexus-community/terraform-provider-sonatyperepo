@@ -98,7 +98,7 @@ func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, e
 
 	// Handle both *string and string types
 	var actualFormat string
-	if formatField.Kind() == reflect.Ptr {
+	if formatField.Kind() == reflect.Pointer {
 		if formatField.IsNil() {
 			return fmt.Errorf(errRepositoryFormatNil, expectedFormat)
 		}
@@ -122,7 +122,7 @@ func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, e
 
 	// Handle both *string and string types
 	var actualType string
-	if typeField.Kind() == reflect.Ptr {
+	if typeField.Kind() == reflect.Pointer {
 		if typeField.IsNil() {
 			expectedTypeStr := expectedType.String()
 			return fmt.Errorf(errRepositoryTypeNil, expectedTypeStr)

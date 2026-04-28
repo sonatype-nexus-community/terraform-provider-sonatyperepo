@@ -25,7 +25,7 @@ import (
 // ----------------------------------------
 type taskFrequency struct {
 	Schedule       types.String  `tfsdk:"schedule"`
-	StartDate      types.Int32   `tfsdk:"start_date"`
+	StartDate      types.Int64   `tfsdk:"start_date"`
 	TimezoneOffset types.String  `tfsdk:"timezone_offset"`
 	RecurringDays  []types.Int32 `tfsdk:"recurring_days"`
 	CronExpression types.String  `tfsdk:"cron_expression"`
@@ -38,12 +38,7 @@ func (f *taskFrequency) ToApiModel(api *v3.FrequencyXO) {
 		api.RecurringDays = append(api.RecurringDays, rd.ValueInt32())
 	}
 	api.Schedule = f.Schedule.ValueString()
-	if f.StartDate.ValueInt32Pointer() != nil {
-		val := int64(*f.StartDate.ValueInt32Pointer())
-		api.StartDate = &val
-	} else {
-		api.StartDate = nil
-	}
+	api.StartDate = f.StartDate.ValueInt64Pointer()
 	api.TimeZoneOffset = f.TimezoneOffset.ValueStringPointer()
 }
 

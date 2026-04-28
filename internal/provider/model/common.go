@@ -49,7 +49,7 @@ func StructToMap(v interface{}) *map[string]string {
 	result := make(map[string]string)
 
 	val := reflect.ValueOf(v)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
 
@@ -93,7 +93,7 @@ func fieldValueToString(v reflect.Value) string {
 		return strconv.FormatFloat(v.Float(), 'f', -1, 64)
 	case reflect.Bool:
 		return strconv.FormatBool(v.Bool())
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if v.IsNil() {
 			return ""
 		}
