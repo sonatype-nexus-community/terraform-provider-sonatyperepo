@@ -62,7 +62,7 @@ provider "sonatyperepo" {
 - `cluster_stabilisation_delay_ms` (Number) Delay after write requests to allow for multi-node Cluster stabilisation before read requests. Only applies when running against a cluster with >1 active node.
 				
 > [!NOTE]
-> Only set this if you are experiencing issues - the default value (7500) should suffice for most scenarios.
+> Only set this if you are experiencing issues - the default value (10000) should suffice for most scenarios.
 - `version_hint` (String) You can set this to the full version string (e.g. "3.85.0-03 (PRO)" or "3.80.0-06 (OSS)") of Sonatype Nexus Repository that you are connecting to.
 
 > [!NOTE] 
