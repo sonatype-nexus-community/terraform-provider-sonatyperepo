@@ -346,7 +346,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Map to state
-	stateModel = r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
+	stateModel = r.RepositoryFormat.UpdateStateFromApi(planModel, apiResponse)
 	// Copy various fields not returned by a READ from Plan
 	stateModel = r.RepositoryFormat.UpdateStateFromPlanForNonApiFields(planModel, stateModel)
 	// Update State finally for Plan
@@ -365,7 +365,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *repositoryResource) updateRepository(ctx context.Context, planModel, stateModel any, respDiags *diag.Diagnostics) bool {
-	// Make API requet
+	// Make API request
 	httpResponse, err := r.RepositoryFormat.DoUpdateRequest(planModel, stateModel, r.Client, ctx)
 
 	// Handle any errors
