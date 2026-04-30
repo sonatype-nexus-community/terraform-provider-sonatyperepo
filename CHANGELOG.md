@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.7.1 April 30, 2026
+
 BUG FIXES:
 * Implemented missing READ functionality for resources `sonatype_task_*` which allows `terraform import` to now work [GH-394] - thanks to @HazemElAgaty
 
