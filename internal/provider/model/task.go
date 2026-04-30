@@ -86,8 +86,9 @@ type BaseTaskModel struct {
 
 func (m *BaseTaskModel) MapFromApi(api *v3.TaskXO) {
 	m.Id = types.StringPointerValue(api.Id)
-	m.Name = types.StringPointerValue(api.Name)
-	// m.Type = types.StringPointerValue(api.Type)
+	if api.Name != nil {
+		m.Name = types.StringPointerValue(api.Name)
+	}
 }
 
 func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
