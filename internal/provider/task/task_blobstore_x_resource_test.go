@@ -63,6 +63,22 @@ resource "%s" "test_task" {
 					resource.TestCheckResourceAttr(resourceNameTaskBlobstoreCompact, "properties.blobs_older_than", "8"),
 				),
 			},
+			// Import testing - the public REST API does not return `properties` or
+			// full `frequency`, so those attributes plus `last_updated` cannot be
+			// verified against the imported state.
+			{
+				ResourceName:      resourceNameTaskBlobstoreCompact,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"alert_email",
+					"enabled",
+					"frequency",
+					"last_updated",
+					"notification_condition",
+					"properties",
+				},
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

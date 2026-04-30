@@ -111,7 +111,7 @@ func (f *RepairRebuildBrowseNodesTask) UpdatePlanForState(plan any) any {
 func (f *RepairRebuildBrowseNodesTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepairCreateBrowseNodesModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 

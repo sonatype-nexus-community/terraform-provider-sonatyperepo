@@ -99,7 +99,7 @@ func (f *BlobstoreCompactTask) UpdatePlanForState(plan any) any {
 func (f *BlobstoreCompactTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskBlobstoreCompactModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 

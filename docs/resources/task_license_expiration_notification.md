@@ -62,3 +62,19 @@ Optional:
 - For "monthly" schedule allowed values, 1 to 31.
 - `start_date` (Number) Start date of the task represented in unix timestamp. Does not apply for "manual" schedule.
 - `timezone_offset` (String) The offset time zone of the client. Example: -05:00
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# Import an existing 'license.expiration.notification' Task into Terraform State.
+
+# Example
+terraform import sonatyperepo_task_license_expiration_notification.task TASK_ID
+
+# Note: the public REST API does not return full `frequency` for a Task, so the
+# next `terraform plan` will show that field as a diff against your
+# configuration. The first `terraform apply` after import re-asserts it in
+# Nexus to match your HCL.
+```
