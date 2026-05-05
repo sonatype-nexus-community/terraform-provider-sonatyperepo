@@ -59,6 +59,14 @@ func (m *aptSigningModel) MapToApi(api *sonatyperepo.AptSigningRepositoriesAttri
 	api.Passphrase = m.Passphrase.ValueStringPointer()
 }
 
+func (m *aptSigningModel) MapMissingApiFieldsFromPlan(planModel aptSigningModel) {
+	m.Passphrase = planModel.Passphrase
+}
+
+func (m *RepositoryAptHostedModel) MapMissingApiFieldsFromPlan(planModel RepositoryAptHostedModel) {
+	m.AptSigning.MapMissingApiFieldsFromPlan(*planModel.AptSigning)
+}
+
 func (m *RepositoryAptHostedModel) FromApiModel(api sonatyperepo.AptHostedApiRepository) {
 	m.Name = types.StringPointerValue(api.Name)
 	m.Online = types.BoolValue(api.Online)

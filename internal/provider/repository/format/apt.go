@@ -145,6 +145,18 @@ func (f *AptRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 	return stateModel
 }
 
+func (f *AptRepositoryFormatHosted) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryAptHostedModel)
+	var stateModel model.RepositoryAptHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryAptHostedModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 // --------------------------------------------
 // PROXY APT Format Functions
 // --------------------------------------------
