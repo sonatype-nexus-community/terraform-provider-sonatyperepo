@@ -327,8 +327,8 @@ func taskSchema(tt tasktype.TaskTypeI) tfschema.Schema {
 					common.FREQUENCY_SCHEDULE_MONTHLY,
 					common.FREQUENCY_SCHEDULE_CRON,
 				),
-				"start_date": schema.ResourceOptionalInt32(
-					"Start date of the task represented in unix timestamp. Does not apply for \"manual\" schedule.",
+				"start_date": schema.ResourceOptionalInt64(
+					"Start date of the task represented in unix timestamp. Sonatype Nexus Repository persists this in milliseconds, so values for any modern date are 13 digits (e.g. `1777167000000` for 2026-04-26 01:30 UTC). Does not apply for \"manual\" schedule.",
 				),
 				"timezone_offset": schema.ResourceOptionalString("The offset time zone of the client. Example: -05:00"),
 				"recurring_days": func() tfschema.ListAttribute {
