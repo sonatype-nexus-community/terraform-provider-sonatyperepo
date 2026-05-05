@@ -4,6 +4,9 @@
 
 _TBC_
 
+BUG FIXES:
+* Attempting to update `apt_signing.passphrase` on resource `sonatyperepo_repository_apt_hosted` caused `Error: Provider produced inconsistent result after apply` [GH-397] 
+
 ## 1.7.1 April 30, 2026
 
 BUG FIXES:
