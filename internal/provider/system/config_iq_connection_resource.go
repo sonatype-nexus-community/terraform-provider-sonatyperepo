@@ -217,7 +217,7 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 		return nil
-	} else if httpResponse.StatusCode != http.StatusNoContent {
+	} else if httpResponse.StatusCode != http.StatusNoContent && httpResponse.StatusCode != http.StatusOK { // 200 returned by NXRM 3.92.0+
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
 			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
