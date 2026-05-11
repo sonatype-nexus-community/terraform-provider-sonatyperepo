@@ -120,7 +120,7 @@ resource "%s" "iq" {
 `, resourceTypeSysIqConnection, defaultIqServerUrl, showIqLink)
 }
 
-func systemIqConnectionWithPropertiesResourceConfig(randomString string, showIqLink bool) string {
+func systemIqConnectionWithPropertiesResourceConfig(showIqLink bool) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method = "USER"
