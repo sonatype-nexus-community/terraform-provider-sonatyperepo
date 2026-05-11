@@ -39,7 +39,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
@@ -56,7 +56,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
@@ -73,7 +73,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
@@ -100,6 +100,18 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 						"nexus_trust_store_enabled", "false"),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:                         resourceNameSysIqConnection,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "url",
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"last_updated",
+				},
+				ImportStateId: "system-iq-config",
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -109,7 +121,7 @@ func systemIqConnectionResourceConfig(showIqLink bool) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method = "USER"
-  enabled = false
+  enabled = true
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
   url = "%s"
@@ -124,7 +136,7 @@ func systemIqConnectionWithPropertiesResourceConfig(showIqLink bool) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method = "USER"
-  enabled = false
+  enabled = true
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
   url = "%s"
@@ -140,13 +152,13 @@ func systemIqConnectionWithTrustStoreConfig(nexusTrustStoreEnabled bool) string 
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method     = "USER"
-  enabled                   = false
+  enabled                   = true
   fail_open_mode_enabled    = false
   nexus_trust_store_enabled = %t
   url 					    = "%s"
   username 					= "user"
   password                  = "token"
-  show_iq_server_link       = false
+  show_iq_server_link       = true
 }
 `, resourceTypeSysIqConnection, nexusTrustStoreEnabled, defaultIqServerUrl)
 }

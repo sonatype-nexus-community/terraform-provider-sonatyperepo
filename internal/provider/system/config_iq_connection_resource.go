@@ -26,6 +26,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -172,7 +173,7 @@ func (r *systemConfigIqConnectionResource) Delete(ctx context.Context, req resou
 	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.DisableIq(ctx).Execute()
 
 	if err != nil {
-		if httpResponse.StatusCode == 404 {
+		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
 				"Sonatype IQ Connection does not exist",
@@ -225,4 +226,22 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 	}
 
 	return &plan
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *systemConfigIqConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Since this is a singleton resource (system IQ configuration),
+	// we don't need to validate the ID - any non-empty string is acceptable
+	if req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Invalid Import ID",
+			"Import ID cannot be empty. Use any non-empty string (e.g., 'system-iq-config') to import the system IQ Server configuration.",
+		)
+		return
+	}
+
+	// Set the ID to a fixed value since this is a singleton resource
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_updated"), types.StringValue(time.Now().Format(time.RFC850)))...)
+
+	tflog.Info(ctx, fmt.Sprintf("Imported system IQ Server configuration with ID: %s", req.ID))
 }
