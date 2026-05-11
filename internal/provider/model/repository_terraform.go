@@ -83,9 +83,9 @@ func (m *RepositoryTerraformProxyModel) FromApiModel(api sonatyperepo.TerraformP
 	}
 
 	// Terraform Specific
-	if api.Terraform != nil {
-		m.Terraform.FromApiModel(api.Terraform)
-	}
+	// if api.Terraform != nil {
+	// 	m.Terraform.FromApiModel(api.Terraform)
+	// }
 }
 
 func (m *RepositoryTerraformProxyModel) ToApiCreateModel() sonatyperepo.TerraformProxyRepositoryApiRequest {
@@ -121,8 +121,8 @@ func (m *RepositoryTerraformProxyModel) ToApiCreateModel() sonatyperepo.Terrafor
 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
 
 	// Terraform Specific
-	apiModel.Terraform = &sonatyperepo.TerraformAttributes{}
-	m.Terraform.MapToApi(apiModel.Terraform)
+	// apiModel.Terraform = &sonatyperepo.TerraformAttributes{}
+	// m.Terraform.MapToApi(apiModel.Terraform)
 
 	return apiModel
 }

@@ -46,7 +46,7 @@ func NewCapabilityHelper(client *v3.APIClient, capabilityType common.CapabilityT
 
 // FindCapabilityByRepositoryId searches for a firewall audit and quarantine capability for a given repository
 func (ch *CapabilityHelper) FindCapabilityByRepositoryId(ctx context.Context, repositoryId string, diags *diag.Diagnostics) *v3.CapabilityDTO {
-	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List1(ctx).Execute()
+	capabilities, httpResponse, err := ch.client.CapabilitiesAPI.List2(ctx).Execute()
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error listing capabilities to find capability for repository %s", repositoryId),

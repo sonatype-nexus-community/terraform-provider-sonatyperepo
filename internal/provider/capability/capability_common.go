@@ -329,7 +329,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	ctx = c.AuthContext(ctx)
 
 	// Make API Request
-	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List1(ctx).Execute()
+	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List2(ctx).Execute()
 
 	// Handle any errors
 	if err != nil {

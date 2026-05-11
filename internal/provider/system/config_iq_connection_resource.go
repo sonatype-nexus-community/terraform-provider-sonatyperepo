@@ -117,7 +117,7 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 	)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.GetConfiguration(ctx).Execute()
+	apiResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.GetConfiguration1(ctx).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -208,7 +208,7 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 
 	apiModel := sonatyperepo.NewIqConnectionXoWithDefaults()
 	plan.MapToApi(apiModel)
-	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
+	_, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration1(ctx).Body(*apiModel).Execute()
 
 	// Handle Error
 	if err != nil {
