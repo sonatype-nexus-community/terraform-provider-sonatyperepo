@@ -4,6 +4,12 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* Resource `sonatyperepo_system_iq_connection` now supports `terraform import`
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.92.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-92-0-release-notes.html) [GH-400]
+
 ## 1.7.2 May 05, 2026
 
 BUG FIXES:
