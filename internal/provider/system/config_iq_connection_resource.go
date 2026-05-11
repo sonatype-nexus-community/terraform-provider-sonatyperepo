@@ -111,6 +111,8 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 		return
 	}
 
+	priorTimeout := state.ConnectionTimeout // save before MapFromApi overwrites for NXRM 3.86/87
+
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
@@ -138,6 +140,14 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 
 	// Update State based on Response
 	state.MapFromApi(apiResponse)
+
+	// Older NXRM versions (e.g. 3.86, 3.87) omit TimeoutSeconds from the GET
+	// response. Preserve whatever is in state rather than writing null and
+	// causing phantom drift against the schema default.
+	if state.ConnectionTimeout.IsNull() {
+		state.ConnectionTimeout = priorTimeout
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
