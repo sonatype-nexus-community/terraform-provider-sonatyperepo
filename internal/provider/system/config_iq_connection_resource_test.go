@@ -25,6 +25,7 @@ import (
 )
 
 const (
+	defaultIqServerUrl          = "http://localhost:8070"
 	resourceTypeSysIqConnection = "sonatyperepo_system_iq_connection"
 	resourceNameSysIqConnection = "sonatyperepo_system_iq_connection.iq"
 )
@@ -43,8 +44,8 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", fmt.Sprintf("user-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
@@ -60,8 +61,8 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", fmt.Sprintf("user-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
@@ -77,8 +78,8 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", fmt.Sprintf("user-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", "key1=value1&key2=value2"),
@@ -87,19 +88,19 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 			},
 			// Test that nexus_trust_store_enabled is applied
 			{
-			Config: systemIqConnectionWithTrustStoreConfig(randomString, true),
-			    Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-			"nexus_trust_store_enabled", "true"),
-			    ),
+				Config: systemIqConnectionWithTrustStoreConfig(randomString, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+						"nexus_trust_store_enabled", "true"),
+				),
 			},
 			// Verify it can be set back to false
 			{
-			    Config: systemIqConnectionWithTrustStoreConfig(randomString, false),
-			    Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-			"nexus_trust_store_enabled", "false"),
-			    ),
+				Config: systemIqConnectionWithTrustStoreConfig(randomString, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+						"nexus_trust_store_enabled", "false"),
+				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -113,12 +114,12 @@ resource "%s" "iq" {
   enabled = false
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
-  url = "https://%s.somewhere.tld"
-  username = "user"
+  url = "%s"
+  username = "user-%s"
   password = "token"
   show_iq_server_link = %t
 }
-`, resourceTypeSysIqConnection, randomString, showIqLink)
+`, resourceTypeSysIqConnection, defaultIqServerUrl, randomString, showIqLink)
 }
 
 func systemIqConnectionWithPropertiesResourceConfig(randomString string, showIqLink bool) string {
@@ -128,27 +129,26 @@ resource "%s" "iq" {
   enabled = false
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
-  url = "https://%s.somewhere.tld"
-  username = "user"
+  url = "%s"
+  username = "user-%s"
   password = "token"
   show_iq_server_link = %t
   properties = "key1=value1&key2=value2"
 }
-`, resourceTypeSysIqConnection, randomString, showIqLink)
+`, resourceTypeSysIqConnection, defaultIqServerUrl, randomString, showIqLink)
 }
 
 func systemIqConnectionWithTrustStoreConfig(randomString string, nexusTrustStoreEnabled bool) string {
-        return fmt.Sprintf(utils_test.ProviderConfig+`
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method     = "USER"
   enabled                   = false
   fail_open_mode_enabled    = false
   nexus_trust_store_enabled = %t
-  url                       = "https://%s.somewhere.tld"
-  username                  = "user"
+  url 					    = "%s"
+  username 					= "user-%s"
   password                  = "token"
   show_iq_server_link       = false
 }
-`, resourceTypeSysIqConnection, nexusTrustStoreEnabled, randomString)
+`, resourceTypeSysIqConnection, nexusTrustStoreEnabled, defaultIqServerUrl, randomString)
 }
-
