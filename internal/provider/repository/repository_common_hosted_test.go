@@ -97,7 +97,7 @@ var hostedTestData = []repositoryHostedTestData{
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
-				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_MAVEN_CONTENT_DISPOSITION),
+				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_PERMISSIVE),
 				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
 			}
