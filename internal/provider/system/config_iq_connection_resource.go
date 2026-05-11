@@ -26,6 +26,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -110,6 +111,8 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 		return
 	}
 
+	priorTimeout := state.ConnectionTimeout // save before MapFromApi overwrites for NXRM 3.86/87
+
 	ctx = context.WithValue(
 		ctx,
 		sonatyperepo.ContextBasicAuth,
@@ -117,7 +120,7 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 	)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.GetConfiguration(ctx).Execute()
+	apiResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.GetConfiguration1(ctx).Execute()
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -137,6 +140,14 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 
 	// Update State based on Response
 	state.MapFromApi(apiResponse)
+
+	// Older NXRM versions (e.g. 3.86, 3.87) omit TimeoutSeconds from the GET
+	// response. Preserve whatever is in state rather than writing null and
+	// causing phantom drift against the schema default.
+	if state.ConnectionTimeout.IsNull() {
+		state.ConnectionTimeout = priorTimeout
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -172,7 +183,7 @@ func (r *systemConfigIqConnectionResource) Delete(ctx context.Context, req resou
 	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.DisableIq(ctx).Execute()
 
 	if err != nil {
-		if httpResponse.StatusCode == 404 {
+		if httpResponse.StatusCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
 			resp.Diagnostics.AddWarning(
 				"Sonatype IQ Connection does not exist",
@@ -208,7 +219,7 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 
 	apiModel := sonatyperepo.NewIqConnectionXoWithDefaults()
 	plan.MapToApi(apiModel)
-	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration(ctx).Body(*apiModel).Execute()
+	_, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration1(ctx).Body(*apiModel).Execute()
 
 	// Handle Error
 	if err != nil {
@@ -217,7 +228,7 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 			fmt.Sprintf("Error setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
 		)
 		return nil
-	} else if httpResponse.StatusCode != http.StatusNoContent {
+	} else if httpResponse.StatusCode != http.StatusNoContent && httpResponse.StatusCode != http.StatusOK { // 200 returned by NXRM 3.92.0+
 		respDiags.AddError(
 			"Error setting Sonatype IQ Connection configuration",
 			fmt.Sprintf("Unexpected Response Code whilst setting Sonatype IQ Connection configuration: %d: %s", httpResponse.StatusCode, httpResponse.Status),
@@ -225,4 +236,22 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 	}
 
 	return &plan
+}
+
+// ImportState imports the resource into Terraform state.
+func (r *systemConfigIqConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Since this is a singleton resource (system IQ configuration),
+	// we don't need to validate the ID - any non-empty string is acceptable
+	if req.ID == "" {
+		resp.Diagnostics.AddError(
+			"Invalid Import ID",
+			"Import ID cannot be empty. Use any non-empty string (e.g., 'system-iq-config') to import the system IQ Server configuration.",
+		)
+		return
+	}
+
+	// Set the ID to a fixed value since this is a singleton resource
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_updated"), types.StringValue(time.Now().Format(time.RFC850)))...)
+
+	tflog.Info(ctx, fmt.Sprintf("Imported system IQ Server configuration with ID: %s", req.ID))
 }

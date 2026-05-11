@@ -371,8 +371,9 @@ func mavenSchemaAttributes() map[string]tfschema.Attribute {
 					common.MAVEN_LAYOUT_STRICT,
 					common.MAVEN_LAYOUT_PERMISSIVE,
 				),
-				"content_disposition": schema.ResourceOptionalStringEnum(
+				"content_disposition": schema.ResourceStringEnumWithDefault(
 					"Add Content-Disposition header as 'ATTACHMENT' to disable some content from being inline in a browser.",
+					common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT,
 					common.MAVEN_CONTENT_DISPOSITION_INLINE,
 					common.MAVEN_CONTENT_DISPOSITION_ATTACHMENT,
 				),

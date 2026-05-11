@@ -131,7 +131,11 @@ func (m *IqConnectionModel) MapFromApi(api *sonatyperepo.IqConnectionXo) {
 	m.Username = types.StringPointerValue(api.Username)
 	// Skip password
 	m.ConnectionTimeout = types.Int32PointerValue(api.TimeoutSeconds)
-	m.Properties = types.StringValue(strings.TrimSuffix(*api.Properties, "\n"))
+	properties := ""
+	if api.Properties != nil { // Can be nil during import
+		properties = strings.TrimSuffix(*api.Properties, "\n")
+	}
+	m.Properties = types.StringValue(properties)
 	m.ShowIQServerLink = types.BoolPointerValue(api.ShowLink)
 	m.FailOpenModeEnabled = types.BoolPointerValue(api.FailOpenModeEnabled)
 }
