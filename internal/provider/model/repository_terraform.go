@@ -83,9 +83,9 @@ func (m *RepositoryTerraformProxyModel) FromApiModel(api sonatyperepo.TerraformP
 	}
 
 	// Terraform Specific
-	// if api.Terraform != nil {
-	// 	m.Terraform.FromApiModel(api.Terraform)
-	// }
+	if api.Terraform != nil {
+		m.Terraform.FromApiModel(api.Terraform)
+	}
 }
 
 func (m *RepositoryTerraformProxyModel) ToApiCreateModel() sonatyperepo.TerraformProxyRepositoryApiRequest {
