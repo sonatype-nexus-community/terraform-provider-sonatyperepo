@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.8.0 May 13, 2026
+
 ENHANCEMENTS:
 * Resource `sonatyperepo_system_iq_connection` now supports `terraform import`
 
