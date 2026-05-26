@@ -103,7 +103,7 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 > [!NOTE]
 > Only set this if you are experiencing issues - the default value (%d) should suffice for most scenarios.`, common.DEFAULT_CLUSTER_STABILISATION_MS),
 				Validators: []validator.Int32{
-					int32validator.Between(10, 5000),
+					int32validator.Between(10, 30000),
 				},
 			},
 			"version_hint": schema.StringAttribute{
