@@ -99,7 +99,7 @@ func (f *LicenseExpirationNotificationTask) UpdatePlanForState(plan any) any {
 func (f *LicenseExpirationNotificationTask) UpdateStateFromApi(state, api any) any {
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 

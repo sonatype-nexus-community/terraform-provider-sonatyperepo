@@ -121,8 +121,8 @@ func (m *RepositoryTerraformProxyModel) ToApiCreateModel() sonatyperepo.Terrafor
 	apiModel.RoutingRule = m.RoutingRule.ValueStringPointer()
 
 	// Terraform Specific
-	apiModel.Terraform = &sonatyperepo.TerraformAttributes{}
-	m.Terraform.MapToApi(apiModel.Terraform)
+	// apiModel.Terraform = &sonatyperepo.TerraformAttributes{}
+	// m.Terraform.MapToApi(apiModel.Terraform)
 
 	return apiModel
 }

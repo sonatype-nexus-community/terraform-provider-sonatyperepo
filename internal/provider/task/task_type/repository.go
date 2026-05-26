@@ -100,7 +100,7 @@ func (f *RepositoryDockerGcTask) UpdatePlanForState(plan any) any {
 func (f *RepositoryDockerGcTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryDockerGcModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 
@@ -180,7 +180,7 @@ func (f *RepositoryDockerUploadPurgeTask) UpdatePlanForState(plan any) any {
 func (f *RepositoryDockerUploadPurgeTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryDockerUploadPurgeModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 
@@ -272,7 +272,7 @@ func (f *RepositoryMavenRemoveSnapshotsTask) UpdatePlanForState(plan any) any {
 func (f *RepositoryMavenRemoveSnapshotsTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskRepositoryMavenRemoveSnapshotsModel)
 	apiModel := (api).(v3.TaskXO)
-	stateModel.Id = types.StringPointerValue(apiModel.Id)
+	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }
 

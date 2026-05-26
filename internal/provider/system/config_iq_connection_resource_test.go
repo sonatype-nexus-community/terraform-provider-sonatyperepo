@@ -20,30 +20,29 @@ import (
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const (
+	defaultIqServerUrl          = "http://localhost:8070"
 	resourceTypeSysIqConnection = "sonatyperepo_system_iq_connection"
 	resourceNameSysIqConnection = "sonatyperepo_system_iq_connection.iq"
 )
 
 func TestAccSystemIqConnectionResource(t *testing.T) {
-	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: systemIqConnectionResourceConfig(randomString, false),
+				Config: systemIqConnectionResourceConfig(false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "false"),
@@ -53,14 +52,14 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 			},
 			// Test enabling show_iq_server_link
 			{
-				Config: systemIqConnectionResourceConfig(randomString, true),
+				Config: systemIqConnectionResourceConfig(true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
@@ -70,14 +69,14 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 			},
 			// Test adding Properties
 			{
-				Config: systemIqConnectionWithPropertiesResourceConfig(randomString, true),
+				Config: systemIqConnectionWithPropertiesResourceConfig(true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", fmt.Sprintf("https://%s.somewhere.tld", randomString)),
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
 					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
@@ -87,68 +86,79 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 			},
 			// Test that nexus_trust_store_enabled is applied
 			{
-			Config: systemIqConnectionWithTrustStoreConfig(randomString, true),
-			    Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-			"nexus_trust_store_enabled", "true"),
-			    ),
+				Config: systemIqConnectionWithTrustStoreConfig(true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+						"nexus_trust_store_enabled", "true"),
+				),
 			},
 			// Verify it can be set back to false
 			{
-			    Config: systemIqConnectionWithTrustStoreConfig(randomString, false),
-			    Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-			"nexus_trust_store_enabled", "false"),
-			    ),
+				Config: systemIqConnectionWithTrustStoreConfig(false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+						"nexus_trust_store_enabled", "false"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:                         resourceNameSysIqConnection,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "url",
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"last_updated",
+				},
+				ImportStateId: "system-iq-config",
 			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
 
-func systemIqConnectionResourceConfig(randomString string, showIqLink bool) string {
+func systemIqConnectionResourceConfig(showIqLink bool) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method = "USER"
-  enabled = false
+  enabled = true
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
-  url = "https://%s.somewhere.tld"
+  url = "%s"
   username = "user"
   password = "token"
   show_iq_server_link = %t
 }
-`, resourceTypeSysIqConnection, randomString, showIqLink)
+`, resourceTypeSysIqConnection, defaultIqServerUrl, showIqLink)
 }
 
-func systemIqConnectionWithPropertiesResourceConfig(randomString string, showIqLink bool) string {
+func systemIqConnectionWithPropertiesResourceConfig(showIqLink bool) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method = "USER"
-  enabled = false
+  enabled = true
   fail_open_mode_enabled = false
   nexus_trust_store_enabled = false
-  url = "https://%s.somewhere.tld"
+  url = "%s"
   username = "user"
   password = "token"
   show_iq_server_link = %t
   properties = "key1=value1&key2=value2"
 }
-`, resourceTypeSysIqConnection, randomString, showIqLink)
+`, resourceTypeSysIqConnection, defaultIqServerUrl, showIqLink)
 }
 
-func systemIqConnectionWithTrustStoreConfig(randomString string, nexusTrustStoreEnabled bool) string {
-        return fmt.Sprintf(utils_test.ProviderConfig+`
+func systemIqConnectionWithTrustStoreConfig(nexusTrustStoreEnabled bool) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "iq" {
   authentication_method     = "USER"
-  enabled                   = false
+  enabled                   = true
   fail_open_mode_enabled    = false
   nexus_trust_store_enabled = %t
-  url                       = "https://%s.somewhere.tld"
-  username                  = "user"
+  url 					    = "%s"
+  username 					= "user"
   password                  = "token"
-  show_iq_server_link       = false
+  show_iq_server_link       = true
 }
-`, resourceTypeSysIqConnection, nexusTrustStoreEnabled, randomString)
+`, resourceTypeSysIqConnection, nexusTrustStoreEnabled, defaultIqServerUrl)
 }
-

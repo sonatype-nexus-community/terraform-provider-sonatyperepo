@@ -38,18 +38,22 @@ func (p *TaskPropertiesRepairCreateBrowseNodes) GetFilteredPropertiesAsMap(versi
 // ----------------------------------------
 type TaskRepairCreateBrowseNodesModel struct {
 	BaseTaskModel
-	Properties TaskPropertiesRepairCreateBrowseNodes `tfsdk:"properties"`
+	Properties *TaskPropertiesRepairCreateBrowseNodes `tfsdk:"properties"`
 }
 
 func (m *TaskRepairCreateBrowseNodesModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_CREATE_BROWSE_NODES.String()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
 func (m *TaskRepairCreateBrowseNodesModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }

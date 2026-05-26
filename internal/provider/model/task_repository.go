@@ -39,19 +39,23 @@ func (p *TaskPropertiesRepositoryDockerGc) GetFilteredPropertiesAsMap(version co
 // ----------------------------------------
 type TaskRepositoryDockerGcModel struct {
 	BaseTaskModel
-	Properties TaskPropertiesRepositoryDockerGc `tfsdk:"properties"`
+	Properties *TaskPropertiesRepositoryDockerGc `tfsdk:"properties"`
 }
 
 func (m *TaskRepositoryDockerGcModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_DOCKER_GC.String()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
 func (m *TaskRepositoryDockerGcModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
@@ -69,19 +73,23 @@ func (p *TaskPropertiesRepositoryDockerUploadPurge) GetFilteredPropertiesAsMap(v
 // ----------------------------------------
 type TaskRepositoryDockerUploadPurgeModel struct {
 	BaseTaskModel
-	Properties TaskPropertiesRepositoryDockerUploadPurge `tfsdk:"properties"`
+	Properties *TaskPropertiesRepositoryDockerUploadPurge `tfsdk:"properties"`
 }
 
 func (m *TaskRepositoryDockerUploadPurgeModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_DOCKER_UPLOAD_PURGE.String()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
 func (m *TaskRepositoryDockerUploadPurgeModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
@@ -109,18 +117,22 @@ func (p *TaskPropertiesRepositoryMavenRemoveSnapshots) GetFilteredPropertiesAsMa
 // ----------------------------------------
 type TaskRepositoryMavenRemoveSnapshotsModel struct {
 	BaseTaskModel
-	Properties TaskPropertiesRepositoryMavenRemoveSnapshots `tfsdk:"properties"`
+	Properties *TaskPropertiesRepositoryMavenRemoveSnapshots `tfsdk:"properties"`
 }
 
 func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS.String()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }
 
 func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
 	api := m.toApiUpdateModel()
-	api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
 	return api
 }

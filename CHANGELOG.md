@@ -4,6 +4,32 @@
 
 _TBC_
 
+BUG FIXES:
+* Support `*` for `format` on `sonatyperepo_cleanup_policy` resource [GH-406]
+
+## 1.8.1 May 15, 2026
+
+BUG FIXES:
+* `frequency.start_date` was `int32` and not `int64` for Task Resources [GH-405] 
+
+## 1.8.0 May 13, 2026
+
+ENHANCEMENTS:
+* Resource `sonatyperepo_system_iq_connection` now supports `terraform import`
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.92.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-92-0-release-notes.html) [GH-400]
+
+## 1.7.2 May 05, 2026
+
+BUG FIXES:
+* Attempting to update `apt_signing.passphrase` on resource `sonatyperepo_repository_apt_hosted` caused `Error: Provider produced inconsistent result after apply` [GH-397] 
+
+## 1.7.1 April 30, 2026
+
+BUG FIXES:
+* Implemented missing READ functionality for resources `sonatype_task_*` which allows `terraform import` to now work [GH-394] - thanks to @HazemElAgaty
+
 ## 1.7.0 April 20, 2026
 
 ENHANCEMENTS:

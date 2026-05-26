@@ -41,7 +41,7 @@ jobs:
             matrix:
                 nxrm:
                     - '3.89.1-02'
-                    - '3.90.1-01' # LATEST
+                    - '3.92.0-03' # LATEST
                 terraform:
                     - '1.14.*' # Latest
         steps:
