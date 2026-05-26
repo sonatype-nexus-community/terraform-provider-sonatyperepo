@@ -212,8 +212,8 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Now Read from API
-	capability, httpResponse, err := c.readCapabilityById(capabilityId.ValueString(), ctx)
+	// Now Read from API, retrying until consistent on HA clusters
+	capability, httpResponse, err := c.readCapabilityByIdConsistently(capabilityId.ValueString(), ctx)
 
 	// Handle any errors
 	if err != nil {
@@ -322,6 +322,48 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 			success = true
 		}
 	}
+}
+
+// readCapabilityByIdConsistently retries readCapabilityById until two consecutive
+// calls return the same state. On an HA cluster, successive GETs can land on
+// different nodes whose caches diverge after a write; waiting for two identical
+// reads confirms the cluster has converged.
+func (c *capabilityResource) readCapabilityByIdConsistently(capabilityId string, ctx context.Context) (*v3.CapabilityDTO, *http.Response, error) {
+	if c.NodeCount <= 1 {
+		return c.readCapabilityById(capabilityId, ctx)
+	}
+
+	const maxAttempts = 10
+	const retryInterval = 3 * time.Second
+
+	var prev *v3.CapabilityDTO
+	var lastResp *http.Response
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		cap, httpResp, err := c.readCapabilityById(capabilityId, ctx)
+		lastResp = httpResp
+		if err != nil {
+			return cap, httpResp, err
+		}
+		if prev != nil && capabilityDTOEqual(prev, cap) {
+			tflog.Debug(ctx, fmt.Sprintf("HA: capability stable after %d read(s)", attempt+1))
+			return cap, httpResp, nil
+		}
+		prev = cap
+		if attempt < maxAttempts-1 {
+			tflog.Info(ctx, fmt.Sprintf("HA: capability not yet stable, retrying (%d/%d)", attempt+1, maxAttempts))
+			time.Sleep(retryInterval)
+		}
+	}
+	return prev, lastResp, nil
+}
+
+func capabilityDTOEqual(a, b *v3.CapabilityDTO) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return reflect.DeepEqual(a.Notes, b.Notes) &&
+		reflect.DeepEqual(a.Enabled, b.Enabled) &&
+		reflect.DeepEqual(a.Properties, b.Properties)
 }
 
 func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context.Context) (*v3.CapabilityDTO, *http.Response, error) {
