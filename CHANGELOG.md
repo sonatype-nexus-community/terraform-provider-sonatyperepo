@@ -4,6 +4,10 @@
 
 _TBC_
 
+BUG FIXES:
+* Support `*` for `format` on `sonatyperepo_cleanup_policy` resource [GH-406] 
+
+
 ## 1.8.0 May 13, 2026
 
 ENHANCEMENTS:
