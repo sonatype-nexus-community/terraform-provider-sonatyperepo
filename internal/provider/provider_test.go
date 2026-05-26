@@ -110,7 +110,7 @@ func waitForRepositoryReplication(serverURL, username, password, repoName string
 		}
 
 		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		var repos []struct {
 			Name string `json:"name"`
