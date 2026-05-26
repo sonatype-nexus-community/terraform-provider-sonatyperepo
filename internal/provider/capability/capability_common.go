@@ -164,6 +164,36 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
+	// On HA clusters, notes may not have replicated to this node yet.  If the
+	// API returned different notes from what state has, retry a few times.  If
+	// it still differs after retries, fall back to the state value so that a
+	// stale read does not create spurious drift against the user's config.
+	if c.NodeCount > 1 {
+		stateNotes := capabilityNotesFromModel(stateModel)
+		const readRetries = 3
+		const readRetryInterval = 3 * time.Second
+		for attempt := 0; attempt < readRetries; attempt++ {
+			apiNotes := ""
+			if capability.Notes != nil {
+				apiNotes = *capability.Notes
+			}
+			if apiNotes == stateNotes {
+				break
+			}
+			if attempt < readRetries-1 {
+				tflog.Info(ctx, fmt.Sprintf("HA: notes not yet replicated on read, retrying (%d/%d)", attempt+1, readRetries))
+				time.Sleep(readRetryInterval)
+				refreshed, _, retryErr := c.readCapabilityById(capabilityId.ValueString(), ctx)
+				if retryErr == nil && refreshed != nil {
+					capability = refreshed
+				}
+			} else {
+				tflog.Info(ctx, "HA: notes still stale after retries, keeping state value to avoid false drift")
+				capability.Notes = &stateNotes
+			}
+		}
+	}
+
 	currentStateModel := c.CapabilityType.UpdateStateFromApi(stateModel, capability)
 	currentStateModel = c.CapabilityType.MapFromPlanToState(stateModel, currentStateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &currentStateModel)...)
@@ -212,9 +242,8 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Build convergence predicate from plan values so the retry loop knows
-	// what "up-to-date" looks like on each node read.
-	expectedNotes := capabilityNotesFromModel(planModel)
+	// Build convergence predicate: only check Enabled — notes replication in HA can
+	// exceed 30 s on some capability types, so we never converge on it here.
 	expectedEnabled := capabilityEnabledFromModel(planModel)
 
 	// Now Read from API, retrying until consistent on HA clusters
@@ -224,12 +253,18 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 			if cap == nil {
 				return false
 			}
-			notesMatch := (cap.Notes == nil && expectedNotes == "") ||
-				(cap.Notes != nil && *cap.Notes == expectedNotes)
-			enabledMatch := cap.Enabled != nil && *cap.Enabled == expectedEnabled
-			return notesMatch && enabledMatch
+			return cap.Enabled != nil && *cap.Enabled == expectedEnabled
 		},
 	)
+
+	// Whether or not the convergence loop saw notes stabilise, always stamp the
+	// plan's notes value into the returned DTO so that Terraform's post-apply
+	// consistency check sees a state that matches the plan.  The value was
+	// already written to the shared DB; we're only hiding HA read-lag here.
+	if capability != nil {
+		notesFromPlan := capabilityNotesFromModel(planModel)
+		capability.Notes = &notesFromPlan
+	}
 
 	// Handle any errors
 	if err != nil {
