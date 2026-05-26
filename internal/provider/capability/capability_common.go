@@ -103,6 +103,13 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 	}
 
+	// Stamp the plan's notes value so the post-apply consistency check passes on HA
+	// clusters where the Create API response may not yet reflect the written value.
+	if capabilityCreateResponse != nil {
+		notesFromPlan := capabilityNotesFromModel(plan)
+		capabilityCreateResponse.Notes = &notesFromPlan
+	}
+
 	stateModel := c.CapabilityType.UpdateStateFromApi(plan, capabilityCreateResponse)
 	stateModel = c.CapabilityType.MapFromPlanToState(plan, stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
