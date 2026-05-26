@@ -4,6 +4,11 @@
 
 _TBC_
 
+## 1.8.1 May 15, 2026
+
+BUG FIXES:
+* `frequency.start_date` was `int32` and not `int64` for Task Resources [GH-405] 
+
 ## 1.8.0 May 13, 2026
 
 ENHANCEMENTS:
