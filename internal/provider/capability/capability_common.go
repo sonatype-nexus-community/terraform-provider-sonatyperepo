@@ -164,35 +164,7 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// On HA clusters, notes may not have replicated to this node yet.  If the
-	// API returned different notes from what state has, retry a few times.  If
-	// it still differs after retries, fall back to the state value so that a
-	// stale read does not create spurious drift against the user's config.
-	if c.NodeCount > 1 {
-		stateNotes := capabilityNotesFromModel(stateModel)
-		const readRetries = 3
-		const readRetryInterval = 3 * time.Second
-		for attempt := 0; attempt < readRetries; attempt++ {
-			apiNotes := ""
-			if capability.Notes != nil {
-				apiNotes = *capability.Notes
-			}
-			if apiNotes == stateNotes {
-				break
-			}
-			if attempt < readRetries-1 {
-				tflog.Info(ctx, fmt.Sprintf("HA: notes not yet replicated on read, retrying (%d/%d)", attempt+1, readRetries))
-				time.Sleep(readRetryInterval)
-				refreshed, _, retryErr := c.readCapabilityById(capabilityId.ValueString(), ctx)
-				if retryErr == nil && refreshed != nil {
-					capability = refreshed
-				}
-			} else {
-				tflog.Info(ctx, "HA: notes still stale after retries, keeping state value to avoid false drift")
-				capability.Notes = &stateNotes
-			}
-		}
-	}
+	capability = c.resolveNotesForHA(ctx, capabilityId.ValueString(), stateModel, capability)
 
 	currentStateModel := c.CapabilityType.UpdateStateFromApi(stateModel, capability)
 	currentStateModel = c.CapabilityType.MapFromPlanToState(stateModel, currentStateModel)
@@ -410,6 +382,44 @@ func (c *capabilityResource) readCapabilityByIdConsistently(
 		}
 	}
 	return lastCap, lastResp, nil
+}
+
+// resolveNotesForHA returns the capability with notes set to the prior state
+// value when the API value is still stale after retries on an HA cluster.
+// This prevents a round-robin read of an un-replicated node from causing
+// spurious drift against the user's config.
+func (c *capabilityResource) resolveNotesForHA(
+	ctx context.Context,
+	capabilityId string,
+	stateModel any,
+	capability *v3.CapabilityDTO,
+) *v3.CapabilityDTO {
+	if c.NodeCount <= 1 || capability == nil {
+		return capability
+	}
+	stateNotes := capabilityNotesFromModel(stateModel)
+	const readRetries = 3
+	const retryInterval = 3 * time.Second
+	for attempt := 0; attempt < readRetries; attempt++ {
+		apiNotes := ""
+		if capability.Notes != nil {
+			apiNotes = *capability.Notes
+		}
+		if apiNotes == stateNotes {
+			return capability
+		}
+		if attempt < readRetries-1 {
+			tflog.Info(ctx, fmt.Sprintf("HA: notes not yet replicated on read, retrying (%d/%d)", attempt+1, readRetries))
+			time.Sleep(retryInterval)
+			if refreshed, _, err := c.readCapabilityById(capabilityId, ctx); err == nil && refreshed != nil {
+				capability = refreshed
+			}
+		} else {
+			tflog.Info(ctx, "HA: notes still stale after retries, keeping state value to avoid false drift")
+			capability.Notes = &stateNotes
+		}
+	}
+	return capability
 }
 
 func capabilityNotesFromModel(model any) string {

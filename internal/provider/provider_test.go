@@ -82,6 +82,33 @@ func createDefaultBlobStore(nxrmClient *v3.APIClient, ctx *context.Context) {
 	}
 }
 
+// repositoryVisibleAt returns true when repoName appears in a single GET to listURL.
+func repositoryVisibleAt(httpClient *http.Client, listURL, username, password, repoName string) bool {
+	req, err := http.NewRequest(http.MethodGet, listURL, nil)
+	if err != nil {
+		return false
+	}
+	req.SetBasicAuth(username, password)
+	resp, err := httpClient.Do(req)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return false
+	}
+	body, _ := io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+	var repos []struct {
+		Name string `json:"name"`
+	}
+	if json.Unmarshal(body, &repos) != nil {
+		return false
+	}
+	for _, r := range repos {
+		if r.Name == repoName {
+			return true
+		}
+	}
+	return false
+}
+
 // waitForRepositoryReplication polls the load-balancer until repoName is visible
 // on nodeCount consecutive round-robin responses, confirming all cluster nodes
 // have replicated the repository before tests begin.
@@ -91,41 +118,9 @@ func waitForRepositoryReplication(serverURL, username, password, repoName string
 	}
 	listURL := fmt.Sprintf("%s/service/rest/v1/repositories", strings.TrimRight(serverURL, "/"))
 	httpClient := &http.Client{Timeout: 15 * time.Second}
-
 	consecutive := 0
 	for attempt := 0; attempt < 40 && consecutive < nodeCount; attempt++ {
-		req, err := http.NewRequest(http.MethodGet, listURL, nil)
-		if err != nil {
-			time.Sleep(3 * time.Second)
-			continue
-		}
-		req.SetBasicAuth(username, password)
-
-		resp, err := httpClient.Do(req)
-		if err != nil || resp.StatusCode != http.StatusOK {
-			consecutive = 0
-			log.Printf("waitForRepositoryReplication: request failed (attempt %d): %v", attempt+1, err)
-			time.Sleep(3 * time.Second)
-			continue
-		}
-
-		body, _ := io.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-
-		var repos []struct {
-			Name string `json:"name"`
-		}
-		found := false
-		if json.Unmarshal(body, &repos) == nil {
-			for _, r := range repos {
-				if r.Name == repoName {
-					found = true
-					break
-				}
-			}
-		}
-
-		if found {
+		if repositoryVisibleAt(httpClient, listURL, username, password, repoName) {
 			consecutive++
 			log.Printf("waitForRepositoryReplication: '%s' confirmed (%d/%d consecutive)", repoName, consecutive, nodeCount)
 		} else {
@@ -134,7 +129,6 @@ func waitForRepositoryReplication(serverURL, username, password, repoName string
 			time.Sleep(3 * time.Second)
 		}
 	}
-
 	if consecutive < nodeCount {
 		log.Printf("waitForRepositoryReplication: WARNING — '%s' may not be visible on all nodes after polling", repoName)
 	}
