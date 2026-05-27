@@ -179,12 +179,12 @@ func (r *repositoryResource) createRepository(ctx context.Context, plan any, res
 }
 
 // readCreatedRepository fetches the repository data immediately after create.
-// On HA clusters a GET can land on a node that hasn't replicated yet (404/nil),
-// so we retry up to maxReadAttempts times before surfacing the error.
+// The 10 s middleware delay covers normal HA propagation; we retry twice with
+// a 1 s pause as a backstop for nodes still under load.
 func (r *repositoryResource) readCreatedRepository(ctx context.Context, plan interface{}, respDiags *diag.Diagnostics, respState *tfsdk.State) (interface{}, bool) {
 	maxAttempts := 1
 	if r.NodeCount > 1 {
-		maxAttempts = 5
+		maxAttempts = 2
 	}
 
 	var (
@@ -200,7 +200,7 @@ func (r *repositoryResource) readCreatedRepository(ctx context.Context, plan int
 		}
 		if attempt < maxAttempts-1 {
 			tflog.Info(ctx, fmt.Sprintf("HA: repository not yet visible after create, retrying (%d/%d)", attempt+1, maxAttempts))
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 	}
 
