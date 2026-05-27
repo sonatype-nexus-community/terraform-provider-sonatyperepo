@@ -67,6 +67,9 @@ func (f *GitLfsRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonat
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGitlfsHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
