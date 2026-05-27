@@ -88,6 +88,9 @@ func (f *DockerRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonat
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 
 	// Temporary Workaround:
 	// latest_policy not returned from READ API for Docker Hosted
