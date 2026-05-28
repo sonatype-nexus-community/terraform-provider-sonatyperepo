@@ -98,7 +98,7 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 			},
 			"cluster_stabilisation_delay_ms": schema.Int32Attribute{
 				Optional: true,
-				MarkdownDescription: fmt.Sprintf(`Delay after write requests to allow for multi-node Cluster stabilisation before read requests. Only applies when running against a cluster with >1 active node.
+				MarkdownDescription: fmt.Sprintf(`Delay after write requests to allow for multi-node Cluster events to be processed by all Nodes before read requests. Only applies when running against a cluster with >1 active node.
 				
 > [!NOTE]
 > Only set this if you are experiencing issues - the default value (%d) should suffice for most scenarios.`, common.DEFAULT_CLUSTER_STABILISATION_MS),
