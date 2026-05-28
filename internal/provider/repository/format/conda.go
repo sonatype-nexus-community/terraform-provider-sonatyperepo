@@ -67,6 +67,9 @@ func (f *CondaRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCondaProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 

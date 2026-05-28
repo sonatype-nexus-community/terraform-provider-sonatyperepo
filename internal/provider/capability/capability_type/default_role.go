@@ -92,7 +92,10 @@ func (f *DefaultRoleCapability) UpdatePlanForState(plan any) any {
 
 func (f *DefaultRoleCapability) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.CapabilityCoreDefaultRoleModel)
-	apiModel := (api).(*v3.CapabilityDTO)
+	apiModel, ok := (api).(*v3.CapabilityDTO)
+	if !ok || apiModel == nil {
+		return state
+	}
 	stateModel.FromApiModel(apiModel)
 	stateModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return stateModel
