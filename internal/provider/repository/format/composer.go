@@ -67,9 +67,6 @@ func (f *ComposerRepositoryFormat) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetComposerProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 

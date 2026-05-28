@@ -78,9 +78,6 @@ func (f *TerraformRepositoryFormatProxy) DoReadRequest(state any, apiClient *son
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetTerraformProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -170,9 +167,6 @@ func (f *TerraformRepositoryFormatHosted) DoReadRequest(state any, apiClient *so
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetTerraformHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -244,9 +238,6 @@ func (f *TerraformRepositoryFormatGroup) DoReadRequest(state any, apiClient *son
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetTerraformGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 

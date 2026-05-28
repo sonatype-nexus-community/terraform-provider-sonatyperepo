@@ -71,9 +71,6 @@ func (f *GoRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatypere
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -211,9 +208,6 @@ func (f *GoRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatypere
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 

@@ -88,10 +88,7 @@ func (f *WebhookRepositoryCapability) UpdatePlanForState(plan any) any {
 
 func (f *WebhookRepositoryCapability) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.WebhookRepositoryCapabilityModel)
-	apiModel, ok := (api).(*v3.CapabilityDTO)
-	if !ok || apiModel == nil {
-		return state
-	}
+	apiModel := (api).(*v3.CapabilityDTO)
 	stateModel.FromApiModel(apiModel)
 	stateModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return stateModel
@@ -100,10 +97,7 @@ func (f *WebhookRepositoryCapability) UpdateStateFromApi(state any, api any) any
 func (ct *WebhookRepositoryCapability) MapFromPlanToState(plan any, state any) any {
 	planModel := (plan).(model.WebhookRepositoryCapabilityModel)
 	stateModel := (state).(model.WebhookRepositoryCapabilityModel)
-	// Secret is sensitive and never returned by the API; stamp from plan.
 	stateModel.Properties.Secret = types.StringValue(planModel.Properties.Secret.ValueString())
-	// Repository can lag on HA clusters; stamp from plan to prevent drift.
-	stateModel.Properties.Repository = types.StringValue(planModel.Properties.Repository.ValueString())
 	return stateModel
 }
 

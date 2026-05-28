@@ -74,9 +74,6 @@ func (f *AptRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatype
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -177,9 +174,6 @@ func (f *AptRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyper
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAptProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 

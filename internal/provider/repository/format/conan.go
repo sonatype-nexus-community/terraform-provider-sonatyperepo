@@ -81,9 +81,6 @@ func (f *ConanRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonaty
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetConanHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -154,9 +151,6 @@ func (f *ConanRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetConanProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -296,9 +290,6 @@ func (f *ConanRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetConanGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 

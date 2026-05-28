@@ -18,15 +18,12 @@ package provider_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
@@ -52,10 +49,8 @@ func TestMain(m *testing.M) {
 		// Create Default Blobstore
 		createDefaultBlobStore(nxrmClient, &ctx)
 
-		// Create Maven Central Proxy Repository, then wait until all cluster
-		// nodes have replicated it before running tests.
+		// Create Maven Central Proxy Repository
 		createMavenCentralProxy(nxrmClient, &ctx)
-		waitForRepositoryReplication(os.Getenv("NXRM_SERVER_URL"), os.Getenv("NXRM_SERVER_USERNAME"), os.Getenv("NXRM_SERVER_PASSWORD"), "maven-central", 3)
 
 	} else {
 		log.Println("Continuing in non-HA Mode...")
@@ -79,58 +74,6 @@ func createDefaultBlobStore(nxrmClient *v3.APIClient, ctx *context.Context) {
 		if httpResponse != nil {
 			log.Printf("API Response: %d", httpResponse.StatusCode)
 		}
-	}
-}
-
-// repositoryVisibleAt returns true when repoName appears in a single GET to listURL.
-func repositoryVisibleAt(httpClient *http.Client, listURL, username, password, repoName string) bool {
-	req, err := http.NewRequest(http.MethodGet, listURL, nil)
-	if err != nil {
-		return false
-	}
-	req.SetBasicAuth(username, password)
-	resp, err := httpClient.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return false
-	}
-	body, _ := io.ReadAll(resp.Body)
-	_ = resp.Body.Close()
-	var repos []struct {
-		Name string `json:"name"`
-	}
-	if json.Unmarshal(body, &repos) != nil {
-		return false
-	}
-	for _, r := range repos {
-		if r.Name == repoName {
-			return true
-		}
-	}
-	return false
-}
-
-// waitForRepositoryReplication polls the load-balancer until repoName is visible
-// on nodeCount consecutive round-robin responses, confirming all cluster nodes
-// have replicated the repository before tests begin.
-func waitForRepositoryReplication(serverURL, username, password, repoName string, nodeCount int) {
-	if serverURL == "" {
-		return
-	}
-	listURL := fmt.Sprintf("%s/service/rest/v1/repositories", strings.TrimRight(serverURL, "/"))
-	httpClient := &http.Client{Timeout: 15 * time.Second}
-	consecutive := 0
-	for attempt := 0; attempt < 40 && consecutive < nodeCount; attempt++ {
-		if repositoryVisibleAt(httpClient, listURL, username, password, repoName) {
-			consecutive++
-			log.Printf("waitForRepositoryReplication: '%s' confirmed (%d/%d consecutive)", repoName, consecutive, nodeCount)
-		} else {
-			consecutive = 0
-			log.Printf("waitForRepositoryReplication: '%s' not yet visible (attempt %d), retrying...", repoName, attempt+1)
-			time.Sleep(3 * time.Second)
-		}
-	}
-	if consecutive < nodeCount {
-		log.Printf("waitForRepositoryReplication: WARNING — '%s' may not be visible on all nodes after polling", repoName)
 	}
 }
 
