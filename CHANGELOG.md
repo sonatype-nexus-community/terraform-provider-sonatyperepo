@@ -4,6 +4,27 @@
 
 _TBC_
 
+## 1.9.0 May 28, 2026
+
+ENHANCEMENTS:
+* A notable change has been implemented that applies **only** when running this provider against a Sonatype Nexus Repository HA Cluster with `> 1` active nodes [GH-391]
+ 
+  **Background**
+
+  In multi-node High Availability (HA) deployments of Sonatype Nexus Repository, write operations (POST, PUT, DELETE) are committed to a shared database. Individual nodes read these events and can exhibit a short lag before serving the updated state on subsequent reads.
+  
+  This has caused Terraform to report spurious drift, "resource not found" errors, or plan inconsistencies during complex apply cycles where resources are created and immediately read back.
+
+  The provider uses a default `cluster_stabilisation_delay_ms` value of 10,000ms (10 seconds) which is validated and safe to cover all real world deployments of Sonatype Nexus Repository. The default (10s) is intentionally conservative. Most clusters will converge faster; reduce the value if your cluster is lower-latency.
+
+* Related to the above, specific handling has been added to cover `sonatyperepo_capability_*` when running this provider against a Sonatype Nexus Repository HA Cluster
+
+BUG FIXES:
+- The above enhancements are expected to resolve the following bugs:
+  - [GH-393]
+  - [GH-407]
+  - [GH-408]
+
 ## 1.8.2 May 28, 2026
 
 BUG FIXES:
