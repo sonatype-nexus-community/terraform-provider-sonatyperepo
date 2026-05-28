@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package npm_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -127,49 +128,49 @@ resource "%s" "repo" {
 `, resourceTypeNpmHosted, randomString, resourceTypeNpmProxy, randomString, resourceTypeNpmGroup, randomString, randomString, resourceTypeNpmProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_NAME, fmt.Sprintf("npm-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceNpmHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceNpmHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("npm-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceNpmHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_NAME, fmt.Sprintf("npm-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_PROXY_REMOTE_URL, "https://registry.npmjs.org"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "true"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
-					resource.TestCheckResourceAttr(resourceNpmProxyName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-					resource.TestCheckNoResourceAttr(resourceNpmProxyName, RES_ATTR_REPLICATION_ASSET_PATH_REGEX),
-					resource.TestCheckNoResourceAttr(resourceNpmProxyName, RES_ATTR_ROUTING_RULE_NAME),
-					resource.TestCheckNoResourceAttr(resourceNpmProxyName, RES_ATTR_REPOSITORY_FIREWALL),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("npm-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_PROXY_REMOTE_URL, "https://registry.npmjs.org"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "true"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
+					resource.TestCheckResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+					resource.TestCheckNoResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX),
+					resource.TestCheckNoResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_ROUTING_RULE_NAME),
+					resource.TestCheckNoResourceAttr(resourceNpmProxyName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_NAME, fmt.Sprintf("npm-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNpmGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("npm-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNpmGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -212,8 +213,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNpmHosted, memberName, resourceTypeNpmGroup, repoName, memberName, resourceTypeNpmHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceNpmGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNpmGroupName, repotest.RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

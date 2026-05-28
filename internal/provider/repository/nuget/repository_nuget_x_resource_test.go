@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package nuget_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -130,21 +131,21 @@ resource "%s" "repo" {
 `, resourceTypeNugetHosted, randomString, resourceTypeNugetProxy, randomString, resourceTypeNugetGroup, randomString, randomString, resourceTypeNugetProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_NAME, fmt.Sprintf("nuget-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceNugetHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceNugetHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("nuget-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceNugetHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_NAME, fmt.Sprintf("nuget-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceNugetProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("nuget-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNugetProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.remote_url", "https://api.nuget.org/v3/index.json"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceNugetProxyName, "proxy.metadata_max_age", "1400"),
@@ -165,10 +166,10 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceNugetProxyName, "routing_rule"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_NAME, fmt.Sprintf("nuget-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceNugetGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("nuget-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceNugetGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceNugetGroupName, "group.member_names.#", "1"),
 				),
 			},
@@ -212,8 +213,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeNugetHosted, memberName, resourceTypeNugetGroup, repoName, memberName, resourceTypeNugetHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceNugetGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceNugetGroupName, repotest.RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

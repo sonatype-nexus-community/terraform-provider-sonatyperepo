@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package r_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -127,21 +128,21 @@ resource "%s" "repo" {
 `, resourceTypeRHosted, randomString, resourceTypeRProxy, randomString, resourceTypeRGroup, randomString, randomString, resourceTypeRProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_NAME, fmt.Sprintf("r-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceRHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceRHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("r-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceRHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceRHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceRProxyName, RES_ATTR_NAME, fmt.Sprintf("r-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("r-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceRProxyName, "proxy.remote_url", "https://cran.r-project.org/"),
 					resource.TestCheckResourceAttr(resourceRProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceRProxyName, "proxy.metadata_max_age", "1440"),
@@ -164,10 +165,10 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceRProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceRGroupName, RES_ATTR_NAME, fmt.Sprintf("r-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("r-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceRGroupName, "group.member_names.#", "1"),
 				),
 			},

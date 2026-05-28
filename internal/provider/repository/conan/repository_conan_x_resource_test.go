@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package conan_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -130,21 +131,21 @@ resource "%s" "repo" {
 `, resourceTypeConanHosted, randomString, resourceTypeConanProxy, randomString, resourceTypeConanGroup, randomString, randomString, resourceTypeConanProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_NAME, fmt.Sprintf("conan-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceConanHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceConanHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceConanHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("conan-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceConanHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceConanHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceConanHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceConanProxyName, RES_ATTR_NAME, fmt.Sprintf("conan-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceConanProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceConanProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceConanProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceConanProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceConanProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("conan-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceConanProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceConanProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceConanProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceConanProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceConanProxyName, "proxy.remote_url", "https://center2.conan.io"),
 					resource.TestCheckResourceAttr(resourceConanProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceConanProxyName, "proxy.metadata_max_age", "1440"),
@@ -168,10 +169,10 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceConanProxyName, "conan.conan_version", "V2"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceConanGroupName, RES_ATTR_NAME, fmt.Sprintf("conan-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceConanGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceConanGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceConanGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceConanGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("conan-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceConanGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceConanGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceConanGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceConanGroupName, "group.member_names.#", "1"),
 				),
 			},

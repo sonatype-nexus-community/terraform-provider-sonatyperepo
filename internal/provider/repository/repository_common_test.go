@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -35,58 +36,6 @@ const (
 	proxyNameFString          string = "test-%s-proxy-repo-%s"
 	resourceTypeHostedFString string = "sonatyperepo_repository_%s_hosted"
 	resourceTypeProxyFString  string = "sonatyperepo_repository_%s_proxy"
-
-	RES_ATTR_NAME                                             string = "name"
-	RES_ATTR_ONLINE                                           string = "online"
-	RES_ATTR_CLEANUP                                          string = "cleanup"
-	RES_ATTR_CLEANUP_POLICY_COUNT                             string = "cleanup.policy_names.#"
-	RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS                 string = "component.proprietary_components"
-	RES_ATTR_DOCKER_FORCE_BASIC_AUTH                          string = "docker.force_basic_auth"
-	RES_ATTR_DOCKER_PATH_ENABLED                              string = "docker.path_enabled"
-	RES_ATTR_DOCKER_V1_ENABLED                                string = "docker.v1_enabled"
-	RES_ATTR_DOCKER_PROXY_CACHE_FOREIGN_LAYERS                string = "docker_proxy.cache_foreign_layers"
-	RES_ATTR_DOCKER_PROXY_INDEX_TYPE                          string = "docker_proxy.index_type"
-	RES_ATTR_RAW_CONTENT_DISPOSITION                          string = "raw.content_disposition"
-	RES_ATTR_STORAGE_BLOB_STORE_NAME                          string = "storage.blob_store_name"
-	RES_ATTR_STORAGE_LATEST_POLICY                            string = "storage.latest_policy"
-	RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION           string = "storage.strict_content_type_validation"
-	RES_ATTR_STORAGE_WRITE_POLICY                             string = "storage.write_policy"
-	RES_ATTR_URL                                              string = "url"
-	RES_ATTR_PROXY_REMOTE_URL                                 string = "proxy.remote_url"
-	RES_ATTR_PROXY_CONTENT_MAX_AGE                            string = "proxy.content_max_age"
-	RES_ATTR_PROXY_METADATA_MAX_AGE                           string = "proxy.metadata_max_age"
-	RES_ATTR_NEGATIVE_CACHE_ENABLED                           string = "negative_cache.enabled"
-	RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE                      string = "negative_cache.time_to_live"
-	RES_ATTR_HTTP_CLIENT_BLOCKED                              string = "http_client.blocked"
-	RES_ATTR_HTTP_CLIENT_AUTO_BLOCK                           string = "http_client.auto_block"
-	RES_ATTR_HTTP_CLIENT_AUTHENTICATION                       string = "http_client.authentication"
-	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD              string = "http_client.authentication.password"
-	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE             string = "http_client.authentication.preemptive"
-	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE                  string = "http_client.authentication.type"
-	RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME              string = "http_client.authentication.username"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS string = "http_client.connection.enable_circular_redirects"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES            string = "http_client.connection.enable_cookies"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE           string = "http_client.connection.use_trust_store"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES                   string = "http_client.connection.retries"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT                   string = "http_client.connection.timeout"
-	RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX         string = "http_client.connection.user_agent_suffix"
-	RES_ATTR_GROUP_MEMBER_NAMES                               string = "group.member_names.#"
-	RES_ATTR_REPLICATION                                      string = "replication"
-	RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED             string = "replication.preemptive_pull_enabled"
-	RES_ATTR_REPLICATION_ASSET_PATH_REGEX                     string = "replication.asset_path_regex"
-	RES_ATTR_REPOSITORY_FIREWALL                              string = "repository_firewall"
-	RES_ATTR_ROUTING_RULE_NAME                                string = "routing_rule"
-	RES_ATTR_REPOSITORY_FIREWALL_ENABLED                      string = "repository_firewall.enabled"
-	RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE                   string = "repository_firewall.quarantine"
-	RES_ATTR_APT_DISTRIBUTION                                 string = "apt.distribution"
-	RES_ATTR_CARGO_REQUIRE_AUTHENTICATION                     string = "cargo.require_authentication"
-	RES_ATTR_CONAN_PROXY_CONAN_VERSION                        string = "conan.conan_version"
-	RES_ATTR_MAVEN_CONTENT_DISPOSITION                        string = "maven.content_disposition"
-	RES_ATTR_MAVEN_LAYOUT_POLICY                              string = "maven.layout_policy"
-	RES_ATTR_MAVEN_VERSION_POLICY                             string = "maven.version_policy"
-	RES_ATTR_NUGET_PROXY_NUGET_VERSION                        string = "nuget_proxy.nuget_version"
-	RES_ATTR_TERRAFORM_REQUIRE_AUTH                           string = "terraform.require_authentication"
-	RES_ATTR_TERRAFORM_SIGNING_SIGNING_KEY                    string = "terraform_signing.signing_key"
 
 	TEST_DATA_APT_PROXY_REMOTE_URL          string = "https://archive.ubuntu.com/ubuntu/"
 	TEST_DATA_CARGO_PROXY_REMOTE_URL        string = "https://index.crates.io/"
@@ -192,22 +141,22 @@ func TestAccRepositoryGenericGroupResources(t *testing.T) {
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify Hosted
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_NAME, repoNameHosted),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_ONLINE, "false"),
-						resource.TestCheckResourceAttrSet(reosurceNameHosted, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-						resource.TestCheckNoResourceAttr(reosurceNameHosted, RES_ATTR_CLEANUP),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_NAME, repoNameHosted),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_ONLINE, "false"),
+						resource.TestCheckResourceAttrSet(reosurceNameHosted, repotest.RES_ATTR_URL),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+						resource.TestCheckNoResourceAttr(reosurceNameHosted, repotest.RES_ATTR_CLEANUP),
 
 						// Verify Group
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_NAME, repoNameGroup),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_ONLINE, "false"),
-						resource.TestCheckResourceAttrSet(reosurceNameGroup, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_NAME, repoNameGroup),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_ONLINE, "false"),
+						resource.TestCheckResourceAttrSet(reosurceNameGroup, repotest.RES_ATTR_URL),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 					),
 				},
 				// Update 1 - Set Online
@@ -222,22 +171,22 @@ func TestAccRepositoryGenericGroupResources(t *testing.T) {
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify Hosted
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_NAME, repoNameHosted),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(reosurceNameHosted, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-						resource.TestCheckResourceAttr(reosurceNameHosted, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-						resource.TestCheckNoResourceAttr(reosurceNameHosted, RES_ATTR_CLEANUP),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_NAME, repoNameHosted),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_ONLINE, "true"),
+						resource.TestCheckResourceAttrSet(reosurceNameHosted, repotest.RES_ATTR_URL),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+						resource.TestCheckResourceAttr(reosurceNameHosted, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+						resource.TestCheckNoResourceAttr(reosurceNameHosted, repotest.RES_ATTR_CLEANUP),
 
 						// Verify Group
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_NAME, repoNameGroup),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(reosurceNameGroup, RES_ATTR_URL),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						resource.TestCheckResourceAttr(reosurceNameGroup, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_NAME, repoNameGroup),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_ONLINE, "true"),
+						resource.TestCheckResourceAttrSet(reosurceNameGroup, repotest.RES_ATTR_URL),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+						resource.TestCheckResourceAttr(reosurceNameGroup, repotest.RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 					),
 				},
 			},

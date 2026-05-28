@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package repository_test
+package cargo_test
 
 import (
 	"fmt"
@@ -22,11 +22,14 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+var errorMessageGroupMemberNamesEmpty = "Attribute group.member_names list must contain at least 1 elements"
 
 const (
 	resourceTypeCargoGroup  = "sonatyperepo_repository_cargo_group"
@@ -149,21 +152,21 @@ resource "%s" "repo" {
 `, resourceTypeCargoHosted, randomString, resourceTypeCargoProxy, randomString, resourceTypeCargoGroup, randomString, randomString, resourceTypeCargoProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_NAME, fmt.Sprintf("cargo-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceCargoHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceCargoHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceCargoHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("cargo-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceCargoHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_NAME, fmt.Sprintf("cargo-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceCargoProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
-					resource.TestCheckResourceAttr(resourceCargoProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("cargo-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
+					resource.TestCheckResourceAttr(resourceCargoProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.remote_url", "https://index.crates.io/"),
 					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceCargoProxyName, "proxy.metadata_max_age", "1440"),
@@ -187,10 +190,10 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceCargoProxyName, "cargo.require_authentication", "true"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_NAME, fmt.Sprintf("cargo-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceCargoGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceCargoGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("cargo-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceCargoGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceCargoGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, "default"),
 					resource.TestCheckResourceAttr(resourceCargoGroupName, "group.member_names.#", "1"),
 					resource.TestCheckResourceAttr(resourceCargoGroupName, "cargo.require_authentication", "false"),
 				),

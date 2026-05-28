@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package pypi_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -127,49 +128,49 @@ resource "%s" "repo" {
 `, resourceTypePypiHosted, randomString, resourceTypePypiProxy, randomString, resourceTypePypiGroup, randomString, randomString, resourceTypePypiProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_NAME, fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourcePypiHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourcePypiHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("pypi-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourcePypiHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_NAME, fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_PROXY_REMOTE_URL, "https://pypi.org/"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "true"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
-					resource.TestCheckResourceAttr(resourcePypiProxyName, RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-					resource.TestCheckNoResourceAttr(resourcePypiProxyName, RES_ATTR_REPLICATION_ASSET_PATH_REGEX),
-					resource.TestCheckNoResourceAttr(resourcePypiProxyName, RES_ATTR_ROUTING_RULE_NAME),
-					resource.TestCheckNoResourceAttr(resourcePypiProxyName, RES_ATTR_REPOSITORY_FIREWALL),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("pypi-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_PROXY_REMOTE_URL, "https://pypi.org/"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, "1442"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, "1400"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, "1440"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, "false"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "false"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "9"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "999"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "terraform"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "true"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
+					resource.TestCheckResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+					resource.TestCheckNoResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX),
+					resource.TestCheckNoResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_ROUTING_RULE_NAME),
+					resource.TestCheckNoResourceAttr(resourcePypiProxyName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_NAME, fmt.Sprintf("pypi-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourcePypiGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_GROUP_MEMBER_NAMES, "1"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("pypi-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourcePypiGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_GROUP_MEMBER_NAMES, "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -212,8 +213,8 @@ resource "%s" "repo" {
 }
 `, resourceTypePypiHosted, memberName, resourceTypePypiGroup, repoName, memberName, resourceTypePypiHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourcePypiGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourcePypiGroupName, repotest.RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

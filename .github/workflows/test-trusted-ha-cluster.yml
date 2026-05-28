@@ -33,7 +33,7 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
         name: Acc. Tests (NXRM HA ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
         runs-on: ubuntu-latest
-        timeout-minutes: 90
+        timeout-minutes: 120
         permissions:
           contents: read
         strategy:
@@ -284,8 +284,8 @@ jobs:
                   TF_ACC: '1'
                   TF_ACC_HA_MODE: '1'
                   TF_ACC_HA_BLOB_STORE_PATH: "${{ github.workspace }}/storage/default"
-              run: go test -v -cover -timeout 60m ./...
-              timeout-minutes: 70
+              run: go test -v -cover -timeout 90m -p 4 ./...
+              timeout-minutes: 100
 
             - name: Store nexus.log (Node 1)
               if: success() || failure()

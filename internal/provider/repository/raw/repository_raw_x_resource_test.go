@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package raw_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -138,22 +139,22 @@ resource "%s" "repo" {
 `, resourceTypeRawHosted, randomString, resourceTypeRawProxy, randomString, resourceTypeRawGroup, randomString, randomString, resourceTypeRawProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_NAME, fmt.Sprintf("raw-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRawHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceRawHostedName, RES_ATTR_CLEANUP),
-					resource.TestCheckResourceAttr(resourceRawHostedName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("raw-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceRawHostedName, repotest.RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceRawHostedName, repotest.RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_NAME, fmt.Sprintf("raw-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRawProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceRawProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("raw-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRawProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRawProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.remote_url", "https://nodejs.org/dist/"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.content_max_age", "1442"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "proxy.metadata_max_age", "1400"),
@@ -172,15 +173,15 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceRawProxyName, "http_client.authentication.preemptive", "true"),
 					resource.TestCheckResourceAttr(resourceRawProxyName, "http_client.authentication.type", "username"),
 					resource.TestCheckNoResourceAttr(resourceRawProxyName, "routing_rule"),
-					resource.TestCheckResourceAttr(resourceRawProxyName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceRawProxyName, repotest.RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_NAME, fmt.Sprintf("raw-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceRawGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceRawGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("raw-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceRawGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceRawGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceRawGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceRawGroupName, "group.member_names.#", "1"),
-					resource.TestCheckResourceAttr(resourceRawGroupName, RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
+					resource.TestCheckResourceAttr(resourceRawGroupName, repotest.RES_ATTR_RAW_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -232,8 +233,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeHosted, memberName, resourceType, repoName, memberName, resourceTypeHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

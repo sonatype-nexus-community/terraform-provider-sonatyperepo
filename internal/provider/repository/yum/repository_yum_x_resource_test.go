@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package repository_test
+package yum_test
 
 import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -130,21 +131,21 @@ resource "%s" "repo" {
 `, resourceTypeYumHosted, randomString, resourceTypeYumProxy, randomString, resourceTypeYumGroup, randomString, randomString, resourceTypeYumProxy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Hosted
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_NAME, fmt.Sprintf("yum-hosted-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceYumHostedName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceYumHostedName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
-					resource.TestCheckNoResourceAttr(resourceYumHostedName, RES_ATTR_CLEANUP),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("yum-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceYumHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
-					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_NAME, fmt.Sprintf("yum-proxy-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceYumProxyName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-					resource.TestCheckResourceAttr(resourceYumProxyName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("yum-proxy-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumProxyName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumProxyName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceYumProxyName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumProxyName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.remote_url", "https://mirror.centos.org/centos/"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.content_max_age", "1441"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.metadata_max_age", "1440"),
@@ -167,10 +168,10 @@ resource "%s" "repo" {
 					resource.TestCheckNoResourceAttr(resourceYumProxyName, "replication.asset_path_regex"),
 
 					// Verify Group
-					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_NAME, fmt.Sprintf("yum-group-repo-%s", randomString)),
-					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_ONLINE, "true"),
-					resource.TestCheckResourceAttrSet(resourceYumGroupName, RES_ATTR_URL),
-					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_NAME, fmt.Sprintf("yum-group-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceYumGroupName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceYumGroupName, "group.member_names.#", "1"),
 				),
 			},
@@ -217,8 +218,8 @@ resource "%s" "repo" {
 }
 `, resourceTypeYumHosted, memberName, resourceTypeYumGroup, repoName, memberName, resourceTypeYumHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_NAME, repoName),
-					resource.TestCheckResourceAttr(resourceYumGroupName, RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_ONLINE, "true"),
 				),
 			},
 			// Import and verify no changes

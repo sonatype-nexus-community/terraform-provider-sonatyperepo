@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"testing"
+
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -36,7 +38,7 @@ var hostedTestData = []repositoryHostedTestData{
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_APT_DISTRIBUTION, "bionic"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_APT_DISTRIBUTION, "bionic"),
 			}
 		},
 		RepoFormat:                    common.REPO_FORMAT_APT,
@@ -67,8 +69,8 @@ var hostedTestData = []repositoryHostedTestData{
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_DOCKER_V1_ENABLED, "false"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_DOCKER_FORCE_BASIC_AUTH, "false"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_DOCKER_V1_ENABLED, "false"),
 			}
 		},
 		RepoFormat:                    common.REPO_FORMAT_DOCKER,
@@ -97,9 +99,9 @@ var hostedTestData = []repositoryHostedTestData{
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_PERMISSIVE),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_MAVEN_CONTENT_DISPOSITION, common.CONTENT_DISPOSITION_ATTACHMENT),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_MAVEN_LAYOUT_POLICY, common.MAVEN_LAYOUT_PERMISSIVE),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_MAVEN_VERSION_POLICY, common.MAVEN_VERSION_POLICY_RELEASE),
 			}
 		},
 		RepoFormat:                    common.REPO_FORMAT_MAVEN,
@@ -214,19 +216,19 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 				td.CheckFunc(resourceName),
 
 				// Generic Checks
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-				resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
+				resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "false"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+				resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
 			)
 			if td.SupportsProprietaryComponents {
-				step1Checks = append(step1Checks, resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"))
+				step1Checks = append(step1Checks, resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"))
 			} else {
-				step1Checks = append(step1Checks, resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
+				step1Checks = append(step1Checks, resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
 			}
 			steps = append(steps, resource.TestStep{
 				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, randomString, false, td.SupportsProprietaryComponents),
@@ -239,19 +241,19 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 				td.CheckFunc(resourceName),
 
 				// Generic Checks
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_NAME, repoName),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_ONLINE, "true"),
-				resource.TestCheckResourceAttrSet(resourceName, RES_ATTR_URL),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-				resource.TestCheckResourceAttr(resourceName, RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
-				resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_ROUTING_RULE_NAME),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
+				resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "0"),
+				resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
 			)
 			if td.SupportsProprietaryComponents {
-				step2Checks = append(step2Checks, resource.TestCheckResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, fmt.Sprintf("%t", td.SupportsProprietaryComponents)))
+				step2Checks = append(step2Checks, resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, fmt.Sprintf("%t", td.SupportsProprietaryComponents)))
 			} else {
-				step2Checks = append(step2Checks, resource.TestCheckNoResourceAttr(resourceName, RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
+				step2Checks = append(step2Checks, resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS))
 			}
 
 			steps = append(steps, resource.TestStep{
@@ -326,44 +328,6 @@ const (
 	configBlockHostedDefaultR         string = ""
 	configBlockHostedDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
 	configBlockHostedDefaultRubyGems  string = ""
-	configBlockHostedDefaultTerraform string = `terraform_signing = { signing_key = <<-EOT
------BEGIN PGP PRIVATE KEY BLOCK-----
-
-lQHYBGmLEQEBBADBLrTiM/XmBoTSBTdGRSMFgqM12vVi0+3K2vMk9Zd+HUN3O0zY
-ho0Q16SQU9hY7eWRXp/XiyL59u7HQhtrBq36dthvZTCPh23G3ldCtlruPhQWtHI/
-xO3phio8skST4MDRfS3csoyRc/rnY7Rc00P7J8HP7dx+sRqv+SnIBeyOLQARAQAB
-AAP9E3Q4Z4IrjGlSJVM8pIEwXGzyMil1Ziko7HF9pFZuFddtFJv+alysZoqMyjMD
-WbtFT80bZCmhEVKWa68C01WWHfK2CqPOsEFiWG/fxUbnUG7RlehMKrI6KF+2wWBv
-o452loV/Bzua64uR1kP+l43BH69LzJE6uWHl5KNJyX1uoskCAMvp9kkzc1Pe2/hT
-Vc72s/CkMlw6GMSI4Lk6+YuvajGlr/HxsFhBjM9ADLkWIDoywxCQ1kKSxtF/FG4a
-zZG3GxkCAPKHAh6ByWSc+dfg1acQx1/LHaGdmLACaJYK7OAy4+ra+VrX6c3th6ye
-T8SzJG2sq3aBztDBwdtjdWf+8BazwjUCALcVncOFj5a/N1vZZ6chuo27wEVw6Bpb
-iN2rb+SxuT1iTaCE3/RfSywlqf0aVMkh3Dygz5/CwOwEmffNVGhV9gOpM7RpU29u
-YXR5cGUgQ29tbXVuaXR5IFRlc3QgRGF0YSBLZXkgKFRFU1QgREFUQSBPTkxZIC0g
-RE8gTk9UIFVTRSBGT1IgU0lHTklORykgPGNvbW11bml0eS1ncm91cEBzb25hdHlw
-ZS5jb20+iM4EEwEIADgWIQTHqk34+snIQVhkIMl2y863mbo3rgUCaYsRAQIbAwUL
-CQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRB2y863mbo3rqk8A/97anQKQ5ZUc/Oz
-FSUpRI7sKCwot2C9dP7wAAifUtfX7vn32H4fz3T9BDB8CJMtVurMYVNskLvy5rKe
-n//joo0cp+XX+KDVmuEPtxbZD5+Py+JGUwOuOkK8bO5N/xGe0N/CWfW2DXvpMvut
-1x/uN9aslm9GBhezNr1V5totT7Tx5p0B2ARpixEBAQQAzmA6ajRv7U3tQV9aJav1
-/y/+byUrm4hta2pGuo0qTeP8i2SEao3S7DkoENcA3MhRtxJk4fzMGmH68saQyKK5
-66se0mZLTQjkPKGXje0pjAT4hTaffi3PDycR5MBEe80rbu08ouqSkKQ5xUrTL3FE
-MC9BBbFMacl8EAbeIiIyvLEAEQEAAQAD+QGysjOuIRA2jpMrGj2NEXlHMJXYZuLu
-PkoRR09TrU9pDB/skf1DXm2OmkCFDVsJBqjt2hYaLPF9YNnF0JqHAhENSJqShPgd
-tyRprrObKuTYTH+cv4QI1cr52Oxr6BkAqP3VqPJxqrqXWLnscveryoxEPMlNvXbk
-5ATexXyThwRBAgDlorsxh4YywRJdrQCSSnQiiYlqt/L2cKliTedbEN3ffFOD3OH/
-zZbaoXruev75FrIZtgtfSgprLELw/fwsTxHBAgDmEd01R3S8R3tpkzMGvdCwZFL2
-6uGaVmgTZ415XpXiNrDWSO0QeD15F6mnMwM8PsEEarRwrnc23pPZSLw2eIbxAf9D
-o/bDNpno4GBpCd6P8sUhFRCw8UweU4EHVfz7OfnBkid8tvn4y85U2HJUi9jXj4/v
-+yDRM+uhsch4VBac5xhVpwOItgQYAQgAIBYhBMeqTfj6ychBWGQgyXbLzreZujeu
-BQJpixEBAhsMAAoJEHbLzreZujeu0o0D/iHzDEXpkHE/sbd82JwPR48YR8cmBzq+
-CMnhPvAykyWgXvRoEQmXj+rzH9nlTsD9TNIVrnReTT5PBDGWVTk5DXkpb9ZfaajU
-USlNrkrzgatlosKJskQSSrKSbmqju1/R885DZMtTb4ryjzHVqvwALzCFTXyyEpMl
-OVIAhWNMezYE
-=RbgK
------END PGP PRIVATE KEY BLOCK-----
-EOT
-}`
 	configBlockHostedDefaultYum string = "yum = { repo_data_depth = 1 }"
 )
 
@@ -396,7 +360,7 @@ func formatSpecificHostedDefaultConfig(repoFormat string) string {
 	case common.REPO_FORMAT_RUBY_GEMS:
 		return configBlockHostedDefaultRubyGems
 	case common.REPO_FORMAT_TERRAFORM:
-		return configBlockHostedDefaultTerraform
+		return repotest.ConfigBlockHostedDefaultTerraform
 	case common.REPO_FORMAT_YUM:
 		return configBlockHostedDefaultYum
 
