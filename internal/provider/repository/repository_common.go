@@ -178,42 +178,19 @@ func (r *repositoryResource) createRepository(ctx context.Context, plan any, res
 	return true
 }
 
-// readCreatedRepository fetches the repository data immediately after create.
-// The 10 s middleware delay covers normal HA propagation; we retry twice with
-// a 1 s pause as a backstop for nodes still under load.
+// readCreatedRepository fetches the created repository data
 func (r *repositoryResource) readCreatedRepository(ctx context.Context, plan interface{}, respDiags *diag.Diagnostics, respState *tfsdk.State) (interface{}, bool) {
-	maxAttempts := 1
-	if r.NodeCount > 1 {
-		maxAttempts = 2
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
+	if err != nil {
+		r.handleCreateReadError(ctx, httpResponse, err, respDiags, respState)
+		return nil, false
 	}
-
-	var (
-		apiResponse  interface{}
-		httpResponse *http.Response
-		err          error
-	)
-
-	for attempt := 0; attempt < maxAttempts; attempt++ {
-		apiResponse, httpResponse, err = r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
-		if err == nil && apiResponse != nil {
-			return apiResponse, true
-		}
-		if attempt < maxAttempts-1 {
-			tflog.Info(ctx, fmt.Sprintf("HA: repository not yet visible after create, retrying (%d/%d)", attempt+1, maxAttempts))
-			time.Sleep(1 * time.Second)
-		}
-	}
-
-	if err == nil {
-		err = fmt.Errorf("repository not yet visible after create")
-	}
-	r.handleCreateReadError(ctx, httpResponse, err, respDiags, respState)
-	return nil, false
+	return apiResponse, true
 }
 
 // handleCreateReadError handles errors from the read operation after create
 func (r *repositoryResource) handleCreateReadError(ctx context.Context, httpResponse *http.Response, err error, respDiags *diag.Diagnostics, respState *tfsdk.State) {
-	if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
+	if httpResponse.StatusCode == http.StatusNotFound {
 		respState.RemoveResource(ctx)
 		errors.HandleAPIWarning(
 			fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "read"),

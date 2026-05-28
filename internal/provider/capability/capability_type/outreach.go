@@ -101,10 +101,7 @@ func (f *OutreachCapability) UpdatePlanForState(plan any) any {
 
 func (f *OutreachCapability) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.CapabilityCoreOutreachModel)
-	apiModel, ok := (api).(*v3.CapabilityDTO)
-	if !ok || apiModel == nil {
-		return state
-	}
+	apiModel := (api).(*v3.CapabilityDTO)
 	stateModel.FromApiModel(apiModel)
 	stateModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	return stateModel

@@ -67,9 +67,6 @@ func (f *CocoaPodsRepositoryFormatProxy) DoReadRequest(state any, apiClient *son
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCocoapodsProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
-	if apiResponse == nil {
-		return nil, httpResponse, err
-	}
 	return *apiResponse, httpResponse, err
 }
 
