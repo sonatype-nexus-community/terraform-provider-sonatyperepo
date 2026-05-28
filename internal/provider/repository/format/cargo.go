@@ -78,6 +78,9 @@ func (f *CargoRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonaty
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -148,6 +151,9 @@ func (f *CargoRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -287,6 +293,9 @@ func (f *CargoRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyp
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetCargoGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 

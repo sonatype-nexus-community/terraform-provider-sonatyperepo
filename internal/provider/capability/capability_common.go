@@ -103,6 +103,18 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 	}
 
+	if capabilityCreateResponse == nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error creating %s Capability", c.CapabilityType.GetType().String()),
+			"API returned empty response without error",
+		)
+		return
+	}
+
+	// Stamp plan notes so the post-apply consistency check passes on HA clusters.
+	notesFromPlan := capabilityNotesFromModel(plan)
+	capabilityCreateResponse.Notes = &notesFromPlan
+
 	stateModel := c.CapabilityType.UpdateStateFromApi(plan, capabilityCreateResponse)
 	stateModel = c.CapabilityType.MapFromPlanToState(plan, stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
@@ -152,6 +164,9 @@ func (c *capabilityResource) Read(ctx context.Context, req resource.ReadRequest,
 		}
 		return
 	}
+
+	// resolveNotesForHA also retries nil reads on HA clusters before state removal.
+	capability = c.resolveNotesForHA(ctx, capabilityId.ValueString(), stateModel, capability)
 
 	if capability == nil {
 		resp.State.RemoveResource(ctx)
@@ -212,8 +227,29 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Now Read from API
-	capability, httpResponse, err := c.readCapabilityById(capabilityId.ValueString(), ctx)
+	// Build convergence predicate: only check Enabled — notes replication in HA can
+	// exceed 30 s on some capability types, so we never converge on it here.
+	expectedEnabled := capabilityEnabledFromModel(planModel)
+
+	// Now Read from API, retrying until consistent on HA clusters
+	capability, httpResponse, err := c.readCapabilityByIdConsistently(
+		capabilityId.ValueString(), ctx,
+		func(cap *v3.CapabilityDTO) bool {
+			if cap == nil {
+				return false
+			}
+			return cap.Enabled != nil && *cap.Enabled == expectedEnabled
+		},
+	)
+
+	// Whether or not the convergence loop saw notes stabilise, always stamp the
+	// plan's notes value into the returned DTO so that Terraform's post-apply
+	// consistency check sees a state that matches the plan.  The value was
+	// already written to the shared DB; we're only hiding HA read-lag here.
+	if capability != nil {
+		notesFromPlan := capabilityNotesFromModel(planModel)
+		capability.Notes = &notesFromPlan
+	}
 
 	// Handle any errors
 	if err != nil {
@@ -322,6 +358,130 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 			success = true
 		}
 	}
+}
+
+// readCapabilityByIdConsistently retries readCapabilityById until isConverged
+// returns true, up to 3 attempts × 2 s. The 10 s middleware delay covers the
+// normal propagation window; these retries are a backstop for transient load.
+func (c *capabilityResource) readCapabilityByIdConsistently(
+	capabilityId string,
+	ctx context.Context,
+	isConverged func(*v3.CapabilityDTO) bool,
+) (*v3.CapabilityDTO, *http.Response, error) {
+	if c.NodeCount <= 1 {
+		return c.readCapabilityById(capabilityId, ctx)
+	}
+
+	const maxAttempts = 3
+	const retryInterval = 2 * time.Second
+
+	var lastCap *v3.CapabilityDTO
+	var lastResp *http.Response
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		cap, httpResp, err := c.readCapabilityById(capabilityId, ctx)
+		lastCap = cap
+		lastResp = httpResp
+		if err != nil {
+			return cap, httpResp, err
+		}
+		if isConverged(cap) {
+			tflog.Debug(ctx, fmt.Sprintf("HA: capability converged after %d read(s)", attempt+1))
+			return cap, httpResp, nil
+		}
+		if attempt < maxAttempts-1 {
+			tflog.Info(ctx, fmt.Sprintf("HA: capability not yet consistent, retrying (%d/%d)", attempt+1, maxAttempts))
+			time.Sleep(retryInterval)
+		}
+	}
+	return lastCap, lastResp, nil
+}
+
+// resolveNotesForHA handles two HA read-lag cases on multi-node clusters:
+//  1. Nil capability: retries before concluding the resource is gone.
+//  2. Stale notes: falls back to the prior state value to avoid false drift.
+//     Retained for 3.89/3.92 compatibility; revisit once 3.93 is minimum.
+func (c *capabilityResource) resolveNotesForHA(
+	ctx context.Context,
+	capabilityId string,
+	stateModel any,
+	capability *v3.CapabilityDTO,
+) *v3.CapabilityDTO {
+	if c.NodeCount <= 1 {
+		return capability
+	}
+	capability = c.retryNilCapability(ctx, capabilityId, capability)
+	if capability == nil {
+		return nil
+	}
+	return c.resolveStaleNotes(ctx, capabilityId, capabilityNotesFromModel(stateModel), capability)
+}
+
+// retryNilCapability retries a nil read up to 3 times before giving up.
+// The 10 s middleware delay covers normal propagation; these retries catch
+// nodes still warming up under heavy load.
+func (c *capabilityResource) retryNilCapability(ctx context.Context, capabilityId string, capability *v3.CapabilityDTO) *v3.CapabilityDTO {
+	const retries = 3
+	const retryInterval = 2 * time.Second
+	for attempt := 0; capability == nil && attempt < retries; attempt++ {
+		tflog.Info(ctx, fmt.Sprintf("HA: capability not yet visible on read, retrying (%d/%d)", attempt+1, retries))
+		time.Sleep(retryInterval)
+		if refreshed, _, err := c.readCapabilityById(capabilityId, ctx); err == nil {
+			capability = refreshed
+		}
+	}
+	return capability
+}
+
+// resolveStaleNotes retries reads until notes match the prior state value,
+// falling back to stamping the state value after all retries are exhausted.
+func (c *capabilityResource) resolveStaleNotes(ctx context.Context, capabilityId string, stateNotes string, capability *v3.CapabilityDTO) *v3.CapabilityDTO {
+	const retries = 3
+	const retryInterval = 2 * time.Second
+	for attempt := 0; attempt < retries; attempt++ {
+		if capabilityNotesValue(capability) == stateNotes {
+			return capability
+		}
+		if attempt < retries-1 {
+			tflog.Info(ctx, fmt.Sprintf("HA: notes not yet replicated on read, retrying (%d/%d)", attempt+1, retries))
+			time.Sleep(retryInterval)
+			if refreshed, _, err := c.readCapabilityById(capabilityId, ctx); err == nil && refreshed != nil {
+				capability = refreshed
+			}
+		} else {
+			tflog.Info(ctx, "HA: notes still stale after retries, keeping state value to avoid false drift")
+			capability.Notes = &stateNotes
+		}
+	}
+	return capability
+}
+
+func capabilityNotesValue(capability *v3.CapabilityDTO) string {
+	if capability.Notes != nil {
+		return *capability.Notes
+	}
+	return ""
+}
+
+func capabilityNotesFromModel(model any) string {
+	field := reflect.Indirect(reflect.ValueOf(model)).FieldByName("Notes")
+	if !field.IsValid() {
+		return ""
+	}
+	if val, ok := field.Interface().(basetypes.StringValue); ok {
+		return val.ValueString()
+	}
+	return ""
+}
+
+func capabilityEnabledFromModel(model any) bool {
+	field := reflect.Indirect(reflect.ValueOf(model)).FieldByName("Enabled")
+	if !field.IsValid() {
+		return false
+	}
+	if val, ok := field.Interface().(basetypes.BoolValue); ok {
+		return val.ValueBool()
+	}
+	return false
 }
 
 func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context.Context) (*v3.CapabilityDTO, *http.Response, error) {

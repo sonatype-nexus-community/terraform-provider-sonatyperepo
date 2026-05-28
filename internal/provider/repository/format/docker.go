@@ -88,6 +88,9 @@ func (f *DockerRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonat
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 
 	// Temporary Workaround:
 	// latest_policy not returned from READ API for Docker Hosted
@@ -175,6 +178,9 @@ func (f *DockerRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonaty
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 
@@ -325,6 +331,9 @@ func (f *DockerRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonaty
 
 	// Call to API to Read
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetDockerGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
 	return *apiResponse, httpResponse, err
 }
 

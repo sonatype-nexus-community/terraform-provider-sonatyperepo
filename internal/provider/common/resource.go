@@ -41,6 +41,7 @@ type BaseResource struct {
 	Client       *sonatyperepo.APIClient
 	NxrmVersion  SystemVersion
 	NxrmWritable bool
+	NodeCount    int32
 }
 
 // UpgradeState implements resource.ResourceWithUpgradeState.
@@ -104,6 +105,7 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.Client = config.Client
 	r.NxrmVersion = config.NxrmVersion
 	r.NxrmWritable = config.NxrmWritable
+	r.NodeCount = config.NodeCount
 }
 
 // AuthContext returns a new context with authentication set up for API calls
