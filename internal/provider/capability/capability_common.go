@@ -409,12 +409,19 @@ func (c *capabilityResource) resolveNotesForHA(
 	if c.NodeCount <= 1 {
 		return capability
 	}
+	capability = c.retryNilCapability(ctx, capabilityId, capability)
+	if capability == nil {
+		return nil
+	}
+	return c.resolveStaleNotes(ctx, capabilityId, capabilityNotesFromModel(stateModel), capability)
+}
 
+// retryNilCapability retries a nil read up to 3 times before giving up.
+// The 10 s middleware delay covers normal propagation; these retries catch
+// nodes still warming up under heavy load.
+func (c *capabilityResource) retryNilCapability(ctx context.Context, capabilityId string, capability *v3.CapabilityDTO) *v3.CapabilityDTO {
 	const retries = 3
 	const retryInterval = 2 * time.Second
-
-	// Retry nil reads: the 10 s middleware delay covers normal propagation;
-	// these retries catch nodes still warming up under heavy load.
 	for attempt := 0; capability == nil && attempt < retries; attempt++ {
 		tflog.Info(ctx, fmt.Sprintf("HA: capability not yet visible on read, retrying (%d/%d)", attempt+1, retries))
 		time.Sleep(retryInterval)
@@ -422,17 +429,16 @@ func (c *capabilityResource) resolveNotesForHA(
 			capability = refreshed
 		}
 	}
-	if capability == nil {
-		return nil
-	}
+	return capability
+}
 
-	stateNotes := capabilityNotesFromModel(stateModel)
+// resolveStaleNotes retries reads until notes match the prior state value,
+// falling back to stamping the state value after all retries are exhausted.
+func (c *capabilityResource) resolveStaleNotes(ctx context.Context, capabilityId string, stateNotes string, capability *v3.CapabilityDTO) *v3.CapabilityDTO {
+	const retries = 3
+	const retryInterval = 2 * time.Second
 	for attempt := 0; attempt < retries; attempt++ {
-		apiNotes := ""
-		if capability.Notes != nil {
-			apiNotes = *capability.Notes
-		}
-		if apiNotes == stateNotes {
+		if capabilityNotesValue(capability) == stateNotes {
 			return capability
 		}
 		if attempt < retries-1 {
@@ -447,6 +453,13 @@ func (c *capabilityResource) resolveNotesForHA(
 		}
 	}
 	return capability
+}
+
+func capabilityNotesValue(capability *v3.CapabilityDTO) string {
+	if capability.Notes != nil {
+		return *capability.Notes
+	}
+	return ""
 }
 
 func capabilityNotesFromModel(model any) string {
