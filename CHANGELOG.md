@@ -7,7 +7,7 @@ _TBC_
 ## 1.9.0 May 28, 2026
 
 ENHANCEMENTS:
-* A notable change has been implemented that applies **only** when running this provider against a Sonatype Nexus Repository HA Cluster with `> 1` active nodes [GH-391]
+* A notable change has been implemented that applies **only** when running this provider against a Sonatype Nexus Repository HA Cluster with `> 1` active nodes [GH-391], [GH-363]
  
   **Background**
 
