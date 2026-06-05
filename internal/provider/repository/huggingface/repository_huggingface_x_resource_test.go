@@ -218,6 +218,7 @@ resource "%s" "repo" {
     authentication = {
       type = "bearerToken"
       bearer_token = "initial-bearer-token"
+      preemptive = false
     }
   }
 }
