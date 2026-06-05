@@ -101,6 +101,8 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Map to state
 	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
+	// Copy various fields not returned by a READ from Plan (e.g., sensitive auth fields)
+	stateModel = r.RepositoryFormat.UpdateStateFromPlanForNonApiFields(plan, stateModel)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
