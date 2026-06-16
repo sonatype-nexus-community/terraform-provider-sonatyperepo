@@ -4,6 +4,11 @@
 
 _TBC_
 
+## 1.9.1 Jun 16, 2026
+
+BUG FIXES:
+* Resolved inconsistent values after apply when using Bearer Token auth for Proxy Repositories [GH-413]
+
 ## 1.9.0 May 28, 2026
 
 ENHANCEMENTS:
