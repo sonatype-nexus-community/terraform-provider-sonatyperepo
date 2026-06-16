@@ -4,6 +4,11 @@
 
 _TBC_
 
+FEATURES:
+* **New Resource:** `sonatyperepo_repository_ansiblegalaxy_hosted` [GH-417]
+* **New Resource:** `sonatyperepo_repository_ansiblegalaxy_proxy` [GH-417]
+* **New Resource:** `sonatyperepo_repository_ansiblegalaxy_group` [GH-417]
+
 NOTES:
 * Only run acceptance tests against Sonatype Nexus Repository versions not yet in Extended Maintenance [GH-425]
 * Tested against Terraform 1.15.x [GH-423]
