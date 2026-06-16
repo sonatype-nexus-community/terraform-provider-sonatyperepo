@@ -4,6 +4,9 @@
 
 _TBC_
 
+NOTES:
+* Only run acceptance tests against Sonatype Nexus Repository versions not yet in Extended Maintenance [GH-425]
+
 ## 1.9.1 Jun 16, 2026
 
 BUG FIXES:
@@ -36,7 +39,7 @@ BUG FIXES:
 * Support `*` for `format` on `sonatyperepo_cleanup_policy` resource [GH-406]
 
 NOTES:
-* Dpeendency updates
+* Dependency updates
 
 ## 1.8.1 May 15, 2026
 
