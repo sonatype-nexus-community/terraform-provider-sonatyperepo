@@ -116,6 +116,9 @@ func (m *repositoryHttpClientModel) MapToApiHttpClientAttributesWithPreemptiveAu
 
 func (m *repositoryHttpClientModel) MapMissingApiFieldsFromPlan(planModel repositoryHttpClientModel) {
 	if planModel.Authentication != nil {
+		if m.Authentication == nil {
+			m.Authentication = &RepositoryHttpClientAuthenticationModel{}
+		}
 		m.Authentication.MapMissingApiFieldsFromPlan(planModel.Authentication)
 	}
 }
@@ -219,9 +222,7 @@ func (m *RepositoryHttpClientAuthenticationModel) MapFromApiHttpClientConnection
 		m.Preemptive = types.BoolPointerValue(api.Preemptive)
 	}
 
-	if *api.Type == common.HTTP_AUTH_TYPE_BEARER_TOKEN {
-		m.BearerToken = types.StringPointerValue(api.BearerToken)
-	} else if api.Type != nil {
+	if api.Type != nil {
 		m.Username = types.StringPointerValue(api.Username)
 		// m.Password = types.StringPointerValue(api.Password)
 
@@ -287,6 +288,7 @@ func (m *RepositoryHttpClientAuthenticationModel) MapToApiHttpClientConnectionAu
 
 func (m *RepositoryHttpClientAuthenticationModel) MapMissingApiFieldsFromPlan(planModel *RepositoryHttpClientAuthenticationModel) {
 	m.Password = planModel.Password
+	m.BearerToken = planModel.BearerToken
 	if !planModel.Preemptive.ValueBool() {
 		m.Preemptive = planModel.Preemptive
 	}
