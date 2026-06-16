@@ -41,7 +41,7 @@ jobs:
             matrix:
                 nxrm:
                     - '3.89.1-02' # First version tested HA against
-                    - '3.92.0-03' # LATEST
+                    - '3.93.0-06' # LATEST
                 terraform:
                     # - '1.14.*'
                     - '1.15.*' # Latest
