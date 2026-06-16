@@ -42,7 +42,21 @@ var hostedTestData = []repositoryHostedTestData{
 		RepoFormat:                    common.REPO_FORMAT_ANSIBLE_GALAXY,
 		SchemaFunc:                    repositoryHostedResourceConfig,
 		SupportsProprietaryComponents: false,
-		TestImport:                    true,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.93.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 92,
+					Patch: 99,
+				})
+			}
+		},
+		TestImport: true,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
