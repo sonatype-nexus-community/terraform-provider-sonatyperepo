@@ -24,7 +24,9 @@ We test this Provider against a range of Terraform versions and Sonatype Nexus R
 
 ### Sonatype Nexus Repository Manager
 
-We test on `N - 5` releases (where possible, but no earlier than `3.79.1`). See [here](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/blob/6f926daff44b7d105bb648fede26e7c59fbfb06c/.github/workflows/test-trusted.yml#L75) for the current list.
+This Provider is tested on Sonatype Nexus Repository Manager versions that have not yet entered Extendend Maintenance. 
+
+See [Sonatype Nexus Repository 3 Versions Status](https://help.sonatype.com/en/sonatype-nexus-repository-3-versions-status.html) for details.
 
 ### Terraform Version support
 
@@ -60,7 +62,7 @@ Phew, that was easier than I thought. Last but not least of all - have fun!
 [shield_tfr-version]: https://img.shields.io/badge/Terraform%20Registry-v1.9.1-8A2BE2
 [shield_license]: https://img.shields.io/github/license/sonatype-nexus-community/terraform-provider-sonatyperepo?logo=open%20source%20initiative&logoColor=white "license"
 [shield_tf_version]: https://img.shields.io/badge/Terraform-1.7.0&nbsp;&ndash;&nbsp;1.14.x-blue
-[shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.79.1&nbsp;&ndash;&nbsp;3.92.0-blue
+[shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.82.0&nbsp;&ndash;&nbsp;3.92.0-blue
 
 [link_tfr]: https://registry.terraform.io/providers/sonatype-nexus-community/sonatyperepo/latest
 [link_gh-workflow-test]: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/actions/workflows/test-trusted.yml?query=branch%3Amain

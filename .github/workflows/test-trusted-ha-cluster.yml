@@ -40,7 +40,7 @@ jobs:
             fail-fast: false
             matrix:
                 nxrm:
-                    - '3.89.1-02'
+                    - '3.89.1-02' # First version tested HA against
                     - '3.92.0-03' # LATEST
                 terraform:
                     - '1.14.*' # Latest
