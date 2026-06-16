@@ -310,6 +310,20 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 
 func TestAccRepositoryGenericHostedInvalidBlobStore(t *testing.T) {
 	for _, repoFormat := range common.AllHostedFormats() {
+		// Skip formats not supported on older NXRM versions
+		if repoFormat == common.REPO_FORMAT_ANSIBLE_GALAXY {
+			// Ansible Galaxy hosted repositories were added in NXRM 3.93.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		}
+
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resourceType := fmt.Sprintf(resourceTypeHostedFString, strings.ToLower(repoFormat))
 		repoName := strings.ToLower(fmt.Sprintf(hostedNameFString, repoFormat, randomString))
