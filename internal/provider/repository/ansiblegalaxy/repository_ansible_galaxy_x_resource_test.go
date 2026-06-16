@@ -147,7 +147,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
 					resource.TestCheckResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW_ONCE),
-					resource.TestCheckResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS, "false"),
+					resource.TestCheckNoResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_COMPONENT_PROPRIETARY_COMPONENTS),
 					resource.TestCheckNoResourceAttr(resourceAnsibleGalaxyHostedName, repotest.RES_ATTR_CLEANUP),
 
 					// Verify Proxy
