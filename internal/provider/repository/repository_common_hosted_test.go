@@ -338,24 +338,27 @@ resource "%s" "repo" {
 }
 
 const (
+	configBlockHostedDefault         string = ""
 	configBlockHostedDefaultApt      string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
-	configBlockHostedDefaultCargo    string = ""
-	configBlockHostedDefaultConan    string = ""
+	configBlockHostedDefaultCargo    string = configBlockHostedDefault
+	configBlockHostedDefaultConan    string = configBlockHostedDefault
 	configBlockHostedDefaultDocker   string = "docker = { force_basic_auth = false\nv1_enabled = false}"
-	configBlockHostedDefaultGitLfs   string = ""
-	configBlockHostedDefaultHelm     string = ""
+	configBlockHostedDefaultGitLfs   string = configBlockHostedDefault
+	configBlockHostedDefaultHelm     string = configBlockHostedDefault
 	configBlockHostedDefaultMaven    string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
-	configBlockHostedDefaultNpm      string = ""
-	configBlockHostedDefaultNuget    string = ""
-	configBlockHostedDefaultPypi     string = ""
-	configBlockHostedDefaultR        string = ""
+	configBlockHostedDefaultNpm      string = configBlockHostedDefault
+	configBlockHostedDefaultNuget    string = configBlockHostedDefault
+	configBlockHostedDefaultPypi     string = configBlockHostedDefault
+	configBlockHostedDefaultR        string = configBlockHostedDefault
 	configBlockHostedDefaultRaw      string = "raw = { content_disposition = \"ATTACHMENT\" }"
-	configBlockHostedDefaultRubyGems string = ""
+	configBlockHostedDefaultRubyGems string = configBlockHostedDefault
 	configBlockHostedDefaultYum      string = "yum = { repo_data_depth = 1 }"
 )
 
 func formatSpecificHostedDefaultConfig(repoFormat string) string {
 	switch repoFormat {
+	case common.REPO_FORMAT_ANSIBLE_GALAXY:
+		return configBlockHostedDefault
 	case common.REPO_FORMAT_APT:
 		return configBlockHostedDefaultApt
 	case common.REPO_FORMAT_CARGO:
