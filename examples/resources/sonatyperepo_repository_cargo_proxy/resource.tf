@@ -19,13 +19,14 @@ resource "sonatyperepo_repository_cargo_proxy" "cargo_proxy" {
   }
 
   http_client = {
-    blocked                   = false
-    auto_block                = false
-    connection                = "0"
-    enable_circular_redirects = true
-    enable_cookies            = true
-    retries                   = 0
-    timeout                   = 60
-    use_trust_store           = false
+    blocked    = false
+    auto_block = false
+    connection = {
+      enable_circular_redirects = true
+      enable_cookies            = true
+      retries                   = 0
+      timeout                   = 60
+      use_trust_store           = false
+    }
   }
 }

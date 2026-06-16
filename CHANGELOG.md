@@ -9,6 +9,9 @@ FEATURES:
 * **New Resource:** `sonatyperepo_repository_ansiblegalaxy_proxy` [GH-417]
 * **New Resource:** `sonatyperepo_repository_ansiblegalaxy_group` [GH-417]
 
+BUG FIXES:
+* Documentation corrected for all `sonatyperepo_repository_*_proxy` resources re. `http_client.connection` [GH-420]s
+
 NOTES:
 * Only run acceptance tests against Sonatype Nexus Repository versions not yet in Extended Maintenance [GH-425]
 * Tested against Terraform 1.15.x [GH-423]
