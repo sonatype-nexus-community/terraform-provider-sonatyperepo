@@ -37,7 +37,6 @@ resource "sonatyperepo_repository_ansiblegalaxy_hosted" "ansiblegalaxy_hosted" {
 ### Optional
 
 - `cleanup` (Attributes) Repository Cleanup configuration (see [below for nested schema](#nestedatt--cleanup))
-- `component` (Attributes) Component configuration for this Repository (see [below for nested schema](#nestedatt--component))
 - `url` (String) URL to access the Repository
 
 ### Read-Only
@@ -60,14 +59,6 @@ Required:
 Optional:
 
 - `policy_names` (Set of String) Set of Cleanup Policies that will apply to this Repository
-
-
-<a id="nestedatt--component"></a>
-### Nested Schema for `component`
-
-Optional:
-
-- `proprietary_components` (Boolean) Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Repository Firewall)
 
 ## Import
 
