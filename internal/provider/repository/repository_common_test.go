@@ -37,6 +37,7 @@ const (
 	resourceTypeHostedFString string = "sonatyperepo_repository_%s_hosted"
 	resourceTypeProxyFString  string = "sonatyperepo_repository_%s_proxy"
 
+	TEST_DATA_ANSIBLE_GALAXY_REMOTE_URL     string = "https://galaxy.ansible.com"
 	TEST_DATA_APT_PROXY_REMOTE_URL          string = "https://archive.ubuntu.com/ubuntu/"
 	TEST_DATA_CARGO_PROXY_REMOTE_URL        string = "https://index.crates.io/"
 	TEST_DATA_COCOAPODS_PROXY_REMOTE_URL    string = "https://cdn.cocoapods.org/"
@@ -63,7 +64,7 @@ const (
 
 var (
 	errorMessageBlobStoreNotFound                = "Blob store.*not found"
-errorMessageInvalidRemoteUrl                 = "Attribute proxy.remote_url must be a valid HTTP URL"
+	errorMessageInvalidRemoteUrl                 = "Attribute proxy.remote_url must be a valid HTTP URL"
 	errorMessageHttpClientConnectionRetriesValue = fmt.Sprintf(
 		"Attribute http_client.connection.retries value must be between %d and %d",
 		common.REPOSITORY_HTTP_CLIENT_CONNECTION_RETRIES_MIN,

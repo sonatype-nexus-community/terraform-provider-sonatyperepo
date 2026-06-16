@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -44,6 +45,18 @@ func TestAccRepositoryAnsibleGalaxyResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Requires NXRM 3.93.0+
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		},
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
@@ -182,6 +195,18 @@ func TestAccRepositoryAnsibleGalaxyGroupImport(t *testing.T) {
 	repoName := fmt.Sprintf("ansiblegalaxy-group-import-%s", randomString)
 	memberName := fmt.Sprintf("ansiblegalaxy-hosted-member-%s", randomString)
 	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Requires NXRM 3.93.0+
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		},
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create with minimal configuration

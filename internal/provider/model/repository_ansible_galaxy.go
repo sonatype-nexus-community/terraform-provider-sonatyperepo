@@ -26,7 +26,7 @@ import (
 // Hosted Ansible Galaxy
 // --------------------------------------------
 type RepositoryAnsibleGalaxyHostedModel struct {
-	RepositoryHostedModel
+	RepositoryHostedWithoutComponentModel
 }
 
 func (m *RepositoryAnsibleGalaxyHostedModel) FromApiModel(api sonatyperepo.AnsibleGalaxyHostedApiRepository) {
@@ -41,12 +41,6 @@ func (m *RepositoryAnsibleGalaxyHostedModel) FromApiModel(api sonatyperepo.Ansib
 		mapCleanupFromApi(api.Cleanup, m.Cleanup)
 	} else {
 		m.Cleanup = nil
-	}
-
-	// Component
-	if api.Component != nil {
-		m.Component = &RepositoryComponentModel{}
-		m.Component.MapFromApi(api.Component)
 	}
 }
 
@@ -64,7 +58,6 @@ func (m *RepositoryAnsibleGalaxyHostedModel) ToApiCreateModel() sonatyperepo.Ans
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
-	m.Component.MapToApi(apiModel.Component)
 
 	return apiModel
 }

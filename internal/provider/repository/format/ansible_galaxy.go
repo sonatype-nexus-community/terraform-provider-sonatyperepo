@@ -93,7 +93,7 @@ func (f *AnsibleGalaxyRepositoryFormatHosted) DoUpdateRequest(plan any, state an
 }
 
 func (f *AnsibleGalaxyRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonHostedSchemaAttributes()
+	return map[string]tfschema.Attribute{}
 }
 
 func (f *AnsibleGalaxyRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -112,7 +112,7 @@ func (f *AnsibleGalaxyRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *AnsibleGalaxyRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
+func (f *AnsibleGalaxyRepositoryFormatHosted) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryAnsibleGalaxyHostedModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -196,7 +196,7 @@ func (f *AnsibleGalaxyRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *AnsibleGalaxyRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+func (f *AnsibleGalaxyRepositoryFormatProxy) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryAnsibleGalaxyProxyModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -246,7 +246,7 @@ func (f *AnsibleGalaxyRepositoryFormatGroup) DoReadRequest(state any, apiClient 
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AnsibleGalaxyRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatGroup) DoUpdateRequest(plan, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyGroupModel)
 
@@ -277,7 +277,7 @@ func (f *AnsibleGalaxyRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *AnsibleGalaxyRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+func (f *AnsibleGalaxyRepositoryFormatGroup) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryAnsibleGalaxyGroupModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {

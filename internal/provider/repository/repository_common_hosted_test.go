@@ -37,6 +37,15 @@ import (
 var hostedTestData = []repositoryHostedTestData{
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RepoFormat:                    common.REPO_FORMAT_ANSIBLE_GALAXY,
+		SchemaFunc:                    repositoryHostedResourceConfig,
+		SupportsProprietaryComponents: false,
+		TestImport:                    true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_APT_DISTRIBUTION, "bionic"),
 			}
@@ -315,20 +324,20 @@ resource "%s" "repo" {
 }
 
 const (
-	configBlockHostedDefaultApt       string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
-	configBlockHostedDefaultCargo     string = ""
-	configBlockHostedDefaultConan     string = ""
-	configBlockHostedDefaultDocker    string = "docker = { force_basic_auth = false\nv1_enabled = false}"
-	configBlockHostedDefaultGitLfs    string = ""
-	configBlockHostedDefaultHelm      string = ""
-	configBlockHostedDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
-	configBlockHostedDefaultNpm       string = ""
-	configBlockHostedDefaultNuget     string = ""
-	configBlockHostedDefaultPypi      string = ""
-	configBlockHostedDefaultR         string = ""
-	configBlockHostedDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
-	configBlockHostedDefaultRubyGems  string = ""
-	configBlockHostedDefaultYum string = "yum = { repo_data_depth = 1 }"
+	configBlockHostedDefaultApt      string = "apt = { distribution = \"bionic\" }\napt_signing = { key_pair = \"something\" }"
+	configBlockHostedDefaultCargo    string = ""
+	configBlockHostedDefaultConan    string = ""
+	configBlockHostedDefaultDocker   string = "docker = { force_basic_auth = false\nv1_enabled = false}"
+	configBlockHostedDefaultGitLfs   string = ""
+	configBlockHostedDefaultHelm     string = ""
+	configBlockHostedDefaultMaven    string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
+	configBlockHostedDefaultNpm      string = ""
+	configBlockHostedDefaultNuget    string = ""
+	configBlockHostedDefaultPypi     string = ""
+	configBlockHostedDefaultR        string = ""
+	configBlockHostedDefaultRaw      string = "raw = { content_disposition = \"ATTACHMENT\" }"
+	configBlockHostedDefaultRubyGems string = ""
+	configBlockHostedDefaultYum      string = "yum = { repo_data_depth = 1 }"
 )
 
 func formatSpecificHostedDefaultConfig(repoFormat string) string {
