@@ -222,9 +222,7 @@ func (m *RepositoryHttpClientAuthenticationModel) MapFromApiHttpClientConnection
 		m.Preemptive = types.BoolPointerValue(api.Preemptive)
 	}
 
-	if *api.Type == common.HTTP_AUTH_TYPE_BEARER_TOKEN {
-		m.BearerToken = types.StringPointerValue(api.BearerToken)
-	} else if api.Type != nil {
+	if api.Type != nil {
 		m.Username = types.StringPointerValue(api.Username)
 		// m.Password = types.StringPointerValue(api.Password)
 
