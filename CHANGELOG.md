@@ -6,6 +6,7 @@ _TBC_
 
 NOTES:
 * Only run acceptance tests against Sonatype Nexus Repository versions not yet in Extended Maintenance [GH-425]
+* Tested against Terraform 1.15.x [GH-423]
 
 ## 1.9.1 Jun 16, 2026
 
