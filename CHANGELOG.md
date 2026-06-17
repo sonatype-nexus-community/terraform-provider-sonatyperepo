@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.10.0 Jun 17, 2026
+
 ENHANCEMENTS:
 * Added support for managing Ansible Galaxy repositories - [GH-417] - thanks @JoooostB:
   * **New Resource:** `sonatyperepo_repository_ansiblegalaxy_hosted` 
@@ -11,7 +13,7 @@ ENHANCEMENTS:
   * **New Resource:** `sonatyperepo_repository_ansiblegalaxy_group`
 
 BUG FIXES:
-* Documentation corrected for all `sonatyperepo_repository_*_proxy` resources re. `http_client.connection` [GH-420]s
+* Documentation corrected for all `sonatyperepo_repository_*_proxy` resources re. `http_client.connection` [GH-420]
 
 NOTES:
 * Only run acceptance tests against Sonatype Nexus Repository versions not yet in Extended Maintenance [GH-425]
