@@ -80,7 +80,22 @@ var proxyTestData = []repositoryProxyTestData{
 		RemoteUrl:            TEST_DATA_APT_PROXY_REMOTE_URL,
 		RepoFormat:           common.REPO_FORMAT_APT,
 		SchemaFunc:           repositoryProxyResourceConfig,
-		TestImport:           true,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// NXRM 3.82.0 has a bug where proxy repositories may end up in STOPPED state
+				// preventing updates - skip tests for this version
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 82,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 82,
+					Patch: 99,
+				})
+			}
+		},
+		TestImport: true,
 	},
 	// NEXUS-48088 prevented this working prior to NXRM 3.88.0 (cargo.requireAuthentication was always returned as false)
 	{
