@@ -80,15 +80,15 @@ func (p *SonatypeRepoProvider) Schema(ctx context.Context, req provider.SchemaRe
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
-				MarkdownDescription: "Sonatype Nexus Repository Server URL",
+				MarkdownDescription: "Sonatype Nexus Repository Server URL. Can also be set using the `NXRM_SERVER_URL` environment variable.",
 				Required:            true,
 			},
 			"username": schema.StringAttribute{
-				MarkdownDescription: "Username for Sonatype Nexus Repository Server, requires role/permissions scoped to the resources you wish to manage",
+				MarkdownDescription: "Username for Sonatype Nexus Repository Server, requires role/permissions scoped to the resources you wish to manage. Can also be set using the `NXRM_SERVER_USERNAME` environment variable.",
 				Required:            true,
 			},
 			"password": schema.StringAttribute{
-				MarkdownDescription: "Password for your user for Sonatype Nexus Repository Server",
+				MarkdownDescription: "Password for your user for Sonatype Nexus Repository Server. Can also be set using the `NXRM_SERVER_PASSWORD` environment variable.",
 				Required:            true,
 				Sensitive:           true,
 			},
