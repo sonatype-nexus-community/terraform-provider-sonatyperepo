@@ -29,3 +29,11 @@ func NewRepositorySwiftProxyResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
+
+// NewRepositorySwiftGroupResource is a helper function to simplify the provider implementation.
+func NewRepositorySwiftGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.SwiftRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

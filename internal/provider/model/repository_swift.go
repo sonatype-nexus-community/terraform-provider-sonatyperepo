@@ -130,3 +130,32 @@ func (m *RepositorySwiftProxyModel) ToApiCreateModel() sonatyperepo.SwiftProxyRe
 func (m *RepositorySwiftProxyModel) ToApiUpdateModel() sonatyperepo.SwiftProxyRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
+
+// Swift Group
+// ----------------------------------------
+type RepositorySwiftGroupModel struct {
+	RepositoryGroupModel
+}
+
+func (m *RepositorySwiftGroupModel) FromApiModel(api sonatyperepo.SwiftGroupApiRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+	m.Storage.MapFromApi(&api.Storage)
+	m.Group.MapFromApi(&api.Group)
+}
+
+func (m *RepositorySwiftGroupModel) ToApiCreateModel() sonatyperepo.SwiftGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.SwiftGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+	m.Group.MapToApi(&apiModel.Group)
+	return apiModel
+}
+
+func (m *RepositorySwiftGroupModel) ToApiUpdateModel() sonatyperepo.SwiftGroupRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
