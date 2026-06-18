@@ -135,3 +135,57 @@ func (m *RepositoryGoGroupModel) ToApiCreateModel() sonatyperepo.GolangGroupRepo
 func (m *RepositoryGoGroupModel) ToApiUpdateModel() sonatyperepo.GolangGroupRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
+
+// Go Hosted
+// ----------------------------------------
+type RepositoryGoHostedModel struct {
+	RepositoryHostedModel
+}
+
+func (m *RepositoryGoHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = &RepositoryCleanupModel{}
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
+	}
+
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
+}
+
+func (m *RepositoryGoHostedModel) ToApiCreateModel() sonatyperepo.GolangHostedRepositoryApiRequest {
+	apiModel := sonatyperepo.GolangHostedRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.HostedStorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+
+	if m.Cleanup != nil {
+		apiModel.Cleanup = &sonatyperepo.CleanupPolicyAttributes{
+			PolicyNames: make([]string, 0),
+		}
+		mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
+	}
+
+	if m.Component != nil {
+		apiModel.Component = &sonatyperepo.ComponentAttributes{}
+		m.Component.MapToApi(apiModel.Component)
+	}
+
+	return apiModel
+}
+
+func (m *RepositoryGoHostedModel) ToApiUpdateModel() sonatyperepo.GolangHostedRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}

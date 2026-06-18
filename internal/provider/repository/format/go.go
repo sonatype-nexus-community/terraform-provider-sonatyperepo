@@ -43,6 +43,10 @@ type GoRepositoryFormatGroup struct {
 	GoRepositoryFormat
 }
 
+type GoRepositoryFormatHosted struct {
+	GoRepositoryFormat
+}
+
 // --------------------------------------------
 // Generic NPM Format Functions
 // --------------------------------------------
@@ -262,6 +266,80 @@ func (f *GoRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
 func (f *GoRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
 	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, nil
+}
+
+// --------------------------------------------
+// HOSTED Go Format Functions
+// --------------------------------------------
+func (f *GoRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryGoHostedModel)
+
+	// Call API to Create
+	return apiClient.RepositoryManagementAPI.CreateGoHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+}
+
+func (f *GoRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryGoHostedModel)
+
+	// Call to API to Read
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	if apiResponse == nil {
+		return nil, httpResponse, err
+	}
+	return *apiResponse, httpResponse, err
+}
+
+func (f *GoRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+	// Cast to correct Plan Model Type
+	planModel := (plan).(model.RepositoryGoHostedModel)
+
+	// Cast to correct State Model Type
+	stateModel := (state).(model.RepositoryGoHostedModel)
+
+	// Call API to Update
+	return apiClient.RepositoryManagementAPI.UpdateGoHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+}
+
+func (f *GoRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
+	return commonHostedSchemaAttributes()
+}
+
+func (f *GoRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
+	var planModel model.RepositoryGoHostedModel
+	return planModel, plan.Get(ctx, &planModel)
+}
+
+func (f *GoRepositoryFormatHosted) StateAsModel(ctx context.Context, state tfsdk.State) (any, diag.Diagnostics) {
+	var stateModel model.RepositoryGoHostedModel
+	return stateModel, state.Get(ctx, &stateModel)
+}
+
+func (f *GoRepositoryFormatHosted) UpdatePlanForState(plan any) any {
+	var planModel = (plan).(model.RepositoryGoHostedModel)
+	planModel.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	return planModel
+}
+
+func (f *GoRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
+	var stateModel model.RepositoryGoHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryGoHostedModel)
+	}
+	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
+	return stateModel
+}
+
+// DoImportRequest implements the import functionality for Go Hosted repositories
+func (f *GoRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+	// Call to API to Read repository for import
+	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetGoHostedRepository(ctx, repositoryName).Execute()
 	if err != nil {
 		return nil, httpResponse, err
 	}

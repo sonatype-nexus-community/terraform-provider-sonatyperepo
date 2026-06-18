@@ -20,22 +20,25 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
-	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	"testing"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const (
-	resourceTypeGoGroup = "sonatyperepo_repository_go_group"
-	resourceTypeGoProxy = "sonatyperepo_repository_go_proxy"
+	resourceTypeGoGroup  = "sonatyperepo_repository_go_group"
+	resourceTypeGoHosted = "sonatyperepo_repository_go_hosted"
+	resourceTypeGoProxy  = "sonatyperepo_repository_go_proxy"
 )
 
 var (
-	resourceGoGroupName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoGroup)
-	resourceGoProxyName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoProxy)
+	resourceGoGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoGroup)
+	resourceGoHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoHosted)
+	resourceGoProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeGoProxy)
 )
 
 func TestAccRepositoryGoResource(t *testing.T) {
@@ -209,6 +212,105 @@ resource "%s" "repo" {
 			// Import and verify no changes
 			{
 				ResourceName:                         resourceGoGroupName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+			},
+		},
+	})
+}
+
+func TestAccRepositoryGoHostedResource(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Requires NXRM 3.93.0+
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		},
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "go-hosted-repo-%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+    write_policy = "ALLOW"
+  }
+  component = {
+    proprietary_components = false
+  }
+}
+`, resourceTypeGoHosted, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("go-hosted-repo-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttrSet(resourceGoHostedName, repotest.RES_ATTR_URL),
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+					resource.TestCheckResourceAttr(resourceGoHostedName, "storage.write_policy", "ALLOW"),
+					resource.TestCheckResourceAttr(resourceGoHostedName, "component.proprietary_components", "false"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRepositoryGoHostedImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	repoName := fmt.Sprintf("go-hosted-import-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			// Requires NXRM 3.93.0+
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		},
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with minimal configuration
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+    write_policy = "ALLOW"
+  }
+}
+`, resourceTypeGoHosted, repoName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceGoHostedName, repotest.RES_ATTR_ONLINE, "true"),
+				),
+			},
+			// Import and verify no changes
+			{
+				ResourceName:                         resourceGoHostedName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
