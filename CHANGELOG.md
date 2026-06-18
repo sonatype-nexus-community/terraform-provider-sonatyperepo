@@ -4,6 +4,15 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* Added support for Go Hosted repositories [GH-419]
+  * **New Resource:** `sonatyperepo_repository_go_hosted`
+* Added support for Swift Group repositories [GH-418]
+  * **New Resource:** `sonatyperepo_repository_swift_group`
+
+NOTES:
+* Docuemnted the environment variables that can be used to configure this provider [GH-421]
+
 ## 1.10.0 Jun 17, 2026
 
 ENHANCEMENTS:
