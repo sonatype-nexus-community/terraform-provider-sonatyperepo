@@ -360,6 +360,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryDockerProxyResource,
 		repository.NewRepositoryGitLfsHostedResource,
 		repository.NewRepositoryGoGroupResource,
+		repository.NewRepositoryGoHostedResource,
 		repository.NewRepositoryGoProxyResource,
 		repository.NewRepositoryHelmHostedResource,
 		repository.NewRepositoryHelmProxyResource,

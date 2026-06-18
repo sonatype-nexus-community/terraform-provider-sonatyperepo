@@ -37,3 +37,11 @@ func NewRepositoryGoGroupResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_GROUP,
 	}
 }
+
+// NewRepositoryGoHostedResource is a helper function to simplify the provider implementation.
+func NewRepositoryGoHostedResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.GoRepositoryFormatHosted{},
+		RepositoryType:   format.REPO_TYPE_HOSTED,
+	}
+}
