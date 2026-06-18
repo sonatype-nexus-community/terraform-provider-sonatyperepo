@@ -5,6 +5,19 @@ provider "sonatyperepo" {
   password = "password"
 }
 
+# Using environment variables for credentials (useful for CI/CD)
+# Set NXRM_SERVER_URL, NXRM_SERVER_USERNAME, and NXRM_SERVER_PASSWORD
+provider "sonatyperepo" {
+  # Credentials provided via environment variables
+}
+
+# Mix environment variables with explicit configuration
+provider "sonatyperepo" {
+  username = "terraform-user"
+  password = "terraform-password"
+  # URL provided via NXRM_SERVER_URL environment variable
+}
+
 # If you run with a base path, you can add it:
 provider "sonatyperepo" {
   url           = "https://my-sonatype-nexus-repository.tld:port"

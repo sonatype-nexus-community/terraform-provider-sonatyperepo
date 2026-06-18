@@ -23,4 +23,37 @@ See [Sonatype Nexus Repository 3 Versions Status](https://help.sonatype.com/en/s
 
 {{ tffile "examples/provider/provider.tf" }}
 
+## Environment Variables
+
+The provider supports the following environment variables for authentication and configuration. These are particularly useful for CI/CD scenarios where you don't want to store credentials in Terraform configuration files.
+
+### Supported Environment Variables
+
+| Environment Variable | Description | Provider Argument |
+|---------------------|-------------|-------------------|
+| `NXRM_SERVER_URL` | Sonatype Nexus Repository Server URL | `url` |
+| `NXRM_SERVER_USERNAME` | Username for authentication | `username` |
+| `NXRM_SERVER_PASSWORD` | Password for authentication | `password` |
+
+### Precedence
+
+Environment variables are evaluated first and will be overridden if the corresponding provider argument is explicitly set in your Terraform configuration. This allows you to:
+
+- Set defaults via environment variables
+- Override specific values in your Terraform configuration when needed
+
+### CI/CD Example
+
+In your CI/CD pipeline, set environment variables:
+
+```bash
+export NXRM_SERVER_URL="https://nexus.example.com"
+export NXRM_SERVER_USERNAME="${NEXUS_USERNAME}"  # from CI/CD secret
+export NXRM_SERVER_PASSWORD="${NEXUS_PASSWORD}"  # from CI/CD secret
+terraform plan
+```
+
+> [!TIP]
+> When using environment variables for all required fields, you can leave the provider block empty or omit credentials entirely. The provider will use environment variable values automatically.
+
 {{ .SchemaMarkdown | trimspace }}
