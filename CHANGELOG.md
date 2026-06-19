@@ -12,6 +12,7 @@ ENHANCEMENTS:
 
 NOTES:
 * Docuemnted the environment variables that can be used to configure this provider [GH-421]
+* Documented the privileges required in Sonatype Nexus Repository to use this provider [GH-424]
 
 ## 1.10.0 Jun 17, 2026
 
