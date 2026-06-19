@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.11.0 Jun 19, 2026
+
 ENHANCEMENTS:
 * Added support for Go Hosted repositories [GH-419]
   * **New Resource:** `sonatyperepo_repository_go_hosted`
