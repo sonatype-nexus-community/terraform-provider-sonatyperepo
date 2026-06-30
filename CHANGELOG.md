@@ -4,6 +4,9 @@
 
 _TBC_
 
+BUG FIXES:
+* Prevent `inconsistent values` error for `sonatyperepo_repository_yum_*` resources [GH-436]
+
 ## 1.11.0 Jun 19, 2026
 
 ENHANCEMENTS:
