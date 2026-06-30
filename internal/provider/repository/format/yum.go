@@ -336,6 +336,16 @@ func (f *YumRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
+func (f *YumRepositoryFormatGroup) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryYumGroupModel)
+	var stateModel model.RepositoryYumGroupModel
+	if state != nil {
+		stateModel = (state).(model.RepositoryYumGroupModel)
+	}
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
 	var stateModel model.RepositoryYumGroupModel
 	// During import, state might be nil, so we create a new model

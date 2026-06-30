@@ -94,6 +94,8 @@ type RepositoryYumProxyModel struct {
 
 func (m *RepositoryYumProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryYumProxyModel) {
 	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+	// YUM signing fields are not returned by the GET API; preserve from plan
+	m.Yum = planModel.Yum
 }
 
 func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
@@ -177,6 +179,11 @@ func (m *RepositoryYumProxyModel) ToApiUpdateModel() sonatyperepo.YumProxyReposi
 type RepositoryYumGroupModel struct {
 	RepositoryGroupModel
 	Yum *yumSigningModel `tfsdk:"yum"`
+}
+
+func (m *RepositoryYumGroupModel) MapMissingApiFieldsFromPlan(planModel RepositoryYumGroupModel) {
+	// YUM signing fields are not returned by the GET API; preserve from plan
+	m.Yum = planModel.Yum
 }
 
 func (m *RepositoryYumGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
