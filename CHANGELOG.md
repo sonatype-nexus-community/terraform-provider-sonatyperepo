@@ -4,6 +4,8 @@
 
 _TBC_
 
+## 1.12.0 Jul 01, 2026
+
 ENHANCEMENTS:
 * Added support for Helm Group repository [GH-437]
   * **New Resource:** `sonatyperepo_repository_helm_group`
