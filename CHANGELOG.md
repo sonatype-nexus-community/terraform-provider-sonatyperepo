@@ -4,6 +4,10 @@
 
 _TBC_
 
+ENHANCEMENTS:
+* Added support for Helm Group repository [GH-437]
+  * **New Resource:** `sonatyperepo_repository_helm_group`
+
 BUG FIXES:
 * Prevent `inconsistent values` error for `sonatyperepo_repository_yum_*` resources [GH-436]
 
