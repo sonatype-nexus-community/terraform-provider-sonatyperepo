@@ -362,6 +362,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		repository.NewRepositoryGoGroupResource,
 		repository.NewRepositoryGoHostedResource,
 		repository.NewRepositoryGoProxyResource,
+		repository.NewRepositoryHelmGroupResource,
 		repository.NewRepositoryHelmHostedResource,
 		repository.NewRepositoryHelmProxyResource,
 		repository.NewRepositoryHuggingFaceProxyResource,

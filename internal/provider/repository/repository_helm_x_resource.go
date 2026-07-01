@@ -37,3 +37,11 @@ func NewRepositoryHelmProxyResource() resource.Resource {
 		RepositoryType:   format.REPO_TYPE_PROXY,
 	}
 }
+
+// NewRepositoryHelmGroupResource is a helper function to simplify the provider implementation.
+func NewRepositoryHelmGroupResource() resource.Resource {
+	return &repositoryResource{
+		RepositoryFormat: &format.HelmRepositoryFormatGroup{},
+		RepositoryType:   format.REPO_TYPE_GROUP,
+	}
+}

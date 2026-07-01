@@ -102,6 +102,7 @@ func allRepositoryFormatsGroupGeneric() []string {
 	return []string{
 		strings.ToLower(common.REPO_FORMAT_CONAN),
 		// strings.ToLower(common.REPO_FORMAT_GO),		// No hosted repo
+		// strings.ToLower(common.REPO_FORMAT_HELM),	// Requires NXRM 3.92+; tested in helm/repository_helm_x_resource_test.go
 		// strings.ToLower(common.REPO_FORMAT_MAVEN),	// Hosted repo requires specific config
 		strings.ToLower(common.REPO_FORMAT_NPM),
 		strings.ToLower(common.REPO_FORMAT_NUGET),

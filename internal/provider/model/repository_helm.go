@@ -137,3 +137,32 @@ func (m *RepositoryHelmProxyModel) ToApiCreateModel() sonatyperepo.HelmProxyRepo
 func (m *RepositoryHelmProxyModel) ToApiUpdateModel() sonatyperepo.HelmProxyRepositoryApiRequest {
 	return m.ToApiCreateModel()
 }
+
+// Helm Group
+// ----------------------------------------
+type RepositoryHelmGroupModel struct {
+	RepositoryGroupModel
+}
+
+func (m *RepositoryHelmGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
+	m.Name = types.StringPointerValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringPointerValue(api.Url)
+	m.Storage.MapFromApi(&api.Storage)
+	m.Group.MapFromApi(&api.Group)
+}
+
+func (m *RepositoryHelmGroupModel) ToApiCreateModel() sonatyperepo.HelmGroupRepositoryApiRequest {
+	apiModel := sonatyperepo.HelmGroupRepositoryApiRequest{
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
+	}
+	m.Storage.MapToApi(&apiModel.Storage)
+	m.Group.MapToApi(&apiModel.Group)
+	return apiModel
+}
+
+func (m *RepositoryHelmGroupModel) ToApiUpdateModel() sonatyperepo.HelmGroupRepositoryApiRequest {
+	return m.ToApiCreateModel()
+}
