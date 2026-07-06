@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-_TBC_
+BUG FIXES:
+* Prevent `invalid result object after apply` error for `key_pair` on `sonatyperepo_repository_yum_proxy`/`sonatyperepo_repository_yum_group` resources [GH-440]
 
 ## 1.12.0 Jul 01, 2026
 

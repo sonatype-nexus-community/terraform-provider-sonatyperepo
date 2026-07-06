@@ -94,6 +94,10 @@ resource "%s" "repo" {
     enabled = true
     time_to_live = 1440
   }
+  yum = {
+    key_pair = "123"
+    passphrase = "123"
+  }
   http_client = {
     blocked = false
     auto_block = true
@@ -151,6 +155,8 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceYumProxyName, "proxy.metadata_max_age", "1440"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "negative_cache.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "negative_cache.time_to_live", "1440"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "yum.key_pair", "123"),
+					resource.TestCheckResourceAttr(resourceYumProxyName, "yum.passphrase", "123"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.blocked", "false"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.auto_block", "true"),
 					resource.TestCheckResourceAttr(resourceYumProxyName, "http_client.connection.enable_circular_redirects", "false"),
