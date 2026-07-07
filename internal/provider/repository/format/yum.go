@@ -210,7 +210,7 @@ func (f *YumRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryYumProxyModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.YumProxyApiRepository))
 	return stateModel
 }
 
@@ -352,7 +352,7 @@ func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryYumGroupModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.YumGroupApiRepository))
 	return stateModel
 }
 
@@ -394,9 +394,8 @@ func yumSchemaAttributes(isHosted bool) map[string]tfschema.Attribute {
 		"yum": schema.ResourceOptionalSingleNestedAttribute(
 			"YUM specific configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"key_pair": schema.ResourceOptionalStringWithPlanModifier(
+				"key_pair": schema.ResourceOptionalString(
 					"PGP signing key pair (armored private key e.g. gpg --export-secret-key --armor)",
-					stringplanmodifier.UseStateForUnknown(),
 				),
 				"passphrase": schema.ResourceSensitiveOptionalStringWithPlanModifier(
 					"Passphrase to access PGP signing key",

@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
-	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
+	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -42,6 +43,38 @@ var (
 
 func TestAccRepositoryYumResource(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	// NXRM >= 3.93.0 returns a `yumSigning` field when reading back a YUM proxy
+	// repository that has signing configured, which the pinned nexus-repo-api-client-go
+	// v3.93.0 client does not model, causing a strict JSON decode failure ("unknown field
+	// yumSigning"). Skip signing coverage on affected versions until the client is updated
+	// upstream to model this field.
+	skipYumSigningCoverage, err := testutil.VersionInRange(&testutil.CurrenTestNxrmVersion, &common.SystemVersion{
+		Major: 3,
+		Minor: 93,
+		Patch: 0,
+	}, &common.SystemVersion{
+		Major: 3,
+		Minor: 99,
+		Patch: 99,
+	})
+	if err != nil {
+		t.Fatalf("Error comparing versions: %v", err)
+	}
+
+	yumSigningConfig := ""
+	yumSigningChecks := []resource.TestCheckFunc{}
+	if !skipYumSigningCoverage {
+		yumSigningConfig = `
+  yum = {
+    key_pair = "123"
+    passphrase = "123"
+  }`
+		yumSigningChecks = []resource.TestCheckFunc{
+			resource.TestCheckResourceAttr(resourceYumProxyName, "yum.key_pair", "123"),
+			resource.TestCheckResourceAttr(resourceYumProxyName, "yum.passphrase", "123"),
+		}
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
@@ -93,7 +126,7 @@ resource "%s" "repo" {
   negative_cache = {
     enabled = true
     time_to_live = 1440
-  }
+  }%s
   http_client = {
     blocked = false
     auto_block = true
@@ -128,8 +161,8 @@ resource "%s" "repo" {
 	%s.repo
   ]
 }
-`, resourceTypeYumHosted, randomString, resourceTypeYumProxy, randomString, resourceTypeYumGroup, randomString, randomString, resourceTypeYumProxy),
-				Check: resource.ComposeAggregateTestCheckFunc(
+`, resourceTypeYumHosted, randomString, resourceTypeYumProxy, randomString, yumSigningConfig, resourceTypeYumGroup, randomString, randomString, resourceTypeYumProxy),
+				Check: resource.ComposeAggregateTestCheckFunc(append([]resource.TestCheckFunc{
 					// Verify Hosted
 					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("yum-hosted-repo-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceYumHostedName, repotest.RES_ATTR_ONLINE, "true"),
@@ -173,7 +206,7 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttrSet(resourceYumGroupName, repotest.RES_ATTR_URL),
 					resource.TestCheckResourceAttr(resourceYumGroupName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
 					resource.TestCheckResourceAttr(resourceYumGroupName, "group.member_names.#", "1"),
-				),
+				}, yumSigningChecks...)...),
 			},
 			// Delete testing automatically occurs in TestCase
 		},

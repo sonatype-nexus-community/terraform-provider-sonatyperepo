@@ -98,10 +98,10 @@ func (m *RepositoryYumProxyModel) MapMissingApiFieldsFromPlan(planModel Reposito
 	m.Yum = planModel.Yum
 }
 
-func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryYumProxyModel) FromApiModel(api sonatyperepo.YumProxyApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
@@ -186,10 +186,10 @@ func (m *RepositoryYumGroupModel) MapMissingApiFieldsFromPlan(planModel Reposito
 	m.Yum = planModel.Yum
 }
 
-func (m *RepositoryYumGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryYumGroupModel) FromApiModel(api sonatyperepo.YumGroupApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 
 	// Storage
 	m.Storage.MapFromApi(&api.Storage)
