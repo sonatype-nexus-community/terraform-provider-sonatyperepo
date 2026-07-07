@@ -210,7 +210,7 @@ func (f *YumRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryYumProxyModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.YumProxyApiRepository))
 	return stateModel
 }
 
@@ -352,7 +352,7 @@ func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryYumGroupModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.YumGroupApiRepository))
 	return stateModel
 }
 
