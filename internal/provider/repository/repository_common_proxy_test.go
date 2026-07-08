@@ -52,9 +52,10 @@ var proxyTestData = []repositoryProxyTestData{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
 		},
-		RemoteUrl:  TEST_DATA_ALPINE_PROXY_REMOTE_URL,
-		RepoFormat: common.REPO_FORMAT_ALPINE,
-		SchemaFunc: repositoryProxyResourceConfig,
+		RemoteUrl:            TEST_DATA_ALPINE_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_ALPINE,
+		SchemaFunc:           repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultAlpine,
 		TestPreCheck: func(t *testing.T) func() {
 			return func() {
 				// Only works on NXRM 3.93.0 or later
