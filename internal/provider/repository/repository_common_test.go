@@ -37,6 +37,7 @@ const (
 	resourceTypeHostedFString string = "sonatyperepo_repository_%s_hosted"
 	resourceTypeProxyFString  string = "sonatyperepo_repository_%s_proxy"
 
+	TEST_DATA_ALPINE_PROXY_REMOTE_URL       string = "https://dl-cdn.alpinelinux.org/alpine/"
 	TEST_DATA_ANSIBLE_GALAXY_REMOTE_URL     string = "https://galaxy.ansible.com"
 	TEST_DATA_APT_PROXY_REMOTE_URL          string = "https://archive.ubuntu.com/ubuntu/"
 	TEST_DATA_CARGO_PROXY_REMOTE_URL        string = "https://index.crates.io/"

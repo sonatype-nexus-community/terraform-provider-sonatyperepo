@@ -39,6 +39,29 @@ var hostedTestData = []repositoryHostedTestData{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
 		},
+		RepoFormat:                    common.REPO_FORMAT_ALPINE,
+		SchemaFunc:                    repositoryHostedResourceConfig,
+		SupportsProprietaryComponents: false,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.93.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 92,
+					Patch: 99,
+				})
+			}
+		},
+		TestImport: true,
+	},
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
 		RepoFormat:                    common.REPO_FORMAT_ANSIBLE_GALAXY,
 		SchemaFunc:                    repositoryHostedResourceConfig,
 		SupportsProprietaryComponents: false,
@@ -311,6 +334,18 @@ func TestAccRepositoryGenericHostedByFormat(t *testing.T) {
 func TestAccRepositoryGenericHostedInvalidBlobStore(t *testing.T) {
 	for _, repoFormat := range common.AllHostedFormats() {
 		// Skip formats not supported on older NXRM versions
+		if repoFormat == common.REPO_FORMAT_ALPINE {
+			// Alpine hosted repositories were added in NXRM 3.93.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		}
 		if repoFormat == common.REPO_FORMAT_ANSIBLE_GALAXY {
 			// Ansible Galaxy hosted repositories were added in NXRM 3.93.0
 			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
