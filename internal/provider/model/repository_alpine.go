@@ -27,7 +27,7 @@ import (
 // Alpine Hosted
 // ----------------------------------------
 type RepositoryAlpineHostedModel struct {
-	RepositoryHostedModel
+	RepositoryHostedWithoutComponentModel
 	Alpine *alpineSigningModel `tfsdk:"alpine"`
 }
 
@@ -49,12 +49,6 @@ func (m *RepositoryAlpineHostedModel) FromApiModel(api sonatyperepo.AlpineHosted
 	} else {
 		m.Cleanup = nil
 	}
-
-	// Component
-	if api.Component != nil {
-		m.Component = &RepositoryComponentModel{}
-		m.Component.MapFromApi(api.Component)
-	}
 }
 
 func (m *RepositoryAlpineHostedModel) ToApiCreateModel() sonatyperepo.AlpineHostedRepositoryApiRequest {
@@ -71,7 +65,6 @@ func (m *RepositoryAlpineHostedModel) ToApiCreateModel() sonatyperepo.AlpineHost
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
 	mapCleanupToApi(m.Cleanup, apiModel.Cleanup)
-	m.Component.MapToApi(apiModel.Component)
 
 	// Alpine
 	if m.Alpine != nil {

@@ -97,9 +97,7 @@ func (f *AlpineRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiC
 }
 
 func (f *AlpineRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonHostedSchemaAttributes()
-	maps.Copy(additionalAttributes, alpineSchemaAttributes())
-	return additionalAttributes
+	return alpineSchemaAttributes()
 }
 
 func (f *AlpineRepositoryFormatHosted) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
