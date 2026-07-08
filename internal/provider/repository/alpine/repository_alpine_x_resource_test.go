@@ -244,12 +244,16 @@ resource "%s" "repo" {
   group = {
     member_names = ["%s"]
   }
+  alpine = {
+    key_pair = "123"
+  }
   depends_on = [%s.member]
 }
 `, resourceTypeAlpineHosted, memberName, resourceTypeAlpineGroup, repoName, memberName, resourceTypeAlpineHosted),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceAlpineGroupName, repotest.RES_ATTR_NAME, repoName),
 					resource.TestCheckResourceAttr(resourceAlpineGroupName, repotest.RES_ATTR_ONLINE, "true"),
+					resource.TestCheckResourceAttr(resourceAlpineGroupName, "alpine.key_pair", "123"),
 				),
 			},
 			// Import and verify no changes
@@ -259,7 +263,8 @@ resource "%s" "repo" {
 				ImportStateVerify:                    true,
 				ImportStateId:                        repoName,
 				ImportStateVerifyIdentifierAttribute: "name",
-				ImportStateVerifyIgnore:              []string{"last_updated"},
+				// alpineSigning is write-only and never returned by the GET API, so it can't be verified after import
+				ImportStateVerifyIgnore: []string{"last_updated", "alpine.%", "alpine.key_pair"},
 			},
 		},
 	})
