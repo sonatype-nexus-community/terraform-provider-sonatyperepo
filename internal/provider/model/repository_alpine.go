@@ -36,8 +36,25 @@ func (m *RepositoryAlpineHostedModel) MapMissingApiFieldsFromPlan(planModel Repo
 	m.Alpine = planModel.Alpine
 }
 
-func (m *RepositoryAlpineHostedModel) FromApiModel(api sonatyperepo.SimpleApiHostedRepository) {
-	m.mapSimpleApiHostedRepository(api)
+func (m *RepositoryAlpineHostedModel) FromApiModel(api sonatyperepo.AlpineHostedApiRepository) {
+	m.Name = types.StringValue(api.Name)
+	m.Online = types.BoolValue(api.Online)
+	m.Url = types.StringValue(api.Url)
+	m.Storage.MapFromApi(&api.Storage)
+
+	// Cleanup
+	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
+		m.Cleanup = NewRepositoryCleanupModel()
+		mapCleanupFromApi(api.Cleanup, m.Cleanup)
+	} else {
+		m.Cleanup = nil
+	}
+
+	// Component
+	if api.Component != nil {
+		m.Component = &RepositoryComponentModel{}
+		m.Component.MapFromApi(api.Component)
+	}
 }
 
 func (m *RepositoryAlpineHostedModel) ToApiCreateModel() sonatyperepo.AlpineHostedRepositoryApiRequest {
@@ -83,10 +100,10 @@ func (m *RepositoryAlpineProxyModel) MapMissingApiFieldsFromPlan(planModel Repos
 	m.Alpine = planModel.Alpine
 }
 
-func (m *RepositoryAlpineProxyModel) FromApiModel(api sonatyperepo.SimpleApiProxyRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryAlpineProxyModel) FromApiModel(api sonatyperepo.AlpineProxyApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 
 	// Cleanup
 	if api.Cleanup != nil && len(api.Cleanup.PolicyNames) > 0 {
@@ -171,10 +188,10 @@ func (m *RepositoryAlpineGroupModel) MapMissingApiFieldsFromPlan(planModel Repos
 	m.Alpine = planModel.Alpine
 }
 
-func (m *RepositoryAlpineGroupModel) FromApiModel(api sonatyperepo.SimpleApiGroupRepository) {
-	m.Name = types.StringPointerValue(api.Name)
+func (m *RepositoryAlpineGroupModel) FromApiModel(api sonatyperepo.AlpineGroupApiRepository) {
+	m.Name = types.StringValue(api.Name)
 	m.Online = types.BoolValue(api.Online)
-	m.Url = types.StringPointerValue(api.Url)
+	m.Url = types.StringValue(api.Url)
 	m.Storage.MapFromApi(&api.Storage)
 	m.Group.MapFromApi(&api.Group)
 }

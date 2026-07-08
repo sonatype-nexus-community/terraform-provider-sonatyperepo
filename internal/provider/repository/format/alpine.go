@@ -124,7 +124,7 @@ func (f *AlpineRepositoryFormatHosted) UpdateStateFromApi(state any, api any) an
 	if state != nil {
 		stateModel = (state).(model.RepositoryAlpineHostedModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiHostedRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.AlpineHostedApiRepository))
 	return stateModel
 }
 
@@ -222,7 +222,7 @@ func (f *AlpineRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	if state != nil {
 		stateModel = (state).(model.RepositoryAlpineProxyModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.AlpineProxyApiRepository))
 	return stateModel
 }
 
@@ -364,7 +364,7 @@ func (f *AlpineRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any
 	if state != nil {
 		stateModel = (state).(model.RepositoryAlpineGroupModel)
 	}
-	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiGroupRepository))
+	stateModel.FromApiModel((api).(sonatyperepo.AlpineGroupApiRepository))
 	return stateModel
 }
 
