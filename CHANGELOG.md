@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## 1.13.0 Jul 08, 2026
+
 ENHANCEMENTS:
 * Added support for Alpine repository format [GH-416]
   * **New Resource:** `sonatyperepo_repository_alpine_hosted`
