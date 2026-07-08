@@ -47,6 +47,7 @@ const (
 	MAVEN_VERSION_POLICY_MIXED                               string = "MIXED"
 	NUGET_PROTOCOL_V2                                        string = "V2"
 	NUGET_PROTOCOL_V3                                        string = "V3"
+	REPO_FORMAT_ALPINE                                       string = "ALPINE"
 	REPO_FORMAT_ANSIBLE_GALAXY                               string = "ANSIBLEGALAXY"
 	REPO_FORMAT_APT                                          string = "APT"
 	REPO_FORMAT_CARGO                                        string = "CARGO"
@@ -81,6 +82,7 @@ const (
 
 func AllHostedFormats() []string {
 	return []string{
+		REPO_FORMAT_ALPINE,
 		REPO_FORMAT_ANSIBLE_GALAXY,
 		REPO_FORMAT_APT,
 		REPO_FORMAT_CARGO,
@@ -101,6 +103,7 @@ func AllHostedFormats() []string {
 
 func AllProxyFormats() []string {
 	return []string{
+		REPO_FORMAT_ALPINE,
 		REPO_FORMAT_ANSIBLE_GALAXY,
 		REPO_FORMAT_APT,
 		REPO_FORMAT_CARGO,

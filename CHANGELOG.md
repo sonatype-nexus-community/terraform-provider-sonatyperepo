@@ -2,6 +2,14 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+* Added support for Alpine repository format [GH-416]
+  * **New Resource:** `sonatyperepo_repository_alpine_hosted`
+  * **New Resource:** `sonatyperepo_repository_alpine_proxy`
+  * **New Resource:** `sonatyperepo_repository_alpine_group`
+
+## 1.12.1 Jul 07, 2026
+
 BUG FIXES:
 * Prevent `invalid result object after apply` error for `key_pair` on `sonatyperepo_repository_yum_proxy`/`sonatyperepo_repository_yum_group` resources [GH-440]
 

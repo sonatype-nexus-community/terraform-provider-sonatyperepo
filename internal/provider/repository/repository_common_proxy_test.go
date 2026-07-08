@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	configBlockProxyDefaultAlpine    string = "alpine = { key_pair = \"something\" }"
 	configBlockProxyDefaultApt       string = "apt = { distribution = \"bionic\" }"
 	configBlockProxyDefaultCargo     string = "cargo = { require_authentication = false }"
 	configBlockProxyDefaultConan     string = "conan = { conan_version = \"V2\" }"
@@ -47,6 +48,32 @@ const (
 // Test Data Scenarios
 // ------------------------------------------------------------
 var proxyTestData = []repositoryProxyTestData{
+	{
+		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
+			return []resource.TestCheckFunc{}
+		},
+		RemoteUrl:            TEST_DATA_ALPINE_PROXY_REMOTE_URL,
+		RepoFormat:           common.REPO_FORMAT_ALPINE,
+		SchemaFunc:           repositoryProxyResourceConfig,
+		FormatSpecificConfig: configBlockProxyDefaultAlpine,
+		TestPreCheck: func(t *testing.T) func() {
+			return func() {
+				// Only works on NXRM 3.93.0 or later
+				testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+					Major: 3,
+					Minor: 0,
+					Patch: 0,
+				}, &common.SystemVersion{
+					Major: 3,
+					Minor: 92,
+					Patch: 99,
+				})
+			}
+		},
+		// Import is broken for Alpine Proxy as alpineSigning is never returned by API
+		// See: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/290
+		TestImport: false,
+	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{}
@@ -614,6 +641,18 @@ resource "%s" "repo" {
 func TestAccRepositoryGenericProxyInvalidBlobStore(t *testing.T) {
 	for _, repoFormat := range common.AllProxyFormats() {
 		// Skip formats not supported on older NXRM versions
+		if repoFormat == common.REPO_FORMAT_ALPINE {
+			// Alpine proxy repositories were added in NXRM 3.93.0
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 92,
+				Patch: 99,
+			})
+		}
 		if repoFormat == common.REPO_FORMAT_ANSIBLE_GALAXY {
 			// Ansible Galaxy hosted repositories were added in NXRM 3.93.0
 			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
@@ -887,6 +926,8 @@ resource "%s" "repo" {
 
 func formatSpecificProxyDefaultConfig(repoFormat string) string {
 	switch repoFormat {
+	case common.REPO_FORMAT_ALPINE:
+		return configBlockProxyDefaultAlpine
 	case common.REPO_FORMAT_APT:
 		return configBlockProxyDefaultApt
 	case common.REPO_FORMAT_CARGO:
