@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	configBlockProxyDefaultAlpine    string = "alpine = { key_pair = \"something\" }"
 	configBlockProxyDefaultApt       string = "apt = { distribution = \"bionic\" }"
 	configBlockProxyDefaultCargo     string = "cargo = { require_authentication = false }"
 	configBlockProxyDefaultConan     string = "conan = { conan_version = \"V2\" }"
@@ -922,6 +923,8 @@ resource "%s" "repo" {
 
 func formatSpecificProxyDefaultConfig(repoFormat string) string {
 	switch repoFormat {
+	case common.REPO_FORMAT_ALPINE:
+		return configBlockProxyDefaultAlpine
 	case common.REPO_FORMAT_APT:
 		return configBlockProxyDefaultApt
 	case common.REPO_FORMAT_CARGO:
