@@ -70,7 +70,9 @@ var proxyTestData = []repositoryProxyTestData{
 				})
 			}
 		},
-		TestImport: true,
+		// Import is broken for Alpine Proxy as alpineSigning is never returned by API
+		// See: https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/290
+		TestImport: false,
 	},
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
