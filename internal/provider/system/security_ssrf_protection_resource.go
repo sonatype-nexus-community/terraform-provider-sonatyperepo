@@ -152,7 +152,7 @@ func (r *securitySsrfProtectionResource) Create(ctx context.Context, req resourc
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errors.HandleAPIError(
@@ -199,7 +199,7 @@ func (r *securitySsrfProtectionResource) Read(ctx context.Context, req resource.
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errors.HandleAPIError(
@@ -240,7 +240,7 @@ func (r *securitySsrfProtectionResource) Update(ctx context.Context, req resourc
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errors.HandleAPIError(
@@ -295,7 +295,7 @@ func (r *securitySsrfProtectionResource) Delete(ctx context.Context, req resourc
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
 			resp.Diagnostics.AddError(
 				"Unauthorized",
-				"Your user is unauthorized to access this resource or feature.",
+				common.ERROR_MESSAGE_UNAUTHORIZED,
 			)
 		} else {
 			errors.HandleAPIError(
