@@ -67,8 +67,9 @@ func TestAccSecuritySsrfProtectionResource(t *testing.T) {
 			},
 			// ImportState testing
 			{
-				ResourceName: resourceNameSecuritySsrfProtection,
-				ImportState:  true,
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
 				// Ignore last_updated since it will be different after import
 				ImportStateVerifyIgnore: []string{"last_updated"},
 				ImportStateVerify:       true,
@@ -96,25 +97,28 @@ func TestAccSecuritySsrfProtectionResourceImport(t *testing.T) {
 			},
 			// Test import with different import IDs (all should work for singleton resource)
 			{
-				ResourceName:            resourceNameSecuritySsrfProtection,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           "ssrf_protection",
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "ssrf_protection",
 			},
 			{
-				ResourceName:            resourceNameSecuritySsrfProtection,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           "import",
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "import",
 			},
 			{
-				ResourceName:            resourceNameSecuritySsrfProtection,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           "any-string-works",
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "any-string-works",
 			},
 		},
 	})
@@ -150,11 +154,12 @@ func TestAccSecuritySsrfProtectionResourceUpdate(t *testing.T) {
 			},
 			// Test import after update
 			{
-				ResourceName:            resourceNameSecuritySsrfProtection,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           "post-update-import",
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "post-update-import",
 			},
 			// Test disabling SSRF Protection
 			{
@@ -167,11 +172,12 @@ func TestAccSecuritySsrfProtectionResourceUpdate(t *testing.T) {
 			},
 			// Test import when disabled
 			{
-				ResourceName:            resourceNameSecuritySsrfProtection,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-				ImportStateId:           "disabled-state-import",
+				ResourceName:                         resourceNameSecuritySsrfProtection,
+				ImportState:                          true,
+				ImportStateVerifyIdentifierAttribute: "enabled",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore:              []string{"last_updated"},
+				ImportStateId:                        "disabled-state-import",
 			},
 		},
 	})
