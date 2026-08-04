@@ -165,7 +165,7 @@ func (r *securitySsrfProtectionResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	if httpResponse.StatusCode == http.StatusNoContent {
+	if httpResponse.StatusCode >= http.StatusOK && httpResponse.StatusCode < http.StatusMultipleChoices {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 		diags := resp.State.Set(ctx, plan)
 		resp.Diagnostics.Append(diags...)
@@ -253,7 +253,7 @@ func (r *securitySsrfProtectionResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	if httpResponse.StatusCode == http.StatusNoContent {
+	if httpResponse.StatusCode >= http.StatusOK && httpResponse.StatusCode < http.StatusMultipleChoices {
 		plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 		diags := resp.State.Set(ctx, plan)
