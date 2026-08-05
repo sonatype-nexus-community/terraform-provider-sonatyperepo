@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+ENHANCEMENTS:
+* Added support for managing SSRF Protection settings [GH-447]
+  * **New Resource:** `sonatyperepo_security_ssrf_protection`
+
 ## 1.13.0 Jul 08, 2026
 
 ENHANCEMENTS:
