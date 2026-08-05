@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*TBC*
+
+## 1.14.0 Aug 05, 2026
+
 ENHANCEMENTS:
 * Added support for managing SSRF Protection settings [GH-447]
   * **New Resource:** `sonatyperepo_security_ssrf_protection`
