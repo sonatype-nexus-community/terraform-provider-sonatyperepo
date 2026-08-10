@@ -48,6 +48,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
 )
 
 // Ensure SonatypeRepoProvider satisfies various provider interfaces.
@@ -245,6 +246,18 @@ func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath strin
 	return configuration
 }
 
+func (p *SonatypeRepoProvider) apiClientConfigurationV395(nxrmUrl, apiBasePath string) *sonatyperepoV395.Configuration {
+	configuration := sonatyperepoV395.NewConfiguration()
+	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.Servers = []sonatyperepoV395.ServerConfiguration{
+		{
+			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
+			Description: "Sonatype Nexus Repository Server",
+		},
+	}
+	return configuration
+}
+
 func (p *SonatypeRepoProvider) createBootstrapClient(nxrmUrl, username, password, apiBasePath string, clusterStabilisationDelayMs int32) common.SonatypeDataSourceData {
 	configuration := p.apiClientConfiguration(nxrmUrl, apiBasePath)
 	client := sonatyperepo.NewAPIClient(configuration)
@@ -258,21 +271,28 @@ func (p *SonatypeRepoProvider) createBootstrapClient(nxrmUrl, username, password
 }
 
 func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds *common.SonatypeDataSourceData) {
-	configuration := p.apiClientConfiguration(nxrmUrl, apiBasePath)
-
-	// 1. Initialize the custom transport
+	// 1. Initialize the custom transport, shared by both client generations
 	customTransport := &MiddlewareTransport{
 		Base:                        http.DefaultTransport,
 		ClusterStabilisationDelayMs: ds.ClusterSynchronisationDelayMs,
 		NodeCount:                   ds.NodeCount,
 	}
-
-	// 2. Create an HTTP client using the custom transport
-	configuration.HTTPClient = &http.Client{
+	httpClient := &http.Client{
 		Transport: customTransport,
 	}
 
+	// 2. V382 client (used for NXRM < 3.94.0)
+	configuration := p.apiClientConfiguration(nxrmUrl, apiBasePath)
+	configuration.HTTPClient = httpClient
 	ds.Client = sonatyperepo.NewAPIClient(configuration)
+
+	// 3. V395 client (used for NXRM 3.94.0+)
+	configurationV395 := p.apiClientConfigurationV395(nxrmUrl, apiBasePath)
+	configurationV395.HTTPClient = httpClient
+	clientV395 := sonatyperepoV395.NewAPIClient(configurationV395)
+
+	// 4. Resolve domain services to the client generation matching the connected server
+	ds.Services = common.NewServices(ds.NxrmVersion, ds.Client, clientV395)
 }
 
 // MiddlewareTransport wraps an existing RoundTripper to inject custom logic

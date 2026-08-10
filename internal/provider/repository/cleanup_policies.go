@@ -119,15 +119,11 @@ func (r *cleanupPolicyResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := buildRequestPayload(plan)
 
-	apiResponse, err := r.Client.CleanupPoliciesAPI.Create1(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.CleanupPolicy.Create(ctx, requestPayload)
 
 	// Handle Error
 	if err != nil {
@@ -176,7 +172,7 @@ func (r *cleanupPolicyResource) Read(ctx context.Context, req resource.ReadReque
 	cleanupPolicy, err := r.fetchCleanupPolicy(ctx, state.Name.ValueString())
 	if err != nil {
 		// Check if this is a 404 error by attempting to get the HTTP response
-		httpResponse, _ := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, state.Name.ValueString()).Execute()
+		httpResponse, _ := r.Services.CleanupPolicy.GetByName(ctx, state.Name.ValueString())
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
 			errors.HandleAPIWarning(
@@ -231,8 +227,7 @@ func (r *cleanupPolicyResource) Update(ctx context.Context, req resource.UpdateR
 
 	// Build request payload and make API call
 	requestPayload := buildRequestPayload(plan)
-	apiRequest := r.Client.CleanupPoliciesAPI.Update2(ctx, state.Name.ValueString()).Body(requestPayload)
-	apiResponse, err := apiRequest.Execute()
+	apiResponse, err := r.Services.CleanupPolicy.Update(ctx, state.Name.ValueString(), requestPayload)
 
 	// Handle API response
 	if err != nil {
@@ -257,14 +252,10 @@ func (r *cleanupPolicyResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Delete API Call
-	apiResponse, err := r.Client.CleanupPoliciesAPI.DeletePolicyByName(ctx, state.Name.ValueString()).Execute()
+	apiResponse, err := r.Services.CleanupPolicy.DeleteByName(ctx, state.Name.ValueString())
 
 	// Handle Error(s)
 	if err != nil {
@@ -422,7 +413,7 @@ func updateCriteriaFromAPI(criteria *model.CleanupPolicyCriteriaModel, cleanupPo
 
 // fetchCleanupPolicy retrieves and parses the cleanup policy from the API
 func (r *cleanupPolicyResource) fetchCleanupPolicy(ctx context.Context, name string) (*sonatyperepo.CleanupPolicyResourceXO, error) {
-	httpResponse, err := r.Client.CleanupPoliciesAPI.GetCleanupPolicyByName(ctx, name).Execute()
+	httpResponse, err := r.Services.CleanupPolicy.GetByName(ctx, name)
 	if err != nil {
 		return nil, err
 	}

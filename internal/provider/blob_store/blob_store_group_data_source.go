@@ -89,7 +89,7 @@ func (d *groupBlobStoreDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := d.Services.BlobStore.GetGroupBlobStoreConfiguration(ctx, data.Name.ValueString())
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to read group blob store",

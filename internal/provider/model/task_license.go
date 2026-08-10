@@ -18,8 +18,6 @@ package model
 
 import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
-
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Task Blobstore Compact
@@ -28,12 +26,12 @@ type TaskLicenseExpirationNotificationModel struct {
 	BaseTaskModel
 }
 
-func (m *TaskLicenseExpirationNotificationModel) ToApiCreateModel() *v3.TaskTemplateXO {
+func (m *TaskLicenseExpirationNotificationModel) ToApiCreateModel() *common.TaskCreateApiModel {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_LICENSE_EXPIRATION_NOTIFICATION.String()
 	return api
 }
 
-func (m *TaskLicenseExpirationNotificationModel) ToApiUpdateModel() *v3.UpdateTaskRequest {
+func (m *TaskLicenseExpirationNotificationModel) ToApiUpdateModel() *common.TaskUpdateApiModel {
 	return m.toApiUpdateModel()
 }

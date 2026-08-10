@@ -38,6 +38,7 @@ type SonatypeDataSourceData struct {
 	NodeCount                     int32
 	NxrmVersion                   SystemVersion
 	NxrmWritable                  bool
+	Services                      Services
 }
 
 // AuthContext returns a new context with authentication set up for API calls
@@ -46,6 +47,8 @@ func (r *SonatypeDataSourceData) AuthContext(ctx context.Context) context.Contex
 }
 
 func (p *SonatypeDataSourceData) ClusterNodeCount(ctx context.Context, respDiags *diag.Diagnostics) {
+	// This runs during provider bootstrap, before NxrmVersion is known and before
+	// Services exists, so it must call the bootstrap (V382) client directly.
 	apiResponse, httpResponse, err := p.Client.StatusAPI.GetClusterSystemStatusChecks(p.AuthContext(ctx)).Execute()
 
 	if err != nil {
@@ -74,6 +77,8 @@ func (p *SonatypeDataSourceData) ClusterNodeCount(ctx context.Context, respDiags
 }
 
 func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics, versionHint *string) {
+	// This runs during provider bootstrap, before NxrmVersion is known and before
+	// Services exists, so it must call the bootstrap (V382) client directly.
 	httpResponse, err := p.Client.StatusAPI.IsWritable(ctx).Execute()
 	if err != nil {
 		sharederr.HandleAPIError(

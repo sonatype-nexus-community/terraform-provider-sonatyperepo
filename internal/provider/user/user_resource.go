@@ -105,14 +105,10 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewApiCreateUser(plan.Status.ValueString())
 	plan.MapToCreateApi(apiBody)
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.CreateUser(ctx).Body(*apiBody).Execute()
+	apiResponse, httpResponse, err := r.Services.User.CreateUser(ctx, *apiBody)
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		errors.HandleAPIError(
@@ -145,14 +141,10 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Source(state.Source.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.User.GetUsers(ctx, state.UserId.ValueString(), state.Source.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -233,11 +225,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Call API to Update
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewApiUser(plan.Status.ValueString())
 	plan.MapToApi(apiBody)
 	// Preserve source from state since it's a read-only computed field
@@ -247,7 +235,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		source = common.DEFAULT_USER_SOURCE
 	}
 	apiBody.Source = &source
-	httpResponse, err := r.Client.SecurityManagementUsersAPI.UpdateUser(ctx, state.UserId.ValueString()).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.User.UpdateUser(ctx, state.UserId.ValueString(), *apiBody)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -264,7 +252,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	// If Passowrd is required to be changed, make that additional API call now
 	if !plan.Password.Equal(state.Password) {
-		httpResponse, err = r.Client.SecurityManagementUsersAPI.ChangePassword(ctx, state.UserId.ValueString()).Body(plan.Password.ValueString()).Execute()
+		httpResponse, err = r.Services.User.ChangePassword(ctx, state.UserId.ValueString(), plan.Password.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error updating User password",
@@ -280,7 +268,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Refresh state from API to get computed fields
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUsersAPI.GetUsers(ctx).UserId(state.UserId.ValueString()).Source(source).Execute()
+	apiResponse, httpResponse, err := r.Services.User.GetUsers(ctx, state.UserId.ValueString(), source)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading updated User",
@@ -333,13 +321,9 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.SecurityManagementUsersAPI.DeleteUser(ctx, state.UserId.ValueString()).Execute()
+	httpResponse, err := r.Services.User.DeleteUser(ctx, state.UserId.ValueString())
 
 	// Handle Error
 	if err != nil {

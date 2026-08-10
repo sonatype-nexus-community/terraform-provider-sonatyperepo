@@ -33,8 +33,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
@@ -152,12 +150,8 @@ func (r *systemConfigLdapResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
-	apiResponse, err := r.Client.SecurityManagementLDAPAPI.CreateLdapServer(ctx).Body(*plan.ToApiCreateModel()).Execute()
+	ctx = r.AuthContext(ctx)
+	apiResponse, err := r.Services.Configuration.CreateLdapServer(ctx, *plan.ToApiCreateModel())
 
 	// Handle Error
 	if err != nil || apiResponse.StatusCode != http.StatusCreated {
@@ -171,7 +165,7 @@ func (r *systemConfigLdapResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Id & Order are not known until Create Request - we need to call GET now to obtain that
-	ldapResonse, httpResponse, err := r.Client.SecurityManagementLDAPAPI.GetLdapServer(ctx, plan.Name.ValueString()).Execute()
+	ldapResonse, httpResponse, err := r.Services.Configuration.GetLdapServer(ctx, plan.Name.ValueString())
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		errors.HandleAPIError(
 			"Error creating LDAP Connection - connection may be partially created",
@@ -203,14 +197,10 @@ func (r *systemConfigLdapResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementLDAPAPI.GetLdapServer(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.Configuration.GetLdapServer(ctx, state.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -259,16 +249,12 @@ func (r *systemConfigLdapResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Call API to Update
 	plan.Id = state.Id
 	body := plan.ToApiUpdateModel()
-	httpResponse, err := r.Client.SecurityManagementLDAPAPI.UpdateLdapServer(ctx, state.Name.ValueString()).Body(*body).Execute()
+	httpResponse, err := r.Services.Configuration.UpdateLdapServer(ctx, state.Name.ValueString(), *body)
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
@@ -300,13 +286,9 @@ func (r *systemConfigLdapResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.SecurityManagementLDAPAPI.DeleteLdapServer(ctx, state.Name.ValueString()).Execute()
+	httpResponse, err := r.Services.Configuration.DeleteLdapServer(ctx, state.Name.ValueString())
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {

@@ -81,7 +81,7 @@ func (d *capabilitiesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	ctx = d.AuthContext(ctx)
 
-	apiResponse, httpResponse, err := d.Client.CapabilitiesAPI.List2(ctx).Execute()
+	apiResponse, httpResponse, err := d.Services.Capability.List(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to list Capabilities",

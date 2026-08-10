@@ -18,7 +18,9 @@ package common
 
 import (
 	"context"
+
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
 )
 
 // AuthContext represents the authentication information needed for API calls
@@ -33,10 +35,20 @@ func NewAuthContext(auth sonatyperepo.BasicAuth) *AuthContext {
 
 // WithAuthContext adds authentication to the context for API calls
 func WithAuthContext(ctx context.Context, authCtx *AuthContext) context.Context {
-	return context.WithValue(ctx, sonatyperepo.ContextBasicAuth, authCtx.Auth)
+	return WithAuth(ctx, authCtx.Auth)
 }
 
-// WithAuth adds authentication directly from BasicAuth
+// WithAuth adds authentication directly from BasicAuth. The generated V382 and V395
+// clients each define their own private contextKey type with the same underlying
+// value ("basic"), but context.Value lookups compare dynamic type as well as value,
+// so a key from one generation's package never matches a value stored under the
+// other's. Both keys are set here so a single context works with whichever client
+// generation's adapter ultimately executes the request.
 func WithAuth(ctx context.Context, auth sonatyperepo.BasicAuth) context.Context {
-	return context.WithValue(ctx, sonatyperepo.ContextBasicAuth, auth)
+	ctx = context.WithValue(ctx, sonatyperepo.ContextBasicAuth, auth)
+	ctx = context.WithValue(ctx, sonatyperepoV395.ContextBasicAuth, sonatyperepoV395.BasicAuth{
+		UserName: auth.UserName,
+		Password: auth.Password,
+	})
+	return ctx
 }

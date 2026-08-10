@@ -18,9 +18,7 @@ package system
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -77,22 +75,7 @@ func (r *securitySsrfProtectionResource) Schema(_ context.Context, _ resource.Sc
 
 // fetchSsrfConfig reads the current SSRF Protection configuration from the API.
 func (r *securitySsrfProtectionResource) fetchSsrfConfig(ctx context.Context) (*sonatyperepo.SsrfProtectionConfigurationXO, *http.Response, error) {
-	httpResponse, err := r.Client.SecurityManagementSSRFProtectionAPI.GetConfiguration(ctx).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-
-	body, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, httpResponse, fmt.Errorf("could not read response body: %w", err)
-	}
-
-	var cfg sonatyperepo.SsrfProtectionConfigurationXO
-	if err := json.Unmarshal(body, &cfg); err != nil {
-		return nil, httpResponse, fmt.Errorf("could not parse response: %w", err)
-	}
-
-	return &cfg, httpResponse, nil
+	return r.Services.SsrfProtection.GetSsrfProtectionConfiguration(ctx)
 }
 
 // ImportState imports the resource into Terraform state.
@@ -146,7 +129,7 @@ func (r *securitySsrfProtectionResource) Create(ctx context.Context, req resourc
 	payload := sonatyperepo.SsrfProtectionConfigurationXO{}
 	plan.MapToApi(&payload)
 
-	httpResponse, err := r.Client.SecurityManagementSSRFProtectionAPI.UpdateConfiguration(ctx).Body(payload).Execute()
+	httpResponse, err := r.Services.SsrfProtection.UpdateSsrfProtectionConfiguration(ctx, payload)
 
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
@@ -234,7 +217,7 @@ func (r *securitySsrfProtectionResource) Update(ctx context.Context, req resourc
 	payload := sonatyperepo.SsrfProtectionConfigurationXO{}
 	plan.MapToApi(&payload)
 
-	httpResponse, err := r.Client.SecurityManagementSSRFProtectionAPI.UpdateConfiguration(ctx).Body(payload).Execute()
+	httpResponse, err := r.Services.SsrfProtection.UpdateSsrfProtectionConfiguration(ctx, payload)
 
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {
@@ -289,7 +272,7 @@ func (r *securitySsrfProtectionResource) Delete(ctx context.Context, req resourc
 		AllowedIPs:     []string{},
 	}
 
-	httpResponse, err := r.Client.SecurityManagementSSRFProtectionAPI.UpdateConfiguration(ctx).Body(payload).Execute()
+	httpResponse, err := r.Services.SsrfProtection.UpdateSsrfProtectionConfiguration(ctx, payload)
 
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusForbidden {

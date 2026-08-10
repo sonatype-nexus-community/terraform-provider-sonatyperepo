@@ -28,8 +28,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -76,13 +74,9 @@ func (d *tasksDataSource) Schema(_ context.Context, req datasource.SchemaRequest
 func (d *tasksDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.TasksModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
-	tasksResponse, httpResponse, err := d.Client.TasksAPI.GetTasks(ctx).Execute()
+	tasksResponse, httpResponse, err := d.Services.Task.ListTasks(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to list tasks",
@@ -93,10 +87,10 @@ func (d *tasksDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Iterating %d Tasks", len(tasksResponse.Items)))
+	tflog.Debug(ctx, fmt.Sprintf("Iterating %d Tasks", len(tasksResponse)))
 
 	state.Tasks = make([]model.TaskModelSimple, 0)
-	for _, task := range tasksResponse.Items {
+	for _, task := range tasksResponse {
 		tflog.Debug(ctx, fmt.Sprintf("    Processing %s Task", *task.Id))
 		taskModel := model.TaskModelSimple{}
 		taskModel.MapFromApi(&task)

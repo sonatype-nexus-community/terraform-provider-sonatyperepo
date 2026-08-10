@@ -61,27 +61,27 @@ func (f *RRepositoryFormat) ResourceName(repoType RepositoryType) string {
 // --------------------------------------------
 // Hosted R(CRAN) Format Functions
 // --------------------------------------------
-func (f *RRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatHosted) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryRHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateRHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateRHostedRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *RRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *RRepositoryFormatHosted) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryRHostedModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetRHostedRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryRHostedModel)
 
@@ -89,12 +89,12 @@ func (f *RRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient
 	stateModel := (state).(model.RepositoryRHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateRHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateRHostedRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
-func (f *RRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *RRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRHostedRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetRHostedRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -134,27 +134,27 @@ func (f *RRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 // --------------------------------------------
 // PROXY R(CRAN) Format Functions
 // --------------------------------------------
-func (f *RRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositorRProxyModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateRProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateRProxyRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *RRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *RRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositorRProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetRProxyRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositorRProxyModel)
 
@@ -162,12 +162,12 @@ func (f *RRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient 
 	stateModel := (state).(model.RepositorRProxyModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateRProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateRProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
-func (f *RRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *RRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRProxyRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetRProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -272,27 +272,27 @@ func (f *RRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state an
 // --------------------------------------------
 // GORUP R(CRAN) Format Functions
 // --------------------------------------------
-func (f *RRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatGroup) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryRGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateRGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateRGroupRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *RRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *RRepositoryFormatGroup) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryRGroupModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetRGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetRGroupRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryRGroupModel)
 
@@ -300,7 +300,7 @@ func (f *RRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient 
 	stateModel := (state).(model.RepositoryRGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateRGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateRGroupRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *RRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {

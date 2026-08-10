@@ -82,7 +82,7 @@ func (c *capabilityResource) Create(ctx context.Context, req resource.CreateRequ
 	ctx = c.AuthContext(ctx)
 
 	// Make API requet
-	capabilityCreateResponse, httpResponse, err := c.CapabilityType.DoCreateRequest(plan, c.Client, ctx, c.NxrmVersion)
+	capabilityCreateResponse, httpResponse, err := c.CapabilityType.DoCreateRequest(plan, c.Services.Capability, ctx, c.NxrmVersion)
 
 	// Handle Errors
 	if err != nil {
@@ -204,7 +204,7 @@ func (c *capabilityResource) Update(ctx context.Context, req resource.UpdateRequ
 	if shouldReturn {
 		return
 	}
-	httpResponse, err := c.CapabilityType.DoUpdateRequest(planModel, capabilityId.ValueString(), c.Client, ctx, c.NxrmVersion)
+	httpResponse, err := c.CapabilityType.DoUpdateRequest(planModel, capabilityId.ValueString(), c.Services.Capability, ctx, c.NxrmVersion)
 
 	// Handle any errors
 	if err != nil {
@@ -316,7 +316,7 @@ func (c *capabilityResource) Delete(ctx context.Context, req resource.DeleteRequ
 	success := false
 
 	for !success && attempts < maxAttempts {
-		httpResponse, err := c.Client.CapabilitiesAPI.Delete5(ctx, capabilityId.ValueString()).Execute()
+		httpResponse, err := c.Services.Capability.Delete(ctx, capabilityId.ValueString())
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
@@ -489,7 +489,7 @@ func (c *capabilityResource) readCapabilityById(capabilityId string, ctx context
 	ctx = c.AuthContext(ctx)
 
 	// Make API Request
-	apiResponse, httpResponse, err := c.Client.CapabilitiesAPI.List2(ctx).Execute()
+	apiResponse, httpResponse, err := c.Services.Capability.List(ctx)
 
 	// Handle any errors
 	if err != nil {

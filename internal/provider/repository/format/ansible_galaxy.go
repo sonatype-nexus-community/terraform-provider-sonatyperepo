@@ -61,27 +61,27 @@ func (f *AnsibleGalaxyRepositoryFormat) ResourceName(repoType RepositoryType) st
 // --------------------------------------------
 // Hosted Ansible Galaxy Format Functions
 // --------------------------------------------
-func (f *AnsibleGalaxyRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatHosted) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAnsiblegalaxyHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAnsiblegalaxyHostedRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *AnsibleGalaxyRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatHosted) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAnsibleGalaxyHostedModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyHostedRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AnsibleGalaxyRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyHostedModel)
 
@@ -89,7 +89,7 @@ func (f *AnsibleGalaxyRepositoryFormatHosted) DoUpdateRequest(plan any, state an
 	stateModel := (state).(model.RepositoryAnsibleGalaxyHostedModel)
 
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAnsiblegalaxyHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAnsiblegalaxyHostedRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *AnsibleGalaxyRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -123,9 +123,9 @@ func (f *AnsibleGalaxyRepositoryFormatHosted) UpdateStateFromApi(state, api any)
 }
 
 // DoImportRequest implements the import functionality for Ansible Galaxy Hosted repositories
-func (f *AnsibleGalaxyRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyHostedRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyHostedRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -135,27 +135,27 @@ func (f *AnsibleGalaxyRepositoryFormatHosted) DoImportRequest(repositoryName str
 // --------------------------------------------
 // Proxy Ansible Galaxy Format Functions
 // --------------------------------------------
-func (f *AnsibleGalaxyRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyProxyModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAnsiblegalaxyProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAnsiblegalaxyProxyRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *AnsibleGalaxyRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAnsibleGalaxyProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyProxyRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AnsibleGalaxyRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyProxyModel)
 
@@ -163,13 +163,13 @@ func (f *AnsibleGalaxyRepositoryFormatProxy) DoUpdateRequest(plan any, state any
 	stateModel := (state).(model.RepositoryAnsibleGalaxyProxyModel)
 
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAnsiblegalaxyProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAnsiblegalaxyProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 // DoImportRequest implements the import functionality for Ansible Galaxy Proxy repositories
-func (f *AnsibleGalaxyRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyProxyRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -226,27 +226,27 @@ func (f *AnsibleGalaxyRepositoryFormatProxy) SupportsRepositoryFirewall() bool {
 // --------------------------------------------
 // Group Ansible Galaxy Format Functions
 // --------------------------------------------
-func (f *AnsibleGalaxyRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatGroup) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAnsiblegalaxyGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAnsiblegalaxyGroupRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *AnsibleGalaxyRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatGroup) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAnsibleGalaxyGroupModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyGroupRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AnsibleGalaxyRepositoryFormatGroup) DoUpdateRequest(plan, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatGroup) DoUpdateRequest(plan, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAnsibleGalaxyGroupModel)
 
@@ -254,7 +254,7 @@ func (f *AnsibleGalaxyRepositoryFormatGroup) DoUpdateRequest(plan, state any, ap
 	stateModel := (state).(model.RepositoryAnsibleGalaxyGroupModel)
 
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAnsiblegalaxyGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAnsiblegalaxyGroupRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *AnsibleGalaxyRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -288,9 +288,9 @@ func (f *AnsibleGalaxyRepositoryFormatGroup) UpdateStateFromApi(state, api any) 
 }
 
 // DoImportRequest implements the import functionality for Ansible Galaxy Group repositories
-func (f *AnsibleGalaxyRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AnsibleGalaxyRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAnsiblegalaxyGroupRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAnsiblegalaxyGroupRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}

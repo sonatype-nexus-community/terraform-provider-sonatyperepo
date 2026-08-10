@@ -154,7 +154,7 @@ func (r *systemConfigHttpResource) Read(ctx context.Context, req resource.ReadRe
 
 	// Call API to Create
 	ctx = r.AuthContext(ctx)
-	apiResponse, httpResponse, err := r.Client.ManageSonatypeHTTPSystemSettingsAPI.GetHttpSettings(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.HttpSettings.GetHttpSettings(ctx)
 
 	// Handle any errors
 	if err != nil {
@@ -201,7 +201,7 @@ func (r *systemConfigHttpResource) Update(ctx context.Context, req resource.Upda
 func (r *systemConfigHttpResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Call API to Create
 	ctx = r.AuthContext(ctx)
-	httpResponse, err := r.Client.ManageSonatypeHTTPSystemSettingsAPI.ResetHttpSettings(ctx).Execute()
+	httpResponse, err := r.Services.HttpSettings.ResetHttpSettings(ctx)
 
 	// Handle Error
 	if err != nil {
@@ -248,7 +248,7 @@ func (r *systemConfigHttpResource) updateHttpSettings(ctx context.Context, plan 
 	ctx = r.AuthContext(ctx)
 	httpSettings := v3.NewHttpSettingsXoWithDefaults()
 	plan.MapToApi(httpSettings)
-	httpResponse, err := r.Client.ManageSonatypeHTTPSystemSettingsAPI.UpdateHttpSettings(ctx).Body(*httpSettings).Execute()
+	httpResponse, err := r.Services.HttpSettings.UpdateHttpSettings(ctx, *httpSettings)
 
 	// Handle Errors
 	if err != nil {
@@ -271,7 +271,7 @@ func (r *systemConfigHttpResource) updateHttpSettings(ctx context.Context, plan 
 	}
 
 	// Read Data back from API
-	apiResponse, httpResponse, err := r.Client.ManageSonatypeHTTPSystemSettingsAPI.GetHttpSettings(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.HttpSettings.GetHttpSettings(ctx)
 
 	// Handle any errors
 	if err != nil {

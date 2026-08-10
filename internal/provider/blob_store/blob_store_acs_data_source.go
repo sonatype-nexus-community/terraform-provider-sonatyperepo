@@ -86,7 +86,7 @@ func (d *acsBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	// Call API
-	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetBlobStore1(d.AuthContext(ctx), data.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := d.Services.BlobStore.GetBlobStore1(d.AuthContext(ctx), data.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {

@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 2019-present Sonatype, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package common
+
+import (
+	"context"
+	"net/http"
+
+	sonatyperepoV382 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
+	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
+)
+
+// CapabilityService abstracts the Capabilities API across NXRM API client generations.
+type CapabilityService interface {
+	// Create creates a new capability.
+	Create(ctx context.Context, body sonatyperepoV382.CapabilityDTO) (*sonatyperepoV382.CapabilityDTO, *http.Response, error)
+	// Update updates an existing capability by ID.
+	Update(ctx context.Context, capabilityId string, body sonatyperepoV382.CapabilityDTO) (*http.Response, error)
+	// Delete deletes a capability by ID.
+	Delete(ctx context.Context, capabilityId string) (*http.Response, error)
+	// List lists all capabilities.
+	List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error)
+}
+
+// capabilityServiceV382 implements CapabilityService against NXRM API client V382 (targets NXRM < 3.94.0).
+type capabilityServiceV382 struct {
+	client *sonatyperepoV382.APIClient
+}
+
+func (s *capabilityServiceV382) Create(ctx context.Context, body sonatyperepoV382.CapabilityDTO) (*sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+	return s.client.CapabilitiesAPI.Create4(ctx).Body(body).Execute()
+}
+
+func (s *capabilityServiceV382) Update(ctx context.Context, capabilityId string, body sonatyperepoV382.CapabilityDTO) (*http.Response, error) {
+	return s.client.CapabilitiesAPI.Update3(ctx, capabilityId).Body(body).Execute()
+}
+
+func (s *capabilityServiceV382) Delete(ctx context.Context, capabilityId string) (*http.Response, error) {
+	return s.client.CapabilitiesAPI.Delete5(ctx, capabilityId).Execute()
+}
+
+func (s *capabilityServiceV382) List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+	return s.client.CapabilitiesAPI.List2(ctx).Execute()
+}
+
+// capabilityServiceV395 implements CapabilityService against NXRM API client V395 (targets NXRM 3.94.0+).
+type capabilityServiceV395 struct {
+	client *sonatyperepoV395.APIClient
+}
+
+func (s *capabilityServiceV395) Create(ctx context.Context, body sonatyperepoV382.CapabilityDTO) (*sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+	// Bridge the V382-shaped request into V395 shape
+	var v395Body sonatyperepoV395.CapabilityDTO
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, nil, err
+	}
+
+	apiV395, httpResponse, err := s.client.CapabilitiesAPI.CreateCapabilities(ctx).CapabilityDTO(v395Body).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result sonatyperepoV382.CapabilityDTO
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return &result, httpResponse, nil
+}
+
+func (s *capabilityServiceV395) Update(ctx context.Context, capabilityId string, body sonatyperepoV382.CapabilityDTO) (*http.Response, error) {
+	// Bridge the V382-shaped request into V395 shape
+	var v395Body sonatyperepoV395.CapabilityDTO
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+
+	return s.client.CapabilitiesAPI.UpdateCapabilities(ctx, capabilityId).CapabilityDTO(v395Body).Execute()
+}
+
+func (s *capabilityServiceV395) Delete(ctx context.Context, capabilityId string) (*http.Response, error) {
+	return s.client.CapabilitiesAPI.DeleteCapabilities(ctx, capabilityId).Execute()
+}
+
+func (s *capabilityServiceV395) List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.CapabilitiesAPI.ListCapabilities(ctx).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result []sonatyperepoV382.CapabilityDTO
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return result, httpResponse, nil
+}

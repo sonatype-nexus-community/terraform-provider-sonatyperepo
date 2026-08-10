@@ -354,6 +354,8 @@ github.com/skeema/knownhosts v1.3.1 h1:X2osQ+RAjK76shCbvhHHHVl3ZlgDm8apHEHFqRjnB
 github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQNxPwTcfiY=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2 h1:pkLD4Z/oEPth5nlBpWOaXGX+SP89bJLTinoK1p4Jvi4=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.0 h1:bVr5N4o5dbaA/TVVZKCeAD8etImIgz5b2u9UVKTonbM=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.0/go.mod h1:aa2xZDktuLQ1yLRaVgd8OE7RCf281zYbGN9HPhhjxEg=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4 h1:U7pdTOdwl/RS+5Zvz7mUE01XrS5ntONzxD9OmN6ymJw=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
@@ -723,6 +725,8 @@ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntN
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
 gopkg.in/cheggaaa/pb.v1 v1.0.27/go.mod h1:V/YB90LKu/1FcN3WVnfiiE5oMCibMjukxqG/qStrOgw=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
+gopkg.in/validator.v2 v2.0.1 h1:xF0KWyGWXm/LM2G1TrEjqOu4pa6coO9AlWSf3msVfDY=
+gopkg.in/validator.v2 v2.0.1/go.mod h1:lIUZBlB3Im4s/eYp39Ry/wkR02yOPhZ9IwIRBjuPuG8=
 gopkg.in/warnings.v0 v0.1.2 h1:wFXVbFY8DY5/xOe1ECiWdKCzZlxgshcYVNkBHstARME=
 gopkg.in/warnings.v0 v0.1.2/go.mod h1:jksf8JmL6Qr/oQM2OXTHunEvvTAsrWBLb6OOjuVWRNI=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

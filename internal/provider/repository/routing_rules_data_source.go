@@ -28,8 +28,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -77,13 +75,9 @@ func (d *routingRulesDataSource) Schema(_ context.Context, req datasource.Schema
 func (d *routingRulesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.RoutingRulesModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
-	routingRulesResponse, httpResponse, err := d.Client.RoutingRulesAPI.GetRoutingRules(ctx).Execute()
+	routingRulesResponse, httpResponse, err := d.Services.RoutingRule.GetRoutingRules(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to list routing rules",

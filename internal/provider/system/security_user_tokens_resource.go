@@ -89,14 +89,10 @@ func (r *securityUserTokenResource) ImportState(ctx context.Context, req resourc
 	// we don't need to parse the import ID. We just read the current configuration.
 
 	// Set up authentication context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read current user token settings from the API
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.UserTokens.ServiceStatus(ctx)
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		errors.HandleAPIError(
@@ -135,11 +131,7 @@ func (r *securityUserTokenResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	payload := sonatyperepo.UserTokensApiModel{}
 	plan.MapToApi(&payload)
@@ -178,14 +170,10 @@ func (r *securityUserTokenResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.UserTokens.ServiceStatus(ctx)
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		errors.HandleAPIError(
@@ -216,17 +204,13 @@ func (r *securityUserTokenResource) Update(ctx context.Context, req resource.Upd
 		tflog.Error(ctx, fmt.Sprintf("Getting plan data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	payload := sonatyperepo.UserTokensApiModel{}
 	plan.MapToApi(&payload)
 
-	apiResponse, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.SetServiceStatus(ctx).Body(payload).Execute()
+	apiResponse, httpResponse, err := r.Services.UserTokens.SetServiceStatus(ctx, payload)
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
@@ -260,11 +244,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Instead of deleting, we disable the user token feature
 	defaultExpirationDays := common.SECURITY_USER_TOKEN_DEFAULT_EXPIRATION_DAYS
@@ -273,7 +253,7 @@ func (r *securityUserTokenResource) Delete(ctx context.Context, req resource.Del
 		ExpirationDays: &defaultExpirationDays,
 	}
 
-	_, httpResponse, err := r.Client.SecurityManagementUserTokensAPI.SetServiceStatus(ctx).Body(payload).Execute()
+	_, httpResponse, err := r.Services.UserTokens.SetServiceStatus(ctx, payload)
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusOK {

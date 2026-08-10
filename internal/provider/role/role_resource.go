@@ -95,14 +95,10 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewRoleXORequest()
 	plan.MapToApi(apiBody)
-	_, httpResponse, err := r.Client.SecurityManagementRolesAPI.Create(ctx).Body(*apiBody).Execute()
+	_, httpResponse, err := r.Services.Role.CreateRole(ctx, *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -141,14 +137,10 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementRolesAPI.GetRole(ctx, state.Id.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.Role.GetRole(ctx, state.Id.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -196,14 +188,10 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Call API to Update
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewRoleXORequest()
 	plan.MapToApi(apiBody)
-	httpResponse, err := r.Client.SecurityManagementRolesAPI.Update(ctx, state.Id.ValueString()).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.Role.UpdateRole(ctx, state.Id.ValueString(), *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -241,13 +229,9 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.SecurityManagementRolesAPI.Delete(ctx, state.Id.ValueString()).Execute()
+	httpResponse, err := r.Services.Role.DeleteRole(ctx, state.Id.ValueString())
 
 	// Handle Error
 	if err != nil {

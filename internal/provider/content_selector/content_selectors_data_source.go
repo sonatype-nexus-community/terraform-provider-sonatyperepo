@@ -31,7 +31,6 @@ import (
 )
 
 // Ensure the implementation satisfies the expected interfaces.
-//
 var (
 	_ datasource.DataSource              = &contentSelectorsDataSource{}
 	_ datasource.DataSourceWithConfigure = &contentSelectorsDataSource{}
@@ -77,7 +76,7 @@ func (d *contentSelectorsDataSource) Read(ctx context.Context, req datasource.Re
 
 	ctx = d.AuthContext(ctx)
 
-	contentSelectorsResponse, httpResponse, err := d.Client.ContentSelectorsAPI.GetContentSelectors(ctx).Execute()
+	contentSelectorsResponse, httpResponse, err := d.Services.ContentSelector.GetContentSelectors(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable list Content Selectors",

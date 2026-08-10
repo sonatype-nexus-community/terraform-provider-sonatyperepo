@@ -65,27 +65,27 @@ func (f *YumRepositoryFormat) ResourceName(repoType RepositoryType) string {
 // --------------------------------------------
 // Hosted YUM Format Functions
 // --------------------------------------------
-func (f *YumRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatHosted) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateYumHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateYumHostedRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *YumRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatHosted) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryYumHostedModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumHostedRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumHostedModel)
 
@@ -93,7 +93,7 @@ func (f *YumRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClie
 	stateModel := (state).(model.RepositoryYumHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateYumHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateYumHostedRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *YumRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -129,9 +129,9 @@ func (f *YumRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
 }
 
 // DoImportRequest implements the import functionality for YUM Hosted repositories
-func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumHostedRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumHostedRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -141,27 +141,27 @@ func (f *YumRepositoryFormatHosted) DoImportRequest(repositoryName string, apiCl
 // --------------------------------------------
 // PROXY YUM Format Functions
 // --------------------------------------------
-func (f *YumRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumProxyModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateYumProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateYumProxyRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *YumRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryYumProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumProxyRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumProxyModel)
 
@@ -169,13 +169,13 @@ func (f *YumRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	stateModel := (state).(model.RepositoryYumProxyModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateYumProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateYumProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 // DoImportRequest implements the import functionality for YUM Proxy repositories
-func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumProxyRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -283,27 +283,27 @@ func (f *YumRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(state 
 // --------------------------------------------
 // GORUP YUM Format Functions
 // --------------------------------------------
-func (f *YumRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatGroup) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateYumGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateYumGroupRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *YumRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatGroup) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryYumGroupModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumGroupRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryYumGroupModel)
 
@@ -311,7 +311,7 @@ func (f *YumRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClien
 	stateModel := (state).(model.RepositoryYumGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.UpdateYumGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateYumGroupRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *YumRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -357,9 +357,9 @@ func (f *YumRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
 }
 
 // DoImportRequest implements the import functionality for YUM Group repositories
-func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *YumRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetYumGroupRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetYumGroupRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -375,8 +375,9 @@ func yumSchemaAttributes(isHosted bool) map[string]tfschema.Attribute {
 			"yum": schema.ResourceRequiredSingleNestedAttribute(
 				"YUM specific configuration for this Repository",
 				map[string]tfschema.Attribute{
-					"deploy_policy": schema.ResourceOptionalStringEnum(
+					"deploy_policy": schema.ResourceStringEnumWithDefault(
 						"Validate that all paths are RPMs or yum metadata.",
+						common.DEPLOY_POLICY_STRICT,
 						common.DEPLOY_POLICY_PERMISSIVE,
 						common.DEPLOY_POLICY_STRICT,
 					),

@@ -110,16 +110,12 @@ func (r *routingRuleResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := sonatyperepo.RoutingRuleXO{}
 	plan.MapToApi(&requestPayload)
 
-	apiResponse, err := r.Client.RoutingRulesAPI.CreateRoutingRule(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.RoutingRule.CreateRoutingRule(ctx, requestPayload)
 
 	// Handle Error
 	if err != nil {
@@ -166,7 +162,7 @@ func (r *routingRuleResource) Read(ctx context.Context, req resource.ReadRequest
 	ctx = r.AuthContext(ctx)
 
 	// Fetch routing rule from API
-	routingRule, httpResponse, err := r.Client.RoutingRulesAPI.GetRoutingRule(ctx, state.Name.ValueString()).Execute()
+	routingRule, httpResponse, err := r.Services.RoutingRule.GetRoutingRule(ctx, state.Name.ValueString())
 	if err != nil {
 		// Check if this is a 404 error
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
@@ -218,7 +214,7 @@ func (r *routingRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	// Build request payload and make API call
 	requestPayload := sonatyperepo.RoutingRuleXO{}
 	plan.MapToApi(&requestPayload)
-	apiResponse, err := r.Client.RoutingRulesAPI.UpdateRoutingRule(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.RoutingRule.UpdateRoutingRule(ctx, state.Name.ValueString(), requestPayload)
 
 	// Handle API response
 	if err != nil {
@@ -258,14 +254,10 @@ func (r *routingRuleResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Delete API Call
-	apiResponse, err := r.Client.RoutingRulesAPI.DeleteRoutingRule(ctx, state.Name.ValueString()).Execute()
+	apiResponse, err := r.Services.RoutingRule.DeleteRoutingRule(ctx, state.Name.ValueString())
 
 	// Handle Error(s)
 	if err != nil {

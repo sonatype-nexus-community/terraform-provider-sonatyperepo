@@ -109,11 +109,7 @@ func (r *systemConfigMailResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := sonatyperepo.ApiEmailConfiguration{
 		Enabled:                       plan.Enabled.ValueBoolPointer(),
@@ -129,7 +125,7 @@ func (r *systemConfigMailResource) Create(ctx context.Context, req resource.Crea
 		SslServerIdentityCheckEnabled: plan.SSLServerIdentityCheckEnabled.ValueBoolPointer(),
 		NexusTrustStoreEnabled:        plan.NexusTrustStoreEnabled.ValueBoolPointer(),
 	}
-	apiResponse, err := r.Client.EmailAPI.SetEmailConfiguration(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.Configuration.SetEmailConfiguration(ctx, requestPayload)
 
 	// Handle Error
 	if err != nil {
@@ -165,14 +161,10 @@ func (r *systemConfigMailResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.EmailAPI.GetEmailConfiguration(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.Configuration.GetEmailConfiguration(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -216,11 +208,7 @@ func (r *systemConfigMailResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Call API to Update
 	requestPayload := sonatyperepo.ApiEmailConfiguration{
@@ -237,7 +225,7 @@ func (r *systemConfigMailResource) Update(ctx context.Context, req resource.Upda
 		SslServerIdentityCheckEnabled: plan.SSLServerIdentityCheckEnabled.ValueBoolPointer(),
 		NexusTrustStoreEnabled:        plan.NexusTrustStoreEnabled.ValueBoolPointer(),
 	}
-	apiResponse, err := r.Client.EmailAPI.SetEmailConfiguration(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.Configuration.SetEmailConfiguration(ctx, requestPayload)
 
 	// Handle Error
 	if err != nil {
@@ -273,13 +261,9 @@ func (r *systemConfigMailResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	apiResponse, err := r.Client.EmailAPI.DeleteEmailConfiguration(ctx).Execute()
+	apiResponse, err := r.Services.Configuration.DeleteEmailConfiguration(ctx)
 
 	// Handle Error
 	if err != nil {

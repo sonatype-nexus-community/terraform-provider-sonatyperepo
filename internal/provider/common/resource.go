@@ -42,6 +42,7 @@ type BaseResource struct {
 	NxrmVersion  SystemVersion
 	NxrmWritable bool
 	NodeCount    int32
+	Services     Services
 }
 
 // UpgradeState implements resource.ResourceWithUpgradeState.
@@ -106,6 +107,7 @@ func (r *BaseResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.NxrmVersion = config.NxrmVersion
 	r.NxrmWritable = config.NxrmWritable
 	r.NodeCount = config.NodeCount
+	r.Services = config.Services
 }
 
 // AuthContext returns a new context with authentication set up for API calls

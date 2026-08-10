@@ -27,8 +27,6 @@ import (
 	sharederr "github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 )
@@ -87,13 +85,9 @@ func (d *blobStoresDataSource) Schema(_ context.Context, req datasource.SchemaRe
 func (d *blobStoresDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.BlobStoresModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
-	blobStores, httpResponse, err := d.Client.BlobStoreAPI.ListBlobStores(ctx).Execute()
+	blobStores, httpResponse, err := d.Services.BlobStore.ListBlobStores(ctx)
 	if err != nil {
 		sharederr.HandleAPIError(
 			"Unable to Read Blob Stores",

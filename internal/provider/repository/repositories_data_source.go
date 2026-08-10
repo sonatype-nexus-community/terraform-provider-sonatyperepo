@@ -29,8 +29,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -78,13 +76,9 @@ func (d *repositoriesDataSource) Schema(_ context.Context, req datasource.Schema
 func (d *repositoriesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.RepositoriesModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
-	repositories, httpResponse, err := d.Client.RepositoryManagementAPI.GetAllRepositories(ctx).Execute()
+	repositories, httpResponse, err := d.Services.Repository.ListRepositories(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to read Repositories",

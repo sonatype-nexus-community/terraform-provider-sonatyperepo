@@ -78,8 +78,8 @@ func (ct *BaseCapabilityType) DeprecationMessage() *string {
 // CapabilityTypeI that all Capability Types must implement
 // --------------------------------------------
 type CapabilityTypeI interface {
-	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error)
-	DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
+	DoCreateRequest(plan any, svc common.CapabilityService, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error)
+	DoUpdateRequest(plan any, capabilityId string, svc common.CapabilityService, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	ApiCreateSuccessResponseCodes() []int
 	GetMarkdownDescription() string
 	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)

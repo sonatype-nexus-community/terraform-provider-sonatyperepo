@@ -33,7 +33,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
 	"terraform-provider-sonatyperepo/internal/provider/capability"
 	"terraform-provider-sonatyperepo/internal/provider/common"
@@ -81,7 +80,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Setup context with auth
-	ctx = r.setupAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
 	if r.NxrmVersion.SupportsCapabilities() && !r.verifyIQConnectionIfNeeded(ctx, plan, &resp.Diagnostics) {
@@ -137,18 +136,13 @@ func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resou
 	return plan, diags
 }
 
-// setupAuthContext adds authentication to the context
-func (r *repositoryResource) setupAuthContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, sonatyperepo.ContextBasicAuth, r.Auth)
-}
-
 // verifyIQConnectionIfNeeded checks IQ connection for proxy repositories with firewall enabled
 func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, plan any, respDiags *diag.Diagnostics) bool {
 	if r.RepositoryType != format.REPO_TYPE_PROXY || !r.RepositoryFormat.SupportsRepositoryFirewall() || !r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) {
 		return true
 	}
 
-	iqCheckResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.VerifyIqConnection(ctx).Execute()
+	iqCheckResponse, httpResponse, err := r.Services.Configuration.VerifyIqConnection(ctx)
 	if err != nil || httpResponse.StatusCode != http.StatusOK || !*iqCheckResponse.Success {
 		respDiags.AddError("Sonatype IQ Connection not successful", "Unable to configure Repository Firewall as not connected to Sonatype IQ Server")
 		return false
@@ -158,7 +152,7 @@ func (r *repositoryResource) verifyIQConnectionIfNeeded(ctx context.Context, pla
 
 // createRepository creates the repository via API
 func (r *repositoryResource) createRepository(ctx context.Context, plan any, resp *resource.CreateResponse) bool {
-	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Client, ctx)
+	httpResponse, err := r.RepositoryFormat.DoCreateRequest(plan, r.Services.Repository, ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("Error creating %s %s Repository", r.RepositoryFormat.Key(), r.RepositoryType.String()),
@@ -196,7 +190,7 @@ func (r *repositoryResource) readCreatedRepository(ctx context.Context, plan int
 	)
 
 	for attempt := 0; attempt < maxAttempts; attempt++ {
-		apiResponse, httpResponse, err = r.RepositoryFormat.DoReadRequest(plan, r.Client, ctx)
+		apiResponse, httpResponse, err = r.RepositoryFormat.DoReadRequest(plan, r.Services.Repository, ctx)
 		if err == nil && apiResponse != nil {
 			return apiResponse, true
 		}
@@ -304,14 +298,10 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API Request
-	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(stateModel, r.Client, ctx)
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoReadRequest(stateModel, r.Services.Repository, ctx)
 
 	// Handle any errors
 	if err != nil {
@@ -352,7 +342,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(diags...)
 
 	// Setup context with auth
-	ctx = r.setupAuthContext(ctx)
+	ctx = r.AuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
 	if r.NxrmVersion.SupportsCapabilities() && !r.verifyIQConnectionIfNeeded(ctx, planModel, &resp.Diagnostics) {
@@ -391,7 +381,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 func (r *repositoryResource) updateRepository(ctx context.Context, planModel, stateModel any, respDiags *diag.Diagnostics) bool {
 	// Make API requet
-	httpResponse, err := r.RepositoryFormat.DoUpdateRequest(planModel, stateModel, r.Client, ctx)
+	httpResponse, err := r.RepositoryFormat.DoUpdateRequest(planModel, stateModel, r.Services.Repository, ctx)
 
 	// Handle any errors
 	if err != nil {
@@ -428,11 +418,7 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API request
 	repoNameStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Name").Interface()
@@ -463,7 +449,7 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *repositoryResource) attemptDeleteWithRetries(ctx context.Context, repositoryName string, resp *resource.DeleteResponse) bool {
 	maxAttempts := 3
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName, r.Client, ctx)
+		httpResponse, err := r.RepositoryFormat.DoDeleteRequest(repositoryName, r.Services.Repository, ctx)
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {
@@ -509,14 +495,10 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	repositoryName := req.ID
 
 	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Call format-specific import request to fetch repository data from API
-	apiResponse, httpResponse, err := r.RepositoryFormat.DoImportRequest(repositoryName, r.Client, ctx)
+	apiResponse, httpResponse, err := r.RepositoryFormat.DoImportRequest(repositoryName, r.Services.Repository, ctx)
 
 	// Handle errors
 	if err != nil {

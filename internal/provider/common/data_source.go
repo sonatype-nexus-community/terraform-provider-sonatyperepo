@@ -33,8 +33,9 @@ var (
 
 // BaseDataSource is the data source implementation.
 type BaseDataSource struct {
-	Auth   sonatyperepo.BasicAuth
-	Client *sonatyperepo.APIClient
+	Auth     sonatyperepo.BasicAuth
+	Client   *sonatyperepo.APIClient
+	Services Services
 }
 
 // Configure implements datasource.DataSourceWithConfigure.
@@ -55,6 +56,7 @@ func (d *BaseDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 
 	d.Auth = config.Auth
 	d.Client = config.Client
+	d.Services = config.Services
 }
 
 // AuthContext returns a new context with authentication set up for API calls
