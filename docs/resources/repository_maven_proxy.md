@@ -83,11 +83,14 @@ Optional:
 <a id="nestedatt--maven"></a>
 ### Nested Schema for `maven`
 
+Required:
+
+- `layout_policy` (String) Validate that all paths are maven artifact or metadata paths
+- `version_policy` (String) What type of artifacts does this repository store?
+
 Optional:
 
 - `content_disposition` (String) Add Content-Disposition header as 'ATTACHMENT' to disable some content from being inline in a browser.
-- `layout_policy` (String) Validate that all paths are maven artifact or metadata paths
-- `version_policy` (String) What type of artifacts does this repository store?
 
 
 <a id="nestedatt--negative_cache"></a>

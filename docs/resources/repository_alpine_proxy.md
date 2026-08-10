@@ -154,9 +154,12 @@ Required:
 <a id="nestedatt--alpine"></a>
 ### Nested Schema for `alpine`
 
-Optional:
+Required:
 
 - `key_pair` (String) RSA private key in PEM format used to sign the repository index
+
+Optional:
+
 - `passphrase` (String, Sensitive) Passphrase to access the RSA signing key
 
 

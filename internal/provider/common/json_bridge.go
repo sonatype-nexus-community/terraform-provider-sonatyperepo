@@ -67,7 +67,7 @@ func bridgeFromResponse(apiSrc any, httpResponse *http.Response, err error, dst 
 	}
 
 	body, readErr := io.ReadAll(httpResponse.Body)
-	httpResponse.Body.Close()
+	_ = httpResponse.Body.Close()
 	if readErr != nil {
 		return err
 	}

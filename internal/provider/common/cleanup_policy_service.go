@@ -99,7 +99,7 @@ func (s *cleanupPolicyServiceV395) GetByName(ctx context.Context, name string) (
 	// response has an extra 'repositories' field V382's struct doesn't know about, so prune the
 	// raw body down to V382's shape here before the caller ever sees it.
 	body, readErr := io.ReadAll(httpResponse.Body)
-	httpResponse.Body.Close()
+	_ = httpResponse.Body.Close()
 	if readErr != nil {
 		return httpResponse, fmt.Errorf("could not read response body: %w", readErr)
 	}
