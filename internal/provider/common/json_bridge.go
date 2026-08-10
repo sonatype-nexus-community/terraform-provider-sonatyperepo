@@ -38,7 +38,7 @@ import (
 // (recursively, at every nesting level) down to the field names dst's type actually declares --
 // otherwise a field that only exists on the src side (e.g. a newer generation added a field)
 // would fail the whole decode with "json: unknown field ...".
-func jsonBridge(src any, dst any) error {
+func jsonBridge(src, dst any) error {
 	b, err := json.Marshal(src)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func bridgeFromResponse(apiSrc any, httpResponse *http.Response, err error, dst 
 	if pruneErr != nil {
 		return err
 	}
-	if unmarshalErr := json.Unmarshal(pruned, dst); unmarshalErr != nil {
+	if json.Unmarshal(pruned, dst) != nil {
 		return err
 	}
 	return nil
@@ -87,9 +87,7 @@ func bridgeFromResponse(apiSrc any, httpResponse *http.Response, err error, dst 
 // (by JSON tag) on t, descending into nested objects/arrays along the way. Types it can't
 // reason about (maps, interfaces, scalars) are passed through unchanged.
 func pruneUnknownJSONFields(raw json.RawMessage, t reflect.Type) (json.RawMessage, error) {
-	for t != nil && t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
+	t = indirect(t)
 	if t == nil {
 		return raw, nil
 	}
@@ -107,58 +105,74 @@ func pruneUnknownJSONFields(raw json.RawMessage, t reflect.Type) (json.RawMessag
 
 	switch t.Kind() {
 	case reflect.Struct:
-		var obj map[string]json.RawMessage
-		if err := json.Unmarshal(raw, &obj); err != nil {
-			// Not a JSON object (e.g. null, or a mismatched shape) -- leave it for the
-			// real unmarshal to accept or reject.
-			return raw, nil
-		}
-		known := jsonFieldTypes(t)
-		for key, val := range obj {
-			fieldType, ok := known[key]
-			if !ok {
-				delete(obj, key)
-				continue
-			}
-			prunedVal, err := pruneUnknownJSONFields(val, fieldType)
-			if err != nil {
-				return nil, err
-			}
-			obj[key] = prunedVal
-		}
-		// Some generated structs manually check that every declared field is present as a
-		// JSON key before decoding, even when the field's Go type has a perfectly usable
-		// zero value (e.g. a bool). If the source generation dropped a field the destination
-		// still declares -- a version-skew removal, not just an encoding difference -- that
-		// check fails the whole decode unless we backfill the zero value ourselves.
-		for key, fieldType := range known {
-			if _, exists := obj[key]; exists {
-				continue
-			}
-			if zero, ok := zeroJSONValue(fieldType); ok {
-				obj[key] = zero
-			}
-		}
-		return json.Marshal(obj)
-
+		return pruneStructFields(raw, t)
 	case reflect.Slice, reflect.Array:
-		var arr []json.RawMessage
-		if err := json.Unmarshal(raw, &arr); err != nil {
-			return raw, nil
-		}
-		elemType := t.Elem()
-		for i, v := range arr {
-			prunedVal, err := pruneUnknownJSONFields(v, elemType)
-			if err != nil {
-				return nil, err
-			}
-			arr[i] = prunedVal
-		}
-		return json.Marshal(arr)
-
+		return pruneSliceElements(raw, t.Elem())
 	default:
 		return raw, nil
 	}
+}
+
+// indirect strips pointer indirection, following it all the way down to the underlying type.
+func indirect(t reflect.Type) reflect.Type {
+	for t != nil && t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
+}
+
+// pruneStructFields drops object keys that have no corresponding field (by JSON tag) on t,
+// recursing into each retained field's value, and backfills declared fields the object is
+// missing. Not a JSON object (e.g. null, or a mismatched shape) is left for the real unmarshal
+// to accept or reject.
+func pruneStructFields(raw json.RawMessage, t reflect.Type) (json.RawMessage, error) {
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &obj); err != nil {
+		return raw, nil
+	}
+	known := jsonFieldTypes(t)
+	for key, val := range obj {
+		fieldType, ok := known[key]
+		if !ok {
+			delete(obj, key)
+			continue
+		}
+		prunedVal, err := pruneUnknownJSONFields(val, fieldType)
+		if err != nil {
+			return nil, err
+		}
+		obj[key] = prunedVal
+	}
+	// Some generated structs manually check that every declared field is present as a
+	// JSON key before decoding, even when the field's Go type has a perfectly usable
+	// zero value (e.g. a bool). If the source generation dropped a field the destination
+	// still declares -- a version-skew removal, not just an encoding difference -- that
+	// check fails the whole decode unless we backfill the zero value ourselves.
+	for key, fieldType := range known {
+		if _, exists := obj[key]; exists {
+			continue
+		}
+		if zero, ok := zeroJSONValue(fieldType); ok {
+			obj[key] = zero
+		}
+	}
+	return json.Marshal(obj)
+}
+
+// pruneSliceElements applies pruneUnknownJSONFields to every element of a JSON array.
+func pruneSliceElements(raw json.RawMessage, elemType reflect.Type) (json.RawMessage, error) {
+	var arr []json.RawMessage
+	if err := json.Unmarshal(raw, &arr); err != nil {
+		return raw, nil
+	}
+	for i, v := range arr {
+		prunedVal, err := pruneUnknownJSONFields(v, elemType)
+		if err != nil {
+			return nil, err
+		}
+		arr[i] = prunedVal
+	}
+	return json.Marshal(arr)
 }
 
 // nullableElemType detects the generated client's "NullableXxx" wrapper shape --
@@ -209,35 +223,44 @@ func jsonFieldTypes(t reflect.Type) map[string]reflect.Type {
 	fields := make(map[string]reflect.Type)
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-
 		if f.Anonymous {
-			embedded := f.Type
-			for embedded.Kind() == reflect.Ptr {
-				embedded = embedded.Elem()
-			}
-			if embedded.Kind() == reflect.Struct {
-				for k, v := range jsonFieldTypes(embedded) {
-					fields[k] = v
-				}
-			}
+			mergeEmbeddedFieldTypes(fields, f.Type)
 			continue
 		}
-
-		tag := f.Tag.Get("json")
-		if tag == "-" {
-			continue
+		if name, ok := jsonFieldName(f); ok {
+			fields[name] = f.Type
 		}
-		name := f.Name
-		if tag != "" {
-			if idx := strings.Index(tag, ","); idx >= 0 {
-				if tag[:idx] != "" {
-					name = tag[:idx]
-				}
-			} else {
-				name = tag
-			}
-		}
-		fields[name] = f.Type
 	}
 	return fields
+}
+
+// mergeEmbeddedFieldTypes merges the JSON field types of an anonymous (embedded) struct field
+// into fields, so promoted fields are addressable by their own JSON key.
+func mergeEmbeddedFieldTypes(fields map[string]reflect.Type, embedded reflect.Type) {
+	embedded = indirect(embedded)
+	if embedded == nil || embedded.Kind() != reflect.Struct {
+		return
+	}
+	for k, v := range jsonFieldTypes(embedded) {
+		fields[k] = v
+	}
+}
+
+// jsonFieldName returns the JSON key f would decode from, and false if it's excluded via
+// a `json:"-"` tag.
+func jsonFieldName(f reflect.StructField) (string, bool) {
+	tag := f.Tag.Get("json")
+	if tag == "-" {
+		return "", false
+	}
+	if tag == "" {
+		return f.Name, true
+	}
+	if idx := strings.Index(tag, ","); idx >= 0 {
+		if tag[:idx] != "" {
+			return tag[:idx], true
+		}
+		return f.Name, true
+	}
+	return tag, true
 }
