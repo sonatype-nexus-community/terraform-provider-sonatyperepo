@@ -155,8 +155,11 @@ func (f *AlpineRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreateAlpineProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreateAlpineProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *AlpineRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -164,11 +167,11 @@ func (f *AlpineRepositoryFormatProxy) DoReadRequest(state any, apiClient common.
 	stateModel := (state).(model.RepositoryAlpineProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, stateModel.Name.ValueString())
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *AlpineRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -178,18 +181,21 @@ func (f *AlpineRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCl
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAlpineProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Update
-	return apiClient.UpdateAlpineProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdateAlpineProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for Alpine Proxy repositories
 func (f *AlpineRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *AlpineRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -220,6 +226,26 @@ func (f *AlpineRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	if state != nil {
 		stateModel = (state).(model.RepositoryAlpineProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.AlpineProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+				}
+				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.AlpineProxyApiRepository))
 	return stateModel
 }

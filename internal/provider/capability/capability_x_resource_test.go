@@ -368,6 +368,17 @@ func TestAccCapabilityFirewallAuditQuarantineResource(t *testing.T) {
 				Minor: 83,
 				Patch: 99,
 			})
+			// Broken from NXRM 3.94.0 onwards - server returns a 500 when updating
+			// firewall configuration for a repository
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 94,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 127,
+				Minor: 127,
+				Patch: 127,
+			})
 		},
 		Steps: []resource.TestStep{
 			// Create and Read testing

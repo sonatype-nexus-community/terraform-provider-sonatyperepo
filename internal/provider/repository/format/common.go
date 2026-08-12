@@ -87,6 +87,12 @@ func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient 
 // ValidateRepositoryForImport validates that the repository matches the expected format and type
 // This base implementation uses reflection to extract Format and Type fields from the API repository struct
 func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Proxy formats wrap the repository together with its inline firewall mode (NXRM 3.94+);
+	// unwrap it so reflection below sees the underlying API struct's Format/Type fields.
+	if wrapped, ok := repositoryData.(ProxyApiResponseWithFirewall); ok {
+		repositoryData = wrapped.Repository
+	}
+
 	// Use reflection to get Format and Type fields from the repository data
 	v := reflect.ValueOf(repositoryData)
 

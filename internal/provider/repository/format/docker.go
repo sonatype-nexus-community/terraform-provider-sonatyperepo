@@ -168,8 +168,11 @@ func (f *DockerRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryDockerProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreateDockerProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreateDockerProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *DockerRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -177,11 +180,11 @@ func (f *DockerRepositoryFormatProxy) DoReadRequest(state any, apiClient common.
 	stateModel := (state).(model.RepositoryDockerProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetDockerProxyRepository(ctx, stateModel.Name.ValueString())
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetDockerProxyRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *DockerRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -191,18 +194,21 @@ func (f *DockerRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiCl
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryDockerProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.UpdateDockerProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdateDockerProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for Docker Proxy repositories
 func (f *DockerRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetDockerProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetDockerProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *DockerRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -234,6 +240,26 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	if state != nil {
 		stateModel = (state).(model.RepositoryDockerProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.DockerProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+				}
+				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.DockerProxyApiRepository))
 	return stateModel
 }

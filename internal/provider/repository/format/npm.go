@@ -140,8 +140,11 @@ func (f *NpmRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.Re
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryNpmProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreateNpmProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreateNpmProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *NpmRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -152,11 +155,11 @@ func (f *NpmRepositoryFormatProxy) DoReadRequest(state any, apiClient common.Rep
 	repoName := stateModel.Name.ValueString()
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetNpmProxyRepository(ctx, repoName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetNpmProxyRepository(ctx, repoName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -166,18 +169,21 @@ func (f *NpmRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryNpmProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdateNpmProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for NPM Proxy repositories
 func (f *NpmRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetNpmProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetNpmProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *NpmRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -206,6 +212,27 @@ func (f *NpmRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryNpmProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.NpmProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
+				}
+				enabled, quarantine, pccsEnabled := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+				stateModel.FirewallAuditAndQuarantine.PccsEnabled = types.BoolValue(pccsEnabled)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.NpmProxyApiRepository))
 	return stateModel
 }

@@ -177,6 +177,21 @@ func (s *SystemVersion) SupportsCapabilities() bool {
 	return s.NewerThan(3, 84, 0, 0)
 }
 
+func (s *SystemVersion) SupportsInlineFirewall() bool {
+	return s.NewerThan(3, 94, 0, 0)
+}
+
+// FirewallMode represents the inline `firewall.mode` value supported by NXRM 3.94+
+// proxy repository APIs, replacing the separate Capability-based firewall configuration.
+type FirewallMode string
+
+const (
+	FirewallModeDisabled   FirewallMode = "DISABLED"
+	FirewallModeAudit      FirewallMode = "AUDIT"
+	FirewallModeQuarantine FirewallMode = "QUARANTINE"
+	FirewallModePccs       FirewallMode = "PCCS"
+)
+
 func ParseServerHeaderToVersion(headerStr string) SystemVersion {
 	match := FindAllGroups(nxrmServerVersionExp, strings.ToUpper(headerStr))
 	sysVersion := SystemVersion{}

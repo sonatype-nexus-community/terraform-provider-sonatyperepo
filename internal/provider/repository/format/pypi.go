@@ -139,8 +139,11 @@ func (f *PyPiRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.R
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryPyPiProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreatePypiProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreatePypiProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *PyPiRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -148,11 +151,11 @@ func (f *PyPiRepositoryFormatProxy) DoReadRequest(state any, apiClient common.Re
 	stateModel := (state).(model.RepositoryPyPiProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetPypiProxyRepository(ctx, stateModel.Name.ValueString())
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetPypiProxyRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -162,18 +165,21 @@ func (f *PyPiRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClie
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryPyPiProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdatePypiProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for PyPI Proxy repositories
 func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetPypiProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetPypiProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -202,6 +208,27 @@ func (f *PyPiRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryPyPiProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.PyPiProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
+				}
+				enabled, quarantine, pccsEnabled := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+				stateModel.FirewallAuditAndQuarantine.PccsEnabled = types.BoolValue(pccsEnabled)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.PyPiProxyApiRepository))
 	return stateModel
 }

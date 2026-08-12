@@ -40,9 +40,9 @@ type RepositoryManagementService interface {
 	CreateAlpineHostedRepository(ctx context.Context, body sonatyperepoV382.AlpineHostedRepositoryApiRequest) (*http.Response, error)
 	GetAlpineHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineHostedApiRepository, *http.Response, error)
 	UpdateAlpineHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineHostedRepositoryApiRequest) (*http.Response, error)
-	CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error)
-	GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *http.Response, error)
-	UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error)
+	CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateAnsiblegalaxyGroupRepository(ctx context.Context, body sonatyperepoV382.AnsibleGalaxyGroupRepositoryApiRequest) (*http.Response, error)
 	GetAnsiblegalaxyGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AnsibleGalaxyGroupApiRepository, *http.Response, error)
 	UpdateAnsiblegalaxyGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AnsibleGalaxyGroupRepositoryApiRequest) (*http.Response, error)
@@ -64,15 +64,15 @@ type RepositoryManagementService interface {
 	CreateCargoHostedRepository(ctx context.Context, body sonatyperepoV382.CargoHostedRepositoryApiRequest) (*http.Response, error)
 	GetCargoHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdateCargoHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoHostedRepositoryApiRequest) (*http.Response, error)
-	CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error)
-	GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *http.Response, error)
-	UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error)
+	CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateCocoapodsProxyRepository(ctx context.Context, body sonatyperepoV382.CocoapodsProxyRepositoryApiRequest) (*http.Response, error)
 	GetCocoapodsProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
 	UpdateCocoapodsProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CocoapodsProxyRepositoryApiRequest) (*http.Response, error)
-	CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error)
-	GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
-	UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error)
+	CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error)
+	UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateConanGroupRepository(ctx context.Context, body sonatyperepoV382.ConanGroupRepositoryApiRequest) (*http.Response, error)
 	GetConanGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupDeployRepository, *http.Response, error)
 	UpdateConanGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ConanGroupRepositoryApiRequest) (*http.Response, error)
@@ -91,9 +91,9 @@ type RepositoryManagementService interface {
 	CreateDockerHostedRepository(ctx context.Context, body sonatyperepoV382.DockerHostedRepositoryApiRequest) (*http.Response, error)
 	GetDockerHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerHostedApiRepository, *http.Response, error)
 	UpdateDockerHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerHostedRepositoryApiRequest) (*http.Response, error)
-	CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error)
-	GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *http.Response, error)
-	UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error)
+	CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateGitlfsHostedRepository(ctx context.Context, body sonatyperepoV382.GitLfsHostedRepositoryApiRequest) (*http.Response, error)
 	GetGitlfsHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdateGitlfsHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GitLfsHostedRepositoryApiRequest) (*http.Response, error)
@@ -103,9 +103,9 @@ type RepositoryManagementService interface {
 	CreateGoHostedRepository(ctx context.Context, body sonatyperepoV382.GolangHostedRepositoryApiRequest) (*http.Response, error)
 	GetGoHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdateGoHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangHostedRepositoryApiRequest) (*http.Response, error)
-	CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error)
-	GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
-	UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error)
+	CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error)
+	UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateHelmGroupRepository(ctx context.Context, body sonatyperepoV382.HelmGroupRepositoryApiRequest) (*http.Response, error)
 	GetHelmGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error)
 	UpdateHelmGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HelmGroupRepositoryApiRequest) (*http.Response, error)
@@ -115,9 +115,9 @@ type RepositoryManagementService interface {
 	CreateHelmProxyRepository(ctx context.Context, body sonatyperepoV382.HelmProxyRepositoryApiRequest) (*http.Response, error)
 	GetHelmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
 	UpdateHelmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HelmProxyRepositoryApiRequest) (*http.Response, error)
-	CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error)
-	GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
-	UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error)
+	CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error)
+	UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateMavenGroupRepository(ctx context.Context, body sonatyperepoV382.MavenGroupRepositoryApiRequest) (*http.Response, error)
 	GetMavenGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error)
 	UpdateMavenGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.MavenGroupRepositoryApiRequest) (*http.Response, error)
@@ -133,9 +133,9 @@ type RepositoryManagementService interface {
 	CreateNpmHostedRepository(ctx context.Context, body sonatyperepoV382.NpmHostedRepositoryApiRequest) (*http.Response, error)
 	GetNpmHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdateNpmHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmHostedRepositoryApiRequest) (*http.Response, error)
-	CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error)
-	GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *http.Response, error)
-	UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error)
+	CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateNugetGroupRepository(ctx context.Context, body sonatyperepoV382.NugetGroupRepositoryApiRequest) (*http.Response, error)
 	GetNugetGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error)
 	UpdateNugetGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NugetGroupRepositoryApiRequest) (*http.Response, error)
@@ -154,18 +154,18 @@ type RepositoryManagementService interface {
 	CreatePypiHostedRepository(ctx context.Context, body sonatyperepoV382.PypiHostedRepositoryApiRequest) (*http.Response, error)
 	GetPypiHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdatePypiHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiHostedRepositoryApiRequest) (*http.Response, error)
-	CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error)
-	GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *http.Response, error)
-	UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error)
+	CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateRGroupRepository(ctx context.Context, body sonatyperepoV382.RGroupRepositoryApiRequest) (*http.Response, error)
 	GetRGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error)
 	UpdateRGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RGroupRepositoryApiRequest) (*http.Response, error)
 	CreateRHostedRepository(ctx context.Context, body sonatyperepoV382.RHostedRepositoryApiRequest) (*http.Response, error)
 	GetRHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
 	UpdateRHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RHostedRepositoryApiRequest) (*http.Response, error)
-	CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error)
-	GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
-	UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error)
+	CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error)
+	UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateRawGroupRepository(ctx context.Context, body sonatyperepoV382.RawGroupRepositoryApiRequest) (*http.Response, error)
 	GetRawGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.RawGroupApiRepository, *http.Response, error)
 	UpdateRawGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RawGroupRepositoryApiRequest) (*http.Response, error)
@@ -249,15 +249,16 @@ func (s *repositoryManagementServiceV382) UpdateAlpineHostedRepository(ctx conte
 	return s.client.RepositoryManagementAPI.UpdateAlpineHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateAlpineProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetAlpineProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *FirewallMode, *http.Response, error) {
+	apiResponse, httpResponse, err := s.client.RepositoryManagementAPI.GetAlpineProxyRepository(ctx, repositoryName).Execute()
+	return apiResponse, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateAlpineProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -345,15 +346,16 @@ func (s *repositoryManagementServiceV382) UpdateCargoHostedRepository(ctx contex
 	return s.client.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateCargoProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetCargoProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *FirewallMode, *http.Response, error) {
+	result, httpResponse, err := s.client.RepositoryManagementAPI.GetCargoProxyRepository(ctx, repositoryName).Execute()
+	return result, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -369,15 +371,16 @@ func (s *repositoryManagementServiceV382) UpdateCocoapodsProxyRepository(ctx con
 	return s.client.RepositoryManagementAPI.UpdateCocoapodsProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateComposerProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetComposerProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	apiResponse, httpResponse, err := s.client.RepositoryManagementAPI.GetComposerProxyRepository(ctx, repositoryName).Execute()
+	return apiResponse, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateComposerProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -453,15 +456,16 @@ func (s *repositoryManagementServiceV382) UpdateDockerHostedRepository(ctx conte
 	return s.client.RepositoryManagementAPI.UpdateDockerHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateDockerProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetDockerProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *FirewallMode, *http.Response, error) {
+	apiResponse, httpResponse, err := s.client.RepositoryManagementAPI.GetDockerProxyRepository(ctx, repositoryName).Execute()
+	return apiResponse, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateDockerProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -501,15 +505,16 @@ func (s *repositoryManagementServiceV382) UpdateGoHostedRepository(ctx context.C
 	return s.client.RepositoryManagementAPI.UpdateGoHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateGoProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetGoProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	result, httpResponse, err := s.client.RepositoryManagementAPI.GetGoProxyRepository(ctx, repositoryName).Execute()
+	return result, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateGoProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -549,15 +554,16 @@ func (s *repositoryManagementServiceV382) UpdateHelmProxyRepository(ctx context.
 	return s.client.RepositoryManagementAPI.UpdateHelmProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateHuggingfaceProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetHuggingfaceProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	result, httpResponse, err := s.client.RepositoryManagementAPI.GetHuggingfaceProxyRepository(ctx, repositoryName).Execute()
+	return result, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateHuggingfaceProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -621,15 +627,16 @@ func (s *repositoryManagementServiceV382) UpdateNpmHostedRepository(ctx context.
 	return s.client.RepositoryManagementAPI.UpdateNpmHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateNpmProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *FirewallMode, *http.Response, error) {
+	api, httpResp, err := s.client.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
+	return api, nil, httpResp, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -705,15 +712,16 @@ func (s *repositoryManagementServiceV382) UpdatePypiHostedRepository(ctx context
 	return s.client.RepositoryManagementAPI.UpdatePypiHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreatePypiProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *FirewallMode, *http.Response, error) {
+	apiResponse, httpResponse, err := s.client.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
+	return apiResponse, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -741,15 +749,16 @@ func (s *repositoryManagementServiceV382) UpdateRHostedRepository(ctx context.Co
 	return s.client.RepositoryManagementAPI.UpdateRHostedRepository(ctx, repositoryName).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.CreateRProxyRepository(ctx).Body(body).Execute()
 }
 
-func (s *repositoryManagementServiceV382) GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
-	return s.client.RepositoryManagementAPI.GetRProxyRepository(ctx, repositoryName).Execute()
+func (s *repositoryManagementServiceV382) GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	apiResponse, httpResponse, err := s.client.RepositoryManagementAPI.GetRProxyRepository(ctx, repositoryName).Execute()
+	return apiResponse, nil, httpResponse, err
 }
 
-func (s *repositoryManagementServiceV382) UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV382) UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateRProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
@@ -1008,33 +1017,43 @@ func (s *repositoryManagementServiceV395) UpdateAlpineHostedRepository(ctx conte
 	return s.client.RepositoryManagementAPI.UpdateAlpineHostedRepository(ctx, repositoryName).AlpineHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateAlpineProxyRepository(ctx context.Context, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.AlpineProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateAlpineProxyRepository(ctx).AlpineProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetAlpineProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.AlpineProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetAlpineProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.AlpineProxyApiRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateAlpineProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.AlpineProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.AlpineProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateAlpineProxyRepository(ctx, repositoryName).AlpineProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1238,33 +1257,43 @@ func (s *repositoryManagementServiceV395) UpdateCargoHostedRepository(ctx contex
 	return s.client.RepositoryManagementAPI.UpdateCargoHostedRepository(ctx, repositoryName).CargoHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateCargoProxyRepository(ctx context.Context, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.CargoProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateCargoProxyRepository(ctx).CargoProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetCargoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.CargoProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetCargoProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.CargoProxyApiRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateCargoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.CargoProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.CargoProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateCargoProxyRepository(ctx, repositoryName).CargoProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1298,33 +1327,43 @@ func (s *repositoryManagementServiceV395) UpdateCocoapodsProxyRepository(ctx con
 	return s.client.RepositoryManagementAPI.UpdateCocoapodsProxyRepository(ctx, repositoryName).CocoapodsProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateComposerProxyRepository(ctx context.Context, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.ComposerProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateComposerProxyRepository(ctx).ComposerProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetComposerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetComposerProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.SimpleApiProxyRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateComposerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.ComposerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.ComposerProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateComposerProxyRepository(ctx, repositoryName).ComposerProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1500,33 +1539,43 @@ func (s *repositoryManagementServiceV395) UpdateDockerHostedRepository(ctx conte
 	return s.client.RepositoryManagementAPI.UpdateDockerHostedRepository(ctx, repositoryName).DockerHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateDockerProxyRepository(ctx context.Context, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.DockerProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateDockerProxyRepository(ctx).DockerProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetDockerProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.DockerProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetDockerProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.DockerProxyApiRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateDockerProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.DockerProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.DockerProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateDockerProxyRepository(ctx, repositoryName).DockerProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1614,33 +1663,43 @@ func (s *repositoryManagementServiceV395) UpdateGoHostedRepository(ctx context.C
 	return s.client.RepositoryManagementAPI.UpdateGoHostedRepository(ctx, repositoryName).GolangHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateGoProxyRepository(ctx context.Context, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.GolangProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateGoProxyRepository(ctx).GolangProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetGoProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetGoProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.SimpleApiProxyRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateGoProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.GolangProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.GolangProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateGoProxyRepository(ctx, repositoryName).GolangProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1730,33 +1789,43 @@ func (s *repositoryManagementServiceV395) UpdateHelmProxyRepository(ctx context.
 	return s.client.RepositoryManagementAPI.UpdateHelmProxyRepository(ctx, repositoryName).HelmProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateHuggingfaceProxyRepository(ctx context.Context, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.HuggingFaceProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateHuggingfaceProxyRepository(ctx).HuggingFaceProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetHuggingfaceProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetHuggingfaceProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.SimpleApiProxyRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateHuggingfaceProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.HuggingFaceProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.HuggingFaceProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateHuggingfaceProxyRepository(ctx, repositoryName).HuggingFaceProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -1902,33 +1971,44 @@ func (s *repositoryManagementServiceV395) UpdateNpmHostedRepository(ctx context.
 	return s.client.RepositoryManagementAPI.UpdateNpmHostedRepository(ctx, repositoryName).NpmHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateNpmProxyRepository(ctx context.Context, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.NpmProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateNpmProxyRepository(ctx).NpmProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetNpmProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NpmProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetNpmProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
 	var result sonatyperepoV382.NpmProxyApiRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	var mode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		m := FirewallMode(*apiV395.Firewall.Mode)
+		mode = &m
+	}
+	return &result, mode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateNpmProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NpmProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.NpmProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateNpmProxyRepository(ctx, repositoryName).NpmProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -2104,30 +2184,39 @@ func (s *repositoryManagementServiceV395) UpdatePypiHostedRepository(ctx context
 	return s.client.RepositoryManagementAPI.UpdatePypiHostedRepository(ctx, repositoryName).PypiHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreatePypiProxyRepository(ctx context.Context, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.PypiProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreatePypiProxyRepository(ctx).PypiProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
 	var result sonatyperepoV382.PyPiProxyApiRepository
 	if err := bridgeFromResponse(apiV395, httpResponse, err, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	// v395.95.0's PyPiProxyApiRepository response type has no Firewall field (unlike its
+	// request-type counterpart, and unlike every other proxy format's response type), so the
+	// mode cannot be read back for PyPI via this endpoint.
+	return &result, nil, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.PypiProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdatePypiProxyRepository(ctx, repositoryName).PypiProxyRepositoryApiRequest(v395Body).Execute()
 }
 
@@ -2187,33 +2276,43 @@ func (s *repositoryManagementServiceV395) UpdateRHostedRepository(ctx context.Co
 	return s.client.RepositoryManagementAPI.UpdateRHostedRepository(ctx, repositoryName).RHostedRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) CreateRProxyRepository(ctx context.Context, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.RProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.CreateRProxyRepository(ctx).RProxyRepositoryApiRequest(v395Body).Execute()
 }
 
-func (s *repositoryManagementServiceV395) GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error) {
+func (s *repositoryManagementServiceV395) GetRProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetRProxyRepository(ctx, repositoryName).Execute()
 	if err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
 	}
 	var result sonatyperepoV382.SimpleApiProxyRepository
 	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
+		return nil, nil, httpResponse, err
 	}
-	return &result, httpResponse, nil
+	return &result, firewallMode, httpResponse, nil
 }
 
-func (s *repositoryManagementServiceV395) UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest) (*http.Response, error) {
+func (s *repositoryManagementServiceV395) UpdateRProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	var v395Body sonatyperepoV395.RProxyRepositoryApiRequest
 	if err := jsonBridge(body, &v395Body); err != nil {
 		return nil, err
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
 	return s.client.RepositoryManagementAPI.UpdateRProxyRepository(ctx, repositoryName).RProxyRepositoryApiRequest(v395Body).Execute()
 }
 

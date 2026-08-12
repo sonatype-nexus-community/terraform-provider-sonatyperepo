@@ -83,7 +83,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	ctx = r.AuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
-	if r.NxrmVersion.SupportsCapabilities() && !r.verifyIQConnectionIfNeeded(ctx, plan, &resp.Diagnostics) {
+	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, plan, &resp.Diagnostics) {
 		return
 	}
 
@@ -105,7 +105,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
-	if r.NxrmVersion.SupportsCapabilities() && r.isProxyWithFirewall() {
+	if r.usesCapabilityBasedFirewall() && r.isProxyWithFirewall() {
 		stateModel = r.configureFirewall(ctx, plan, stateModel, &resp.Diagnostics, &resp.State)
 		if resp.Diagnostics.HasError() {
 			return
@@ -232,6 +232,15 @@ func (r *repositoryResource) isProxyWithFirewall() bool {
 	return r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall()
 }
 
+// usesCapabilityBasedFirewall reports whether firewall configuration for this
+// Nexus Repository Manager version must go through the Capability API. NXRM 3.94+
+// instead sets firewall mode inline on the repository payload itself (see
+// format.ComputeFirewallMode), so none of the Capability-based orchestration below
+// applies there.
+func (r *repositoryResource) usesCapabilityBasedFirewall() bool {
+	return r.NxrmVersion.SupportsCapabilities() && !r.NxrmVersion.SupportsInlineFirewall()
+}
+
 // configureFirewall handles firewall capability configuration for proxy repositories
 func (r *repositoryResource) configureFirewall(ctx context.Context, plan interface{}, stateModel interface{}, respDiags *diag.Diagnostics, respState *tfsdk.State) interface{} {
 	capabilityHelper := capability.NewCapabilityHelper(r.Client, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
@@ -345,7 +354,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	ctx = r.AuthContext(ctx)
 
 	// Verify IQ connection if needed for firewall
-	if r.NxrmVersion.SupportsCapabilities() && !r.verifyIQConnectionIfNeeded(ctx, planModel, &resp.Diagnostics) {
+	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, planModel, &resp.Diagnostics) {
 		return
 	}
 
@@ -368,7 +377,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
-	if r.NxrmVersion.SupportsCapabilities() && r.isProxyWithFirewall() {
+	if r.usesCapabilityBasedFirewall() && r.isProxyWithFirewall() {
 		stateModel = r.configureFirewall(ctx, planModel, stateModel, &resp.Diagnostics, &resp.State)
 		if resp.Diagnostics.HasError() {
 			return
@@ -537,7 +546,7 @@ func (r *repositoryResource) ImportState(ctx context.Context, req resource.Impor
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// If PROXY that Supports Repository Firewall - check for any existing Capability
-	if r.NxrmVersion.SupportsCapabilities() && r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
+	if r.usesCapabilityBasedFirewall() && r.RepositoryType == format.REPO_TYPE_PROXY && r.RepositoryFormat.SupportsRepositoryFirewall() {
 		// See if Capability alread exists
 		capabilityHelper := capability.NewCapabilityHelper(r.Client, common.CAPABILITY_TYPE_FIREWALL_AUDIT_QUARANTINE)
 		auditAndQuarantineCapability := capabilityHelper.FindCapabilityByRepositoryId(ctx, r.RepositoryFormat.GetRepositoryId(stateModel), &resp.Diagnostics)
