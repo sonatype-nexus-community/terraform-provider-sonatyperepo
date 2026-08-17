@@ -253,6 +253,7 @@ func (f *DockerRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
 				}
 				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.CapabilityId = types.StringNull()
 				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
 				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
 			}
