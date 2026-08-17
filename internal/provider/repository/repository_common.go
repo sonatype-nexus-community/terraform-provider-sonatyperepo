@@ -82,18 +82,23 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	// Setup context with auth
 	ctx = r.AuthContext(ctx)
 
+	// Build an API-safe copy of the plan that omits http_client.connection when the
+	// user's config left it unset, so we don't send computed defaults to NXRM as if
+	// they were explicitly configured. State is still populated from the original plan.
+	apiPlan := suppressUnconfiguredConnectionFromConfig(ctx, plan, req.Config)
+
 	// Verify IQ connection if needed for firewall
-	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, plan, &resp.Diagnostics) {
+	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, apiPlan, &resp.Diagnostics) {
 		return
 	}
 
 	// Create the repository
-	if !r.createRepository(ctx, plan, resp) {
+	if !r.createRepository(ctx, apiPlan, resp) {
 		return
 	}
 
 	// Fetch complete data
-	apiResponse, ok := r.readCreatedRepository(ctx, plan, &resp.Diagnostics, &resp.State)
+	apiResponse, ok := r.readCreatedRepository(ctx, apiPlan, &resp.Diagnostics, &resp.State)
 	if !ok {
 		return
 	}
@@ -106,7 +111,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Configure firewall if needed
 	if r.usesCapabilityBasedFirewall() && r.isProxyWithFirewall() {
-		stateModel = r.configureFirewall(ctx, plan, stateModel, &resp.Diagnostics, &resp.State)
+		stateModel = r.configureFirewall(ctx, apiPlan, stateModel, &resp.Diagnostics, &resp.State)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -114,6 +119,51 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Save to state
 	resp.Diagnostics.Append(resp.State.Set(ctx, stateModel)...)
+}
+
+// suppressUnconfiguredConnectionFromConfig returns a copy of plan with
+// HttpClient.Connection zeroed out (nil) if the raw Config left http_client.connection
+// unset. This prevents outbound API requests from including a fully populated
+// connection object made up entirely of schema-computed defaults, which NXRM would
+// otherwise treat as explicitly-configured custom HTTP client settings.
+//
+// Proxy repository formats promote an HttpClient field (via embedding
+// RepositoryProxyModel); non-proxy formats don't have one, in which case plan is
+// returned unchanged. The original plan value is left untouched - callers should keep
+// using it for anything that feeds into Terraform state.
+func suppressUnconfiguredConnectionFromConfig(ctx context.Context, plan any, config tfsdk.Config) any {
+	planVal := reflect.ValueOf(plan)
+	if planVal.Kind() != reflect.Struct {
+		return plan
+	}
+
+	httpClientField := planVal.FieldByName("HttpClient")
+	if !httpClientField.IsValid() {
+		// Not a proxy repository format - nothing to do
+		return plan
+	}
+
+	// Decode raw Config into an instance of the same concrete type as plan
+	configPtr := reflect.New(planVal.Type())
+	diags := config.Get(ctx, configPtr.Interface())
+	if diags.HasError() {
+		return plan
+	}
+
+	configConnField := configPtr.Elem().FieldByName("HttpClient").FieldByName("Connection")
+	if !configConnField.IsValid() || !configConnField.IsNil() {
+		// Config explicitly set connection (or field doesn't exist) - leave plan untouched
+		return plan
+	}
+
+	// Config left `connection` unset: clone plan and nil its Connection so the
+	// outbound API request omits it, without touching the value used for state.
+	clonePtr := reflect.New(planVal.Type())
+	clonePtr.Elem().Set(planVal)
+	clonePtr.Elem().FieldByName("HttpClient").FieldByName("Connection").Set(
+		reflect.Zero(configConnField.Type()),
+	)
+	return clonePtr.Elem().Interface()
 }
 
 // validateAndParsePlan retrieves and validates the plan
@@ -353,18 +403,23 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	// Setup context with auth
 	ctx = r.AuthContext(ctx)
 
+	// Build an API-safe copy of the plan that omits http_client.connection when the
+	// user's config left it unset, so we don't send computed defaults to NXRM as if
+	// they were explicitly configured. State is still populated from the original plan.
+	apiPlanModel := suppressUnconfiguredConnectionFromConfig(ctx, planModel, req.Config)
+
 	// Verify IQ connection if needed for firewall
-	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, planModel, &resp.Diagnostics) {
+	if r.usesCapabilityBasedFirewall() && !r.verifyIQConnectionIfNeeded(ctx, apiPlanModel, &resp.Diagnostics) {
 		return
 	}
 
 	// Update the repository
-	if !r.updateRepository(ctx, planModel, stateModel, &resp.Diagnostics) {
+	if !r.updateRepository(ctx, apiPlanModel, stateModel, &resp.Diagnostics) {
 		return
 	}
 
 	// Fetch complete data
-	apiResponse, ok := r.readCreatedRepository(ctx, planModel, &resp.Diagnostics, &resp.State)
+	apiResponse, ok := r.readCreatedRepository(ctx, apiPlanModel, &resp.Diagnostics, &resp.State)
 	if !ok {
 		return
 	}
@@ -378,7 +433,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Configure firewall if needed
 	if r.usesCapabilityBasedFirewall() && r.isProxyWithFirewall() {
-		stateModel = r.configureFirewall(ctx, planModel, stateModel, &resp.Diagnostics, &resp.State)
+		stateModel = r.configureFirewall(ctx, apiPlanModel, stateModel, &resp.Diagnostics, &resp.State)
 		if resp.Diagnostics.HasError() {
 			return
 		}
