@@ -1,6 +1,6 @@
 module terraform-provider-sonatyperepo
 
-go 1.25.0
+go 1.25.13
 
 require (
 	github.com/hashicorp/go-version v1.8.0
