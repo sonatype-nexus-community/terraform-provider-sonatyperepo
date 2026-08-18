@@ -336,8 +336,6 @@ github.com/pjbgf/sha1cd v0.3.2/go.mod h1:zQWigSxVmsHEZow5qaLtPYxpcKMMQpa09ixqBxu
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
-github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/posener/complete v1.2.1/go.mod h1:6gapUrK/U1TAN7ciCoNRIdVC5sbdBTUh1DKN0g6uH7E=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
@@ -354,8 +352,8 @@ github.com/skeema/knownhosts v1.3.1 h1:X2osQ+RAjK76shCbvhHHHVl3ZlgDm8apHEHFqRjnB
 github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQNxPwTcfiY=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2 h1:pkLD4Z/oEPth5nlBpWOaXGX+SP89bJLTinoK1p4Jvi4=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
-github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.0 h1:bVr5N4o5dbaA/TVVZKCeAD8etImIgz5b2u9UVKTonbM=
-github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.0/go.mod h1:aa2xZDktuLQ1yLRaVgd8OE7RCf281zYbGN9HPhhjxEg=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.2 h1:/ldM7VZULE/IODRNcO31unsuQXoOhLao25OUnTCQTzY=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.95.2/go.mod h1:V++qpTYuylrk7k+9dS7NyXqWGBiB8HzN+E43LbszANY=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4 h1:U7pdTOdwl/RS+5Zvz7mUE01XrS5ntONzxD9OmN6ymJw=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
@@ -369,8 +367,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
-github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
-github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
+github.com/stretchr/testify v1.12.0 h1:K6Mr6jO9JICuend/5xzTM03ydSV3vdNRYAdPSukj8uI=
+github.com/stretchr/testify v1.12.0/go.mod h1:bOYBZb5qJ00vPzWfIqBUZPaxK8jWiXc6d3ErP4Ca9Gw=
 github.com/ulikunitz/xz v0.5.8/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=

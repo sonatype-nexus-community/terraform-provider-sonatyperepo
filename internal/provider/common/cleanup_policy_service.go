@@ -89,15 +89,16 @@ func (s *cleanupPolicyServiceV395) Create(ctx context.Context, body sonatyperepo
 }
 
 func (s *cleanupPolicyServiceV395) GetByName(ctx context.Context, name string) (*http.Response, error) {
-	httpResponse, err := s.client.CleanupPoliciesAPI.GetCleanupPolicies(ctx, name).Execute()
+	_, httpResponse, err := s.client.CleanupPoliciesAPI.GetCleanupPolicies(ctx, name).Execute()
 	if err != nil {
 		return httpResponse, err
 	}
 
-	// The API doesn't declare a typed response for this endpoint in either client generation,
-	// so callers manually decode the body into the V382 CleanupPolicyResourceXO shape. V395's
-	// response has an extra 'repositories' field V382's struct doesn't know about, so prune the
-	// raw body down to V382's shape here before the caller ever sees it.
+	// V395 now declares a typed response for this endpoint (as of the client's v395.95.2 release;
+	// v395.95.0/.1 left it untyped), but callers still manually decode the body into the V382
+	// CleanupPolicyResourceXO shape for cross-generation compatibility. V395's response has an
+	// extra 'repositories' field V382's struct doesn't know about, so prune the raw body down to
+	// V382's shape here before the caller ever sees it.
 	body, readErr := io.ReadAll(httpResponse.Body)
 	_ = httpResponse.Body.Close()
 	if readErr != nil {
