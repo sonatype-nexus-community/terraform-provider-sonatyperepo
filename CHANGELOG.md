@@ -2,7 +2,12 @@
 
 ## UNRELEASED
 
-*TBC*
+ENHANCEMENTS:
+* Added support for managing OAuth2 / OpenID Connect (OIDC) authentication [GH-446]
+  * **New Resource:** `sonatyperepo_security_oauth2`
+
+NOTES:
+* `sonatyperepo_security_oauth2` requires Sonatype Nexus Repository Pro 3.94.0 or later - the underlying API is not available against older versions, even though the OAuth2/OIDC feature itself was introduced in the UI earlier
 
 ## 1.15.0 Aug 18, 2026
 
