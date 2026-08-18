@@ -44,6 +44,7 @@ type Services struct {
 	Certificates    CertificatesService
 	License         LicenseService
 	HttpSettings    HttpSettingsService
+	OAuth2          OAuth2Service
 }
 
 // NewServices resolves every domain service to the client generation appropriate for
@@ -75,6 +76,7 @@ func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, 
 			Certificates:    NewCertificatesServiceV395(clientV395),
 			License:         NewLicenseServiceV395(clientV395),
 			HttpSettings:    NewHttpSettingsServiceV395(clientV395),
+			OAuth2:          NewOAuth2ServiceV395(clientV395),
 		}
 	}
 	return Services{
@@ -98,5 +100,6 @@ func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, 
 		Certificates:    NewCertificatesServiceV382(clientV382),
 		License:         NewLicenseServiceV382(clientV382),
 		HttpSettings:    NewHttpSettingsServiceV382(clientV382),
+		OAuth2:          NewOAuth2ServiceUnsupported(),
 	}
 }
