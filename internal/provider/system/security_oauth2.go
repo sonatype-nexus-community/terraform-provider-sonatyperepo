@@ -26,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -72,12 +70,6 @@ func (r *securityOAuth2Resource) Schema(_ context.Context, _ resource.SchemaRequ
 	exactMatchClaims.Computed = true
 	exactMatchClaims.Default = mapdefault.StaticValue(emptyMap)
 
-	// ResourceLastUpdated() alone leaves this unknown on every plan, even when nothing else
-	// changed - UseStateForUnknown keeps refresh-only plans empty; Create/Update still write a
-	// fresh value directly into state on an actual change.
-	lastUpdated := schema.ResourceLastUpdated()
-	lastUpdated.PlanModifiers = []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
-
 	resp.Schema = tfschema.Schema{
 		MarkdownDescription: "Configure Sonatype Nexus Repository OAuth2 / OpenID Connect (OIDC) authentication.\n\n" +
 			"**Requires Nexus Repository Pro 3.94.0 or later**, with `nexus.security.oauth2.enabled=true` and " +
@@ -117,7 +109,7 @@ func (r *securityOAuth2Resource) Schema(_ context.Context, _ resource.SchemaRequ
 			"authorization_custom_params": authorizationCustomParams,
 			"token_request_custom_params": tokenRequestCustomParams,
 			"exact_match_claims":          exactMatchClaims,
-			"last_updated":                lastUpdated,
+			"last_updated":                schema.ResourceLastUpdated(),
 		},
 	}
 }
