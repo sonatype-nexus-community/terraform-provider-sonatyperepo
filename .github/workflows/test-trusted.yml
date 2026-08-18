@@ -141,6 +141,13 @@ jobs:
                 echo "jdbcUrl=jdbc:postgresql://localhost/nexus" >> etc/fabric/nexus-store.properties
               working-directory: "${{ github.workspace }}/sonatype-work/nexus3"
 
+            - name: Configure Sonatype Nexus Repository Manager for OAuth2 / OIDC
+              run: |
+                mkdir -p etc
+                echo "nexus.security.oauth2.enabled=true" >> etc/nexus.properties
+                echo "nexus.jwt.enabled=true" >> etc/nexus.properties
+              working-directory: "${{ github.workspace }}/sonatype-work/nexus3"
+
             - name: Start Sonatype Nexus Repository Manager
               run: ./nexus start
               working-directory: "${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin"
