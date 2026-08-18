@@ -38,6 +38,7 @@ type SonatypeDataSourceData struct {
 	NodeCount                     int32
 	NxrmVersion                   SystemVersion
 	NxrmWritable                  bool
+	Services                      Services
 }
 
 // AuthContext returns a new context with authentication set up for API calls
@@ -46,6 +47,8 @@ func (r *SonatypeDataSourceData) AuthContext(ctx context.Context) context.Contex
 }
 
 func (p *SonatypeDataSourceData) ClusterNodeCount(ctx context.Context, respDiags *diag.Diagnostics) {
+	// This runs during provider bootstrap, before NxrmVersion is known and before
+	// Services exists, so it must call the bootstrap (V382) client directly.
 	apiResponse, httpResponse, err := p.Client.StatusAPI.GetClusterSystemStatusChecks(p.AuthContext(ctx)).Execute()
 
 	if err != nil {
@@ -74,6 +77,8 @@ func (p *SonatypeDataSourceData) ClusterNodeCount(ctx context.Context, respDiags
 }
 
 func (p *SonatypeDataSourceData) CheckWritableAndGetVersion(ctx context.Context, respDiags *diag.Diagnostics, versionHint *string) {
+	// This runs during provider bootstrap, before NxrmVersion is known and before
+	// Services exists, so it must call the bootstrap (V382) client directly.
 	httpResponse, err := p.Client.StatusAPI.IsWritable(ctx).Execute()
 	if err != nil {
 		sharederr.HandleAPIError(
@@ -171,6 +176,21 @@ func (s *SystemVersion) RequiresLowerCaseRepostioryNameDocker() bool {
 func (s *SystemVersion) SupportsCapabilities() bool {
 	return s.NewerThan(3, 84, 0, 0)
 }
+
+func (s *SystemVersion) SupportsInlineFirewall() bool {
+	return s.NewerThan(3, 94, 0, 0)
+}
+
+// FirewallMode represents the inline `firewall.mode` value supported by NXRM 3.94+
+// proxy repository APIs, replacing the separate Capability-based firewall configuration.
+type FirewallMode string
+
+const (
+	FirewallModeDisabled   FirewallMode = "DISABLED"
+	FirewallModeAudit      FirewallMode = "AUDIT"
+	FirewallModeQuarantine FirewallMode = "QUARANTINE"
+	FirewallModePccs       FirewallMode = "PCCS"
+)
 
 func ParseServerHeaderToVersion(headerStr string) SystemVersion {
 	match := FindAllGroups(nxrmServerVersionExp, strings.ToUpper(headerStr))

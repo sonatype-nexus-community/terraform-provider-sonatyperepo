@@ -40,9 +40,9 @@ func TestAccSystemConfigMailResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameConfigMail, "host", fmt.Sprintf("something.tld.%s", randomString)),
+					resource.TestCheckResourceAttr(resourceNameConfigMail, "host", "example.com"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "port", "587"),
-					resource.TestCheckResourceAttr(resourceNameConfigMail, "username", "someone"),
+					resource.TestCheckResourceAttr(resourceNameConfigMail, "username", fmt.Sprintf("someone-%s", randomString)),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "password", "sensitive-value"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "from_address", "no-where@somewhere.tld"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "start_tls_enabled", "false"),
@@ -123,9 +123,9 @@ func TestAccSystemConfigMailResourceUpdateAfterImport(t *testing.T) {
 				Config: getSytemConfigMailResourceConfigUpdated(updatedRandomString),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameConfigMail, "host", fmt.Sprintf("updated.tld.%s", updatedRandomString)),
+					resource.TestCheckResourceAttr(resourceNameConfigMail, "host", "example.org"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "port", "465"),
-					resource.TestCheckResourceAttr(resourceNameConfigMail, "username", "updated-user"),
+					resource.TestCheckResourceAttr(resourceNameConfigMail, "username", fmt.Sprintf("updated-user-%s", updatedRandomString)),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "from_address", "updated@somewhere.tld"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "start_tls_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceNameConfigMail, "ssl_on_connect_enabled", "true"),
@@ -140,9 +140,9 @@ func getSytemConfigMailResourceConfig(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "email" {
 	enabled = false
-	host = "something.tld.%s"
+	host = "example.com"
 	port = 587
-	username = "someone"
+	username = "someone-%s"
 	password = "sensitive-value"
 	from_address = "no-where@somewhere.tld"
 	start_tls_enabled = false
@@ -159,9 +159,9 @@ func getSytemConfigMailResourceConfigUpdated(randomString string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "email" {
 	enabled = true
-	host = "updated.tld.%s"
+	host = "example.org"
 	port = 465
-	username = "updated-user"
+	username = "updated-user-%s"
 	password = "updated-sensitive-value"
 	from_address = "updated@somewhere.tld"
 	start_tls_enabled = true

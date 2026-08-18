@@ -83,7 +83,9 @@ jobs:
                     - '3.90.1-01'
                     - '3.91.0-07'
                     - '3.92.0-03'
-                    - '3.93.0-06' # LATEST
+                    - '3.93.0-06' 
+                    - '3.94.1-06'
+                    - '3.95.1-01' # LATEST
                 # list whatever Terraform versions here you would like to support
                 terraform:
                     - '1.7.*' # Minimum
@@ -190,7 +192,7 @@ jobs:
 
             - name: Store nexus.log
               if: success() || failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                 name: "nexus.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/sonatype-work/nexus3/log/nexus.log"

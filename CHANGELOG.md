@@ -2,7 +2,18 @@
 
 ## UNRELEASED
 
-*TBC*
+ENHANCEMENTS:
+* Added support for Sonatype Nexus Repository 3.94.x and 3.95.x, alongside continued support for pre-3.94.0 versions [GH-449], [GH-445]
+
+BUG FIXES:
+* `maven.layout_policy` and `maven.version_policy` on `sonatyperepo_repository_maven_hosted`/`sonatyperepo_repository_maven_proxy` are now `Required` (previously `Optional`) - Sonatype Nexus Repository rejects requests where these are omitted
+* `alpine.key_pair` on `sonatyperepo_repository_alpine_hosted`/`sonatyperepo_repository_alpine_proxy`/`sonatyperepo_repository_alpine_group` is now `Required` (previously `Optional`) - Sonatype Nexus Repository rejects requests where this is omitted or empty
+* `yum.deploy_policy` on `sonatyperepo_repository_yum_hosted` now defaults to `STRICT` when not specified, matching the Sonatype Nexus Repository UI default
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.95.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-92-0-release-notes.html) [GH-449]
+* Tested against [Sonatype Nexus Repository Manager 3.94.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-92-0-release-notes.html) [GH-445]
+* Dependency updates
 
 ## 1.14.0 Aug 05, 2026
 

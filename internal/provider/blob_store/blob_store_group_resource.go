@@ -91,7 +91,7 @@ func (r *blobStoreGroupResource) Create(ctx context.Context, req resource.Create
 	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewGroupBlobStoreApiCreateRequestWithDefaults()
 	plan.MapToApiCreate(apiBody)
-	httpResponse, err := r.Client.BlobStoreAPI.CreateGroupBlobStore(ctx).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.BlobStore.CreateGroupBlobStore(ctx, *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -132,7 +132,7 @@ func (r *blobStoreGroupResource) Read(ctx context.Context, req resource.ReadRequ
 
 	// Call API to Create
 	ctx = r.AuthContext(ctx)
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetGroupBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.BlobStore.GetGroupBlobStoreConfiguration(ctx, state.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -183,7 +183,7 @@ func (r *blobStoreGroupResource) Update(ctx context.Context, req resource.Update
 	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewGroupBlobStoreApiUpdateRequestWithDefaults()
 	plan.MapToApiUpdate(apiBody)
-	httpResponse, err := r.Client.BlobStoreAPI.UpdateGroupBlobStore(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.BlobStore.UpdateGroupBlobStore(ctx, state.Name.ValueString(), *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(

@@ -30,8 +30,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 	"terraform-provider-sonatyperepo/internal/provider/privilege/privilege_type"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -86,13 +84,9 @@ func (d *privilegesDataSource) Schema(_ context.Context, req datasource.SchemaRe
 func (d *privilegesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state model.PrivilegesModel
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
-	apiResponse, httpResponse, err := d.Client.SecurityManagementPrivilegesAPI.GetAllPrivileges(ctx).Execute()
+	apiResponse, httpResponse, err := d.Services.Privilege.GetAllPrivileges(ctx)
 	if err != nil {
 		errors.HandleAPIError(
 			"Unable to list privileges",

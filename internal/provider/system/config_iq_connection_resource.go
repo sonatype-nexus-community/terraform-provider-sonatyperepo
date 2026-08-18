@@ -113,14 +113,10 @@ func (r *systemConfigIqConnectionResource) Read(ctx context.Context, req resourc
 
 	priorTimeout := state.ConnectionTimeout // save before MapFromApi overwrites for NXRM 3.86/87
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.GetConfiguration1(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.Configuration.GetIqConnectionConfiguration(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -173,14 +169,10 @@ func (r *systemConfigIqConnectionResource) Update(ctx context.Context, req resou
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *systemConfigIqConnectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Disable API Call
-	httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.DisableIq(ctx).Execute()
+	httpResponse, err := r.Services.Configuration.DisableIq(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -211,15 +203,11 @@ func (r *systemConfigIqConnectionResource) doUpdateRequest(ctx context.Context, 
 		return nil
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	apiModel := sonatyperepo.NewIqConnectionXoWithDefaults()
 	plan.MapToApi(apiModel)
-	_, httpResponse, err := r.Client.ManageSonatypeRepositoryFirewallConfigurationAPI.UpdateConfiguration1(ctx).Body(*apiModel).Execute()
+	_, httpResponse, err := r.Services.Configuration.UpdateIqConnectionConfiguration(ctx, *apiModel)
 
 	// Handle Error
 	if err != nil {

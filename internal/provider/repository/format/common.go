@@ -63,9 +63,9 @@ const (
 // --------------------------------------------
 type BaseRepositoryFormat struct{}
 
-func (f *BaseRepositoryFormat) DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *BaseRepositoryFormat) DoDeleteRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Call API to Delete
-	return apiClient.RepositoryManagementAPI.DeleteRepository(ctx, repositoryName).Execute()
+	return apiClient.DeleteRepository(ctx, repositoryName)
 }
 
 func (f *BaseRepositoryFormat) ApiCreateSuccessResponseCodes() []int {
@@ -78,7 +78,7 @@ func (f *BaseRepositoryFormat) ValidatePlanForNxrmVersion(plan any, version comm
 
 // DoImportRequest provides a base implementation for repository import
 // This can be overridden by specific formats if needed
-func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// For base implementation, we can't determine the specific repository type
 	// This should be overridden by each format implementation
 	return nil, nil, fmt.Errorf("import not implemented for this repository format")
@@ -87,6 +87,12 @@ func (f *BaseRepositoryFormat) DoImportRequest(repositoryName string, apiClient 
 // ValidateRepositoryForImport validates that the repository matches the expected format and type
 // This base implementation uses reflection to extract Format and Type fields from the API repository struct
 func (f *BaseRepositoryFormat) ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error {
+	// Proxy formats wrap the repository together with its inline firewall mode (NXRM 3.94+);
+	// unwrap it so reflection below sees the underlying API struct's Format/Type fields.
+	if wrapped, ok := repositoryData.(ProxyApiResponseWithFirewall); ok {
+		repositoryData = wrapped.Repository
+	}
+
 	// Use reflection to get Format and Type fields from the repository data
 	v := reflect.ValueOf(repositoryData)
 
@@ -185,11 +191,11 @@ func (f *BaseRepositoryFormat) UpdateStateFromPlanForNonApiFields(plan, state an
 // RepositoryFormat that all Repository Formats must implement
 // --------------------------------------------
 type RepositoryFormat interface {
-	DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
-	DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
-	DoDeleteRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error)
-	DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
-	DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error)
+	DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error)
+	DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error)
+	DoDeleteRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error)
+	DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error)
+	DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error)
 	ValidateRepositoryForImport(repositoryData any, expectedFormat string, expectedType RepositoryType) error
 	ApiCreateSuccessResponseCodes() []int
 	FormatSchemaAttributes() map[string]tfschema.Attribute

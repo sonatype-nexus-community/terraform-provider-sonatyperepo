@@ -28,8 +28,6 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
-
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -68,14 +66,10 @@ func (d *securityUserTokenDataSource) Schema(_ context.Context, req datasource.S
 
 // Read refreshes the Terraform state with the latest data.
 func (d *securityUserTokenDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		d.Auth,
-	)
+	ctx = d.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := d.Client.SecurityManagementUserTokensAPI.ServiceStatus(ctx).Execute()
+	apiResponse, httpResponse, err := d.Services.UserTokens.ServiceStatus(ctx)
 
 	if err != nil {
 		errors.HandleAPIError(

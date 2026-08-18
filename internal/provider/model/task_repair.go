@@ -20,8 +20,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Properties for create.browse.nodes
@@ -41,7 +39,7 @@ type TaskRepairCreateBrowseNodesModel struct {
 	Properties *TaskPropertiesRepairCreateBrowseNodes `tfsdk:"properties"`
 }
 
-func (m *TaskRepairCreateBrowseNodesModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+func (m *TaskRepairCreateBrowseNodesModel) ToApiCreateModel(version common.SystemVersion) *common.TaskCreateApiModel {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_CREATE_BROWSE_NODES.String()
 	if m.Properties != nil {
@@ -50,7 +48,7 @@ func (m *TaskRepairCreateBrowseNodesModel) ToApiCreateModel(version common.Syste
 	return api
 }
 
-func (m *TaskRepairCreateBrowseNodesModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+func (m *TaskRepairCreateBrowseNodesModel) ToApiUpdateModel(version common.SystemVersion) *common.TaskUpdateApiModel {
 	api := m.toApiUpdateModel()
 	if m.Properties != nil {
 		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)

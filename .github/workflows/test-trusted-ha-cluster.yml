@@ -41,7 +41,7 @@ jobs:
             matrix:
                 nxrm:
                     - '3.89.1-02' # First version tested HA against
-                    - '3.93.0-06' # LATEST
+                    - '3.95.1-01' # LATEST
                 terraform:
                     # - '1.14.*'
                     - '1.15.*' # Latest
@@ -290,28 +290,28 @@ jobs:
 
             - name: Store nexus.log (Node 1)
               if: success() || failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                 name: "nexus-node-01.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/node-01/sonatype-work/nexus3/log/nexus.log"
 
             - name: Store nexus.log (Node 2)
               if: success() || failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                 name: "nexus-node-02.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/node-02/sonatype-work/nexus3/log/nexus.log"
 
             - name: Store nexus.log (Node 3)
               if: success() || failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                 name: "nexus-node-03.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/node-03/sonatype-work/nexus3/log/nexus.log"
 
             - name: Store nginx access log
               if: success() || failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                 name: "nginx-access.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "/var/log/nginx/access.log"

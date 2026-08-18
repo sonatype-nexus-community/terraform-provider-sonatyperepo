@@ -51,21 +51,21 @@ func NewDefaultRoleCapability() *DefaultRoleCapability {
 // --------------------------------------------
 // Capabiltiy Type: Default Role Functions
 // --------------------------------------------
-func (f *DefaultRoleCapability) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error) {
+func (f *DefaultRoleCapability) DoCreateRequest(plan any, svc common.CapabilityService, ctx context.Context, version common.SystemVersion) (*v3.CapabilityDTO, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.CapabilityCoreDefaultRoleModel)
 
 	// Call API to Create
-	return apiClient.CapabilitiesAPI.Create4(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return svc.Create(ctx, *planModel.ToApiCreateModel(version))
 }
 
-func (f *DefaultRoleCapability) DoUpdateRequest(plan any, capabilityId string, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+func (f *DefaultRoleCapability) DoUpdateRequest(plan any, capabilityId string, svc common.CapabilityService, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.CapabilityCoreDefaultRoleModel)
 	planModel.Id = types.StringValue(capabilityId)
 
 	// Call API to Update
-	return apiClient.CapabilitiesAPI.Update3(ctx, capabilityId).Body(*planModel.ToApiUpdateModel(version)).Execute()
+	return svc.Update(ctx, capabilityId, *planModel.ToApiUpdateModel(version))
 }
 
 func (f *DefaultRoleCapability) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

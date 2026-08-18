@@ -142,7 +142,6 @@ func (m *RepositoryYumProxyModel) ToApiCreateModel() sonatyperepo.YumProxyReposi
 		Proxy:         sonatyperepo.ProxyAttributes{},
 		NegativeCache: sonatyperepo.NegativeCacheAttributes{},
 		HttpClient:    sonatyperepo.HttpClientAttributes{},
-		YumSigning:    &sonatyperepo.YumSigningRepositoriesAttributes{},
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
 
@@ -164,6 +163,7 @@ func (m *RepositoryYumProxyModel) ToApiCreateModel() sonatyperepo.YumProxyReposi
 
 	// YUM Specific
 	if m.Yum != nil {
+		apiModel.YumSigning = &sonatyperepo.YumSigningRepositoriesAttributes{}
 		m.Yum.MapToApi(apiModel.YumSigning)
 	}
 
@@ -203,16 +203,16 @@ func (m *RepositoryYumGroupModel) FromApiModel(api sonatyperepo.YumGroupApiRepos
 
 func (m *RepositoryYumGroupModel) ToApiCreateModel() sonatyperepo.YumGroupRepositoryApiRequest {
 	apiModel := sonatyperepo.YumGroupRepositoryApiRequest{
-		Name:       m.Name.ValueString(),
-		Online:     m.Online.ValueBool(),
-		Storage:    sonatyperepo.StorageAttributes{},
-		YumSigning: sonatyperepo.NewYumSigningRepositoriesAttributesWithDefaults(),
+		Name:    m.Name.ValueString(),
+		Online:  m.Online.ValueBool(),
+		Storage: sonatyperepo.StorageAttributes{},
 	}
 	m.Storage.MapToApi(&apiModel.Storage)
 	m.Group.MapToApi(&apiModel.Group)
 
 	// YUM
 	if m.Yum != nil {
+		apiModel.YumSigning = &sonatyperepo.YumSigningRepositoriesAttributes{}
 		m.Yum.MapToApi(apiModel.YumSigning)
 	}
 

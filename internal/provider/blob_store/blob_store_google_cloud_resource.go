@@ -150,7 +150,7 @@ func (r *blobStoreGoogleCloudResource) Create(ctx context.Context, req resource.
 	ctx = r.AuthContext(ctx)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "create")
-	apiResponse, err := r.Client.BlobStoreAPI.CreateBlobStore2(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.BlobStore.CreateBlobStore2(ctx, requestPayload)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -191,7 +191,7 @@ func (r *blobStoreGoogleCloudResource) Read(ctx context.Context, req resource.Re
 
 	ctx = r.AuthContext(ctx)
 
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetBlobStore2(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.BlobStore.GetBlobStore2(ctx, state.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -239,7 +239,7 @@ func (r *blobStoreGoogleCloudResource) Update(ctx context.Context, req resource.
 	ctx = r.AuthContext(ctx)
 
 	requestPayload := r.buildRequestPayload(ctx, &plan, "update")
-	apiResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore2(ctx, state.Name.ValueString()).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.BlobStore.UpdateBlobStore2(ctx, state.Name.ValueString(), requestPayload)
 
 	if err != nil {
 		if apiResponse.StatusCode == 404 {

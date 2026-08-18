@@ -34,8 +34,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"terraform-provider-sonatyperepo/internal/provider/model"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
@@ -96,7 +94,7 @@ func (r *securityRealmsResource) ImportState(ctx context.Context, req resource.I
 	ctx = r.AuthContext(ctx)
 
 	// Read current configuration from the API
-	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.Realms.GetActiveRealms(ctx)
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.Diagnostics.AddError(
@@ -161,11 +159,7 @@ func (r *securityRealmsResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Set up authentication context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Convert list to appropriate format
 	activeRealms, err := r.convertActiveRealms(plan.Active)
@@ -180,7 +174,7 @@ func (r *securityRealmsResource) Create(ctx context.Context, req resource.Create
 	tflog.Debug(ctx, fmt.Sprintf("Creating security realms configuration with realms: %v", activeRealms))
 
 	// Call API to Create
-	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(activeRealms).Execute()
+	apiResponse, err := r.Services.Realms.SetActiveRealms(ctx, activeRealms)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			errorSettingSecurityRealms,
@@ -219,7 +213,7 @@ func (r *securityRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 	ctx = r.AuthContext(ctx)
 
 	// Read API Call - GetActiveRealms returns []string directly
-	apiResponse, httpResponse, err := r.Client.SecurityManagementRealmsAPI.GetActiveRealms(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.Realms.GetActiveRealms(ctx)
 	if err != nil {
 		r.handleReadError(ctx, resp, httpResponse, err)
 		return
@@ -255,11 +249,7 @@ func (r *securityRealmsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Convert list to appropriate format
 	activeRealms, err := r.convertActiveRealms(plan.Active)
@@ -274,7 +264,7 @@ func (r *securityRealmsResource) Update(ctx context.Context, req resource.Update
 	tflog.Debug(ctx, fmt.Sprintf("Updating security realms configuration with realms: %v", activeRealms))
 
 	// Call API to Update
-	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(activeRealms).Execute()
+	apiResponse, err := r.Services.Realms.SetActiveRealms(ctx, activeRealms)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			errorSettingSecurityRealms,
@@ -315,11 +305,7 @@ func (r *securityRealmsResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Reset to default security realms - Nexus requires at least one realm
 	defaultRealms := []string{"NexusAuthenticatingRealm"}
@@ -327,7 +313,7 @@ func (r *securityRealmsResource) Delete(ctx context.Context, req resource.Delete
 	tflog.Debug(ctx, fmt.Sprintf("Resetting security realms to default configuration: %v", defaultRealms))
 
 	// Call API to reset to defaults
-	apiResponse, err := r.Client.SecurityManagementRealmsAPI.SetActiveRealms(ctx).Body(defaultRealms).Execute()
+	apiResponse, err := r.Services.Realms.SetActiveRealms(ctx, defaultRealms)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			errorSettingSecurityRealms,

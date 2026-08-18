@@ -107,7 +107,7 @@ func (r *blobStoreAcsResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Call API to Create
-	httpResponse, err := r.Client.BlobStoreAPI.CreateBlobStore1(r.AuthContext(ctx)).Body(*plan.MapToApi()).Execute()
+	httpResponse, err := r.Services.BlobStore.CreateBlobStore1(r.AuthContext(ctx), *plan.MapToApi())
 
 	// Handle Error
 	if err != nil {
@@ -192,7 +192,7 @@ func (r *blobStoreAcsResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Call API to Update
-	httpResponse, err := r.Client.BlobStoreAPI.UpdateBlobStore1(r.AuthContext(ctx), state.Name.ValueString()).Body(*plan.MapToApi()).Execute()
+	httpResponse, err := r.Services.BlobStore.UpdateBlobStore1(r.AuthContext(ctx), state.Name.ValueString(), *plan.MapToApi())
 
 	// Handle Error
 	if err != nil {
@@ -256,7 +256,7 @@ func (r *blobStoreAcsResource) ImportState(ctx context.Context, req resource.Imp
 
 func (r *blobStoreAcsResource) readAcsBlobStore(ctx context.Context, blobStoreName string, respDiagnostics *diag.Diagnostics, respState *tfsdk.State) *sonatyperepo.AzureBlobStoreApiModel {
 	// Call Read API
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetBlobStore1(r.AuthContext(ctx), blobStoreName).Execute()
+	apiResponse, httpResponse, err := r.Services.BlobStore.GetBlobStore1(r.AuthContext(ctx), blobStoreName)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {

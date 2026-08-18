@@ -33,7 +33,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
@@ -79,14 +78,10 @@ func (t *taskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		t.Auth,
-	)
+	ctx = t.AuthContext(ctx)
 
 	// Make API requet
-	taskCreateResponse, httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Client, ctx, t.NxrmVersion)
+	taskCreateResponse, httpResponse, err := t.TaskType.DoCreateRequest(plan, t.Services.Task, ctx, t.NxrmVersion)
 
 	// Handle Errors
 	if err != nil {
@@ -137,14 +132,10 @@ func (t *taskResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		t.Auth,
-	)
+	ctx = t.AuthContext(ctx)
 
 	// Make API request
-	apiResponse, httpResponse, err := t.Client.TasksAPI.GetTaskById(ctx, taskId.ValueString()).Execute()
+	apiResponse, httpResponse, err := t.Services.Task.GetTaskById(ctx, taskId.ValueString())
 
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == http.StatusNotFound {
@@ -189,14 +180,10 @@ func (t *taskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		t.Auth,
-	)
+	ctx = t.AuthContext(ctx)
 
 	// Make API requet
-	httpResponse, err := t.TaskType.DoUpdateRequest(planModel, stateModel, t.Client, ctx, t.NxrmVersion)
+	httpResponse, err := t.TaskType.DoUpdateRequest(planModel, stateModel, t.Services.Task, ctx, t.NxrmVersion)
 
 	// Handle any errors
 	if err != nil {
@@ -238,11 +225,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		t.Auth,
-	)
+	ctx = t.AuthContext(ctx)
 
 	// Make API request
 	taskIdStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Id").Interface()
@@ -260,7 +243,7 @@ func (t *taskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	success := false
 
 	for !success && attempts < maxAttempts {
-		httpResponse, err := t.Client.TasksAPI.DeleteTaskById(ctx, taskId.ValueString()).Execute()
+		httpResponse, err := t.Services.Task.DeleteTaskById(ctx, taskId.ValueString())
 
 		// Trap 500 Error as they occur when Repo is not in appropriate internal state
 		if httpResponse.StatusCode == http.StatusInternalServerError {

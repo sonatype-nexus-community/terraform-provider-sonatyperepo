@@ -31,7 +31,6 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
@@ -80,11 +79,7 @@ func (r *privilegeResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API requet
 	httpResponse, err := r.PrivilegeType.DoCreateRequest(plan, r.Client, ctx)
@@ -128,11 +123,7 @@ func (r *privilegeResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Set API Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API Request
 	apiResponse, httpResponse, err := r.PrivilegeType.DoReadRequest(stateModel, r.Client, ctx)
@@ -177,11 +168,7 @@ func (r *privilegeResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(diags...)
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API requet
 	httpResponse, err := r.PrivilegeType.DoUpdateRequest(planModel, stateModel, r.Client, ctx)
@@ -227,11 +214,7 @@ func (r *privilegeResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	// Request Context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Make API request
 	privilegeNameStructField := reflect.Indirect(reflect.ValueOf(state)).FieldByName("Name").Interface()

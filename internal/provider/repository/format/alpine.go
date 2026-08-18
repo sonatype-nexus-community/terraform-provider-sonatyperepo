@@ -65,27 +65,27 @@ func (f *AlpineRepositoryFormat) ResourceName(repoType RepositoryType) string {
 // --------------------------------------------
 // Hosted Alpine Format Functions
 // --------------------------------------------
-func (f *AlpineRepositoryFormatHosted) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatHosted) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineHostedModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAlpineHostedRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAlpineHostedRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *AlpineRepositoryFormatHosted) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatHosted) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAlpineHostedModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineHostedRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAlpineHostedRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AlpineRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineHostedModel)
 
@@ -93,7 +93,7 @@ func (f *AlpineRepositoryFormatHosted) DoUpdateRequest(plan any, state any, apiC
 	stateModel := (state).(model.RepositoryAlpineHostedModel)
 
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAlpineHostedRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAlpineHostedRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *AlpineRepositoryFormatHosted) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -139,9 +139,9 @@ func (f *AlpineRepositoryFormatHosted) UpdateStateFromPlanForNonApiFields(plan, 
 }
 
 // DoImportRequest implements the import functionality for Alpine Hosted repositories
-func (f *AlpineRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatHosted) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineHostedRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAlpineHostedRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -151,45 +151,51 @@ func (f *AlpineRepositoryFormatHosted) DoImportRequest(repositoryName string, ap
 // --------------------------------------------
 // PROXY Alpine Format Functions
 // --------------------------------------------
-func (f *AlpineRepositoryFormatProxy) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAlpineProxyRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAlpineProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
-func (f *AlpineRepositoryFormatProxy) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAlpineProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineProxyRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
-func (f *AlpineRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineProxyModel)
 
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAlpineProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAlpineProxyRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAlpineProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for Alpine Proxy repositories
-func (f *AlpineRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineProxyRepository(ctx, repositoryName).Execute()
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetAlpineProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *AlpineRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -220,6 +226,27 @@ func (f *AlpineRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any
 	if state != nil {
 		stateModel = (state).(model.RepositoryAlpineProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.AlpineProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+				}
+				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.CapabilityId = types.StringNull()
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.AlpineProxyApiRepository))
 	return stateModel
 }
@@ -293,27 +320,27 @@ func (f *AlpineRepositoryFormatProxy) GetRepositoryFirewallQuarantineEnabled(sta
 // --------------------------------------------
 // GROUP Alpine Format Functions
 // --------------------------------------------
-func (f *AlpineRepositoryFormatGroup) DoCreateRequest(plan any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatGroup) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineGroupModel)
 
 	// Call API to Create
-	return apiClient.RepositoryManagementAPI.CreateAlpineGroupRepository(ctx).Body(planModel.ToApiCreateModel()).Execute()
+	return apiClient.CreateAlpineGroupRepository(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *AlpineRepositoryFormatGroup) DoReadRequest(state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatGroup) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryAlpineGroupModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineGroupRepository(ctx, stateModel.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAlpineGroupRepository(ctx, stateModel.Name.ValueString())
 	if apiResponse == nil {
 		return nil, httpResponse, err
 	}
 	return *apiResponse, httpResponse, err
 }
 
-func (f *AlpineRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient *sonatyperepo.APIClient, ctx context.Context) (*http.Response, error) {
+func (f *AlpineRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryAlpineGroupModel)
 
@@ -321,7 +348,7 @@ func (f *AlpineRepositoryFormatGroup) DoUpdateRequest(plan any, state any, apiCl
 	stateModel := (state).(model.RepositoryAlpineGroupModel)
 
 	// Call API to Update
-	return apiClient.RepositoryManagementAPI.UpdateAlpineGroupRepository(ctx, stateModel.Name.ValueString()).Body(planModel.ToApiUpdateModel()).Execute()
+	return apiClient.UpdateAlpineGroupRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *AlpineRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -367,9 +394,9 @@ func (f *AlpineRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any
 }
 
 // DoImportRequest implements the import functionality for Alpine Group repositories
-func (f *AlpineRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient *sonatyperepo.APIClient, ctx context.Context) (any, *http.Response, error) {
+func (f *AlpineRepositoryFormatGroup) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.RepositoryManagementAPI.GetAlpineGroupRepository(ctx, repositoryName).Execute()
+	apiResponse, httpResponse, err := apiClient.GetAlpineGroupRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
@@ -384,7 +411,7 @@ func alpineSchemaAttributes() map[string]tfschema.Attribute {
 		"alpine": schema.ResourceOptionalSingleNestedAttribute(
 			"Alpine specific configuration for this Repository",
 			map[string]tfschema.Attribute{
-				"key_pair": schema.ResourceOptionalString(
+				"key_pair": schema.ResourceRequiredString(
 					"RSA private key in PEM format used to sign the repository index",
 				),
 				"passphrase": schema.ResourceSensitiveOptionalStringWithPlanModifier(

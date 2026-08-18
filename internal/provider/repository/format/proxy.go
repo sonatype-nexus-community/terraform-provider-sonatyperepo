@@ -34,6 +34,59 @@ import (
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
+// FirewallModeFromFlags derives the inline `firewall.mode` value (NXRM 3.94+) from the
+// Terraform schema flags stored in `repository_firewall`.
+func FirewallModeFromFlags(hasConfig, enabled, quarantine, pccsEnabled bool) common.FirewallMode {
+	if !hasConfig || !enabled {
+		return common.FirewallModeDisabled
+	}
+	if pccsEnabled {
+		return common.FirewallModePccs
+	}
+	if quarantine {
+		return common.FirewallModeQuarantine
+	}
+	return common.FirewallModeAudit
+}
+
+// FirewallFlagsFromMode derives the `repository_firewall` schema flags from the inline
+// `firewall.mode` value (NXRM 3.94+).
+func FirewallFlagsFromMode(mode common.FirewallMode) (enabled, quarantine, pccsEnabled bool) {
+	switch mode {
+	case common.FirewallModeAudit:
+		return true, false, false
+	case common.FirewallModeQuarantine:
+		return true, true, false
+	case common.FirewallModePccs:
+		return true, false, true
+	default:
+		return false, false, false
+	}
+}
+
+// ComputeFirewallMode derives the inline `firewall.mode` value (NXRM 3.94+) for a proxy
+// repository's plan/state model. It only asks for quarantine/pccs flags when a
+// `repository_firewall` block is actually present, since some formats' getters for those
+// flags assume a non-nil block.
+func ComputeFirewallMode(f RepositoryFormat, state any) common.FirewallMode {
+	hasConfig := f.HasFirewallConfig(state)
+	enabled := f.GetRepositoryFirewallEnabled(state)
+	var quarantine, pccsEnabled bool
+	if hasConfig {
+		quarantine = f.GetRepositoryFirewallQuarantineEnabled(state)
+		pccsEnabled = f.GetRepositoryFirewallPccsEnabled(state)
+	}
+	return FirewallModeFromFlags(hasConfig, enabled, quarantine, pccsEnabled)
+}
+
+// ProxyApiResponseWithFirewall carries a proxy repository API response together with its
+// inline `firewall.mode` value (NXRM 3.94+), threading the mode through DoReadRequest/
+// DoImportRequest to UpdateStateFromApi without changing the RepositoryFormat interface.
+type ProxyApiResponseWithFirewall struct {
+	Repository   any
+	FirewallMode *common.FirewallMode
+}
+
 func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs bool) map[string]tfschema.Attribute {
 	thisAttr := map[string]tfschema.Attribute{
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(

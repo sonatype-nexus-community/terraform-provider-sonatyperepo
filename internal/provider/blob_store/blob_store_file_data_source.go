@@ -83,7 +83,7 @@ func (d *fileBlobStoreDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	ctx = d.AuthContext(ctx)
 
-	blobStore, httpResponse, err := d.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString()).Execute()
+	blobStore, httpResponse, err := d.Services.BlobStore.GetFileBlobStoreConfiguration(ctx, data.Name.ValueString())
 	if err != nil {
 		errors.HandleAPIError(
 			common.ERROR_UNABLE_TO_READ_BLOB_STORE_FILE,

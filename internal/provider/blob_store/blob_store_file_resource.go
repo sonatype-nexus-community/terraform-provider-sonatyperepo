@@ -95,8 +95,7 @@ func (r *blobStoreFileResource) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 
-	create_request := r.Client.BlobStoreAPI.CreateFileBlobStore(ctx).Body(request_payload)
-	api_response, err := create_request.Execute()
+	api_response, err := r.Services.BlobStore.CreateFileBlobStore(ctx, request_payload)
 
 	// Handle Error
 	if err != nil {
@@ -141,7 +140,7 @@ func (r *blobStoreFileResource) Read(ctx context.Context, req resource.ReadReque
 	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	blobStoreApiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString()).Execute()
+	blobStoreApiResponse, httpResponse, err := r.Services.BlobStore.GetFileBlobStoreConfiguration(ctx, state.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == 404 {
@@ -211,10 +210,8 @@ func (r *blobStoreFileResource) Update(ctx context.Context, req resource.UpdateR
 			Type:  plan.SoftQuota.Type.ValueStringPointer(),
 		}
 	}
-	apiUpdateRequest := r.Client.BlobStoreAPI.UpdateFileBlobStore(ctx, state.Name.ValueString()).Body(request_payload)
-
 	// Call API
-	httpResponse, err := apiUpdateRequest.Execute()
+	httpResponse, err := r.Services.BlobStore.UpdateFileBlobStore(ctx, state.Name.ValueString(), request_payload)
 
 	// Handle Error(s)
 	if err != nil {
@@ -258,11 +255,7 @@ func (r *blobStoreFileResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Delete API Call
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)

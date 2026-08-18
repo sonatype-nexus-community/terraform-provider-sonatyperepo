@@ -26,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // BaseTaskType that all task types build from
@@ -64,8 +62,8 @@ func (f *BaseTaskType) Type() common.TaskType {
 // TaskTypeI that all Repository Formats must implement
 // --------------------------------------------
 type TaskTypeI interface {
-	DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error)
-	DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error)
+	DoCreateRequest(plan any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*common.TaskApiModel, *http.Response, error)
+	DoUpdateRequest(plan any, state any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*http.Response, error)
 	ApiCreateSuccessResponseCodes() []int
 	MarkdownDescription() string
 	PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics)

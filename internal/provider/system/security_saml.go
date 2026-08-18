@@ -18,7 +18,6 @@ package system
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -103,14 +102,10 @@ func (r *securitySamlResource) ImportState(ctx context.Context, req resource.Imp
 	})
 
 	// Set up authentication context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Get the current SAML configuration from the API
-	httpResponse, err := r.Client.SecurityManagementSAMLAPI.GetSamlConfiguration(ctx).Execute()
+	samlConfig, httpResponse, err := r.Services.Saml.GetSamlConfiguration(ctx)
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.Diagnostics.AddError(
@@ -126,18 +121,8 @@ func (r *securitySamlResource) ImportState(ctx context.Context, req resource.Imp
 		return
 	}
 
-	// Parse the response body to get the SamlConfigurationXO
-	var samlConfig sonatyperepo.SamlConfigurationXO
-	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
-		resp.Diagnostics.AddError(
-			"Error parsing SAML Configuration response",
-			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
-		)
-		return
-	}
-
 	var state model.SecuritySamlModel
-	state.MapFromApi(&samlConfig)
+	state.MapFromApi(samlConfig)
 
 	// Set the populated state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -159,11 +144,7 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Set up authentication context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
 		IdpMetadata:                plan.IdpMetadata.ValueString(),
@@ -179,7 +160,7 @@ func (r *securitySamlResource) Create(ctx context.Context, req resource.CreateRe
 
 	tflog.Debug(ctx, fmt.Sprintf("Creating security saml configuration with : %v", requestPayload))
 
-	apiResponse, err := r.Client.SecurityManagementSAMLAPI.PutSamlConfiguration(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.Saml.PutSamlConfiguration(ctx, requestPayload)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Security SAML configuration",
@@ -212,13 +193,9 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.SecurityManagementSAMLAPI.GetSamlConfiguration(ctx).Execute()
+	samlConfig, httpResponse, err := r.Services.Saml.GetSamlConfiguration(ctx)
 	if err != nil {
 		if httpResponse != nil && httpResponse.StatusCode == 404 {
 			resp.State.RemoveResource(ctx)
@@ -239,18 +216,8 @@ func (r *securitySamlResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	// Parse the response body to get the SamlConfigurationXO
-	var samlConfig sonatyperepo.SamlConfigurationXO
-	if err := json.NewDecoder(httpResponse.Body).Decode(&samlConfig); err != nil {
-		resp.Diagnostics.AddError(
-			"Error parsing SAML Configuration response",
-			fmt.Sprintf("Unable to parse SAML Configuration response: %s", err),
-		)
-		return
-	}
-
 	// Update state with values from API using MapFromApi
-	state.MapFromApi(&samlConfig)
+	state.MapFromApi(samlConfig)
 
 	tflog.Debug(ctx, "Successfully read security SAML configuration from API")
 
@@ -277,11 +244,7 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	requestPayload := sonatyperepo.SamlConfigurationXO{
 		IdpMetadata:                plan.IdpMetadata.ValueString(),
@@ -298,7 +261,7 @@ func (r *securitySamlResource) Update(ctx context.Context, req resource.UpdateRe
 	tflog.Debug(ctx, fmt.Sprintf("Updating security SAML configuration with : %v", requestPayload))
 
 	// Call API to Update
-	apiResponse, err := r.Client.SecurityManagementSAMLAPI.PutSamlConfiguration(ctx).Body(requestPayload).Execute()
+	apiResponse, err := r.Services.Saml.PutSamlConfiguration(ctx, requestPayload)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Security SAML configuration",
@@ -331,13 +294,9 @@ func (r *securitySamlResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	apiResponse, err := r.Client.SecurityManagementSAMLAPI.DeleteSamlConfiguration(ctx).Execute()
+	apiResponse, err := r.Services.Saml.DeleteSamlConfiguration(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Security SAML configuration",

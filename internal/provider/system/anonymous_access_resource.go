@@ -69,14 +69,10 @@ func (r *anonymousAccessSystemResource) ImportState(ctx context.Context, req res
 	// we don't need to parse the import ID. We just read the current configuration.
 
 	// Set up authentication context
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read current anonymous access settings from the API
-	apiResponse, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Read1(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.AnonymousAccess.GetAnonymousAccessSettings(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusForbidden {
@@ -124,11 +120,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 	}
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	payload := sonatyperepo.AnonymousAccessSettingsXO{
 		Enabled:   plan.Enabled.ValueBoolPointer(),
@@ -136,7 +128,7 @@ func (r *anonymousAccessSystemResource) Create(ctx context.Context, req resource
 		UserId:    plan.UserId.ValueStringPointer(),
 	}
 
-	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update1(ctx).Body(payload).Execute()
+	_, httpResponse, err := r.Services.AnonymousAccess.UpdateAnonymousAccessSettings(ctx, payload)
 
 	// Handle Error
 	if err != nil {
@@ -185,14 +177,10 @@ func (r *anonymousAccessSystemResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Read1(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.AnonymousAccess.GetAnonymousAccessSettings(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusForbidden {
@@ -232,11 +220,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 		tflog.Error(ctx, fmt.Sprintf("Getting plan data has errors: %v", resp.Diagnostics.Errors()))
 		return
 	}
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	payload := sonatyperepo.AnonymousAccessSettingsXO{
@@ -245,7 +229,7 @@ func (r *anonymousAccessSystemResource) Update(ctx context.Context, req resource
 		UserId:    plan.UserId.ValueStringPointer(),
 	}
 
-	apiResponse, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update1(ctx).Body(payload).Execute()
+	apiResponse, httpResponse, err := r.Services.AnonymousAccess.UpdateAnonymousAccessSettings(ctx, payload)
 
 	// Handle Error
 	if err != nil {
@@ -297,11 +281,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 	}
 
 	//
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Update API Call
 	payload := sonatyperepo.AnonymousAccessSettingsXO{
@@ -310,7 +290,7 @@ func (r *anonymousAccessSystemResource) Delete(ctx context.Context, req resource
 		UserId:    common.StringPointer(common.DEFAULT_ANONYMOUS_USERNAME),
 	}
 
-	_, httpResponse, err := r.Client.SecurityManagementAnonymousAccessAPI.Update1(ctx).Body(payload).Execute()
+	_, httpResponse, err := r.Services.AnonymousAccess.UpdateAnonymousAccessSettings(ctx, payload)
 
 	// Handle Error
 	if err != nil {

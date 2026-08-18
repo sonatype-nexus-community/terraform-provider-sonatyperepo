@@ -109,7 +109,7 @@ func (d *s3BlobStoreDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	apiResponse, httpResponse, err := d.Client.BlobStoreAPI.GetS3BlobStore(ctx, data.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := d.Services.BlobStore.GetS3BlobStore(ctx, data.Name.ValueString())
 	if err != nil {
 		errors.HandleAPIError(
 			fmt.Sprintf("No S3 BlobStore with name: %s", data.Name.ValueString()),

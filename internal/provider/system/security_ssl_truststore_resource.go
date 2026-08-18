@@ -34,7 +34,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
@@ -111,7 +110,7 @@ func (r *securitySslTruststoreResource) Create(ctx context.Context, req resource
 	pemValue = strings.TrimRight(pemValue, "\n") + "\n"
 	plan.Pem = types.StringValue(pemValue)
 
-	apiResponse, httpResponse, err := r.Client.SecurityCertificatesAPI.AddCertificate(r.AuthContext(ctx)).Body(pemValue).Execute()
+	apiResponse, httpResponse, err := r.Services.Certificates.AddCertificate(r.AuthContext(ctx), pemValue)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusForbidden {
@@ -149,13 +148,9 @@ func (r *securitySslTruststoreResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	apiResponse, httpResponse, err := r.Client.SecurityCertificatesAPI.GetTrustStoreCertificates(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.Certificates.GetTrustStoreCertificates(ctx)
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusForbidden {
@@ -234,13 +229,9 @@ func (r *securitySslTruststoreResource) Delete(ctx context.Context, req resource
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.SecurityCertificatesAPI.RemoveCertificate(ctx, state.Id.ValueString()).Execute()
+	httpResponse, err := r.Services.Certificates.RemoveCertificate(ctx, state.Id.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {

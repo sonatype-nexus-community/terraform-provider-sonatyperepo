@@ -35,8 +35,6 @@ import (
 
 	b64 "encoding/base64"
 
-	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
 	"github.com/sonatype-nexus-community/terraform-provider-shared/errors"
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
@@ -112,14 +110,10 @@ func (r *systemConfigProductLicenseResource) Read(ctx context.Context, req resou
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.ProductLicensingAPI.GetLicenseStatus(ctx).Execute()
+	apiResponse, httpResponse, err := r.Services.License.GetLicenseStatus(ctx)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -170,12 +164,8 @@ func (r *systemConfigProductLicenseResource) Update(ctx context.Context, req res
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *systemConfigProductLicenseResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
-	httpResponse, err := r.Client.ProductLicensingAPI.RemoveLicense(ctx).Execute()
+	ctx = r.AuthContext(ctx)
+	httpResponse, err := r.Services.License.RemoveLicense(ctx)
 
 	// Handle Error
 	if err != nil || httpResponse.StatusCode != http.StatusNoContent {
@@ -220,13 +210,9 @@ func (r *systemConfigProductLicenseResource) updateProductLicense(ctx context.Co
 	defer func() { _ = os.Remove(productLicenseFileName) }()
 
 	// Call API to Create
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
-	apiResponse, httpReponse, err := r.Client.ProductLicensingAPI.SetLicense(ctx).Body(productLicenseFile).Execute()
+	apiResponse, httpReponse, err := r.Services.License.SetLicense(ctx, productLicenseFile)
 
 	// Handle Error
 	if err != nil || httpReponse.StatusCode != http.StatusOK {

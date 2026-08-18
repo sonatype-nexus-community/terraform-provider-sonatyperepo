@@ -17,8 +17,9 @@
 package model
 
 import (
+	"terraform-provider-sonatyperepo/internal/provider/common"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Task Frequency
@@ -31,7 +32,7 @@ type taskFrequency struct {
 	CronExpression types.String  `tfsdk:"cron_expression"`
 }
 
-func (f *taskFrequency) ToApiModel(api *v3.FrequencyXO) {
+func (f *taskFrequency) ToApiModel(api *common.TaskFrequencyApiModel) {
 	api.CronExpression = f.CronExpression.ValueStringPointer()
 	api.RecurringDays = make([]int32, 0)
 	for _, rd := range f.RecurringDays {
@@ -62,7 +63,7 @@ type TaskModelSimple struct {
 	Type types.String `tfsdk:"type"`
 }
 
-func (m *TaskModelSimple) MapFromApi(api *v3.TaskXO) {
+func (m *TaskModelSimple) MapFromApi(api *common.TaskApiModel) {
 	m.Id = types.StringPointerValue(api.Id)
 	m.Name = types.StringPointerValue(api.Name)
 	m.Type = types.StringPointerValue(api.Type)
@@ -79,19 +80,19 @@ type BaseTaskModel struct {
 	LastUpdated           types.String   `tfsdk:"last_updated"`
 }
 
-func (m *BaseTaskModel) MapFromApi(api *v3.TaskXO) {
+func (m *BaseTaskModel) MapFromApi(api *common.TaskApiModel) {
 	m.Id = types.StringPointerValue(api.Id)
 	if api.Name != nil {
 		m.Name = types.StringPointerValue(api.Name)
 	}
 }
 
-func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
-	api := v3.NewTaskTemplateXOWithDefaults()
+func (m *BaseTaskModel) toApiCreateModel() *common.TaskCreateApiModel {
+	api := &common.TaskCreateApiModel{}
 	api.Name = m.Name.ValueString()
 	api.Enabled = m.Enabled.ValueBool()
 	if m.Frequency != nil {
-		api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+		api.Frequency = common.TaskFrequencyApiModel{Schedule: m.Frequency.Schedule.ValueString()}
 		m.Frequency.ToApiModel(&api.Frequency)
 	}
 	api.AlertEmail = m.AlertEmail.ValueStringPointer()
@@ -99,12 +100,12 @@ func (m *BaseTaskModel) toApiCreateModel() *v3.TaskTemplateXO {
 	return api
 }
 
-func (m *BaseTaskModel) toApiUpdateModel() *v3.UpdateTaskRequest {
-	api := v3.NewUpdateTaskRequestWithDefaults()
+func (m *BaseTaskModel) toApiUpdateModel() *common.TaskUpdateApiModel {
+	api := &common.TaskUpdateApiModel{}
 	api.Name = m.Name.ValueString()
 	api.Enabled = m.Enabled.ValueBool()
 	if m.Frequency != nil {
-		api.Frequency = *v3.NewFrequencyXO(m.Frequency.Schedule.ValueString())
+		api.Frequency = common.TaskFrequencyApiModel{Schedule: m.Frequency.Schedule.ValueString()}
 		m.Frequency.ToApiModel(&api.Frequency)
 	}
 	api.AlertEmail = m.AlertEmail.ValueStringPointer()

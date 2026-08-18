@@ -28,8 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
-
 	"github.com/sonatype-nexus-community/terraform-provider-shared/schema"
 )
 
@@ -49,15 +47,15 @@ func NewBlobstoreCompactTask() *BlobstoreCompactTask {
 // --------------------------------------------
 // Blobstore Compact Format Functions
 // --------------------------------------------
-func (f *BlobstoreCompactTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
+func (f *BlobstoreCompactTask) DoCreateRequest(plan any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*common.TaskApiModel, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
 	// Call API to Create
-	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel(version)).Execute()
+	return taskService.CreateTask(ctx, planModel.ToApiCreateModel(version))
 }
 
-func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskBlobstoreCompactModel)
 
@@ -65,7 +63,7 @@ func (f *BlobstoreCompactTask) DoUpdateRequest(plan any, state any, apiClient *v
 	stateModel := (state).(model.TaskBlobstoreCompactModel)
 
 	// Call API to Update
-	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel(version)).Execute()
+	return taskService.UpdateTask(ctx, stateModel.Id.ValueString(), planModel.ToApiUpdateModel(version))
 }
 
 func (f *BlobstoreCompactTask) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {
@@ -98,7 +96,7 @@ func (f *BlobstoreCompactTask) UpdatePlanForState(plan any) any {
 
 func (f *BlobstoreCompactTask) UpdateStateFromApi(state any, api any) any {
 	stateModel := (state).(model.TaskBlobstoreCompactModel)
-	apiModel := (api).(v3.TaskXO)
+	apiModel := (api).(common.TaskApiModel)
 	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }

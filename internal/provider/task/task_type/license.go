@@ -28,8 +28,6 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 type LicenseExpirationNotificationTask struct {
@@ -48,15 +46,15 @@ func NewLicenseExpirationNotificationTask() *LicenseExpirationNotificationTask {
 // --------------------------------------------
 // Blobstore Compact Format Functions
 // --------------------------------------------
-func (f *LicenseExpirationNotificationTask) DoCreateRequest(plan any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*v3.TaskXO, *http.Response, error) {
+func (f *LicenseExpirationNotificationTask) DoCreateRequest(plan any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*common.TaskApiModel, *http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskLicenseExpirationNotificationModel)
 
 	// Call API to Create
-	return apiClient.TasksAPI.CreateTask(ctx).Body(*planModel.ToApiCreateModel()).Execute()
+	return taskService.CreateTask(ctx, planModel.ToApiCreateModel())
 }
 
-func (f *LicenseExpirationNotificationTask) DoUpdateRequest(plan any, state any, apiClient *v3.APIClient, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
+func (f *LicenseExpirationNotificationTask) DoUpdateRequest(plan any, state any, taskService common.TaskService, ctx context.Context, version common.SystemVersion) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.TaskLicenseExpirationNotificationModel)
 
@@ -64,7 +62,7 @@ func (f *LicenseExpirationNotificationTask) DoUpdateRequest(plan any, state any,
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
 
 	// Call API to Update
-	return apiClient.TasksAPI.UpdateTask(ctx, stateModel.Id.ValueString()).Body(*planModel.ToApiUpdateModel()).Execute()
+	return taskService.UpdateTask(ctx, stateModel.Id.ValueString(), planModel.ToApiUpdateModel())
 }
 
 func (f *LicenseExpirationNotificationTask) MarkdownDescription() string {
@@ -98,7 +96,7 @@ func (f *LicenseExpirationNotificationTask) UpdatePlanForState(plan any) any {
 
 func (f *LicenseExpirationNotificationTask) UpdateStateFromApi(state, api any) any {
 	stateModel := (state).(model.TaskLicenseExpirationNotificationModel)
-	apiModel := (api).(v3.TaskXO)
+	apiModel := (api).(common.TaskApiModel)
 	stateModel.MapFromApi(&apiModel)
 	return stateModel
 }

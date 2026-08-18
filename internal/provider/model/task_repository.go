@@ -20,8 +20,6 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
 // Properties for repository.docker.gc
@@ -42,7 +40,7 @@ type TaskRepositoryDockerGcModel struct {
 	Properties *TaskPropertiesRepositoryDockerGc `tfsdk:"properties"`
 }
 
-func (m *TaskRepositoryDockerGcModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+func (m *TaskRepositoryDockerGcModel) ToApiCreateModel(version common.SystemVersion) *common.TaskCreateApiModel {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_DOCKER_GC.String()
 	if m.Properties != nil {
@@ -51,7 +49,7 @@ func (m *TaskRepositoryDockerGcModel) ToApiCreateModel(version common.SystemVers
 	return api
 }
 
-func (m *TaskRepositoryDockerGcModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+func (m *TaskRepositoryDockerGcModel) ToApiUpdateModel(version common.SystemVersion) *common.TaskUpdateApiModel {
 	api := m.toApiUpdateModel()
 	if m.Properties != nil {
 		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
@@ -76,7 +74,7 @@ type TaskRepositoryDockerUploadPurgeModel struct {
 	Properties *TaskPropertiesRepositoryDockerUploadPurge `tfsdk:"properties"`
 }
 
-func (m *TaskRepositoryDockerUploadPurgeModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+func (m *TaskRepositoryDockerUploadPurgeModel) ToApiCreateModel(version common.SystemVersion) *common.TaskCreateApiModel {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_DOCKER_UPLOAD_PURGE.String()
 	if m.Properties != nil {
@@ -85,7 +83,7 @@ func (m *TaskRepositoryDockerUploadPurgeModel) ToApiCreateModel(version common.S
 	return api
 }
 
-func (m *TaskRepositoryDockerUploadPurgeModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+func (m *TaskRepositoryDockerUploadPurgeModel) ToApiUpdateModel(version common.SystemVersion) *common.TaskUpdateApiModel {
 	api := m.toApiUpdateModel()
 	if m.Properties != nil {
 		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
@@ -120,7 +118,7 @@ type TaskRepositoryMavenRemoveSnapshotsModel struct {
 	Properties *TaskPropertiesRepositoryMavenRemoveSnapshots `tfsdk:"properties"`
 }
 
-func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiCreateModel(version common.SystemVersion) *v3.TaskTemplateXO {
+func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiCreateModel(version common.SystemVersion) *common.TaskCreateApiModel {
 	api := m.toApiCreateModel()
 	api.Type = common.TASK_TYPE_REPOSITORY_MAVEN_REMOVE_SNAPSHOTS.String()
 	if m.Properties != nil {
@@ -129,7 +127,7 @@ func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiCreateModel(version commo
 	return api
 }
 
-func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiUpdateModel(version common.SystemVersion) *v3.UpdateTaskRequest {
+func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiUpdateModel(version common.SystemVersion) *common.TaskUpdateApiModel {
 	api := m.toApiUpdateModel()
 	if m.Properties != nil {
 		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)

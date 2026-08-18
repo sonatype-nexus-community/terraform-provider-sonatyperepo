@@ -158,7 +158,7 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 
 	apiBody := sonatyperepo.NewS3BlobStoreApiModelWithDefaults()
 	plan.MapToApi(apiBody)
-	httpResponse, err := r.Client.BlobStoreAPI.CreateS3BlobStore(ctx).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.BlobStore.CreateS3BlobStore(ctx, *apiBody)
 
 	// Handle Error
 	if err != nil {
@@ -183,7 +183,7 @@ func (r *blobStoreS3Resource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, plan.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.BlobStore.GetS3BlobStore(ctx, plan.Name.ValueString())
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -235,7 +235,7 @@ func (r *blobStoreS3Resource) Read(ctx context.Context, req resource.ReadRequest
 	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.BlobStoreAPI.GetS3BlobStore(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.BlobStore.GetS3BlobStore(ctx, state.Name.ValueString())
 
 	if err != nil || httpResponse.StatusCode != http.StatusOK {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -291,7 +291,7 @@ func (r *blobStoreS3Resource) Update(ctx context.Context, req resource.UpdateReq
 	plan.MapToApi(apiBody)
 
 	// Call API
-	apiResponse, err := r.Client.BlobStoreAPI.UpdateS3BlobStore(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
+	apiResponse, err := r.Services.BlobStore.UpdateS3BlobStore(ctx, state.Name.ValueString(), *apiBody)
 
 	// Handle Error(s)
 	if err != nil || apiResponse.StatusCode != http.StatusNoContent {
@@ -336,11 +336,7 @@ func (r *blobStoreS3Resource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	ctx = context.WithValue(
-		ctx,
-		sonatyperepo.ContextBasicAuth,
-		r.Auth,
-	)
+	ctx = r.AuthContext(ctx)
 
 	// Delete API Call
 	DeleteBlobStore(r.Client, &ctx, state.Name.ValueString(), resp)

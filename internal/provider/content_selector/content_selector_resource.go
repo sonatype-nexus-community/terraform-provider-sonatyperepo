@@ -85,7 +85,7 @@ func (r *contentSelectorResource) Create(ctx context.Context, req resource.Creat
 	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiCreateRequest()
 	plan.MapToApiCreate(apiBody)
-	httpResponse, err := r.Client.ContentSelectorsAPI.CreateContentSelector(ctx).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.ContentSelector.CreateContentSelector(ctx, *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -127,7 +127,7 @@ func (r *contentSelectorResource) Read(ctx context.Context, req resource.ReadReq
 	ctx = r.AuthContext(ctx)
 
 	// Read API Call
-	apiResponse, httpResponse, err := r.Client.ContentSelectorsAPI.GetContentSelector(ctx, state.Name.ValueString()).Execute()
+	apiResponse, httpResponse, err := r.Services.ContentSelector.GetContentSelector(ctx, state.Name.ValueString())
 
 	if err != nil {
 		if httpResponse.StatusCode == http.StatusNotFound {
@@ -178,7 +178,7 @@ func (r *contentSelectorResource) Update(ctx context.Context, req resource.Updat
 	ctx = r.AuthContext(ctx)
 	apiBody := sonatyperepo.NewContentSelectorApiUpdateRequest()
 	plan.MapToApiUpdate(apiBody)
-	httpResponse, err := r.Client.ContentSelectorsAPI.UpdateContentSelector(ctx, state.Name.ValueString()).Body(*apiBody).Execute()
+	httpResponse, err := r.Services.ContentSelector.UpdateContentSelector(ctx, state.Name.ValueString(), *apiBody)
 
 	if err != nil {
 		errors.HandleAPIError(
@@ -218,7 +218,7 @@ func (r *contentSelectorResource) Delete(ctx context.Context, req resource.Delet
 
 	ctx = r.AuthContext(ctx)
 
-	httpResponse, err := r.Client.ContentSelectorsAPI.DeleteContentSelector(ctx, state.Name.ValueString()).Execute()
+	httpResponse, err := r.Services.ContentSelector.DeleteContentSelector(ctx, state.Name.ValueString())
 
 	// Handle Error
 	if err != nil {
