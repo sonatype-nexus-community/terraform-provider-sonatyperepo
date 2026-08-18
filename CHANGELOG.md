@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*TBC*
+
+## 1.15.0 Aug 18, 2026
+
 ENHANCEMENTS:
 * Added support for Sonatype Nexus Repository 3.94.x and 3.95.x, alongside continued support for pre-3.94.0 versions [GH-449], [GH-445]
 
