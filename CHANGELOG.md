@@ -2,7 +2,14 @@
 
 ## UNRELEASED
 
-*TBC*
+ENHANCEMENTS:
+* Added support for Pub (Dart/Flutter) repository format [GH-452]
+  * **New Resource:** `sonatyperepo_repository_pub_hosted`
+  * **New Resource:** `sonatyperepo_repository_pub_proxy`
+  * **New Resource:** `sonatyperepo_repository_pub_group`
+
+NOTES:
+* Pub repositories require Sonatype Nexus Repository 3.92.0 or later
 
 ## 1.16.0 Aug 19, 2026
 

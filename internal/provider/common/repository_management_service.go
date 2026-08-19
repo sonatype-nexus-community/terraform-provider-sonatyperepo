@@ -148,6 +148,15 @@ type RepositoryManagementService interface {
 	CreateP2ProxyRepository(ctx context.Context, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error)
 	GetP2ProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
 	UpdateP2ProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error)
+	CreatePubGroupRepository(ctx context.Context, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error)
+	GetPubGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error)
+	UpdatePubGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error)
+	CreatePubHostedRepository(ctx context.Context, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error)
+	GetPubHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error)
+	UpdatePubHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error)
+	CreatePubProxyRepository(ctx context.Context, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetPubProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error)
+	UpdatePubProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreatePypiGroupRepository(ctx context.Context, body sonatyperepoV382.PypiGroupRepositoryApiRequest) (*http.Response, error)
 	GetPypiGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupDeployRepository, *http.Response, error)
 	UpdatePypiGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiGroupRepositoryApiRequest) (*http.Response, error)
@@ -686,6 +695,43 @@ func (s *repositoryManagementServiceV382) GetP2ProxyRepository(ctx context.Conte
 
 func (s *repositoryManagementServiceV382) UpdateP2ProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateP2ProxyRepository(ctx, repositoryName).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) CreatePubGroupRepository(ctx context.Context, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.CreatePubGroupRepository(ctx).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) GetPubGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error) {
+	return s.client.RepositoryManagementAPI.GetPubGroupRepository(ctx, repositoryName).Execute()
+}
+
+func (s *repositoryManagementServiceV382) UpdatePubGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.UpdatePubGroupRepository(ctx, repositoryName).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) CreatePubHostedRepository(ctx context.Context, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.CreatePubHostedRepository(ctx).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) GetPubHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error) {
+	return s.client.RepositoryManagementAPI.GetPubHostedRepository(ctx, repositoryName).Execute()
+}
+
+func (s *repositoryManagementServiceV382) UpdatePubHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.UpdatePubHostedRepository(ctx, repositoryName).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) CreatePubProxyRepository(ctx context.Context, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.CreatePubProxyRepository(ctx).Body(body).Execute()
+}
+
+func (s *repositoryManagementServiceV382) GetPubProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	result, httpResponse, err := s.client.RepositoryManagementAPI.GetPubProxyRepository(ctx, repositoryName).Execute()
+	return result, nil, httpResponse, err
+}
+
+func (s *repositoryManagementServiceV382) UpdatePubProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	return s.client.RepositoryManagementAPI.UpdatePubProxyRepository(ctx, repositoryName).Body(body).Execute()
 }
 
 func (s *repositoryManagementServiceV382) CreatePypiGroupRepository(ctx context.Context, body sonatyperepoV382.PypiGroupRepositoryApiRequest) (*http.Response, error) {
@@ -2126,6 +2172,102 @@ func (s *repositoryManagementServiceV395) UpdateP2ProxyRepository(ctx context.Co
 	}
 	v395Body.RoutingRuleName = body.RoutingRule
 	return s.client.RepositoryManagementAPI.UpdateP2ProxyRepository(ctx, repositoryName).P2ProxyRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) CreatePubGroupRepository(ctx context.Context, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubGroupRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.CreatePubGroupRepository(ctx).PubGroupRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetPubGroupRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiGroupRepository, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetPubGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result sonatyperepoV382.SimpleApiGroupRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return &result, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdatePubGroupRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubGroupRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubGroupRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.UpdatePubGroupRepository(ctx, repositoryName).PubGroupRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) CreatePubHostedRepository(ctx context.Context, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubHostedRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.CreatePubHostedRepository(ctx).PubHostedRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetPubHostedRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiHostedRepository, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetPubHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result sonatyperepoV382.SimpleApiHostedRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return &result, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdatePubHostedRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubHostedRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubHostedRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.UpdatePubHostedRepository(ctx, repositoryName).PubHostedRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) CreatePubProxyRepository(ctx context.Context, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubProxyRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
+	return s.client.RepositoryManagementAPI.CreatePubProxyRepository(ctx).PubProxyRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetPubProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *FirewallMode, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetPubProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil && apiV395.Firewall.Mode != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
+	}
+	var result sonatyperepoV382.SimpleApiProxyRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, nil, httpResponse, err
+	}
+	return &result, firewallMode, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdatePubProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PubProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	var v395Body sonatyperepoV395.PubProxyRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
+	return s.client.RepositoryManagementAPI.UpdatePubProxyRepository(ctx, repositoryName).PubProxyRepositoryApiRequest(v395Body).Execute()
 }
 
 func (s *repositoryManagementServiceV395) CreatePypiGroupRepository(ctx context.Context, body sonatyperepoV382.PypiGroupRepositoryApiRequest) (*http.Response, error) {
