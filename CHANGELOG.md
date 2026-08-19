@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-*TBC*
+BUG FIXES:
+* Prevent `Provider produced inconsistent result after apply` error when configuring `repository_firewall` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_raw_proxy`, `sonatyperepo_repository_maven2_proxy`, `sonatyperepo_repository_nuget_proxy`, `sonatyperepo_repository_conan_proxy`, `sonatyperepo_repository_conda_proxy` and `sonatyperepo_repository_rubygems_proxy` resources [GH-461]
 
 ## 1.16.0 Aug 19, 2026
 
