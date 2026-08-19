@@ -144,8 +144,11 @@ func (f *RawRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.Re
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryRawProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreateRawProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreateRawProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *RawRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -153,11 +156,11 @@ func (f *RawRepositoryFormatProxy) DoReadRequest(state any, apiClient common.Rep
 	stateModel := (state).(model.RepositoryRawProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetRawProxyRepository(ctx, stateModel.Name.ValueString())
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetRawProxyRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -167,18 +170,21 @@ func (f *RawRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClien
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositoryRawProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.UpdateRawProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdateRawProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for Raw Proxy repositories
 func (f *RawRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetRawProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetRawProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *RawRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -209,6 +215,30 @@ func (f *RawRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if state != nil {
 		stateModel = (state).(model.RepositoryRawProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path. Raw's GET
+	// response has no `firewall` field though (see GetRawProxyRepository), so FirewallMode
+	// is always nil here - MapMissingApiFieldsFromPlan is what actually populates
+	// repository_firewall for this format.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.RawProxyApiRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+				}
+				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.CapabilityId = types.StringNull()
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.RawProxyApiRepository))
 	return stateModel
 }

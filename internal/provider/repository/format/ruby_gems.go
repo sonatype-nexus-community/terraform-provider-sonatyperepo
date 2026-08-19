@@ -139,8 +139,11 @@ func (f *RubyGemsRepositoryFormatProxy) DoCreateRequest(plan any, apiClient comm
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositorRubyGemsProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.CreateRubygemsProxyRepository(ctx, planModel.ToApiCreateModel())
+	return apiClient.CreateRubygemsProxyRepository(ctx, planModel.ToApiCreateModel(), &firewallMode)
 }
 
 func (f *RubyGemsRepositoryFormatProxy) DoReadRequest(state any, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
@@ -148,11 +151,11 @@ func (f *RubyGemsRepositoryFormatProxy) DoReadRequest(state any, apiClient commo
 	stateModel := (state).(model.RepositorRubyGemsProxyModel)
 
 	// Call to API to Read
-	apiResponse, httpResponse, err := apiClient.GetRubygemsProxyRepository(ctx, stateModel.Name.ValueString())
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetRubygemsProxyRepository(ctx, stateModel.Name.ValueString())
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, err
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
 func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
@@ -162,18 +165,21 @@ func (f *RubyGemsRepositoryFormatProxy) DoUpdateRequest(plan any, state any, api
 	// Cast to correct State Model Type
 	stateModel := (state).(model.RepositorRubyGemsProxyModel)
 
+	// Compute inline firewall mode (NXRM 3.94+); ignored by pre-3.94 service implementations
+	firewallMode := ComputeFirewallMode(f, planModel)
+
 	// Call API to Create
-	return apiClient.UpdateRubygemsProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel())
+	return apiClient.UpdateRubygemsProxyRepository(ctx, stateModel.Name.ValueString(), planModel.ToApiUpdateModel(), &firewallMode)
 }
 
 // DoImportRequest implements the import functionality for RubyGems Proxy repositories
 func (f *RubyGemsRepositoryFormatProxy) DoImportRequest(repositoryName string, apiClient common.RepositoryManagementService, ctx context.Context) (any, *http.Response, error) {
 	// Call to API to Read repository for import
-	apiResponse, httpResponse, err := apiClient.GetRubygemsProxyRepository(ctx, repositoryName)
+	apiResponse, firewallMode, httpResponse, err := apiClient.GetRubygemsProxyRepository(ctx, repositoryName)
 	if err != nil {
 		return nil, httpResponse, err
 	}
-	return *apiResponse, httpResponse, nil
+	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, nil
 }
 
 func (f *RubyGemsRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
@@ -202,6 +208,27 @@ func (f *RubyGemsRepositoryFormatProxy) UpdateStateFromApi(state any, api any) a
 	if state != nil {
 		stateModel = (state).(model.RepositorRubyGemsProxyModel)
 	}
+
+	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
+	// directly instead of the Capability-based UpateStateWithCapability path.
+	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
+		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.SimpleApiProxyRepository))
+		if wrapped.FirewallMode != nil {
+			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+				stateModel.FirewallAuditAndQuarantine = nil
+			} else {
+				if stateModel.FirewallAuditAndQuarantine == nil {
+					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineModelWithDefaults()
+				}
+				enabled, quarantine, _ := FirewallFlagsFromMode(*wrapped.FirewallMode)
+				stateModel.FirewallAuditAndQuarantine.CapabilityId = types.StringNull()
+				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
+				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
+			}
+		}
+		return stateModel
+	}
+
 	stateModel.FromApiModel((api).(sonatyperepo.SimpleApiProxyRepository))
 	return stateModel
 }

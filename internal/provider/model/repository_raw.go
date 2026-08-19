@@ -92,6 +92,20 @@ type RepositoryRawProxyModel struct {
 
 func (m *RepositoryRawProxyModel) MapMissingApiFieldsFromPlan(planModel RepositoryRawProxyModel) {
 	m.HttpClient.MapMissingApiFieldsFromPlan(planModel.HttpClient)
+
+	// NXRM 3.94+'s Raw proxy repository GET response has no `firewall` field (unlike
+	// its request counterpart), so the inline firewall mode sent on Create/Update can
+	// never be read back. Mirror what was configured in the plan instead - this is the
+	// only source of truth on NXRM 3.94+; on older versions the Capability-based path in
+	// repository_common.go runs afterwards and overwrites this with the real Capability
+	// data. See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/461
+	if planModel.FirewallAuditAndQuarantine != nil {
+		firewall := *planModel.FirewallAuditAndQuarantine
+		firewall.CapabilityId = types.StringNull()
+		m.FirewallAuditAndQuarantine = &firewall
+	} else {
+		m.FirewallAuditAndQuarantine = nil
+	}
 }
 
 func (m *RepositoryRawProxyModel) FromApiModel(api sonatyperepo.RawProxyApiRepository) {
