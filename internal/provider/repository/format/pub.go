@@ -128,7 +128,7 @@ func (f *PubRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *PubRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+func (f *PubRepositoryFormatProxy) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryPubProxyModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -279,7 +279,7 @@ func (f *PubRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *PubRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+func (f *PubRepositoryFormatGroup) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryPubGroupModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -353,7 +353,7 @@ func (f *PubRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *PubRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
+func (f *PubRepositoryFormatHosted) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryPubHostedModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
