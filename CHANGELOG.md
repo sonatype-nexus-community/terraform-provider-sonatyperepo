@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*TBC*
+
+## 1.16.0 Aug 19, 2026
+
 ENHANCEMENTS:
 * Added support for managing OAuth2 / OpenID Connect (OIDC) authentication [GH-446]
   * **New Resource:** `sonatyperepo_security_oauth2`
