@@ -142,6 +142,48 @@ func TestCocoaPodsProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	}
 }
 
+// TestPyPiProxyUpdateStateFromApiUnwrapsFirewallMode verifies the same unwrapping for PyPI -
+// see GH-466. Unlike its siblings above, PyPI's GetPypiProxyRepository previously always
+// returned a nil FirewallMode because the vendored client's PyPiProxyApiRepository response
+// type was missing the `firewall` field entirely (a client-generation staleness gap fixed
+// upstream in nexus-repo-api-client-go v395.95.3, not a real NXRM API limitation - the live
+// server's own OpenAPI schema always declared it). This also exercises PccsEnabled, since
+// PyPI is the first of these formats under test that supports repository_firewall PCCS.
+func TestPyPiProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
+	f := &PyPiRepositoryFormatProxy{}
+	mode := common.FirewallModePccs
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryPyPiProxyModel{}, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.PyPiProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryPyPiProxyModel)
+
+	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
+		assert.False(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.CapabilityId.IsNull())
+	}
+}
+
+// TestPyPiProxyUpdateStateFromApiClearsFirewallWhenDisabled mirrors
+// TestNugetProxyUpdateStateFromApiUnwrapsFirewallMode above for PyPI: an existing
+// repository_firewall block in state must be cleared when the server reports the mode as
+// disabled.
+func TestPyPiProxyUpdateStateFromApiClearsFirewallWhenDisabled(t *testing.T) {
+	f := &PyPiRepositoryFormatProxy{}
+	mode := common.FirewallModeDisabled
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryPyPiProxyModel{
+		FirewallAuditAndQuarantine: model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults(),
+	}, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.PyPiProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryPyPiProxyModel)
+
+	assert.Nil(t, stateModel.FirewallAuditAndQuarantine)
+}
+
 // TestRawProxyUpdateStateFromApiUnwrapsFirewallMode mirrors the tests above for Raw. Unlike
 // the other formats, Raw's GetRawProxyRepository always returns a nil FirewallMode (its
 // response type has no `firewall` field - see the comment on that function), so this
