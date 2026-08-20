@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*TBC*
+
+## 1.16.1 Aug 20, 2026
+
 BUG FIXES:
 * Prevent `Provider produced inconsistent result after apply` error when configuring `repository_firewall` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_raw_proxy`, `sonatyperepo_repository_maven2_proxy`, `sonatyperepo_repository_nuget_proxy`, `sonatyperepo_repository_conan_proxy`, `sonatyperepo_repository_conda_proxy` and `sonatyperepo_repository_rubygems_proxy` resources [GH-461]
 * `repository_firewall` now correctly hydrates from the live inline `firewall.mode` on `terraform import`/`plan`/`apply` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_yum_proxy` and `sonatyperepo_repository_cocoapods_proxy` resources [GH-464]
