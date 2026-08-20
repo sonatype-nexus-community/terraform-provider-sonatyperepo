@@ -2256,14 +2256,18 @@ func (s *repositoryManagementServiceV395) CreatePypiProxyRepository(ctx context.
 
 func (s *repositoryManagementServiceV395) GetPypiProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.PyPiProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetPypiProxyRepository(ctx, repositoryName).Execute()
-	var result sonatyperepoV382.PyPiProxyApiRepository
-	if err := bridgeFromResponse(apiV395, httpResponse, err, &result); err != nil {
+	if err != nil {
 		return nil, nil, httpResponse, err
 	}
-	// v395.95.0's PyPiProxyApiRepository response type has no Firewall field (unlike its
-	// request-type counterpart, and unlike every other proxy format's response type), so the
-	// mode cannot be read back for PyPI via this endpoint.
-	return &result, nil, httpResponse, nil
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
+	}
+	var result sonatyperepoV382.PyPiProxyApiRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, nil, httpResponse, err
+	}
+	return &result, firewallMode, httpResponse, nil
 }
 
 func (s *repositoryManagementServiceV395) UpdatePypiProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.PypiProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
