@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*TBC*
+
+## 1.16.2 Aug 20, 2026
+
 BUG FIXES:
 * `repository_firewall` now correctly hydrates from the live inline `firewall.mode` on `terraform import`/`plan`/`apply` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_pypi_proxy` [GH-466] - required upgrading to `nexus-repo-api-client-go` v395.95.3, which fixed a missing `firewall` field on `PyPiProxyApiRepository` in the generated client
 
