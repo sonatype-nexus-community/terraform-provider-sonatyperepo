@@ -27,11 +27,12 @@ import (
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 )
 
-// TestConanProxyUpdateStateFromApiUnwrapsFirewallMode, and its siblings below, verify that
-// UpdateStateFromApi correctly unwraps a ProxyApiResponseWithFirewall and populates
-// repository_firewall in state. Prior to wiring these formats into the NXRM 3.94+ inline
-// firewall path, DoReadRequest never wrapped its response, so UpdateStateFromApi silently
-// dropped any firewall configuration - the same class of bug reported for Raw in
+// TestConanProxyUpdateStateFromApiUnwrapsFirewallMode, and its siblings below (including the
+// Yum and CocoaPods variants further down - see GH-464), verify that UpdateStateFromApi
+// correctly unwraps a ProxyApiResponseWithFirewall and populates repository_firewall in
+// state. Prior to wiring these formats into the NXRM 3.94+ inline firewall path,
+// DoReadRequest never wrapped its response, so UpdateStateFromApi silently dropped any
+// firewall configuration - the same class of bug reported for Raw in
 // https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/461.
 func TestConanProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	f := &ConanRepositoryFormatProxy{}
@@ -107,6 +108,37 @@ func TestRubyGemsProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
 		assert.True(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
 		assert.False(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
+	}
+}
+
+func TestYumProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
+	f := &YumRepositoryFormatProxy{}
+	mode := common.FirewallModeAudit
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryYumProxyModel{}, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.YumProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryYumProxyModel)
+
+	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
+		assert.False(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.CapabilityId.IsNull())
+	}
+}
+
+func TestCocoaPodsProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
+	f := &CocoaPodsRepositoryFormatProxy{}
+	mode := common.FirewallModeQuarantine
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryCocoaPodsProxyModel{}, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.SimpleApiProxyRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryCocoaPodsProxyModel)
+
+	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
 	}
 }
 
