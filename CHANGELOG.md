@@ -11,6 +11,17 @@ ENHANCEMENTS:
 NOTES:
 * Pub repositories require Sonatype Nexus Repository 3.92.0 or later
 
+## 1.16.2 Aug 20, 2026
+
+BUG FIXES:
+* `repository_firewall` now correctly hydrates from the live inline `firewall.mode` on `terraform import`/`plan`/`apply` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_pypi_proxy` [GH-466] - required upgrading to `nexus-repo-api-client-go` v395.95.3, which fixed a missing `firewall` field on `PyPiProxyApiRepository` in the generated client
+
+## 1.16.1 Aug 20, 2026
+
+BUG FIXES:
+* Prevent `Provider produced inconsistent result after apply` error when configuring `repository_firewall` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_raw_proxy`, `sonatyperepo_repository_maven2_proxy`, `sonatyperepo_repository_nuget_proxy`, `sonatyperepo_repository_conan_proxy`, `sonatyperepo_repository_conda_proxy` and `sonatyperepo_repository_rubygems_proxy` resources [GH-461]
+* `repository_firewall` now correctly hydrates from the live inline `firewall.mode` on `terraform import`/`plan`/`apply` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_yum_proxy` and `sonatyperepo_repository_cocoapods_proxy` resources [GH-464]
+
 ## 1.16.0 Aug 19, 2026
 
 ENHANCEMENTS:
