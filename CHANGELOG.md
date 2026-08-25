@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc*
+
+## 1.17.0 Aug 25, 2026
+
 ENHANCEMENTS:
 * Added support for Pub (Dart/Flutter) repository format [GH-452]
   * **New Resource:** `sonatyperepo_repository_pub_hosted`
