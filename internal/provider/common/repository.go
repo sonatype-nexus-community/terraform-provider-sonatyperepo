@@ -64,6 +64,7 @@ const (
 	REPO_FORMAT_NPM                                          string = "NPM"
 	REPO_FORMAT_NUGET                                        string = "NUGET"
 	REPO_FORMAT_P2                                           string = "P2"
+	REPO_FORMAT_PUB                                          string = "PUB"
 	REPO_FORMAT_PYPI                                         string = "PYPI"
 	REPO_FORMAT_RAW                                          string = "RAW"
 	REPO_FORMAT_R                                            string = "R"
@@ -93,6 +94,7 @@ func AllHostedFormats() []string {
 		REPO_FORMAT_MAVEN,
 		REPO_FORMAT_NPM,
 		REPO_FORMAT_NUGET,
+		REPO_FORMAT_PUB,
 		REPO_FORMAT_PYPI,
 		REPO_FORMAT_R,
 		REPO_FORMAT_RAW,
@@ -119,6 +121,7 @@ func AllProxyFormats() []string {
 		REPO_FORMAT_NPM,
 		REPO_FORMAT_NUGET,
 		REPO_FORMAT_P2,
+		REPO_FORMAT_PUB,
 		REPO_FORMAT_PYPI,
 		REPO_FORMAT_R,
 		REPO_FORMAT_RAW,
