@@ -165,7 +165,7 @@ func (f *OciRepositoryFormatHosted) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *OciRepositoryFormatHosted) UpdateStateFromApi(state any, api any) any {
+func (f *OciRepositoryFormatHosted) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryOciHostedModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -265,7 +265,7 @@ func (f *OciRepositoryFormatProxy) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *OciRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
+func (f *OciRepositoryFormatProxy) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryOciProxyModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
@@ -438,7 +438,7 @@ func (f *OciRepositoryFormatGroup) UpdatePlanForState(plan any) any {
 	return planModel
 }
 
-func (f *OciRepositoryFormatGroup) UpdateStateFromApi(state any, api any) any {
+func (f *OciRepositoryFormatGroup) UpdateStateFromApi(state, api any) any {
 	var stateModel model.RepositoryOciGroupModel
 	// During import, state might be nil, so we create a new model
 	if state != nil {
