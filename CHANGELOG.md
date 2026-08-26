@@ -2,7 +2,14 @@
 
 ## UNRELEASED
 
-*tbc*
+ENHANCEMENTS:
+* Added support for OCI (Open Container Initiative) repository format [GH-456]
+  * **New Resource:** `sonatyperepo_repository_oci_hosted`
+  * **New Resource:** `sonatyperepo_repository_oci_proxy`
+  * **New Resource:** `sonatyperepo_repository_oci_group`
+
+NOTES:
+* OCI repositories require Sonatype Nexus Repository 3.94.0 or later
 
 ## 1.17.0 Aug 25, 2026
 
