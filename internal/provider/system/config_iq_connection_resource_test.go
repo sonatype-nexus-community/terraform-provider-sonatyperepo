@@ -17,10 +17,13 @@ package system_test
 
 import (
 	"fmt"
+	"os"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const (
@@ -30,91 +33,142 @@ const (
 )
 
 func TestAccSystemIqConnectionResource(t *testing.T) {
+	// resource.Test always destroys resources declared in the final step's config once the test
+	// completes - for this singleton resource, Delete calls DisableIq, which would otherwise
+	// leave Sonatype IQ Server disconnected for any repository_firewall acceptance test running
+	// concurrently in another package. Restore a working connection immediately afterward.
+	if os.Getenv("TF_ACC_IQ_SERVER") == "1" {
+		t.Cleanup(func() {
+			if err := testutil.ConfigureIqConnection(); err != nil {
+				t.Logf("Failed to restore Sonatype IQ Server connection after test: %v", err)
+			}
+		})
+	}
+
+	steps := []resource.TestStep{
+		// Create and Read testing
+		{
+			Config: systemIqConnectionResourceConfig(false),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				// Verify
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
+				resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
+			),
+		},
+		// Test enabling show_iq_server_link
+		{
+			Config: systemIqConnectionResourceConfig(true),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				// Verify
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
+				resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
+			),
+		},
+		// Test adding Properties
+		{
+			Config: systemIqConnectionWithPropertiesResourceConfig(true),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				// Verify
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", "key1=value1&key2=value2"),
+				resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
+			),
+		},
+		// Test that nexus_trust_store_enabled is applied
+		{
+			Config: systemIqConnectionWithTrustStoreConfig(true),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+					"nexus_trust_store_enabled", "true"),
+			),
+		},
+		// Verify it can be set back to false
+		{
+			Config: systemIqConnectionWithTrustStoreConfig(false),
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
+					"nexus_trust_store_enabled", "false"),
+			),
+		},
+		// ImportState testing
+		{
+			ResourceName:                         resourceNameSysIqConnection,
+			ImportState:                          true,
+			ImportStateVerify:                    true,
+			ImportStateVerifyIdentifierAttribute: "url",
+			ImportStateVerifyIgnore: []string{
+				"password",
+				"last_updated",
+			},
+			ImportStateId: "system-iq-config",
+		},
+		// Delete testing automatically occurs in TestCase
+	}
+
+	// Against a real, licensed Sonatype IQ Server (TF_ACC_IQ_SERVER=1), confirm the connection
+	// NXRM ends up with actually works - the steps above only ever exercise fake credentials
+	// against an unreachable URL, which NXRM accepts without validating at write time.
+	if os.Getenv("TF_ACC_IQ_SERVER") == "1" {
+		steps = append(steps, resource.TestStep{
+			Config: systemIqConnectionRealResourceConfig(),
+			Check: func(_ *terraform.State) error {
+				success, reason, err := testutil.VerifyIqConnection()
+				if err != nil {
+					return fmt.Errorf("error verifying Sonatype IQ Server connection: %w", err)
+				}
+				if !success {
+					return fmt.Errorf("Sonatype IQ Server connection was not successful: %s", reason)
+				}
+				return nil
+			},
+		})
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: systemIqConnectionResourceConfig(false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
-					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
-				),
-			},
-			// Test enabling show_iq_server_link
-			{
-				Config: systemIqConnectionResourceConfig(true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", ""),
-					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
-				),
-			},
-			// Test adding Properties
-			{
-				Config: systemIqConnectionWithPropertiesResourceConfig(true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "fail_open_mode_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "nexus_trust_store_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "url", defaultIqServerUrl),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "username", "user"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "password", "token"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "show_iq_server_link", "true"),
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection, "properties", "key1=value1&key2=value2"),
-					resource.TestCheckResourceAttrSet(resourceNameSysIqConnection, "last_updated"),
-				),
-			},
-			// Test that nexus_trust_store_enabled is applied
-			{
-				Config: systemIqConnectionWithTrustStoreConfig(true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-						"nexus_trust_store_enabled", "true"),
-				),
-			},
-			// Verify it can be set back to false
-			{
-				Config: systemIqConnectionWithTrustStoreConfig(false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceNameSysIqConnection,
-						"nexus_trust_store_enabled", "false"),
-				),
-			},
-			// ImportState testing
-			{
-				ResourceName:                         resourceNameSysIqConnection,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateVerifyIdentifierAttribute: "url",
-				ImportStateVerifyIgnore: []string{
-					"password",
-					"last_updated",
-				},
-				ImportStateId: "system-iq-config",
-			},
-			// Delete testing automatically occurs in TestCase
-		},
+		Steps:                    steps,
 	})
+}
+
+// systemIqConnectionRealResourceConfig points sonatyperepo_system_iq_connection at the real IQ
+// Server under test (testutil.IqServerUrl/Username/Password), unlike the fake-credential
+// configs below which only ever exercise attribute CRUD against NXRM's unvalidated write path.
+func systemIqConnectionRealResourceConfig() string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "iq" {
+  authentication_method = "USER"
+  enabled = true
+  fail_open_mode_enabled = false
+  nexus_trust_store_enabled = false
+  url = "%s"
+  username = "%s"
+  password = "%s"
+  show_iq_server_link = true
+}
+`, resourceTypeSysIqConnection, testutil.IqServerUrl(), testutil.IqServerUsername(), testutil.IqServerPassword())
 }
 
 func systemIqConnectionResourceConfig(showIqLink bool) string {

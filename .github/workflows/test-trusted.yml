@@ -25,6 +25,13 @@ env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
     INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
+    # See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
+    # Single pinned, latest Sonatype IQ Server release - confirm this build suffix against
+    # https://help.sonatype.com/en/download-and-install-iq-server.html before merging; it was
+    # inferred from Docker Hub's `sonatype/nexus-iq-server:1.206.0` tag (matching IQ Server 206,
+    # released 2026-08-05) plus the `-01`/`-02` build-suffix convention seen in the sibling
+    # terraform-provider-sonatypeiq project's own test matrix.
+    NXIQ_VERSION: "1.206.0-01"
 
 jobs:
     sonatype:
@@ -133,6 +140,55 @@ jobs:
                   sed -i '1s/^.*$/#!\/bin\/bash/' ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
                   head -5 ${{ github.workspace }}/nexus-${{ matrix.nxrm }}/bin/nexus
 
+            - name: Download & Unpack Sonatype IQ Server
+              run: |
+                  wget https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
+                  mkdir ${{ github.workspace }}/nxiq
+                  tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
+                  echo "licenseFile: ${{ github.workspace }}/license.lic" >> ${{ github.workspace }}/nxiq/config.yml
+
+            - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+              with:
+                distribution: 'corretto'
+                java-version: '17'
+
+            - name: Start Sonatype IQ Server
+              run: |
+                  java \
+                    --add-opens=java.base/java.lang=ALL-UNNAMED \
+                    --add-opens=java.base/java.util=ALL-UNNAMED \
+                    --add-opens=java.base/java.security=ALL-UNNAMED \
+                    --add-opens=java.base/sun.security.rsa=ALL-UNNAMED \
+                    --add-opens=java.base/sun.security.x509=ALL-UNNAMED \
+                    --add-opens=java.base/sun.security.util=ALL-UNNAMED \
+                    --add-opens=java.xml/com.sun.org.apache.xerces.internal.jaxp.datatype=ALL-UNNAMED \
+                    -jar nexus-iq-server-*.jar server config.yml 2> stderr.log &
+              working-directory: "${{ github.workspace }}/nxiq"
+
+            - name: Wait for Sonatype IQ Server to be ready
+              run: |
+                  set +e
+                  sleep 20
+                  while true; do
+                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8071/healthcheck?pretty=true")
+                    CURL_EXIT=$?
+
+                    echo "CURL Exit Code: $CURL_EXIT"
+
+                    if [ "$CURL_EXIT" -eq 0 ]; then
+                      if [ "$STATUS" -eq 200 ]; then
+                          echo "✅ Received 200 OK from http://localhost:8071/healthcheck?pretty=true"
+                          break
+                      else
+                          echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8071/healthcheck?pretty=true"
+                          sleep 5
+                      fi
+                    else
+                      echo "⚠️ curl returned unexpected exit code $CURL_EXIT. Retrying..."
+                      sleep 5
+                    fi
+                  done
+
             - name: Configure Sonatype Nexus Repository Manager to use PostgreSQL
               run: |
                 mkdir -p etc/fabric
@@ -194,6 +250,10 @@ jobs:
                   NXRM_VERSION: "${{ matrix.nxrm }}"
                   TF_ACC: '1'
                   TF_ACC_SINGLE_HIT: '1'
+                  TF_ACC_IQ_SERVER: '1'
+                  IQ_SERVER_URL: "http://localhost:8070"
+                  IQ_SERVER_USERNAME: "admin"
+                  IQ_SERVER_PASSWORD: "admin123"
               run: go test -v -cover ./...
               timeout-minutes: 10
 
@@ -203,3 +263,10 @@ jobs:
               with:
                 name: "nexus.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/sonatype-work/nexus3/log/nexus.log"
+
+            - name: Store clm-server.log
+              if: success() || failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                name: "clm-server.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
+                path: "${{ github.workspace }}/nxiq/log/clm-server.log"
