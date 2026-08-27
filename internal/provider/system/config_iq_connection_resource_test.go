@@ -33,6 +33,20 @@ const (
 	resourceNameSysIqConnection = "sonatyperepo_system_iq_connection.iq"
 )
 
+// settleIqConnectionWrite pauses briefly before returning, for use as the first entry in a
+// step's Check chain (which - see testing_new_config.go in terraform-plugin-testing - runs
+// immediately after apply and before the framework's own automatic post-apply refresh/empty-plan
+// verification). Observed in CI (twice, on different NXRM versions, ~1 in 28 jobs each time):
+// that automatic refresh occasionally reads back a stale value for a field this test just wrote
+// (e.g. show_iq_server_link), even with no other writer active at the time - consistent with a
+// short-lived read-after-write staleness on NXRM's side for this singleton, not a genuine
+// provider bug or a race with another test. See
+// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
+func settleIqConnectionWrite(_ *terraform.State) error {
+	time.Sleep(3 * time.Second)
+	return nil
+}
+
 func TestAccSystemIqConnectionResource(t *testing.T) {
 	// This test's steps intentionally write conflicting sonatyperepo_system_iq_connection
 	// configuration (fake credentials, toggling show_iq_server_link/nexus_trust_store_enabled),
@@ -64,6 +78,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 		{
 			Config: systemIqConnectionResourceConfig(false),
 			Check: resource.ComposeAggregateTestCheckFunc(
+				settleIqConnectionWrite,
 				// Verify
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
@@ -81,6 +96,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 		{
 			Config: systemIqConnectionResourceConfig(true),
 			Check: resource.ComposeAggregateTestCheckFunc(
+				settleIqConnectionWrite,
 				// Verify
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
@@ -98,6 +114,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 		{
 			Config: systemIqConnectionWithPropertiesResourceConfig(true),
 			Check: resource.ComposeAggregateTestCheckFunc(
+				settleIqConnectionWrite,
 				// Verify
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "authentication_method", "USER"),
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection, "enabled", "true"),
@@ -115,6 +132,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 		{
 			Config: systemIqConnectionWithTrustStoreConfig(true),
 			Check: resource.ComposeAggregateTestCheckFunc(
+				settleIqConnectionWrite,
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
 					"nexus_trust_store_enabled", "true"),
 			),
@@ -123,6 +141,7 @@ func TestAccSystemIqConnectionResource(t *testing.T) {
 		{
 			Config: systemIqConnectionWithTrustStoreConfig(false),
 			Check: resource.ComposeAggregateTestCheckFunc(
+				settleIqConnectionWrite,
 				resource.TestCheckResourceAttr(resourceNameSysIqConnection,
 					"nexus_trust_store_enabled", "false"),
 			),
