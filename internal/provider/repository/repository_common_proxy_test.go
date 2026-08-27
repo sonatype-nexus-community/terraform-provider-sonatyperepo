@@ -1054,13 +1054,11 @@ type firewallProxyTestData struct {
 	SupportsPccs         bool
 }
 
-// testDataPubProxyRemoteUrl is scoped to this file: Pub proxy repositories are not (yet) wired
-// into the shared proxyTestData table above, so there is no existing constant to reuse.
-const testDataPubProxyRemoteUrl string = "https://pub.dev"
-
 // firewallProxyTestData enumerates every inline-firewall-capable proxy format (NXRM 3.94+).
+// Alpine and Pub are deliberately excluded: NXRM's own server-side validation rejects them
+// with "Firewall does not support repository format '<x>'." - confirmed against a real,
+// connected IQ Server, not merely a schema-level limitation in this provider.
 var firewallProxyTestDataTable = []firewallProxyTestData{
-	{RepoFormat: common.REPO_FORMAT_ALPINE, RemoteUrl: TEST_DATA_ALPINE_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultAlpine},
 	{RepoFormat: common.REPO_FORMAT_CARGO, RemoteUrl: TEST_DATA_CARGO_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultCargo},
 	{RepoFormat: common.REPO_FORMAT_COCOAPODS, RemoteUrl: TEST_DATA_COCOAPODS_PROXY_REMOTE_URL},
 	{RepoFormat: common.REPO_FORMAT_COMPOSER, RemoteUrl: TEST_DATA_COMPOSER_PROXY_REMOTE_URL},
@@ -1072,7 +1070,6 @@ var firewallProxyTestDataTable = []firewallProxyTestData{
 	{RepoFormat: common.REPO_FORMAT_MAVEN, RemoteUrl: TEST_DATA_MAVEN_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultMaven},
 	{RepoFormat: common.REPO_FORMAT_NPM, RemoteUrl: TEST_DATA_NPM_PROXY_REMOTE_URL, SupportsPccs: true},
 	{RepoFormat: common.REPO_FORMAT_NUGET, RemoteUrl: TEST_DATA_NUGET_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultNuget},
-	{RepoFormat: common.REPO_FORMAT_PUB, RemoteUrl: testDataPubProxyRemoteUrl},
 	{RepoFormat: common.REPO_FORMAT_PYPI, RemoteUrl: TEST_DATA_PYPI_PROXY_REMOTE_URL, SupportsPccs: true},
 	{RepoFormat: common.REPO_FORMAT_R, RemoteUrl: TEST_DATA_R_PROXY_REMOTE_URL},
 	{RepoFormat: common.REPO_FORMAT_RAW, RemoteUrl: TEST_DATA_RAW_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultRaw},
@@ -1144,13 +1141,13 @@ func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
 			resourceName := fmt.Sprintf(repoNameFString, resourceType)
 			repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString))
 
-			enabledChecks := []resource.TestCheckFunc{
+			// capability_id is a legacy field from the pre-3.94 Capability-based firewall API -
+			// the inline firewall path (exercised here) always leaves it null, by design (see
+			// internal/provider/repository/format/proxy_inline_firewall_test.go).
+			quarantineChecks := []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
 				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
-				resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_CAPABILITY_ID),
-			}
-			if td.SupportsPccs {
-				enabledChecks = append(enabledChecks, resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"))
+				resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_CAPABILITY_ID),
 			}
 
 			steps := []resource.TestStep{
@@ -1162,19 +1159,34 @@ func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
 						resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
 					),
 				},
-				// 2. Firewall enabled with quarantine (+ PCCS for npm/pypi)
+				// 2. Firewall enabled with quarantine
 				{
-					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, td.SupportsPccs)),
-					Check:  resource.ComposeAggregateTestCheckFunc(enabledChecks...),
-				},
-				// 3. Back to no firewall configuration - the #469/#412 regression scenario
-				{
-					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(false, false, false)),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
-					),
+					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, false)),
+					Check:  resource.ComposeAggregateTestCheckFunc(quarantineChecks...),
 				},
 			}
+
+			// PCCS is its own FirewallMode (common.FirewallModePccs), mutually exclusive with
+			// Quarantine - not a modifier on top of it - so npm/pypi get a dedicated step rather
+			// than combining pccs_enabled=true with quarantine=true above.
+			if td.SupportsPccs {
+				steps = append(steps, resource.TestStep{
+					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, false, true)),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "false"),
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"),
+					),
+				})
+			}
+
+			// 3. Back to no firewall configuration - the #469/#412 regression scenario
+			steps = append(steps, resource.TestStep{
+				Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(false, false, false)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
+				),
+			})
 
 			// Import verification for the two formats named in the original bugs' PCCS-capable
 			// class (npm, pypi) - the two formats where this coverage matters most.
