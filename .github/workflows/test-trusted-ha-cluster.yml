@@ -128,20 +128,18 @@ jobs:
 
             - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
               with:
-                distribution: 'corretto'
-                java-version: '17'
+                distribution: 'temurin'
+                java-version: '25'
 
             - name: Start Sonatype IQ Server
               run: |
-                  java \
-                    --add-opens=java.base/java.lang=ALL-UNNAMED \
-                    --add-opens=java.base/java.util=ALL-UNNAMED \
-                    --add-opens=java.base/java.security=ALL-UNNAMED \
-                    --add-opens=java.base/sun.security.rsa=ALL-UNNAMED \
-                    --add-opens=java.base/sun.security.x509=ALL-UNNAMED \
-                    --add-opens=java.base/sun.security.util=ALL-UNNAMED \
-                    --add-opens=java.xml/com.sun.org.apache.xerces.internal.jaxp.datatype=ALL-UNNAMED \
-                    -jar nexus-iq-server-*.jar server config.yml 2> stderr.log &
+                  # Use the bundle's own jvm.options (via @jvm.options) rather than a hand-copied
+                  # flag list, since Sonatype adds/changes required flags between releases (e.g.
+                  # --enable-native-access, needed from JDK 22+ per JEP 472, isn't in older
+                  # copies of this list). See
+                  # https://help.sonatype.com/en/java-compatibility-matrix.html - IQ Server 204+
+                  # requires Java 25.
+                  java @jvm.options -jar nexus-iq-server-*.jar server config.yml 2> stderr.log &
               working-directory: "${{ github.workspace }}/nxiq"
 
             - name: Wait for Sonatype IQ Server to be ready
@@ -170,7 +168,13 @@ jobs:
                     fi
                   done
                   if [ "$READY" != "true" ]; then
-                    echo "❌ Sonatype IQ Server failed to become ready after 30 attempts"
+                    echo "❌ Sonatype IQ Server failed to become ready after 30 attempts - dumping diagnostics:"
+                    echo "--- nxiq directory ---"
+                    ls -la "${{ github.workspace }}/nxiq"
+                    echo "--- stderr.log ---"
+                    cat "${{ github.workspace }}/nxiq/stderr.log" 2>&1 || echo "(no stderr.log)"
+                    echo "--- clm-server.log (tail) ---"
+                    tail -n 200 "${{ github.workspace }}/nxiq/log/clm-server.log" 2>&1 || echo "(no clm-server.log)"
                     exit 1
                   fi
 
