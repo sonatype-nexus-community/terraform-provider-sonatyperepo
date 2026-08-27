@@ -140,16 +140,19 @@ func VerifyIqConnection() (success bool, reason string, err error) {
 
 // iqConnectionLockPath returns a fixed path shared by every package's test binary within a
 // single `go test ./...` invocation (each package compiles to a separate binary and can run
-// concurrently, so an in-process mutex can't coordinate across them). It lives in a
-// process-owner-scoped, 0700 subdirectory of the OS temp directory rather than directly in it:
-// os.TempDir() itself (e.g. /tmp) is world-writable, and a predictable path directly inside it
-// is flagged (rightly, for the general case) as CWE-377/379 - another local user could plant or
-// pre-create that exact path. Scoping to a per-UID subdirectory this process itself creates with
-// restrictive permissions closes that off, while keeping the path deterministic and shared for
-// every test binary run by the same user in the same `go test ./...` invocation, which the lock
-// depends on.
+// concurrently, so an in-process mutex can't coordinate across them). It deliberately avoids
+// os.TempDir() (e.g. /tmp): that directory is world-writable, and SonarQube rightly flags any
+// predictable path built from it as CWE-377/379 - another local user could plant or pre-create
+// that exact path. os.UserCacheDir() is per-user by definition (~/.cache, ~/Library/Caches,
+// %LocalAppData%, ...), so a subdirectory under it stays deterministic and shared for every test
+// binary run by the same user - which the lock depends on - without that exposure. The 0700
+// subdirectory this process creates is still applied on top as a second layer of defense.
 func iqConnectionLockPath() (string, error) {
-	dir := filepath.Join(os.TempDir(), fmt.Sprintf("terraform-provider-sonatyperepo-%d", os.Getuid()))
+	base, err := os.UserCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve user cache directory: %w", err)
+	}
+	dir := filepath.Join(base, "terraform-provider-sonatyperepo")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return "", err
 	}
