@@ -133,6 +133,17 @@ jobs:
               env:
                 PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
 
+            - name: Create Sonatype IQ Server database
+              # NXRM 204.2+ licenses that include SBOM Manager refuse to install against IQ
+              # Server's default embedded H2 database ("SBOM Manager feature requires use of an
+              # external database") - see
+              # https://help.sonatype.com/en/external-database-configuration.html.
+              run: |
+                psql -c "CREATE USER iqserver WITH PASSWORD 'somepassword';"
+                psql -c "CREATE DATABASE clm OWNER iqserver ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;"
+              env:
+                PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
+
             - name: Download & Unpack Sonatype Nexus Repository Manager
               run: |
                   echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
@@ -147,6 +158,13 @@ jobs:
                   mkdir ${{ github.workspace }}/nxiq
                   tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
                   echo "licenseFile: ${{ github.workspace }}/license.lic" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "database:" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  type: postgresql" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  hostname: localhost" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  port: 5432" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  name: clm" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  username: iqserver" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  password: somepassword" >> ${{ github.workspace }}/nxiq/config.yml
 
             - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
               with:
