@@ -138,11 +138,22 @@ func VerifyIqConnection() (success bool, reason string, err error) {
 	return *verification.Success, reason, nil
 }
 
-// iqConnectionLockPath is a fixed path in the OS temp directory, shared by every package's test
-// binary within a single `go test ./...` invocation (each package compiles to a separate binary
-// and can run concurrently, so an in-process mutex can't coordinate across them).
-func iqConnectionLockPath() string {
-	return filepath.Join(os.TempDir(), "terraform-provider-sonatyperepo-iq-connection.lock")
+// iqConnectionLockPath returns a fixed path shared by every package's test binary within a
+// single `go test ./...` invocation (each package compiles to a separate binary and can run
+// concurrently, so an in-process mutex can't coordinate across them). It lives in a
+// process-owner-scoped, 0700 subdirectory of the OS temp directory rather than directly in it:
+// os.TempDir() itself (e.g. /tmp) is world-writable, and a predictable path directly inside it
+// is flagged (rightly, for the general case) as CWE-377/379 - another local user could plant or
+// pre-create that exact path. Scoping to a per-UID subdirectory this process itself creates with
+// restrictive permissions closes that off, while keeping the path deterministic and shared for
+// every test binary run by the same user in the same `go test ./...` invocation, which the lock
+// depends on.
+func iqConnectionLockPath() (string, error) {
+	dir := filepath.Join(os.TempDir(), fmt.Sprintf("terraform-provider-sonatyperepo-%d", os.Getuid()))
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "iq-connection.lock"), nil
 }
 
 // iqConnectionLockStaleAfter bounds how long a lock file is honored before it's treated as
@@ -157,7 +168,10 @@ const iqConnectionLockStaleAfter = 5 * time.Minute
 // concurrently - can't interleave their writes to it and produce spurious drift. Blocks
 // (polling) until acquired or timeout elapses; the returned func must be called to release.
 func LockIqConnection(timeout time.Duration) (unlock func(), err error) {
-	path := iqConnectionLockPath()
+	path, err := iqConnectionLockPath()
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare IQ connection lock directory: %w", err)
+	}
 	deadline := time.Now().Add(timeout)
 	for {
 		f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
