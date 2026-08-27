@@ -26,12 +26,13 @@ env:
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
     INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
     # See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
-    # Single pinned, latest Sonatype IQ Server release - confirm this build suffix against
-    # https://help.sonatype.com/en/download-and-install-iq-server.html before merging; it was
-    # inferred from Docker Hub's `sonatype/nexus-iq-server:1.206.0` tag (matching IQ Server 206,
-    # released 2026-08-05) plus the `-01`/`-02` build-suffix convention seen in the sibling
-    # terraform-provider-sonatypeiq project's own test matrix.
-    NXIQ_VERSION: "1.206.0-01"
+    # Single pinned Sonatype IQ Server release. Newer releases exist (e.g. IQ Server 206, per
+    # https://help.sonatype.com/en/download-and-install-iq-server.html), but 1.204.2-01 is the
+    # newest version confirmed to actually resolve as a downloadable
+    # nexus-iq-server-*-bundle.tar.gz from download.sonatype.com/clm/server/ at the time this was
+    # written - the bundle artifact appears to lag behind the sonatype/nexus-iq-server Docker
+    # tags. Re-check for a newer working bundle periodically.
+    NXIQ_VERSION: "1.204.2-01"
 
 jobs:
     sonatype:
@@ -142,7 +143,7 @@ jobs:
 
             - name: Download & Unpack Sonatype IQ Server
               run: |
-                  wget https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
+                  wget --max-redirect=0 https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
                   mkdir ${{ github.workspace }}/nxiq
                   tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
                   echo "licenseFile: ${{ github.workspace }}/license.lic" >> ${{ github.workspace }}/nxiq/config.yml
