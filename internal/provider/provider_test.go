@@ -83,6 +83,16 @@ func configureIqConnection() {
 		log.Fatal("TF_ACC_IQ_SERVER=1 but NXRM_SERVER_URL is not set")
 	}
 
+	// TestAccSystemIqConnectionResource (internal/provider/system) writes to this same shared
+	// singleton and can run concurrently with this bootstrap, since `go test ./...` compiles
+	// each package to its own binary and can start them at the same time. Without this lock,
+	// this write and that test's steps can interleave and produce spurious refresh drift.
+	unlock, err := testutil.LockIqConnection(2 * time.Minute)
+	if err != nil {
+		log.Fatalf("Failed to acquire IQ connection lock: %v", err)
+	}
+	defer unlock()
+
 	if err := testutil.ConfigureIqConnection(); err != nil {
 		log.Fatalf("Failed to configure Sonatype IQ Server connection: %v", err)
 	}

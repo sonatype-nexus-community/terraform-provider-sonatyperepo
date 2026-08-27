@@ -21,6 +21,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -33,11 +34,24 @@ const (
 )
 
 func TestAccSystemIqConnectionResource(t *testing.T) {
-	// resource.Test always destroys resources declared in the final step's config once the test
-	// completes - for this singleton resource, Delete calls DisableIq, which would otherwise
-	// leave Sonatype IQ Server disconnected for any repository_firewall acceptance test running
-	// concurrently in another package. Restore a working connection immediately afterward.
+	// This test's steps intentionally write conflicting sonatyperepo_system_iq_connection
+	// configuration (fake credentials, toggling show_iq_server_link/nexus_trust_store_enabled),
+	// and resource.Test's implicit end-of-test destroy calls DisableIq - all directly against
+	// the same singleton that internal/provider/provider_test.go's TestMain bootstraps at the
+	// start of its own package's test binary. Since `go test ./...` compiles each package to a
+	// separate binary and can run them concurrently, hold a cross-process lock for the entire
+	// test (steps + destroy + restore) so that bootstrap can't interleave with it and produce
+	// spurious refresh drift (observed in CI - see
+	// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285).
 	if os.Getenv("TF_ACC_IQ_SERVER") == "1" {
+		unlock, err := testutil.LockIqConnection(2 * time.Minute)
+		if err != nil {
+			t.Fatalf("Failed to acquire IQ connection lock: %v", err)
+		}
+		// Cleanups run last-added-first: register the unlock first (so it runs last, releasing
+		// only after the restore below has run), then the restore (so it runs first, while the
+		// lock is still held).
+		t.Cleanup(unlock)
 		t.Cleanup(func() {
 			if err := testutil.ConfigureIqConnection(); err != nil {
 				t.Logf("Failed to restore Sonatype IQ Server connection after test: %v", err)

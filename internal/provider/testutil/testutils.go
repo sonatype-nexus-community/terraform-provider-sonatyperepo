@@ -21,9 +21,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	"testing"
+	"time"
 
 	semver "github.com/hashicorp/go-version"
 	v3 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
@@ -134,6 +136,47 @@ func VerifyIqConnection() (success bool, reason string, err error) {
 		reason = *verification.Reason
 	}
 	return *verification.Success, reason, nil
+}
+
+// iqConnectionLockPath is a fixed path in the OS temp directory, shared by every package's test
+// binary within a single `go test ./...` invocation (each package compiles to a separate binary
+// and can run concurrently, so an in-process mutex can't coordinate across them).
+func iqConnectionLockPath() string {
+	return filepath.Join(os.TempDir(), "terraform-provider-sonatyperepo-iq-connection.lock")
+}
+
+// iqConnectionLockStaleAfter bounds how long a lock file is honored before it's treated as
+// abandoned (e.g. left behind by a crashed local test run) and removed so a new lock can be
+// acquired. CI runners are ephemeral and never see a stale lock; this only protects local runs.
+const iqConnectionLockStaleAfter = 5 * time.Minute
+
+// LockIqConnection acquires a simple, cross-process file lock guarding writes to the shared
+// sonatyperepo_system_iq_connection singleton, so TestMain's bootstrap
+// (internal/provider/provider_test.go) and TestAccSystemIqConnectionResource
+// (internal/provider/system) - separate `go test` binaries that `go test ./...` can run
+// concurrently - can't interleave their writes to it and produce spurious drift. Blocks
+// (polling) until acquired or timeout elapses; the returned func must be called to release.
+func LockIqConnection(timeout time.Duration) (unlock func(), err error) {
+	path := iqConnectionLockPath()
+	deadline := time.Now().Add(timeout)
+	for {
+		f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+		if err == nil {
+			_ = f.Close()
+			return func() { _ = os.Remove(path) }, nil
+		}
+		if !os.IsExist(err) {
+			return nil, err
+		}
+		if info, statErr := os.Stat(path); statErr == nil && time.Since(info.ModTime()) > iqConnectionLockStaleAfter {
+			_ = os.Remove(path)
+			continue
+		}
+		if time.Now().After(deadline) {
+			return nil, fmt.Errorf("timed out after %s waiting for IQ connection lock at %s", timeout, path)
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 func SkipIfNxrmVersionEq(t *testing.T, v *common.SystemVersion) {
