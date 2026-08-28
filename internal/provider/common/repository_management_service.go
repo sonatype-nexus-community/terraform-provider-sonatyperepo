@@ -18,11 +18,19 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	sonatyperepoV382 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
 )
+
+// errOciUnsupported is returned by every OCI repository method when the connected NXRM server
+// predates 3.94.0. Like OAuth2Service (see oauth2_service.go), OCI has no equivalent in the V382
+// client generation at all -- there is no bridging to do, only a clear error to surface. In
+// practice this is unreachable: OciRepositoryFormat{Hosted,Proxy,Group}.ValidatePlanForNxrmVersion
+// blocks the plan before any of these methods are called against a pre-3.94.0 server.
+var errOciUnsupported = fmt.Errorf("OCI repositories require Nexus Repository Manager 3.94.0 or later")
 
 // RepositoryManagementService abstracts repository CRUD across NXRM API client
 // generations. Every method's request/response shape is expressed in terms of the V382
@@ -145,6 +153,15 @@ type RepositoryManagementService interface {
 	CreateNugetProxyRepository(ctx context.Context, body sonatyperepoV382.NugetProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	GetNugetProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.NugetProxyApiRepository, *FirewallMode, *http.Response, error)
 	UpdateNugetProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NugetProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	CreateOciGroupRepository(ctx context.Context, body OciGroupRepositoryApiRequest) (*http.Response, error)
+	GetOciGroupRepository(ctx context.Context, repositoryName string) (*OciGroupApiRepository, *http.Response, error)
+	UpdateOciGroupRepository(ctx context.Context, repositoryName string, body OciGroupRepositoryApiRequest) (*http.Response, error)
+	CreateOciHostedRepository(ctx context.Context, body OciHostedRepositoryApiRequest) (*http.Response, error)
+	GetOciHostedRepository(ctx context.Context, repositoryName string) (*OciHostedApiRepository, *http.Response, error)
+	UpdateOciHostedRepository(ctx context.Context, repositoryName string, body OciHostedRepositoryApiRequest) (*http.Response, error)
+	CreateOciProxyRepository(ctx context.Context, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
+	GetOciProxyRepository(ctx context.Context, repositoryName string) (*OciProxyApiRepository, *FirewallMode, *http.Response, error)
+	UpdateOciProxyRepository(ctx context.Context, repositoryName string, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error)
 	CreateP2ProxyRepository(ctx context.Context, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error)
 	GetP2ProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.SimpleApiProxyRepository, *http.Response, error)
 	UpdateP2ProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error)
@@ -688,6 +705,43 @@ func (s *repositoryManagementServiceV382) GetNugetProxyRepository(ctx context.Co
 
 func (s *repositoryManagementServiceV382) UpdateNugetProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.NugetProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
 	return s.client.RepositoryManagementAPI.UpdateNugetProxyRepository(ctx, repositoryName).Body(body).Execute()
+}
+
+// OCI repositories have no equivalent in NXRM releases predating 3.94.0 (see errOciUnsupported).
+func (s *repositoryManagementServiceV382) CreateOciGroupRepository(ctx context.Context, body OciGroupRepositoryApiRequest) (*http.Response, error) {
+	return nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) GetOciGroupRepository(ctx context.Context, repositoryName string) (*OciGroupApiRepository, *http.Response, error) {
+	return nil, nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) UpdateOciGroupRepository(ctx context.Context, repositoryName string, body OciGroupRepositoryApiRequest) (*http.Response, error) {
+	return nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) CreateOciHostedRepository(ctx context.Context, body OciHostedRepositoryApiRequest) (*http.Response, error) {
+	return nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) GetOciHostedRepository(ctx context.Context, repositoryName string) (*OciHostedApiRepository, *http.Response, error) {
+	return nil, nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) UpdateOciHostedRepository(ctx context.Context, repositoryName string, body OciHostedRepositoryApiRequest) (*http.Response, error) {
+	return nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) CreateOciProxyRepository(ctx context.Context, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	return nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) GetOciProxyRepository(ctx context.Context, repositoryName string) (*OciProxyApiRepository, *FirewallMode, *http.Response, error) {
+	return nil, nil, nil, errOciUnsupported
+}
+
+func (s *repositoryManagementServiceV382) UpdateOciProxyRepository(ctx context.Context, repositoryName string, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	return nil, errOciUnsupported
 }
 
 func (s *repositoryManagementServiceV382) CreateP2ProxyRepository(ctx context.Context, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error) {
@@ -2200,6 +2254,105 @@ func (s *repositoryManagementServiceV395) UpdateNugetProxyRepository(ctx context
 		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
 	}
 	return s.client.RepositoryManagementAPI.UpdateNugetProxyRepository(ctx, repositoryName).NugetProxyRepositoryApiRequest(v395Body).Execute()
+}
+
+// OCI has no V382 client generation to bridge from/to; body/response shapes are our own local
+// V382-equivalent types (see repository_oci_types.go), so bridging here works exactly like every
+// other proxy/hosted/group format's V395 adapter, just without a real vendored V382 counterpart.
+func (s *repositoryManagementServiceV395) CreateOciGroupRepository(ctx context.Context, body OciGroupRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciGroupRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.CreateOciGroupRepository(ctx).OciGroupRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetOciGroupRepository(ctx context.Context, repositoryName string) (*OciGroupApiRepository, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetOciGroupRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result OciGroupApiRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return &result, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdateOciGroupRepository(ctx context.Context, repositoryName string, body OciGroupRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciGroupRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.UpdateOciGroupRepository(ctx, repositoryName).OciGroupRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) CreateOciHostedRepository(ctx context.Context, body OciHostedRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciHostedRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.CreateOciHostedRepository(ctx).OciHostedRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetOciHostedRepository(ctx context.Context, repositoryName string) (*OciHostedApiRepository, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetOciHostedRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, httpResponse, err
+	}
+	var result OciHostedApiRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, httpResponse, err
+	}
+	return &result, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdateOciHostedRepository(ctx context.Context, repositoryName string, body OciHostedRepositoryApiRequest) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciHostedRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	return s.client.RepositoryManagementAPI.UpdateOciHostedRepository(ctx, repositoryName).OciHostedRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) CreateOciProxyRepository(ctx context.Context, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciProxyRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
+	return s.client.RepositoryManagementAPI.CreateOciProxyRepository(ctx).OciProxyRepositoryApiRequest(v395Body).Execute()
+}
+
+func (s *repositoryManagementServiceV395) GetOciProxyRepository(ctx context.Context, repositoryName string) (*OciProxyApiRepository, *FirewallMode, *http.Response, error) {
+	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetOciProxyRepository(ctx, repositoryName).Execute()
+	if err != nil {
+		return nil, nil, httpResponse, err
+	}
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
+	}
+	var result OciProxyApiRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, nil, httpResponse, err
+	}
+	return &result, firewallMode, httpResponse, nil
+}
+
+func (s *repositoryManagementServiceV395) UpdateOciProxyRepository(ctx context.Context, repositoryName string, body OciProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
+	var v395Body sonatyperepoV395.OciProxyRepositoryApiRequest
+	if err := jsonBridge(body, &v395Body); err != nil {
+		return nil, err
+	}
+	v395Body.RoutingRuleName = body.RoutingRule
+	if firewallMode != nil {
+		v395Body.Firewall = &sonatyperepoV395.FirewallAttributes{Mode: (*string)(firewallMode)}
+	}
+	return s.client.RepositoryManagementAPI.UpdateOciProxyRepository(ctx, repositoryName).OciProxyRepositoryApiRequest(v395Body).Execute()
 }
 
 func (s *repositoryManagementServiceV395) CreateP2ProxyRepository(ctx context.Context, body sonatyperepoV382.P2ProxyRepositoryApiRequest) (*http.Response, error) {

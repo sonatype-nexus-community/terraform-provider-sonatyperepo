@@ -232,6 +232,59 @@ func TestPyPiProxyUpdateStateFromApiClearsFirewallWhenDisabledAndUnconfigured(t 
 // exercises the defensive branch that would populate repository_firewall if a future client
 // update ever started returning it, without regressing the format's actual fix
 // (MapMissingApiFieldsFromPlan - see repository_raw_test.go) if that ever changes.
+// TestOciProxyUpdateStateFromApiUnwrapsFirewallMode verifies the same unwrapping for OCI.
+func TestOciProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
+	f := &OciRepositoryFormatProxy{}
+	mode := common.FirewallModeQuarantine
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryOciProxyModel{}, ProxyApiResponseWithFirewall{
+		Repository:   common.OciProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryOciProxyModel)
+
+	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.CapabilityId.IsNull())
+	}
+}
+
+// TestOciProxyUpdateStateFromApiPreservesFirewallBlockWhenDisabledButConfigured mirrors
+// TestNugetProxyUpdateStateFromApiPreservesFirewallBlockWhenDisabledButConfigured above for
+// OCI - see GH-469.
+func TestOciProxyUpdateStateFromApiPreservesFirewallBlockWhenDisabledButConfigured(t *testing.T) {
+	f := &OciRepositoryFormatProxy{}
+	mode := common.FirewallModeDisabled
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryOciProxyModel{
+		FirewallAuditAndQuarantine: model.NewFirewallAuditAndQuarantineModelWithDefaults(),
+	}, ProxyApiResponseWithFirewall{
+		Repository:   common.OciProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryOciProxyModel)
+
+	if assert.NotNil(t, stateModel.FirewallAuditAndQuarantine) {
+		assert.False(t, stateModel.FirewallAuditAndQuarantine.Enabled.ValueBool())
+		assert.False(t, stateModel.FirewallAuditAndQuarantine.Quarantine.ValueBool())
+		assert.True(t, stateModel.FirewallAuditAndQuarantine.CapabilityId.IsNull())
+	}
+}
+
+// TestOciProxyUpdateStateFromApiClearsFirewallWhenDisabledAndUnconfigured is the case that
+// legitimately clears repository_firewall: it was never configured to begin with, so the
+// plan already expects null and there's nothing to preserve.
+func TestOciProxyUpdateStateFromApiClearsFirewallWhenDisabledAndUnconfigured(t *testing.T) {
+	f := &OciRepositoryFormatProxy{}
+	mode := common.FirewallModeDisabled
+
+	stateModel := f.UpdateStateFromApi(model.RepositoryOciProxyModel{}, ProxyApiResponseWithFirewall{
+		Repository:   common.OciProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryOciProxyModel)
+
+	assert.Nil(t, stateModel.FirewallAuditAndQuarantine)
+}
+
 func TestRawProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	f := &RawRepositoryFormatProxy{}
 	mode := common.FirewallModeQuarantine

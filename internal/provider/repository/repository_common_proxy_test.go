@@ -39,6 +39,7 @@ const (
 	configBlockProxyDefaultDocker    string = "docker = { force_basic_auth = false\nv1_enabled = false }\ndocker_proxy = { }"
 	configBlockProxyDefaultMaven     string = "maven = { layout_policy = \"PERMISSIVE\"\nversion_policy = \"RELEASE\" }"
 	configBlockProxyDefaultNuget     string = "nuget_proxy = { nuget_version = \"V3\" }"
+	configBlockProxyDefaultOci       string = "oci = { force_basic_auth = false\nv1_enabled = false }\noci_proxy = { }"
 	configBlockProxyDefaultRaw       string = "raw = { content_disposition = \"ATTACHMENT\" }"
 	configBlockProxyDefaultSwift     string = "swift = { }"
 	configBlockProxyDefaultTerraform string = "terraform = { }"
@@ -656,6 +657,28 @@ func TestAccRepositoryGenericProxyInvalidBlobStore(t *testing.T) {
 				Patch: 99,
 			})
 		}
+		if repoFormat == common.REPO_FORMAT_OCI {
+			// OCI proxy repositories require NXRM 3.94.0+. Unlike the skips above (which sit
+			// before every other format alphabetically, so bailing the whole test via t.Skip
+			// costs nothing), OCI sits mid-alphabet - t.Skip on the shared top-level t would
+			// also cut off every format after it (P2, PUB, PYPI, R, RAW, RUBYGEMS, YUM) for any
+			// NXRM version in this range. Skip just this one iteration instead.
+			inRange, err := testutil.VersionInRange(&testutil.CurrenTestNxrmVersion, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 93,
+				Patch: 99,
+			})
+			if err != nil {
+				t.Fatalf("Error comparing versions: %v", err)
+			}
+			if inRange {
+				continue
+			}
+		}
 
 		randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 		resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(repoFormat))
@@ -931,6 +954,8 @@ func formatSpecificProxyDefaultConfig(repoFormat string) string {
 		return configBlockProxyDefaultMaven
 	case common.REPO_FORMAT_NUGET:
 		return configBlockProxyDefaultNuget
+	case common.REPO_FORMAT_OCI:
+		return configBlockProxyDefaultOci
 	case common.REPO_FORMAT_RAW:
 		return configBlockProxyDefaultRaw
 	case common.REPO_FORMAT_TERRAFORM:

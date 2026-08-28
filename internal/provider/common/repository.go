@@ -47,6 +47,11 @@ const (
 	MAVEN_VERSION_POLICY_MIXED                               string = "MIXED"
 	NUGET_PROTOCOL_V2                                        string = "V2"
 	NUGET_PROTOCOL_V3                                        string = "V3"
+	OCI_PROXY_INDEX_TYPE_HUB                                 string = "HUB"
+	OCI_PROXY_INDEX_TYPE_REGISTRY                            string = "REGISTRY"
+	OCI_PROXY_INDEX_TYPE_CUSTOM                              string = "CUSTOM"
+	OCI_COSIGN_ENFORCEMENT_NONE                              string = "NONE"
+	OCI_COSIGN_ENFORCEMENT_KEYLESS                           string = "KEYLESS"
 	REPO_FORMAT_ALPINE                                       string = "ALPINE"
 	REPO_FORMAT_ANSIBLE_GALAXY                               string = "ANSIBLEGALAXY"
 	REPO_FORMAT_APT                                          string = "APT"
@@ -63,6 +68,7 @@ const (
 	REPO_FORMAT_MAVEN                                        string = "MAVEN2"
 	REPO_FORMAT_NPM                                          string = "NPM"
 	REPO_FORMAT_NUGET                                        string = "NUGET"
+	REPO_FORMAT_OCI                                          string = "OCI"
 	REPO_FORMAT_P2                                           string = "P2"
 	REPO_FORMAT_PUB                                          string = "PUB"
 	REPO_FORMAT_PYPI                                         string = "PYPI"
@@ -94,6 +100,7 @@ func AllHostedFormats() []string {
 		REPO_FORMAT_MAVEN,
 		REPO_FORMAT_NPM,
 		REPO_FORMAT_NUGET,
+		REPO_FORMAT_OCI,
 		REPO_FORMAT_PUB,
 		REPO_FORMAT_PYPI,
 		REPO_FORMAT_R,
@@ -120,6 +127,7 @@ func AllProxyFormats() []string {
 		REPO_FORMAT_MAVEN,
 		REPO_FORMAT_NPM,
 		REPO_FORMAT_NUGET,
+		REPO_FORMAT_OCI,
 		REPO_FORMAT_P2,
 		REPO_FORMAT_PUB,
 		REPO_FORMAT_PYPI,

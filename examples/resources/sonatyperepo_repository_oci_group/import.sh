@@ -1,0 +1,6 @@
+# Existing group OCI repository configuration can be imported as follows.
+#
+# NOTE: The Identifier REPOSITORY_NAME needs to match repository name in your sonatype nexus repository instance.
+
+# Example
+terraform import sonatyperepo_repository_oci_group.oci_group REPOSITORY_NAME

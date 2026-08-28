@@ -641,10 +641,11 @@ func standardRepositorySchema(repoFormat string, repoType format.RepositoryType,
 		)
 	}
 
-	// LatestPolicy is only for Docker Hosted Repositories
-	if repoFormat == common.REPO_FORMAT_DOCKER && repoType == format.REPO_TYPE_HOSTED {
+	// LatestPolicy is only for Docker and OCI Hosted Repositories -- both reuse the same
+	// DockerHostedStorageAttributes API shape (see model.dockerHostedStorageModel).
+	if (repoFormat == common.REPO_FORMAT_DOCKER || repoFormat == common.REPO_FORMAT_OCI) && repoType == format.REPO_TYPE_HOSTED {
 		storageAttributes["latest_policy"] = schema.ResourceOptionalBoolWithDefault(
-			`Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker Repositories when Deployment Policy is set to Disable.
+			`Whether to allow redeploying the 'latest' tag but defer to the Deployment Policy for all other tags. Only applicable for Hosted Docker/OCI Repositories when Deployment Policy is set to Disable.
 
   **NOTE:** The APIs for Sonatype Nexus Repository do not currently allow for reading this value - hence during import this may result in terraform plan changes as we defualt to false.`,
 			false,
