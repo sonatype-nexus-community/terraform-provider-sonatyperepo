@@ -320,18 +320,9 @@ var proxyTestData = []repositoryProxyTestData{
 		SchemaFunc: repositoryProxyResourceConfig,
 		TestImport: true,
 	},
-	// Will fail without IQ Server Connection: "Unable to configure Repository Firewall as not connected to Sonatype IQ"
-	// {
-	// 	CheckFunc: func(resourceName string) []resource.TestCheckFunc {
-	// 		return []resource.TestCheckFunc{
-	// 			resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
-	// 			resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
-	// 		}
-	// 	},
-	// 	RemoteUrl:  TEST_DATA_NPM_PROXY_REMOTE_URL,
-	// 	RepoFormat: common.REPO_FORMAT_NPM,
-	// 	SchemaFunc: repositoryProxyResourceConfigWithFirewall,
-	// },
+	// Live repository_firewall coverage (against a real, connected Sonatype IQ Server) is in
+	// TestAccRepositoryGenericProxyFirewallToggle below, not this table - see
+	// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
 	{
 		CheckFunc: func(resourceName string) []resource.TestCheckFunc {
 			return []resource.TestCheckFunc{
@@ -1033,38 +1024,6 @@ resource "%s" "repo" {
 `, resourceType, repoName, remoteUrl, formatSpecificConfig)
 }
 
-// See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285
-// func repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(resourceType, repoName, remoteUrl, formatSpecificConfig string) string {
-// 	return fmt.Sprintf(utils_test.ProviderConfig+`
-// resource "%s" "repo" {
-//   name = "%s"
-//   online = true
-//   storage = {
-//     blob_store_name = "default"
-//     strict_content_type_validation = true
-//   }
-//   proxy = {
-//     remote_url = "%s"
-//     content_max_age = 1440
-//     metadata_max_age = 1440
-//   }
-//   negative_cache = {
-//     enabled = true
-//     time_to_live = 1440
-//   }
-//   http_client = {
-//     blocked = false
-//     auto_block = true
-//   }
-//   repository_firewall = {
-//     enabled = true
-//     quarantine = true
-//   }
-//   %s
-//  }
-// `, resourceType, repoName, remoteUrl, formatSpecificConfig)
-// }
-
 func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl, randomString, formatSpecificConfig string, completeData bool) string {
 	if completeData {
 		return repositoryProxyResourceFullConfig(
@@ -1077,9 +1036,189 @@ func repositoryProxyResourceConfig(resourceType, repoName, repoFormat, remoteUrl
 	}
 }
 
-// See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285
-// func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, repoFormat, remoteUrl, randomString string, completeData bool) string {
-// 	return repositoryProxyResourceMinimalConfigWithFirewallEnabledNoPccs(
-// 		resourceType, repoName, remoteUrl, formatSpecificProxyDefaultConfig(repoFormat),
-// 	)
-// }
+// ------------------------------------------------------------
+// Repository Firewall (Sonatype IQ Server) - live acceptance tests
+// ------------------------------------------------------------
+// See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
+// These tests require a real, licensed Sonatype IQ Server connected to the NXRM instance under
+// test - set TF_ACC_IQ_SERVER=1 to enable (see testutil.SkipIfNoIqServer). NXRM rejects
+// repository_firewall.enabled = true with "Unable to configure Repository Firewall as not
+// connected to Sonatype IQ" unless such a connection exists; internal/provider/provider_test.go's
+// TestMain bootstraps and verifies one when TF_ACC_IQ_SERVER=1 is set.
+
+// firewallProxyTestData describes one repository format's live repository_firewall coverage.
+type firewallProxyTestData struct {
+	RepoFormat           string
+	RemoteUrl            string
+	FormatSpecificConfig string
+	SupportsPccs         bool
+}
+
+// firewallProxyTestData enumerates every inline-firewall-capable proxy format (NXRM 3.94+).
+// Alpine and Pub are deliberately excluded: NXRM's own server-side validation rejects them
+// with "Firewall does not support repository format '<x>'." - confirmed against a real,
+// connected IQ Server, not merely a schema-level limitation in this provider. Composer is
+// also excluded: repository_firewall applies but doesn't survive a refresh - see
+// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/471.
+var firewallProxyTestDataTable = []firewallProxyTestData{
+	{RepoFormat: common.REPO_FORMAT_CARGO, RemoteUrl: TEST_DATA_CARGO_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultCargo},
+	{RepoFormat: common.REPO_FORMAT_COCOAPODS, RemoteUrl: TEST_DATA_COCOAPODS_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_CONAN, RemoteUrl: TEST_DATA_CONAN_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultConan},
+	{RepoFormat: common.REPO_FORMAT_CONDA, RemoteUrl: TEST_DATA_CONDA_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_DOCKER, RemoteUrl: TEST_DATA_DOCKER_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultDocker},
+	{RepoFormat: common.REPO_FORMAT_GO, RemoteUrl: TEST_DATA_GO_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_HUGGING_FACE, RemoteUrl: TEST_DATA_HUGGING_FACE_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_MAVEN, RemoteUrl: TEST_DATA_MAVEN_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultMaven},
+	{RepoFormat: common.REPO_FORMAT_NPM, RemoteUrl: TEST_DATA_NPM_PROXY_REMOTE_URL, SupportsPccs: true},
+	{RepoFormat: common.REPO_FORMAT_NUGET, RemoteUrl: TEST_DATA_NUGET_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultNuget},
+	{RepoFormat: common.REPO_FORMAT_PYPI, RemoteUrl: TEST_DATA_PYPI_PROXY_REMOTE_URL, SupportsPccs: true},
+	{RepoFormat: common.REPO_FORMAT_R, RemoteUrl: TEST_DATA_R_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_RAW, RemoteUrl: TEST_DATA_RAW_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultRaw},
+	{RepoFormat: common.REPO_FORMAT_RUBY_GEMS, RemoteUrl: TEST_DATA_RUBY_GEMS_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_YUM, RemoteUrl: TEST_DATA_YUM_PROXY_REMOTE_URL},
+}
+
+// repositoryFirewallBlockHcl renders the repository_firewall HCL block, or "" when disabled -
+// omitting the block entirely (not just setting enabled = false) reproduces the exact #469/#412
+// scenario, where NXRM's response also omits the field entirely once firewall is disabled.
+func repositoryFirewallBlockHcl(enabled, quarantine, pccsEnabled bool) string {
+	if !enabled {
+		return ""
+	}
+	if pccsEnabled {
+		return fmt.Sprintf(`repository_firewall = {
+    enabled = true
+    quarantine = %t
+    pccs_enabled = true
+  }`, quarantine)
+	}
+	return fmt.Sprintf(`repository_firewall = {
+    enabled = true
+    quarantine = %t
+  }`, quarantine)
+}
+
+// repositoryProxyResourceConfigWithFirewall builds a minimal proxy repository config with the
+// given (possibly empty) repository_firewall block appended.
+func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, remoteUrl, formatSpecificConfig, firewallBlock string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name = "%s"
+  online = true
+  storage = {
+    blob_store_name = "default"
+    strict_content_type_validation = true
+  }
+  proxy = {
+    remote_url = "%s"
+    content_max_age = 1440
+    metadata_max_age = 1440
+  }
+  negative_cache = {
+    enabled = true
+    time_to_live = 1440
+  }
+  http_client = {
+    blocked = false
+    auto_block = true
+  }
+  %s
+  %s
+ }
+`, resourceType, repoName, remoteUrl, formatSpecificConfig, firewallBlock)
+}
+
+// TestAccRepositoryGenericProxyFirewallToggle exercises repository_firewall against a real,
+// connected Sonatype IQ Server across every inline-firewall-capable proxy format: enabling it,
+// then disabling it again. That disable step is the exact regression class reported in #469 and
+// #412 - NXRM omits the repository_firewall field entirely from its response once disabled, and
+// the provider previously produced "inconsistent result after apply" rather than clearing state
+// cleanly.
+func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
+	for _, td := range firewallProxyTestDataTable {
+		t.Run(td.RepoFormat, func(t *testing.T) {
+			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+			resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
+			resourceName := fmt.Sprintf(repoNameFString, resourceType)
+			repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString))
+
+			// capability_id is a legacy field from the pre-3.94 Capability-based firewall API -
+			// the inline firewall path (exercised here) always leaves it null, by design (see
+			// internal/provider/repository/format/proxy_inline_firewall_test.go).
+			quarantineChecks := []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+				resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
+				resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_CAPABILITY_ID),
+			}
+
+			steps := []resource.TestStep{
+				// 1. No firewall configuration
+				{
+					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(false, false, false)),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+						resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
+					),
+				},
+				// 2. Firewall enabled with quarantine
+				{
+					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, false)),
+					Check:  resource.ComposeAggregateTestCheckFunc(quarantineChecks...),
+				},
+			}
+
+			// PCCS is its own FirewallMode (common.FirewallModePccs), mutually exclusive with
+			// Quarantine - not a modifier on top of it - so npm/pypi get a dedicated step rather
+			// than combining pccs_enabled=true with quarantine=true above.
+			if td.SupportsPccs {
+				steps = append(steps, resource.TestStep{
+					Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, false, true)),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "false"),
+						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"),
+					),
+				})
+			}
+
+			// 3. Back to no firewall configuration - the #469/#412 regression scenario
+			steps = append(steps, resource.TestStep{
+				Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(false, false, false)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL),
+				),
+			})
+
+			// Import verification for the two formats named in the original bugs' PCCS-capable
+			// class (npm, pypi) - the two formats where this coverage matters most.
+			if td.SupportsPccs {
+				steps = append(steps, resource.TestStep{
+					ResourceName:                         resourceName,
+					ImportState:                          true,
+					ImportStateVerify:                    true,
+					ImportStateId:                        repoName,
+					ImportStateVerifyIdentifierAttribute: "name",
+					ImportStateVerifyIgnore:              []string{"last_updated"},
+				})
+			}
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+				PreCheck: func() {
+					testutil.SkipIfNoIqServer(t)
+					// repository_firewall requires NXRM 3.94+ (inline firewall)
+					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+						Major: 3,
+						Minor: 0,
+						Patch: 0,
+					}, &common.SystemVersion{
+						Major: 3,
+						Minor: 93,
+						Patch: 99,
+					})
+				},
+				Steps: steps,
+			})
+		})
+	}
+}

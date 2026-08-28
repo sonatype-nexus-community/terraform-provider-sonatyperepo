@@ -61,6 +61,8 @@ const (
 	RES_ATTR_ROUTING_RULE_NAME                                string = "routing_rule"
 	RES_ATTR_REPOSITORY_FIREWALL_ENABLED                      string = "repository_firewall.enabled"
 	RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE                   string = "repository_firewall.quarantine"
+	RES_ATTR_REPOSITORY_FIREWALL_CAPABILITY_ID                string = "repository_firewall.capability_id"
+	RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED                 string = "repository_firewall.pccs_enabled"
 	RES_ATTR_APT_DISTRIBUTION                                 string = "apt.distribution"
 	RES_ATTR_CARGO_REQUIRE_AUTHENTICATION                     string = "cargo.require_authentication"
 	RES_ATTR_CONAN_PROXY_CONAN_VERSION                        string = "conan.conan_version"
