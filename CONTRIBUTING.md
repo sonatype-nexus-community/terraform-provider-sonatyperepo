@@ -24,7 +24,7 @@ These can be run locally by running `go test -v -cover ./internal/provider/`.
 
 ## Acceptance/Integration Tests
 
-These require an active and licensed Sonatype IQ Server. PRs originating from outside this project will fail to pass the automated Integration Tests in CI due to our Repository Secrets not being available for these CI Executions (a GitHub restriction).
+These require an active and licensed Sonatype Nexus Repository Manager. PRs originating from outside this project will fail to pass the automated Integration Tests in CI due to our Repository Secrets not being available for these CI Executions (a GitHub restriction).
 
 To run Integration Tests locally, set the following 3 environment variables and then run `TF_ACC=1 go test -v -cover ./internal/provider/`:
 - `NXRM_SERVER_URL`: Full URL to your Sonatype Nexus Repository Manager
@@ -33,7 +33,7 @@ To run Integration Tests locally, set the following 3 environment variables and 
 
 It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
 
-Some Acceptance Tests rely on AWS or GCP credentials to be run and be successful (in Sonatype Nexus Repository). These are disabled by default and can be enabled by setting the following environment variables per provder.
+Some Acceptance Tests rely on AWS, GCP or Sonatype IQ Server credentials/infrastructure to be run and be successful. These are disabled by default and can be enabled by setting the following environment variables per provider/service.
 
 ### ACS (Azure Cloud Storage) Tests
 
@@ -57,6 +57,22 @@ The following additional environment variables are required to authenticate with
 ### GCS (Google Cloud Storage) Tests
 
 Set `TF_ACC_GCP_BLOB_STORE=1` to enable GCP blob store tests
+
+### Sonatype IQ Server (Repository Firewall) Tests
+
+Set `TF_ACC_IQ_SERVER=1` to enable tests that exercise `repository_firewall` and
+`sonatyperepo_system_iq_connection` against a real Sonatype IQ Server - see
+[#285](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285).
+Without this flag, these tests are skipped, so a plain `TF_ACC=1` run against NXRM alone still
+passes.
+
+A real, licensed, running Sonatype IQ Server connected to the same NXRM instance under test is
+required. The following additional environment variables configure that connection (all optional
+- they default to the same local setup this provider's own CI uses):
+
+- `IQ_SERVER_URL` - defaults to `http://localhost:8070`
+- `IQ_SERVER_USERNAME` - defaults to `admin`
+- `IQ_SERVER_PASSWORD` - defaults to `admin123`
 
 ## Standardised Development Patterns
 

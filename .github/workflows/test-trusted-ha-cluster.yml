@@ -25,6 +25,11 @@ env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
     INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
+    # See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
+    # Single pinned Sonatype IQ Server release - one instance is sufficient even here, since IQ
+    # Server itself isn't under HA test, only NXRM is. See test-trusted.yml for why this specific
+    # version was chosen (the newest one confirmed to actually resolve as a downloadable bundle).
+    NXIQ_VERSION: "1.204.2-01"
 
 jobs:
     
@@ -80,6 +85,17 @@ jobs:
               env:
                 PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
 
+            - name: Create Sonatype IQ Server database
+              # NXRM 204.2+ licenses that include SBOM Manager refuse to install against IQ
+              # Server's default embedded H2 database ("SBOM Manager feature requires use of an
+              # external database") - see
+              # https://help.sonatype.com/en/external-database-configuration.html.
+              run: |
+                psql -c "CREATE USER iqserver WITH PASSWORD 'somepassword';"
+                psql -c "CREATE DATABASE clm OWNER iqserver ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;"
+              env:
+                PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
+
             - name: Download, Unpack & Configure Sonatype Nexus Repository Manager
               run: |
                 wget https://download.sonatype.com/nexus/3/nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
@@ -113,6 +129,72 @@ jobs:
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-01/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-02/sonatype-work/nexus3/etc/fabric/nexus-store.properties
                 cp ${{ github.workspace }}/nexus-store.properties ${{ github.workspace }}/node-03/sonatype-work/nexus3/etc/fabric/nexus-store.properties
+
+            - name: Download & Unpack Sonatype IQ Server
+              run: |
+                  wget --max-redirect=0 https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
+                  mkdir ${{ github.workspace }}/nxiq
+                  tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
+                  echo "licenseFile: ${{ github.workspace }}/license.lic" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "database:" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  type: postgresql" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  hostname: localhost" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  port: 5432" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  name: clm" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  username: iqserver" >> ${{ github.workspace }}/nxiq/config.yml
+                  echo "  password: somepassword" >> ${{ github.workspace }}/nxiq/config.yml
+
+            - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+              with:
+                distribution: 'temurin'
+                java-version: '25'
+
+            - name: Start Sonatype IQ Server
+              run: |
+                  # Use the bundle's own jvm.options (via @jvm.options) rather than a hand-copied
+                  # flag list, since Sonatype adds/changes required flags between releases (e.g.
+                  # --enable-native-access, needed from JDK 22+ per JEP 472, isn't in older
+                  # copies of this list). See
+                  # https://help.sonatype.com/en/java-compatibility-matrix.html - IQ Server 204+
+                  # requires Java 25.
+                  java @jvm.options -jar nexus-iq-server-*.jar server config.yml 2> stderr.log &
+              working-directory: "${{ github.workspace }}/nxiq"
+
+            - name: Wait for Sonatype IQ Server to be ready
+              run: |
+                  set +e
+                  sleep 20
+                  READY=false
+                  for i in {1..60}; do
+                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8071/healthcheck?pretty=true")
+                    CURL_EXIT=$?
+
+                    echo "CURL Exit Code: $CURL_EXIT"
+
+                    if [ "$CURL_EXIT" -eq 0 ]; then
+                      if [ "$STATUS" -eq 200 ]; then
+                          echo "✅ Received 200 OK from http://localhost:8071/healthcheck?pretty=true"
+                          READY=true
+                          break
+                      else
+                          echo "⏳ Waiting for 200 OK... Current status: $STATUS for http://localhost:8071/healthcheck?pretty=true"
+                          sleep 10
+                      fi
+                    else
+                      echo "⚠️ curl returned unexpected exit code $CURL_EXIT. Retrying... (attempt $i/60)"
+                      sleep 10
+                    fi
+                  done
+                  if [ "$READY" != "true" ]; then
+                    echo "❌ Sonatype IQ Server failed to become ready after 60 attempts - dumping diagnostics:"
+                    echo "--- nxiq directory ---"
+                    ls -la "${{ github.workspace }}/nxiq"
+                    echo "--- stderr.log ---"
+                    cat "${{ github.workspace }}/nxiq/stderr.log" 2>&1 || echo "(no stderr.log)"
+                    echo "--- clm-server.log (tail) ---"
+                    tail -n 200 "${{ github.workspace }}/nxiq/log/clm-server.log" 2>&1 || echo "(no clm-server.log)"
+                    exit 1
+                  fi
 
             - name: Create directories for shared storage
               run: |
@@ -291,6 +373,10 @@ jobs:
                   TF_ACC: '1'
                   TF_ACC_HA_MODE: '1'
                   TF_ACC_HA_BLOB_STORE_PATH: "${{ github.workspace }}/storage/default"
+                  TF_ACC_IQ_SERVER: '1'
+                  IQ_SERVER_URL: "http://localhost:8070"
+                  IQ_SERVER_USERNAME: "admin"
+                  IQ_SERVER_PASSWORD: "admin123"
               run: go test -v -cover -timeout 90m -p 4 ./...
               timeout-minutes: 100
 
@@ -321,3 +407,10 @@ jobs:
               with:
                 name: "nginx-access.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "/var/log/nginx/access.log"
+
+            - name: Store clm-server.log
+              if: success() || failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                name: "clm-server.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
+                path: "${{ github.workspace }}/nxiq/log/clm-server.log"

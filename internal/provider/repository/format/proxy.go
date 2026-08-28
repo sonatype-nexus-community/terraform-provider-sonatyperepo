@@ -19,6 +19,7 @@ package format
 import (
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
 	"terraform-provider-sonatyperepo/internal/provider/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -77,6 +78,75 @@ func ComputeFirewallMode(f RepositoryFormat, state any) common.FirewallMode {
 		pccsEnabled = f.GetRepositoryFirewallPccsEnabled(state)
 	}
 	return FirewallModeFromFlags(hasConfig, enabled, quarantine, pccsEnabled)
+}
+
+// ResolveFirewallBlockFlags reconciles the `repository_firewall` state attribute against the
+// inline `firewall.mode` (NXRM 3.94+) reported by DoReadRequest/DoImportRequest, given
+// whether the incoming state/plan model already had a `repository_firewall` block
+// configured.
+//
+// `repository_firewall` is Optional but not Computed, with no plan modifier (see
+// commonProxyFirewallAuditQuarantineAttribute), so Terraform always builds its planned value
+// directly from the practitioner's config. If the block was configured - even with
+// `enabled = false` - the plan is a non-null object; unconditionally nulling the whole
+// attribute out just because the server resolves the mode as disabled then makes apply fail
+// with "Provider produced inconsistent result after apply" (see GH-469). A resolved Disabled
+// mode should only clear the block when it was never configured to begin with - otherwise
+// it's just another set of flags to report, the same as Audit/Quarantine/Pccs.
+func ResolveFirewallBlockFlags(hadConfig bool, mode common.FirewallMode) (keep, enabled, quarantine, pccsEnabled bool) {
+	enabled, quarantine, pccsEnabled = FirewallFlagsFromMode(mode)
+	keep = hadConfig || mode != common.FirewallModeDisabled
+	return keep, enabled, quarantine, pccsEnabled
+}
+
+// ReconcileFirewallBlockWithPlan makes `repository_firewall` in state match whether the NEW
+// plan configured it, overriding whatever ResolveFirewallBlockFlags decided inside
+// UpdateStateFromApi using the PRIOR state - the only signal available to it in the Update()
+// path (see repository_common.go, which feeds UpdateStateFromApi the prior state rather than
+// the new plan). This must be reconciled in both directions:
+//
+//   - The plan has no block, but state still carries one over from before the apply: force
+//     nil. Without this, disabling the firewall by removing the `repository_firewall` block
+//     entirely (rather than setting `enabled = false`) leaves a stale non-null block in state
+//     after an Update() that turns it off, because ResolveFirewallBlockFlags saw the prior
+//     state's now-stale block and concluded it was still configured. Terraform's plan (built
+//     from the new, block-less config) is null, so the stale non-null state fails the same
+//     "Provider produced inconsistent result after apply" check GH-469 was about - just from
+//     the opposite direction.
+//   - The plan has a block, but state is nil: backfill from the plan. This is the
+//     first-time-add-with-`enabled = false"` transition GH-469 was actually filed for -
+//     UpdateStateFromApi can't see it because Update() only hands it the prior (block-less)
+//     state, not the new plan.
+//
+// When state already has a non-nil block that the plan also wants, its values - resolved from
+// the live server mode via FirewallFlagsFromMode, not copied from the plan - are left
+// untouched: they're more trustworthy for flag combinations the server itself resolves
+// differently than configured (e.g. `quarantine = true` together with `pccs_enabled = true`,
+// which NXRM silently resolves to PCCS mode with quarantine reported back as false).
+func ReconcileFirewallBlockWithPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineModel) *model.FirewallAuditAndQuarantineModel {
+	if planFirewall == nil {
+		return nil
+	}
+	if stateFirewall != nil {
+		return stateFirewall
+	}
+	backfilled := *planFirewall
+	backfilled.CapabilityId = types.StringNull()
+	return &backfilled
+}
+
+// ReconcileFirewallBlockWithPccsPlan is ReconcileFirewallBlockWithPlan for the PCCS-capable
+// variant of the `repository_firewall` block (NPM, PyPI). See GH-469.
+func ReconcileFirewallBlockWithPccsPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineWithPccsModel) *model.FirewallAuditAndQuarantineWithPccsModel {
+	if planFirewall == nil {
+		return nil
+	}
+	if stateFirewall != nil {
+		return stateFirewall
+	}
+	backfilled := *planFirewall
+	backfilled.CapabilityId = types.StringNull()
+	return &backfilled
 }
 
 // ProxyApiResponseWithFirewall carries a proxy repository API response together with its
