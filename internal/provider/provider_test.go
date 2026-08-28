@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	"testing"
 	"time"
 
@@ -32,6 +33,11 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	if os.Getenv("TF_ACC_IQ_SERVER") == "1" {
+		log.Println("Connecting Sonatype Nexus Repository Manager to Sonatype IQ Server...")
+		configureIqConnection()
+	}
+
 	if os.Getenv("TF_ACC_HA_MODE") == "1" && os.Getenv("TF_ACC_HA_BLOB_STORE_PATH") != "" {
 		log.Println("Setting up resources for Sonatype Nexus Repository in HA Mode...")
 
@@ -64,6 +70,39 @@ func TestMain(m *testing.M) {
 	// Run Tests
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+
+// configureIqConnection points the NXRM instance under test at a live Sonatype IQ Server and
+// verifies the connection actually works, so that acceptance tests exercising
+// repository_firewall (which NXRM rejects with "not connected to Sonatype IQ" unless a real,
+// verified connection exists) have one in place before any test runs. Gated on
+// TF_ACC_IQ_SERVER=1 - see testutil.SkipIfNoIqServer and
+// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
+func configureIqConnection() {
+	if os.Getenv("NXRM_SERVER_URL") == "" {
+		log.Fatal("TF_ACC_IQ_SERVER=1 but NXRM_SERVER_URL is not set")
+	}
+
+	// TestAccSystemIqConnectionResource (internal/provider/system) writes to this same shared
+	// singleton and can run concurrently with this bootstrap, since `go test ./...` compiles
+	// each package to its own binary and can start them at the same time. Without this lock,
+	// this write and that test's steps can interleave and produce spurious refresh drift.
+	unlock, err := testutil.LockIqConnection(2 * time.Minute)
+	if err != nil {
+		log.Fatalf("Failed to acquire IQ connection lock: %v", err)
+	}
+	defer unlock()
+
+	if err := testutil.ConfigureIqConnection(); err != nil {
+		log.Fatalf("Failed to configure Sonatype IQ Server connection: %v", err)
+	}
+
+	success, reason, err := testutil.VerifyIqConnection()
+	if err != nil || !success {
+		log.Fatalf("Sonatype IQ Server connection could not be verified: %v (%s)", err, reason)
+	}
+
+	log.Println("Sonatype IQ Server connection configured and verified.")
 }
 
 func createDefaultBlobStore(nxrmClient *v3.APIClient, ctx *context.Context) {
