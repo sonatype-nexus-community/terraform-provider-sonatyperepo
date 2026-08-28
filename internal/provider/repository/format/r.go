@@ -240,7 +240,7 @@ func (f *RRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, state 
 	}
 
 	stateModel.MapMissingApiFieldsFromPlan(planModel)
-	stateModel.FirewallAuditAndQuarantine = BackfillFirewallBlockFromPlan(stateModel.FirewallAuditAndQuarantine, planModel.FirewallAuditAndQuarantine)
+	stateModel.FirewallAuditAndQuarantine = ReconcileFirewallBlockWithPlan(stateModel.FirewallAuditAndQuarantine, planModel.FirewallAuditAndQuarantine)
 	return stateModel
 }
 

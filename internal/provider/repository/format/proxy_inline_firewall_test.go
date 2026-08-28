@@ -304,13 +304,20 @@ func TestResolveFirewallBlockFlags(t *testing.T) {
 	}
 }
 
-// TestBackfillFirewallBlockFromPlan covers the second half of the GH-469 fix: Update() feeds
-// UpdateStateFromApi the PRIOR state rather than the new plan (see repository_common.go), so
-// adding repository_firewall for the first time with enabled = false in the same apply isn't
-// visible to ResolveFirewallBlockFlags there - state ends up nil even though the plan expects
-// an object. UpdateStateFromPlanForNonApiFields (which has both the plan and the post-read
-// state) must catch this up.
-func TestBackfillFirewallBlockFromPlan(t *testing.T) {
+// TestReconcileFirewallBlockWithPlan covers the second half of the GH-469 fix in both
+// directions. Update() feeds UpdateStateFromApi the PRIOR state rather than the new plan (see
+// repository_common.go), so ResolveFirewallBlockFlags there can be wrong in either direction
+// once the real plan is known:
+//   - adding repository_firewall for the first time with enabled = false in the same apply
+//     isn't visible there - state ends up nil even though the plan expects an object.
+//   - removing repository_firewall entirely (rather than setting enabled = false) leaves
+//     ResolveFirewallBlockFlags looking at the prior state's now-stale non-nil block and
+//     concluding it's still configured - state ends up non-nil even though the plan expects
+//     null.
+//
+// UpdateStateFromPlanForNonApiFields (which has both the plan and the post-read state) is
+// what catches both of these up.
+func TestReconcileFirewallBlockWithPlan(t *testing.T) {
 	t.Run("backfills from plan when state is nil but plan configured the block", func(t *testing.T) {
 		planFirewall := &model.FirewallAuditAndQuarantineModel{
 			CapabilityId: types.StringValue("should-be-cleared"),
@@ -318,7 +325,7 @@ func TestBackfillFirewallBlockFromPlan(t *testing.T) {
 			Quarantine:   types.BoolValue(false),
 		}
 
-		result := BackfillFirewallBlockFromPlan(nil, planFirewall)
+		result := ReconcileFirewallBlockWithPlan(nil, planFirewall)
 
 		if assert.NotNil(t, result) {
 			assert.False(t, result.Enabled.ValueBool())
@@ -328,22 +335,30 @@ func TestBackfillFirewallBlockFromPlan(t *testing.T) {
 	})
 
 	t.Run("leaves state nil when plan never configured the block either", func(t *testing.T) {
-		assert.Nil(t, BackfillFirewallBlockFromPlan(nil, nil))
+		assert.Nil(t, ReconcileFirewallBlockWithPlan(nil, nil))
 	})
 
-	t.Run("never overwrites a non-nil state value", func(t *testing.T) {
+	t.Run("never overwrites a non-nil state value the plan still wants", func(t *testing.T) {
 		stateFirewall := &model.FirewallAuditAndQuarantineModel{Enabled: types.BoolValue(true)}
 		planFirewall := &model.FirewallAuditAndQuarantineModel{Enabled: types.BoolValue(false)}
 
-		result := BackfillFirewallBlockFromPlan(stateFirewall, planFirewall)
+		result := ReconcileFirewallBlockWithPlan(stateFirewall, planFirewall)
 
 		assert.Same(t, stateFirewall, result)
 	})
+
+	t.Run("clears a stale non-nil state value when the plan removed the block", func(t *testing.T) {
+		stateFirewall := &model.FirewallAuditAndQuarantineModel{Enabled: types.BoolValue(true)}
+
+		result := ReconcileFirewallBlockWithPlan(stateFirewall, nil)
+
+		assert.Nil(t, result)
+	})
 }
 
-// TestBackfillFirewallBlockWithPccsFromPlan mirrors TestBackfillFirewallBlockFromPlan for the
+// TestReconcileFirewallBlockWithPccsPlan mirrors TestReconcileFirewallBlockWithPlan for the
 // PCCS-capable variant of the block (NPM, PyPI).
-func TestBackfillFirewallBlockWithPccsFromPlan(t *testing.T) {
+func TestReconcileFirewallBlockWithPccsPlan(t *testing.T) {
 	t.Run("backfills from plan when state is nil but plan configured the block", func(t *testing.T) {
 		planFirewall := &model.FirewallAuditAndQuarantineWithPccsModel{
 			FirewallAuditAndQuarantineModel: model.FirewallAuditAndQuarantineModel{
@@ -354,7 +369,7 @@ func TestBackfillFirewallBlockWithPccsFromPlan(t *testing.T) {
 			PccsEnabled: types.BoolValue(false),
 		}
 
-		result := BackfillFirewallBlockWithPccsFromPlan(nil, planFirewall)
+		result := ReconcileFirewallBlockWithPccsPlan(nil, planFirewall)
 
 		if assert.NotNil(t, result) {
 			assert.False(t, result.Enabled.ValueBool())
@@ -365,7 +380,17 @@ func TestBackfillFirewallBlockWithPccsFromPlan(t *testing.T) {
 	})
 
 	t.Run("leaves state nil when plan never configured the block either", func(t *testing.T) {
-		assert.Nil(t, BackfillFirewallBlockWithPccsFromPlan(nil, nil))
+		assert.Nil(t, ReconcileFirewallBlockWithPccsPlan(nil, nil))
+	})
+
+	t.Run("clears a stale non-nil state value when the plan removed the block", func(t *testing.T) {
+		stateFirewall := &model.FirewallAuditAndQuarantineWithPccsModel{
+			FirewallAuditAndQuarantineModel: model.FirewallAuditAndQuarantineModel{Enabled: types.BoolValue(true)},
+		}
+
+		result := ReconcileFirewallBlockWithPccsPlan(stateFirewall, nil)
+
+		assert.Nil(t, result)
 	})
 }
 
@@ -399,4 +424,36 @@ func TestNpmProxyUpdateStateFromPlanForNonApiFieldsBackfillsNewlyConfiguredFirew
 		assert.False(t, stateModel.FirewallAuditAndQuarantine.PccsEnabled.ValueBool())
 		assert.True(t, stateModel.FirewallAuditAndQuarantine.CapabilityId.IsNull())
 	}
+}
+
+// TestNugetProxyUpdateFlowClearsFirewallWhenBlockRemovedAfterBeingEnabled reproduces, end to
+// end through the exact two calls repository_common.go's Update() makes
+// (UpdateStateFromApi then UpdateStateFromPlanForNonApiFields), the opposite-direction
+// regression this fix's first version introduced: disabling the firewall by removing the
+// `repository_firewall` block entirely (rather than setting enabled = false) after it was
+// previously enabled. Caught by reviewing this fix against
+// TestAccRepositoryGenericProxyFirewallToggle's live step 2 -> step 3 transition before that
+// acceptance test could be run against a real IQ Server.
+func TestNugetProxyUpdateFlowClearsFirewallWhenBlockRemovedAfterBeingEnabled(t *testing.T) {
+	f := &NugetRepositoryFormatProxy{}
+
+	// Prior state: repository_firewall was enabled+quarantine from a previous apply.
+	priorState := model.RepositoryNugetProxyModel{
+		FirewallAuditAndQuarantine: &model.FirewallAuditAndQuarantineModel{
+			Enabled:    types.BoolValue(true),
+			Quarantine: types.BoolValue(true),
+		},
+	}
+	// New plan: block removed entirely (disable by deleting the config block, not enabled = false).
+	planModel := model.RepositoryNugetProxyModel{}
+
+	mode := common.FirewallModeDisabled
+	stateAfterApi := f.UpdateStateFromApi(priorState, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.NugetProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryNugetProxyModel)
+
+	finalState := f.UpdateStateFromPlanForNonApiFields(planModel, stateAfterApi).(model.RepositoryNugetProxyModel)
+
+	assert.Nil(t, finalState.FirewallAuditAndQuarantine)
 }

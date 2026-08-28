@@ -1098,6 +1098,27 @@ func repositoryFirewallBlockHcl(enabled, quarantine, pccsEnabled bool) string {
   }`, quarantine)
 }
 
+// repositoryFirewallBlockHclExplicit renders an explicit repository_firewall block even when
+// disabled (enabled = false), unlike repositoryFirewallBlockHcl above which omits the block
+// entirely in that case. This is what reproduces the LITERAL GH-469 report: the block was
+// present in the practitioner's HCL with enabled = false, not omitted - repository_firewall is
+// Optional-but-not-Computed, so Terraform's plan is a non-null object in that case, whereas
+// omitting the block plans null. Those are different scenarios for the provider's state
+// reconciliation even though both disable the firewall server-side.
+func repositoryFirewallBlockHclExplicit(enabled, quarantine, pccsEnabled bool) string {
+	if pccsEnabled {
+		return fmt.Sprintf(`repository_firewall = {
+    enabled = %t
+    quarantine = %t
+    pccs_enabled = true
+  }`, enabled, quarantine)
+	}
+	return fmt.Sprintf(`repository_firewall = {
+    enabled = %t
+    quarantine = %t
+  }`, enabled, quarantine)
+}
+
 // repositoryProxyResourceConfigWithFirewall builds a minimal proxy repository config with the
 // given (possibly empty) repository_firewall block appended.
 func repositoryProxyResourceConfigWithFirewall(resourceType, repoName, remoteUrl, formatSpecificConfig, firewallBlock string) string {
@@ -1129,11 +1150,16 @@ resource "%s" "repo" {
 }
 
 // TestAccRepositoryGenericProxyFirewallToggle exercises repository_firewall against a real,
-// connected Sonatype IQ Server across every inline-firewall-capable proxy format: enabling it,
-// then disabling it again. That disable step is the exact regression class reported in #469 and
-// #412 - NXRM omits the repository_firewall field entirely from its response once disabled, and
-// the provider previously produced "inconsistent result after apply" rather than clearing state
-// cleanly.
+// connected Sonatype IQ Server across every inline-firewall-capable proxy format, covering both
+// ways a practitioner disables it after it was enabled:
+//   - explicitly setting enabled = false while keeping the repository_firewall block in HCL -
+//     the LITERAL scenario reported in #469: repository_firewall is Optional-but-not-Computed,
+//     so Terraform's plan is a non-null object in this case, and the provider previously nulled
+//     the whole attribute out regardless, producing "inconsistent result after apply".
+//   - removing the repository_firewall block from HCL entirely - the scenario #412 and this
+//     test's step 3 exercise. NXRM omits the field entirely from its response either way once
+//     disabled, but the two HCL shapes are different inputs to the provider's state
+//     reconciliation and both must converge cleanly.
 func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
 	for _, td := range firewallProxyTestDataTable {
 		t.Run(td.RepoFormat, func(t *testing.T) {
@@ -1181,7 +1207,24 @@ func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
 				})
 			}
 
-			// 3. Back to no firewall configuration - the #469/#412 regression scenario
+			// 3. Explicitly disabled - repository_firewall block still present in HCL, with
+			// enabled = false. This is the LITERAL #469 regression scenario: the plan is a
+			// non-null object (the block is configured), so the provider must keep it in state
+			// rather than nulling the whole attribute the way it previously did just because
+			// NXRM's response omits `firewall` once disabled.
+			steps = append(steps, resource.TestStep{
+				Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHclExplicit(false, false, false)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "false"),
+					resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "false"),
+					resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_CAPABILITY_ID),
+				),
+			})
+
+			// 4. Back to no firewall configuration at all (block removed from HCL, not just
+			// enabled = false) - the #412 scenario, and the opposite-direction transition
+			// (configured -> unconfigured) that this fix's Update()-path reconciliation must
+			// also get right.
 			steps = append(steps, resource.TestStep{
 				Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(false, false, false)),
 				Check: resource.ComposeAggregateTestCheckFunc(

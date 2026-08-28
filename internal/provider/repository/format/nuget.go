@@ -248,7 +248,7 @@ func (f *NugetRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, st
 	}
 
 	stateModel.MapMissingApiFieldsFromPlan(planModel)
-	stateModel.FirewallAuditAndQuarantine = BackfillFirewallBlockFromPlan(stateModel.FirewallAuditAndQuarantine, planModel.FirewallAuditAndQuarantine)
+	stateModel.FirewallAuditAndQuarantine = ReconcileFirewallBlockWithPlan(stateModel.FirewallAuditAndQuarantine, planModel.FirewallAuditAndQuarantine)
 	return stateModel
 }
 

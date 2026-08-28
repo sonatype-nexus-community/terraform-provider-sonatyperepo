@@ -99,15 +99,35 @@ func ResolveFirewallBlockFlags(hadConfig bool, mode common.FirewallMode) (keep, 
 	return keep, enabled, quarantine, pccsEnabled
 }
 
-// BackfillFirewallBlockFromPlan mirrors planFirewall into state (creating the block if
-// necessary, with capability_id cleared) when the plan configured `repository_firewall` but
-// stateFirewall is still nil. This covers the one case ResolveFirewallBlockFlags can't see on
-// its own: Update() feeds UpdateStateFromApi the PRIOR state rather than the new plan (see
-// repository_common.go), so adding the block for the first time with `enabled = false` in the
-// same apply isn't visible there. UpdateStateFromPlanForNonApiFields has both the plan and the
-// post-read state, so it's the right place to catch this up. See GH-469.
-func BackfillFirewallBlockFromPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineModel) *model.FirewallAuditAndQuarantineModel {
-	if stateFirewall != nil || planFirewall == nil {
+// ReconcileFirewallBlockWithPlan makes `repository_firewall` in state match whether the NEW
+// plan configured it, overriding whatever ResolveFirewallBlockFlags decided inside
+// UpdateStateFromApi using the PRIOR state - the only signal available to it in the Update()
+// path (see repository_common.go, which feeds UpdateStateFromApi the prior state rather than
+// the new plan). This must be reconciled in both directions:
+//
+//   - The plan has no block, but state still carries one over from before the apply: force
+//     nil. Without this, disabling the firewall by removing the `repository_firewall` block
+//     entirely (rather than setting `enabled = false`) leaves a stale non-null block in state
+//     after an Update() that turns it off, because ResolveFirewallBlockFlags saw the prior
+//     state's now-stale block and concluded it was still configured. Terraform's plan (built
+//     from the new, block-less config) is null, so the stale non-null state fails the same
+//     "Provider produced inconsistent result after apply" check GH-469 was about - just from
+//     the opposite direction.
+//   - The plan has a block, but state is nil: backfill from the plan. This is the
+//     first-time-add-with-`enabled = false"` transition GH-469 was actually filed for -
+//     UpdateStateFromApi can't see it because Update() only hands it the prior (block-less)
+//     state, not the new plan.
+//
+// When state already has a non-nil block that the plan also wants, its values - resolved from
+// the live server mode via FirewallFlagsFromMode, not copied from the plan - are left
+// untouched: they're more trustworthy for flag combinations the server itself resolves
+// differently than configured (e.g. `quarantine = true` together with `pccs_enabled = true`,
+// which NXRM silently resolves to PCCS mode with quarantine reported back as false).
+func ReconcileFirewallBlockWithPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineModel) *model.FirewallAuditAndQuarantineModel {
+	if planFirewall == nil {
+		return nil
+	}
+	if stateFirewall != nil {
 		return stateFirewall
 	}
 	backfilled := *planFirewall
@@ -115,10 +135,13 @@ func BackfillFirewallBlockFromPlan(stateFirewall, planFirewall *model.FirewallAu
 	return &backfilled
 }
 
-// BackfillFirewallBlockWithPccsFromPlan is BackfillFirewallBlockFromPlan for the PCCS-capable
+// ReconcileFirewallBlockWithPccsPlan is ReconcileFirewallBlockWithPlan for the PCCS-capable
 // variant of the `repository_firewall` block (NPM, PyPI). See GH-469.
-func BackfillFirewallBlockWithPccsFromPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineWithPccsModel) *model.FirewallAuditAndQuarantineWithPccsModel {
-	if stateFirewall != nil || planFirewall == nil {
+func ReconcileFirewallBlockWithPccsPlan(stateFirewall, planFirewall *model.FirewallAuditAndQuarantineWithPccsModel) *model.FirewallAuditAndQuarantineWithPccsModel {
+	if planFirewall == nil {
+		return nil
+	}
+	if stateFirewall != nil {
 		return stateFirewall
 	}
 	backfilled := *planFirewall
