@@ -214,13 +214,13 @@ func (f *PyPiRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
 		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.PyPiProxyApiRepository))
 		if wrapped.FirewallMode != nil {
-			if *wrapped.FirewallMode == common.FirewallModeDisabled {
+			keep, enabled, quarantine, pccsEnabled := ResolveFirewallBlockFlags(stateModel.FirewallAuditAndQuarantine != nil, *wrapped.FirewallMode)
+			if !keep {
 				stateModel.FirewallAuditAndQuarantine = nil
 			} else {
 				if stateModel.FirewallAuditAndQuarantine == nil {
 					stateModel.FirewallAuditAndQuarantine = model.NewFirewallAuditAndQuarantineWithPccsModelWithDefaults()
 				}
-				enabled, quarantine, pccsEnabled := FirewallFlagsFromMode(*wrapped.FirewallMode)
 				stateModel.FirewallAuditAndQuarantine.CapabilityId = types.StringNull()
 				stateModel.FirewallAuditAndQuarantine.Enabled = types.BoolValue(enabled)
 				stateModel.FirewallAuditAndQuarantine.Quarantine = types.BoolValue(quarantine)
@@ -243,6 +243,7 @@ func (f *PyPiRepositoryFormatProxy) UpdateStateFromPlanForNonApiFields(plan, sta
 	}
 
 	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	stateModel.FirewallAuditAndQuarantine = ReconcileFirewallBlockWithPccsPlan(stateModel.FirewallAuditAndQuarantine, planModel.FirewallAuditAndQuarantine)
 	return stateModel
 }
 
