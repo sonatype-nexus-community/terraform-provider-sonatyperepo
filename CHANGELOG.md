@@ -10,6 +10,7 @@ ENHANCEMENTS:
 
 BUG FIXES:
 * Prevent `Provider produced inconsistent result after apply` error when `repository_firewall.enabled = false` is explicitly configured against Sonatype Nexus Repository 3.94.0+ [GH-469] - this affected every proxy repository format supporting `repository_firewall`, not just NPM as originally reported: `sonatyperepo_repository_alpine_proxy`, `sonatyperepo_repository_cargo_proxy`, `sonatyperepo_repository_cocoapods_proxy`, `sonatyperepo_repository_composer_proxy`, `sonatyperepo_repository_conan_proxy`, `sonatyperepo_repository_conda_proxy`, `sonatyperepo_repository_docker_proxy`, `sonatyperepo_repository_go_proxy`, `sonatyperepo_repository_huggingface_proxy`, `sonatyperepo_repository_maven2_proxy`, `sonatyperepo_repository_npm_proxy`, `sonatyperepo_repository_nuget_proxy`, `sonatyperepo_repository_pub_proxy`, `sonatyperepo_repository_pypi_proxy`, `sonatyperepo_repository_r_proxy`, `sonatyperepo_repository_raw_proxy`, `sonatyperepo_repository_rubygems_proxy` and `sonatyperepo_repository_yum_proxy` resources
+* `actions = ["ALL"]` is no longer rejected by validation as documented [GH-475] - the shared schema validator only allowed explicit BREAD values (`ADD`, `BROWSE`, `DELETE`, `EDIT`, `READ`), affecting `sonatyperepo_privilege_repository_view`, `sonatyperepo_privilege_repository_admin` and `sonatyperepo_privilege_repository_content_selector` resources
 
 NOTES:
 * OCI repositories require Sonatype Nexus Repository 3.94.0 or later
