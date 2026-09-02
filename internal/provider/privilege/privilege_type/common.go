@@ -191,7 +191,7 @@ func schemaAttributesActionFormatRepository() map[string]tfschema.Attribute {
 			"A set of actions to associate with the privilege, using BREAD syntax (browse,read,edit,add,delete,all) as well as 'run' for script privileges.",
 			setvalidator.All(
 				setvalidator.ValueStringsAre(
-					stringvalidator.OneOf(BreadActions()...),
+					stringvalidator.OneOf(AllActionsExceptRun()...),
 				),
 			),
 		),
