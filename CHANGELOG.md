@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc
+
+## 1.18.0 Sep 07, 2026
+
 ENHANCEMENTS:
 * Added support for OCI (Open Container Initiative) repository format [GH-456]
   * **New Resource:** `sonatyperepo_repository_oci_hosted`
