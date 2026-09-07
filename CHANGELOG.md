@@ -15,6 +15,7 @@ BUG FIXES:
 NOTES:
 * OCI repositories require Sonatype Nexus Repository 3.94.0 or later
 * Acceptance Testing now includes Sonatype IQ Server [GH-285]
+* Known issue: `repository_firewall` on `sonatyperepo_repository_composer_proxy` does not survive a refresh against Sonatype Nexus Repository 3.94.0+ [GH-471]
 
 ## 1.17.0 Aug 25, 2026
 

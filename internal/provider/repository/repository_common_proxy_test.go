@@ -1082,8 +1082,13 @@ type firewallProxyTestData struct {
 // firewallProxyTestData enumerates every inline-firewall-capable proxy format (NXRM 3.94+).
 // Alpine and Pub are deliberately excluded: NXRM's own server-side validation rejects them
 // with "Firewall does not support repository format '<x>'." - confirmed against a real,
-// connected IQ Server, not merely a schema-level limitation in this provider. Composer is
-// also excluded: repository_firewall applies but doesn't survive a refresh - see
+// connected IQ Server, not merely a schema-level limitation in this provider. Composer is also
+// excluded: re-confirmed live against NXRM 3.95.0-07 + a real, connected IQ Server on 2026-09-07
+// that repository_firewall still doesn't survive a refresh - the step 2 (enable + quarantine)
+// refresh plan showed `enabled: false -> true`, i.e. NXRM's GET reports the mode as disabled
+// immediately after a request that set it to AUDIT_AND_QUARANTINE. That the field is present but
+// wrong (rather than absent, as with Raw) points at the write not persisting server-side rather
+// than a read/serialization gap. See
 // https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/471.
 var firewallProxyTestDataTable = []firewallProxyTestData{
 	{RepoFormat: common.REPO_FORMAT_CARGO, RemoteUrl: TEST_DATA_CARGO_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultCargo},
