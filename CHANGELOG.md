@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-*tbc
+BUG FIXES:
+* Prevent `Provider produced inconsistent result after apply` error when `allowed_domains`/`allowed_ips` are omitted from config on initial `terraform apply` for `sonatyperepo_security_ssrf_protection` [GH-476] - `Create` was reading from the raw config instead of the plan, so the schema's empty-set default never made it into state
 
 ## 1.18.0 Sep 07, 2026
 
