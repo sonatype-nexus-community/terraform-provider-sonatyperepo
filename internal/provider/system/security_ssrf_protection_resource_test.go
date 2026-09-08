@@ -183,6 +183,31 @@ func TestAccSecuritySsrfProtectionResourceUpdate(t *testing.T) {
 	})
 }
 
+// TestAccSecuritySsrfProtectionResourceCreateWithOmittedAllowedIPs reproduces GH-476:
+// creating the resource while leaving the optional/computed "allowed_ips" attribute
+// entirely unset in config (relying on its schema default) fails on the very first
+// apply with "Provider produced inconsistent result after apply: .allowed_ips: was
+// cty.SetValEmpty(cty.String), but now null."
+func TestAccSecuritySsrfProtectionResourceCreateWithOmittedAllowedIPs(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Not supported prior to NXRM 3.92.0
+			skipIfSsrfProtectionUnsupported(t)
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: getSecuritySsrfProtectionResourceConfigWithOmittedAllowedIPs(true, []string{"internal.example.com"}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceNameSecuritySsrfProtection, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameSecuritySsrfProtection, "allowed_domains.#", "1"),
+					resource.TestCheckResourceAttr(resourceNameSecuritySsrfProtection, "allowed_ips.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func getSecuritySsrfProtectionResourceConfig(enabled bool, allowedDomains []string, allowedIPs []string) string {
 	return fmt.Sprintf(utils_test.ProviderConfig+`
 resource "%s" "ssrf" {
@@ -191,6 +216,18 @@ resource "%s" "ssrf" {
 	allowed_ips = %s
 }
 `, resourceTypeSecuritySsrfProtection, enabled, toHclStringList(allowedDomains), toHclStringList(allowedIPs))
+}
+
+// getSecuritySsrfProtectionResourceConfigWithOmittedAllowedIPs builds a config that
+// leaves "allowed_ips" out of the resource block entirely (as opposed to setting it
+// to an explicit empty list), matching the reporter's original configuration in GH-476.
+func getSecuritySsrfProtectionResourceConfigWithOmittedAllowedIPs(enabled bool, allowedDomains []string) string {
+	return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "ssrf" {
+	enabled = %t
+	allowed_domains = %s
+}
+`, resourceTypeSecuritySsrfProtection, enabled, toHclStringList(allowedDomains))
 }
 
 func toHclStringList(values []string) string {
