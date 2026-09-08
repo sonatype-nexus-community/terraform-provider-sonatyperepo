@@ -4,6 +4,7 @@
 
 BUG FIXES:
 * Prevent `Provider produced inconsistent result after apply` error when `allowed_domains`/`allowed_ips` are omitted from config on initial `terraform apply` for `sonatyperepo_security_ssrf_protection` [GH-476] - `Create` was reading from the raw config instead of the plan, so the schema's empty-set default never made it into state
+* `sonatyperepo_cleanup_policy` rejected valid `format = "oci"` values [GH-483] - the `format` enum was never updated when the OCI and Pub repository formats were added, so `pub` was also missing and has been added alongside `oci`
 
 ## 1.18.0 Sep 07, 2026
 
