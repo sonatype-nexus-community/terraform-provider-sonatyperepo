@@ -42,3 +42,10 @@ func NewTaskRepositoryMavenRemoveSnapshotsResource() resource.Resource {
 		TaskType: tasktype.NewRepositoryMavenRemoveSnapshotsTask(),
 	}
 }
+
+// NewTaskRepositoryPurgeUnusedResource is a helper function to simplify the provider implementation.
+func NewTaskRepositoryPurgeUnusedResource() resource.Resource {
+	return &taskResource{
+		TaskType: tasktype.NewRepositoryPurgeUnusedTask(),
+	}
+}

@@ -455,6 +455,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		task.NewTaskRepositoryDockerGcResource,
 		task.NewTaskRepositoryDockerUploadPurgeResource,
 		task.NewTaskRepositoryMavenRemoveSnapshotsResource,
+		task.NewTaskRepositoryPurgeUnusedResource,
 		user.NewUserResource,
 	}
 }
