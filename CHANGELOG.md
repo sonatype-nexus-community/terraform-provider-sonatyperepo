@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc*
+
+## 1.19.0 Sep 11, 2026
+
 ENHANCEMENTS:
 * Added support for the `repository.purge-unused` ("Repository - Delete unused components") Task, which is the only API-managed way to evict unused proxied content on Sonatype Nexus Repository Community Edition, as that edition exposes no REST API for Cleanup Policies [GH-125]
   * **New Resource:** `sonatyperepo_task_repository_purge_unused`
