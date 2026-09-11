@@ -5,6 +5,11 @@
 ENHANCEMENTS:
 * Added support for the `repository.purge-unused` ("Repository - Delete unused components") Task, which is the only API-managed way to evict unused proxied content on Sonatype Nexus Repository Community Edition, as that edition exposes no REST API for Cleanup Policies [GH-125]
   * **New Resource:** `sonatyperepo_task_repository_purge_unused`
+* Added support for Sonatype Nexus Repository 3.96.x, alongside continued support for pre-3.96.0 versions [GH-482]
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.96.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-96-0-release-notes.html) [GH-482] - required upgrading to `nexus-repo-api-client-go` v395.96.1, as v395.96.0 shipped without the OAuth2/OIDC configuration API used by `sonatyperepo_security_oauth2`
+* Dependency updates
 
 ## 1.18.1 Sep 09, 2026
 
