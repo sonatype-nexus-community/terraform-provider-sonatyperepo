@@ -2,7 +2,12 @@
 
 ## UNRELEASED
 
-*tbc*
+ENHANCEMENTS:
+* Added support for Sonatype Nexus Repository 3.96.x, alongside continued support for pre-3.96.0 versions [GH-482]
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.96.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-96-0-release-notes.html) [GH-482] - required upgrading to `nexus-repo-api-client-go` v395.96.1, as v395.96.0 shipped without the OAuth2/OIDC configuration API used by `sonatyperepo_security_oauth2`
+* Dependency updates
 
 ## 1.18.1 Sep 09, 2026
 
