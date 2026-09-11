@@ -134,3 +134,39 @@ func (m *TaskRepositoryMavenRemoveSnapshotsModel) ToApiUpdateModel(version commo
 	}
 	return api
 }
+
+// Properties for repository.purge-unused
+// ----------------------------------------
+type TaskPropertiesRepositoryPurgeUnused struct {
+	RepositoryName types.String `tfsdk:"repository_name" nxrm:"repositoryName"`
+	// The number of days since a component or asset was last used before it is purged
+	LastUsed types.Int64 `tfsdk:"last_used" nxrm:"lastUsed"`
+}
+
+func (p *TaskPropertiesRepositoryPurgeUnused) GetFilteredPropertiesAsMap(version common.SystemVersion) *map[string]string {
+	return StructToMap(p)
+}
+
+// Task Repository Purge Unused
+// ----------------------------------------
+type TaskRepositoryPurgeUnusedModel struct {
+	BaseTaskModel
+	Properties *TaskPropertiesRepositoryPurgeUnused `tfsdk:"properties"`
+}
+
+func (m *TaskRepositoryPurgeUnusedModel) ToApiCreateModel(version common.SystemVersion) *common.TaskCreateApiModel {
+	api := m.toApiCreateModel()
+	api.Type = common.TASK_TYPE_REPOSITORY_PURGE_UNUSED.String()
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
+	return api
+}
+
+func (m *TaskRepositoryPurgeUnusedModel) ToApiUpdateModel(version common.SystemVersion) *common.TaskUpdateApiModel {
+	api := m.toApiUpdateModel()
+	if m.Properties != nil {
+		api.Properties = m.Properties.GetFilteredPropertiesAsMap(version)
+	}
+	return api
+}

@@ -176,3 +176,94 @@ resource "%s" "test_task" {
 		},
 	})
 }
+
+func TestAccTaskRepositoryPurgeUnusedResource(t *testing.T) {
+
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceType := "sonatyperepo_task_repository_purge_unused"
+	resourceName := fmt.Sprintf(resourceNameF, resourceType)
+	repositoryName := fmt.Sprintf("raw-hosted-repo-test-%s", randomString)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_repository_raw_hosted" "repo" {
+  name   = "%s"
+  online = true
+  storage = {
+    blob_store_name                = "default"
+    strict_content_type_validation = true
+    write_policy                   = "ALLOW_ONCE"
+  }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
+}
+resource "%s" "test_task" {
+  name = "test-repository-purge-unused-%s"
+  enabled = true
+  alert_email = ""
+  notification_condition = "FAILURE"
+  frequency = {
+    schedule = "manual"
+  }
+  properties = {
+    repository_name = sonatyperepo_repository_raw_hosted.repo.name
+    last_used = 30
+  }
+}
+`, repositoryName, resourceType, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-repository-purge-unused-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "alert_email", ""),
+					resource.TestCheckResourceAttr(resourceName, "notification_condition", common.NOTIFICATION_CONDITION_FAILURE),
+					resource.TestCheckResourceAttr(resourceName, fieldFrequencySchedule, common.FREQUENCY_SCHEDULE_MANUAL),
+					resource.TestCheckResourceAttr(resourceName, "properties.repository_name", repositoryName),
+					resource.TestCheckResourceAttr(resourceName, "properties.last_used", "30"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "sonatyperepo_repository_raw_hosted" "repo" {
+  name   = "%s"
+  online = true
+  storage = {
+    blob_store_name                = "default"
+    strict_content_type_validation = true
+    write_policy                   = "ALLOW_ONCE"
+  }
+  raw = {
+    content_disposition = "ATTACHMENT"
+  }
+}
+resource "%s" "test_task" {
+  name = "test-repository-purge-unused-%s"
+  enabled = false
+  alert_email = ""
+  notification_condition = "FAILURE"
+  frequency = {
+    schedule = "manual"
+  }
+  properties = {
+    repository_name = sonatyperepo_repository_raw_hosted.repo.name
+    last_used = 90
+  }
+}
+`, repositoryName, resourceType, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "properties.repository_name", repositoryName),
+					resource.TestCheckResourceAttr(resourceName, "properties.last_used", "90"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
