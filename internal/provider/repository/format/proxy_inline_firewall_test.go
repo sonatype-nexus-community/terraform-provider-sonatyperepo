@@ -300,6 +300,38 @@ func TestRawProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	}
 }
 
+// TestRawProxyUpdateFlowClearsFirewallWhenBlockRemovedAfterBeingEnabled mirrors
+// TestNugetProxyUpdateFlowClearsFirewallWhenBlockRemovedAfterBeingEnabled above for Raw - the
+// end-to-end Update() path regression this fix needed: since UpdateStateFromApi derives
+// `keep` from the *prior* state (which still had the block configured), it alone would wrongly
+// keep repository_firewall non-nil here. UpdateStateFromPlanForNonApiFields's
+// ReconcileFirewallBlockWithPlan call is what corrects it against the *new* plan (block
+// removed), and Raw's own MapMissingApiFieldsFromPlan step no longer does this job directly
+// now that real API data flows through UpdateStateFromApi - see GH-487.
+func TestRawProxyUpdateFlowClearsFirewallWhenBlockRemovedAfterBeingEnabled(t *testing.T) {
+	f := &RawRepositoryFormatProxy{}
+
+	// Prior state: repository_firewall was enabled+quarantine from a previous apply.
+	priorState := model.RepositoryRawProxyModel{
+		FirewallAuditAndQuarantine: &model.FirewallAuditAndQuarantineModel{
+			Enabled:    types.BoolValue(true),
+			Quarantine: types.BoolValue(true),
+		},
+	}
+	// New plan: block removed entirely (disable by deleting the config block, not enabled = false).
+	planModel := model.RepositoryRawProxyModel{}
+
+	mode := common.FirewallModeDisabled
+	stateAfterApi := f.UpdateStateFromApi(priorState, ProxyApiResponseWithFirewall{
+		Repository:   sonatyperepo.RawProxyApiRepository{},
+		FirewallMode: &mode,
+	}).(model.RepositoryRawProxyModel)
+
+	finalState := f.UpdateStateFromPlanForNonApiFields(planModel, stateAfterApi).(model.RepositoryRawProxyModel)
+
+	assert.Nil(t, finalState.FirewallAuditAndQuarantine)
+}
+
 // TestRawProxyUpdateStateFromApiPreservesExistingFirewallWhenModeUnknown covers the defensive
 // branch for when GetRawProxyRepository still resolves a nil FirewallMode (e.g. against an
 // NXRM version that never populates `firewall` on this endpoint) - UpdateStateFromApi must
