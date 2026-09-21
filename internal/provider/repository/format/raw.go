@@ -217,10 +217,7 @@ func (f *RawRepositoryFormatProxy) UpdateStateFromApi(state any, api any) any {
 	}
 
 	// NXRM 3.94+ returns the repository wrapped with its inline firewall mode; use that
-	// directly instead of the Capability-based UpateStateWithCapability path. Raw's GET
-	// response has no `firewall` field though (see GetRawProxyRepository), so FirewallMode
-	// is always nil here - MapMissingApiFieldsFromPlan is what actually populates
-	// repository_firewall for this format.
+	// directly instead of the Capability-based UpateStateWithCapability path.
 	if wrapped, ok := api.(ProxyApiResponseWithFirewall); ok {
 		stateModel.FromApiModel((wrapped.Repository).(sonatyperepo.RawProxyApiRepository))
 		if wrapped.FirewallMode != nil {

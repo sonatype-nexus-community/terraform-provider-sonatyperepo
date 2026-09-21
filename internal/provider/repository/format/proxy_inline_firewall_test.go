@@ -226,12 +226,6 @@ func TestPyPiProxyUpdateStateFromApiClearsFirewallWhenDisabledAndUnconfigured(t 
 	assert.Nil(t, stateModel.FirewallAuditAndQuarantine)
 }
 
-// TestRawProxyUpdateStateFromApiUnwrapsFirewallMode mirrors the tests above for Raw. Unlike
-// the other formats, Raw's GetRawProxyRepository always returns a nil FirewallMode (its
-// response type has no `firewall` field - see the comment on that function), so this
-// exercises the defensive branch that would populate repository_firewall if a future client
-// update ever started returning it, without regressing the format's actual fix
-// (MapMissingApiFieldsFromPlan - see repository_raw_test.go) if that ever changes.
 // TestOciProxyUpdateStateFromApiUnwrapsFirewallMode verifies the same unwrapping for OCI.
 func TestOciProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	f := &OciRepositoryFormatProxy{}
@@ -285,6 +279,12 @@ func TestOciProxyUpdateStateFromApiClearsFirewallWhenDisabledAndUnconfigured(t *
 	assert.Nil(t, stateModel.FirewallAuditAndQuarantine)
 }
 
+// TestRawProxyUpdateStateFromApiUnwrapsFirewallMode mirrors the tests above for Raw, which
+// gained a real `firewall` field on its GetRawProxyRepository response type in
+// nexus-repo-api-client-go v395.96.2 - see GH-487. Prior to that client fix, this always
+// resolved to a nil FirewallMode, so `terraform import`/`plan` could never read back
+// repository_firewall for this format (unlike Create/Update, which had MapMissingApiFieldsFromPlan
+// as a plan-derived fallback).
 func TestRawProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	f := &RawRepositoryFormatProxy{}
 	mode := common.FirewallModeQuarantine
@@ -300,11 +300,10 @@ func TestRawProxyUpdateStateFromApiUnwrapsFirewallMode(t *testing.T) {
 	}
 }
 
-// TestRawProxyUpdateStateFromApiPreservesExistingFirewallWhenModeUnknown covers Raw's actual
-// runtime path: GetRawProxyRepository always wraps with a nil FirewallMode, so
-// UpdateStateFromApi must leave repository_firewall exactly as it came in on state, rather
-// than wiping it - it's MapMissingApiFieldsFromPlan's job (called right after, in both
-// Create and Update) to correct it from the plan.
+// TestRawProxyUpdateStateFromApiPreservesExistingFirewallWhenModeUnknown covers the defensive
+// branch for when GetRawProxyRepository still resolves a nil FirewallMode (e.g. against an
+// NXRM version that never populates `firewall` on this endpoint) - UpdateStateFromApi must
+// leave repository_firewall exactly as it came in on state rather than wiping it.
 func TestRawProxyUpdateStateFromApiPreservesExistingFirewallWhenModeUnknown(t *testing.T) {
 	f := &RawRepositoryFormatProxy{}
 
