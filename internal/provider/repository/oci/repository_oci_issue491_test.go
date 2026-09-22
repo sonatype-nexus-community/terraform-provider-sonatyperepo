@@ -195,7 +195,7 @@ func getRawRepository(t *testing.T, url, username, password string) map[string]i
 	if err != nil {
 		t.Fatalf("failed to GET %q: %v", url, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -231,7 +231,7 @@ func putRawRepository(t *testing.T, url, username, password string, body map[str
 	if err != nil {
 		t.Fatalf("failed to PUT %q: %v", url, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
