@@ -2743,14 +2743,18 @@ func (s *repositoryManagementServiceV395) CreateRawProxyRepository(ctx context.C
 
 func (s *repositoryManagementServiceV395) GetRawProxyRepository(ctx context.Context, repositoryName string) (*sonatyperepoV382.RawProxyApiRepository, *FirewallMode, *http.Response, error) {
 	apiV395, httpResponse, err := s.client.RepositoryManagementAPI.GetRawProxyRepository(ctx, repositoryName).Execute()
-	var result sonatyperepoV382.RawProxyApiRepository
-	if err := bridgeFromResponse(apiV395, httpResponse, err, &result); err != nil {
+	if err != nil {
 		return nil, nil, httpResponse, err
 	}
-	// v395.95.0's RawProxyApiRepository response type has no Firewall field (unlike its
-	// request-type counterpart, and unlike most other proxy formats' response types), so the
-	// mode cannot be read back for Raw via this endpoint.
-	return &result, nil, httpResponse, nil
+	var firewallMode *FirewallMode
+	if apiV395.Firewall != nil {
+		firewallMode = (*FirewallMode)(apiV395.Firewall.Mode)
+	}
+	var result sonatyperepoV382.RawProxyApiRepository
+	if err := jsonBridge(apiV395, &result); err != nil {
+		return nil, nil, httpResponse, err
+	}
+	return &result, firewallMode, httpResponse, nil
 }
 
 func (s *repositoryManagementServiceV395) UpdateRawProxyRepository(ctx context.Context, repositoryName string, body sonatyperepoV382.RawProxyRepositoryApiRequest, firewallMode *FirewallMode) (*http.Response, error) {
