@@ -65,20 +65,34 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 	m.AutoBlock = types.BoolPointerValue(api.AutoBlock)
 	m.Blocked = types.BoolPointerValue(api.Blocked)
 
-	// Initialize Connection if it's nil
-	if m.Connection == nil {
-		m.Connection = &RepositoryHttpClientConnectionModel{}
-	}
-
+	// Always populate into a brand new Connection/Authentication rather than mutating
+	// m.Connection/m.Authentication in place: callers derive this model from the Plan
+	// with a shallow copy (e.g. `stateModel := plan`), which copies these pointers
+	// without cloning what they point to. Mutating through the existing pointer would
+	// therefore also silently overwrite the original Plan's values (which
+	// MapMissingApiFieldsFromPlan later needs to restore fields the API doesn't return,
+	// such as password/preemptive).
+	connection := &RepositoryHttpClientConnectionModel{}
 	// Pass api.Connection which might be nil - the MapFromApi method will handle it
-	m.Connection.MapFromApi(api.Connection)
+	connection.MapFromApi(api.Connection)
+	m.Connection = connection
 
-	// Initialize Authentication if needed and API has authentication data
 	if api.Authentication != nil {
-		if m.Authentication == nil {
-			m.Authentication = &RepositoryHttpClientAuthenticationModel{}
+		authentication := &RepositoryHttpClientAuthenticationModel{}
+		// NXRM never returns password/bearerToken, and several formats' endpoints
+		// (e.g. npm) omit preemptive from the response entirely too, so carry forward
+		// whatever this model already held for them (e.g. from persisted state on a
+		// plain Read, where there is no Plan to later restore fields from) before
+		// overwriting the rest from the API response. MapFromApiHttpClientConnection-
+		// AuthenticationAttributes only overwrites Preemptive when the API actually
+		// returned one, so the carried-forward value survives formats that omit it.
+		if m.Authentication != nil {
+			authentication.Password = m.Authentication.Password
+			authentication.BearerToken = m.Authentication.BearerToken
+			authentication.Preemptive = m.Authentication.Preemptive
 		}
-		m.Authentication.MapFromApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
+		authentication.MapFromApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
+		m.Authentication = authentication
 	} else {
 		m.Authentication = nil
 	}
@@ -287,11 +301,14 @@ func (m *RepositoryHttpClientAuthenticationModel) MapToApiHttpClientConnectionAu
 }
 
 func (m *RepositoryHttpClientAuthenticationModel) MapMissingApiFieldsFromPlan(planModel *RepositoryHttpClientAuthenticationModel) {
+	// Most NXRM repository format endpoints (e.g. npm, maven, r, raw, ...) never return
+	// password/bearerToken, and several also omit preemptive from their response
+	// entirely (verified for npm; the Terraform format is the odd one out and always
+	// echoes back an explicit `preemptive: false` when unset). All three must therefore
+	// always be restored from the Plan rather than trusted from the API response.
 	m.Password = planModel.Password
 	m.BearerToken = planModel.BearerToken
-	if !planModel.Preemptive.ValueBool() {
-		m.Preemptive = planModel.Preemptive
-	}
+	m.Preemptive = planModel.Preemptive
 }
 
 // RepositoryReplicationModel

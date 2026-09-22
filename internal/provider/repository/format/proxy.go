@@ -322,7 +322,10 @@ func commonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
 			),
 			"ntlm_host":   schema.ResourceOptionalString("NTLM Host"),
 			"ntlm_domain": schema.ResourceOptionalString("NTLM Domain"),
-			"preemptive":  schema.ResourceOptionalBool("Whether to use pre-emptive authentication. Use with caution. Defaults to false."),
+			"preemptive": schema.ResourceComputedOptionalBoolWithDefault(
+				"Whether to use pre-emptive authentication. Use with caution. Defaults to false.",
+				false,
+			),
 			"bearer_token": schema.ResourceSensitiveOptionalStringWithPlanModifier(
 				"Bearer Token used when Authentication Type == bearerToken",
 				stringplanmodifier.UseStateForUnknown(),
