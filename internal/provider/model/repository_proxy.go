@@ -107,7 +107,7 @@ func (m *repositoryHttpClientModel) MapToApiHttpClientAttributes(api *sonatypere
 		m.Connection.MapToApi(api.Connection)
 	}
 
-	if m.Authentication != nil {
+	if m.Authentication.hasRequiredSecret() {
 		api.Authentication = &sonatyperepo.HttpClientConnectionAuthenticationAttributes{}
 		m.Authentication.MapToApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
 	}
@@ -122,19 +122,37 @@ func (m *repositoryHttpClientModel) MapToApiHttpClientAttributesWithPreemptiveAu
 		m.Connection.MapToApi(api.Connection)
 	}
 
-	if m.Authentication != nil {
+	if m.Authentication.hasRequiredSecret() {
 		api.Authentication = &sonatyperepo.HttpClientConnectionAuthenticationAttributesWithPreemptive{}
 		m.Authentication.MapToApiHttpClientConnectionAuthenticationAttributesWithPreemptive(api.Authentication)
 	}
 }
 
 func (m *repositoryHttpClientModel) MapMissingApiFieldsFromPlan(planModel repositoryHttpClientModel) {
-	if planModel.Authentication != nil {
-		if m.Authentication == nil {
-			m.Authentication = &RepositoryHttpClientAuthenticationModel{}
-		}
-		m.Authentication.MapMissingApiFieldsFromPlan(planModel.Authentication)
+	if planModel.Authentication == nil {
+		return
 	}
+
+	if !planModel.Authentication.hasRequiredSecret() {
+		// MapToApiHttpClientAttributes/MapToApiHttpClientAttributesWithPreemptiveAuth omitted
+		// Authentication from the outbound request entirely, because the plan's copy was
+		// missing the secret NXRM requires - so NXRM was never asked to change anything (see
+		// GH-491). `authentication` isn't a Computed schema attribute, so Terraform requires
+		// state to match the plan exactly; a fresh Read() would otherwise report whatever NXRM
+		// now has (typically nil - omitting the field on NXRM's full-replace PUT clears it),
+		// which would diverge from the plan and fail Terraform's post-apply consistency check.
+		// Mirroring the plan's value verbatim - a value copy, not the same pointer, to avoid
+		// aliasing the Plan's own struct (see GH-489) - is therefore the only state that's both
+		// truthful (nothing changed) and consistent with what Terraform already committed to.
+		authentication := *planModel.Authentication
+		m.Authentication = &authentication
+		return
+	}
+
+	if m.Authentication == nil {
+		m.Authentication = &RepositoryHttpClientAuthenticationModel{}
+	}
+	m.Authentication.MapMissingApiFieldsFromPlan(planModel.Authentication)
 }
 
 type repositoryNegativeCacheModel struct {
@@ -228,6 +246,42 @@ type RepositoryHttpClientAuthenticationModel struct {
 	NtlmDomain  types.String `tfsdk:"ntlm_domain"`
 	Preemptive  types.Bool   `tfsdk:"preemptive"`
 	BearerToken types.String `tfsdk:"bearer_token"`
+}
+
+// hasRequiredSecret reports whether m carries the secret NXRM requires for its configured
+// Type - Password for "username"/"ntlm", BearerToken for "bearerToken" - so callers building an
+// outbound API request can tell a genuinely usable authentication block apart from one that's
+// missing its secret and would be rejected server-side.
+//
+// This matters because NXRM never returns password/bearerToken from a GET (they're write-only in
+// its OpenAPI schema - see MapFromApiHttpClientConnectionAuthenticationAttributes), and repository
+// updates are a full PUT replace with no partial-update/PATCH endpoint at all: there is no way to
+// tell NXRM "leave authentication as-is". So whenever this model's Type/Username were populated
+// from a prior Read (state) but its secret was never restored from a Plan - e.g. upstream
+// authentication configured directly against NXRM (UI/API) rather than through this provider,
+// combined with `lifecycle { ignore_changes = [http_client.authentication] }` freezing that
+// state-derived value into the plan sent to Update - sending the object through anyway produces a
+// 400 from NXRM's `UsernameAuthenticationConfiguration`/`NtlmAuthenticationConfiguration`/
+// `BearerTokenAuthenticationConfiguration` validators ("password must not be null" /
+// "bearerToken must not be null"), surfaced by the provider as a confusing
+// "Repository did not exist to update" error (see GH-491). Omitting the whole Authentication
+// object in that case - rather than sending a half-populated one - degrades to the same "no
+// authentication configured" request NXRM already accepts when the attribute is unset entirely.
+func (m *RepositoryHttpClientAuthenticationModel) hasRequiredSecret() bool {
+	if m == nil {
+		return false
+	}
+	switch m.Type.ValueString() {
+	case common.HTTP_AUTH_TYPE_BEARER_TOKEN:
+		return !m.BearerToken.IsNull() && !m.BearerToken.IsUnknown()
+	case common.HTTP_AUTH_TYPE_USERNAME, common.HTTP_AUTH_TYPE_NTLM:
+		return !m.Password.IsNull() && !m.Password.IsUnknown()
+	default:
+		// Unknown/empty Type: nothing for NXRM to validate a secret against, so there's
+		// no missing-secret condition to guard here - let the existing schema validation
+		// (type must be one of the known enum values) catch anything actually invalid.
+		return true
+	}
 }
 
 func (m *RepositoryHttpClientAuthenticationModel) MapFromApiHttpClientConnectionAuthenticationAttributes(api *sonatyperepo.HttpClientConnectionAuthenticationAttributes) {
