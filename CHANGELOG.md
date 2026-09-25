@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc*
+
+## 1.19.1 Sep 22, 2026
+
 BUG FIXES:
 * `repository_firewall` now correctly hydrates from the live inline `firewall.mode` on `terraform import`/`plan`/`apply` against Sonatype Nexus Repository 3.94.0+ for `sonatyperepo_repository_raw_proxy` [GH-487] - required upgrading to `nexus-repo-api-client-go` v395.96.2, which fixed a missing `firewall` field on `RawProxyApiRepository` in the generated client
 * Prevent `Provider produced inconsistent result after apply` error when `http_client.authentication` is configured without explicitly setting `preemptive` [GH-489] - `http_client.connection`/`authentication` were pointer fields shared by aliasing between the Terraform Plan and the derived state model, so mapping the API response onto state silently overwrote the Plan's values that the provider relies on to restore `password`/`bearer_token`/`preemptive`, which the API never (or inconsistently) returns; also fixes an unstable `preemptive` diff on every subsequent `plan` once omitted from config. This affected every proxy repository format with `http_client.authentication`: `sonatyperepo_repository_alpine_proxy`, `sonatyperepo_repository_ansiblegalaxy_proxy`, `sonatyperepo_repository_apt_proxy`, `sonatyperepo_repository_cargo_proxy`, `sonatyperepo_repository_cocoapods_proxy`, `sonatyperepo_repository_composer_proxy`, `sonatyperepo_repository_conan_proxy`, `sonatyperepo_repository_conda_proxy`, `sonatyperepo_repository_docker_proxy`, `sonatyperepo_repository_go_proxy`, `sonatyperepo_repository_helm_proxy`, `sonatyperepo_repository_huggingface_proxy`, `sonatyperepo_repository_maven2_proxy`, `sonatyperepo_repository_npm_proxy`, `sonatyperepo_repository_nuget_proxy`, `sonatyperepo_repository_oci_proxy`, `sonatyperepo_repository_p2_proxy`, `sonatyperepo_repository_pub_proxy`, `sonatyperepo_repository_pypi_proxy`, `sonatyperepo_repository_r_proxy`, `sonatyperepo_repository_raw_proxy`, `sonatyperepo_repository_rubygems_proxy`, `sonatyperepo_repository_swift_proxy`, `sonatyperepo_repository_terraform_proxy` and `sonatyperepo_repository_yum_proxy` resources
