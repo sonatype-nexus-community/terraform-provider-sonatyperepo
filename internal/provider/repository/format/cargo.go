@@ -185,7 +185,7 @@ func (f *CargoRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *CargoRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, cargoSchemaAttributes())
 	return additionalAttributes
 }

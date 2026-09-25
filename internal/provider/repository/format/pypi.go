@@ -183,7 +183,13 @@ func (f *PyPiRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCl
 }
 
 func (f *PyPiRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	return commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
+}
+
+// PyPI proxy is one of only three formats (alongside Maven and Terraform) whose NXRM API
+// supports pre-emptive authentication - see GH-493.
+func (f *PyPiRepositoryFormatProxy) SupportsPreemptiveAuthentication() bool {
+	return true
 }
 
 func (f *PyPiRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

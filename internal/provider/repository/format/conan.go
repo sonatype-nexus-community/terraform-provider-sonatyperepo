@@ -188,7 +188,7 @@ func (f *ConanRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *ConanRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, conanProxySchemaAttributes())
 	return additionalAttributes
 }

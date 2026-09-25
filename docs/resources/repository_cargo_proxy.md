@@ -106,7 +106,7 @@ Optional:
 - `ntlm_domain` (String) NTLM Domain
 - `ntlm_host` (String) NTLM Host
 - `password` (String, Sensitive) Password
-- `preemptive` (Boolean) Whether to use pre-emptive authentication. Use with caution. Defaults to false.
+- `preemptive` (Boolean, Deprecated) Whether to use pre-emptive authentication. Use with caution. Defaults to false.
 - `type` (String) Authentication type
 - `username` (String) Username
 

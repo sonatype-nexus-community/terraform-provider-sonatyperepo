@@ -240,3 +240,55 @@ func TestHttpClientMapMissingApiFieldsFromPlanNilPlanAuthentication(t *testing.T
 
 	assert.Nil(t, stateModel.Authentication)
 }
+
+// TestMapFromApiHttpClientAttributesDefaultsPreemptiveOnImport reproduces GH-493: `terraform
+// import` has no prior model and no Plan, so MapFromApiHttpClientAttributes is called directly
+// with a nil receiver Authentication - the only path (unlike Create/Update, which additionally
+// call MapMissingApiFieldsFromPlan) that has nothing to carry Preemptive forward from. Every
+// proxy format's NXRM API either omits `preemptive` entirely (formats that don't support it,
+// e.g. Helm) or can return it as null (formats that do, e.g. Maven, when never explicitly set),
+// so without a default, freshly-imported state gets `preemptive = null` while the schema's
+// `false` default reappears on the very next plan as a permanent phantom diff.
+func TestMapFromApiHttpClientAttributesDefaultsPreemptiveOnImport(t *testing.T) {
+	m := repositoryHttpClientModel{} // nil Authentication - simulates ImportState's fresh model
+
+	api := &sonatyperepo.HttpClientAttributes{
+		Authentication: &sonatyperepo.HttpClientConnectionAuthenticationAttributes{
+			Type:       common.StringPointer(common.HTTP_AUTH_TYPE_USERNAME),
+			Username:   common.StringPointer("svc-user"),
+			Preemptive: nil, // NXRM never returned it
+		},
+	}
+
+	m.MapFromApiHttpClientAttributes(api)
+
+	if assert.NotNil(t, m.Authentication) {
+		assert.False(t, m.Authentication.Preemptive.IsNull())
+		assert.False(t, m.Authentication.Preemptive.ValueBool())
+	}
+}
+
+// TestMapFromApiHttpClientAttributesCarriesForwardExistingPreemptiveOverDefault confirms the new
+// GH-493 default in MapFromApiHttpClientAttributes never overrides a value already carried
+// forward from a prior model (e.g. a plain Read() with API-omitted preemptive, restoring what
+// state already held) - it only fills in when there is truly nothing to carry forward.
+func TestMapFromApiHttpClientAttributesCarriesForwardExistingPreemptiveOverDefault(t *testing.T) {
+	m := repositoryHttpClientModel{
+		Authentication: &RepositoryHttpClientAuthenticationModel{
+			Preemptive: types.BoolValue(true),
+		},
+	}
+
+	api := &sonatyperepo.HttpClientAttributes{
+		Authentication: &sonatyperepo.HttpClientConnectionAuthenticationAttributes{
+			Type:     common.StringPointer(common.HTTP_AUTH_TYPE_USERNAME),
+			Username: common.StringPointer("svc-user"),
+		},
+	}
+
+	m.MapFromApiHttpClientAttributes(api)
+
+	if assert.NotNil(t, m.Authentication) {
+		assert.True(t, m.Authentication.Preemptive.ValueBool())
+	}
+}
