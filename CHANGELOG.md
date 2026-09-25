@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc*
+
+## 1.19.2 Sep 25, 2026
+
 BUG FIXES:
 * Prevent a permanent `+ preemptive = false` phantom diff (and, if forced through, a `400` from Sonatype Nexus Repository) after `terraform import` of a proxy repository with `http_client.authentication` configured [GH-493] - `terraform import` builds state directly from the API response with no prior Plan/State to carry `preemptive` forward from (unlike Create/Update, fixed for the same underlying reason by GH-489/GH-491), so it was left `null` while the schema's own `false` default reappeared on every subsequent plan. Nexus's API only supports `preemptive` for `sonatyperepo_repository_maven2_proxy`/`sonatyperepo_repository_pypi_proxy`/`sonatyperepo_repository_terraform_proxy`; it has no such field at all for every other proxy format, silently ignoring any value sent for it - so `preemptive` is now also marked deprecated in the schema for those other proxy repository formats
 
