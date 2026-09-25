@@ -22,8 +22,8 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/common"
 	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
 	"terraform-provider-sonatyperepo/internal/provider/testutil"
-	"testing"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,6 +38,7 @@ const (
 var (
 	resourceHelmGroupName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHelmGroup)
 	resourceHelmHostedName = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHelmHosted)
+	resourceHelmProxyName  = fmt.Sprintf(utils_test.RES_NAME_FORMAT, resourceTypeHelmProxy)
 )
 
 func helmGroupPreCheck(t *testing.T) {
@@ -127,6 +128,88 @@ resource "%s" "repo" {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+// TestAccRepositoryHelmProxyAuthenticationPreemptiveImport reproduces GH-493 via
+// `terraform import`. NXRM's Helm proxy API has no `preemptive` field on
+// `http_client.authentication` (unlike Maven/PyPI/Terraform, whose proxy formats do),
+// so a GET never returns it. On ordinary Create/Update, the provider carries
+// `preemptive` forward from the Plan (see GH-489/GH-491), which masks this - but
+// `ImportState` has no Plan to carry anything forward from, only the bare API
+// response. It therefore leaves `preemptive` as `null` in the freshly-imported state,
+// while the provider's schema default re-injects `preemptive = false` on the very
+// next plan, producing a permanent phantom diff (and, per the issue, a 400 on apply
+// once NXRM is sent a field its Helm model doesn't have).
+func TestAccRepositoryHelmProxyAuthenticationPreemptiveImport(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	repoName := fmt.Sprintf("helm-proxy-preemptive-%s", randomString)
+
+	config := fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name   = "%s"
+  online = true
+
+  storage = {
+    blob_store_name                 = "default"
+    strict_content_type_validation = true
+  }
+
+  proxy = {
+    remote_url        = "https://charts.bitnami.com/bitnami"
+    content_max_age   = -1
+    metadata_max_age  = 1440
+  }
+
+  negative_cache = {
+    enabled      = true
+    time_to_live = 1440
+  }
+
+  http_client = {
+    blocked    = false
+    auto_block = true
+    authentication = {
+      type     = "username"
+      username = "svc-user"
+      password = "svc-pass"
+    }
+  }
+}
+`, resourceTypeHelmProxy, repoName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceHelmProxyName, repotest.RES_ATTR_NAME, repoName),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
+					resource.TestCheckResourceAttr(resourceHelmProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "svc-user"),
+				),
+			},
+			// Re-apply identical config: should be a no-op via the ordinary
+			// Create/Update path, which carries `preemptive` forward from the Plan.
+			{
+				Config:   config,
+				PlanOnly: true,
+			},
+			// Import: state is rebuilt purely from the API response, with no Plan to
+			// carry `preemptive` forward from. GH-493's claim is that the very next
+			// plan against that imported state is non-empty, because the provider's
+			// schema default re-injects `preemptive = false`, which NXRM's Helm proxy
+			// API never returned in the first place.
+			{
+				ResourceName:                         resourceHelmProxyName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateId:                        repoName,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore:              []string{"http_client.authentication.password", "last_updated"},
+			},
 		},
 	})
 }

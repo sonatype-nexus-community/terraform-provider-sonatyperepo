@@ -157,7 +157,7 @@ type ProxyApiResponseWithFirewall struct {
 	FirewallMode *common.FirewallMode
 }
 
-func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs bool) map[string]tfschema.Attribute {
+func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs, supportsPreemptiveAuthentication bool) map[string]tfschema.Attribute {
 	thisAttr := map[string]tfschema.Attribute{
 		"proxy": schema.ResourceRequiredSingleNestedAttribute(
 			"Proxy specific configuration for this Repository",
@@ -199,7 +199,7 @@ func commonProxySchemaAttributes(supportsRepositoryFirewall, supportsPccs bool) 
 				"blocked":        schema.ResourceRequiredBool("Whether to block outbound connections on the repository"),
 				"auto_block":     schema.ResourceRequiredBool("Whether to auto-block outbound connections if remote peer is detected as unreachable/unresponsive"),
 				"connection":     commonProxyConnectionAttribute(),
-				"authentication": commonProxyAuthenticationAttribute(),
+				"authentication": commonProxyAuthenticationAttribute(supportsPreemptiveAuthentication),
 			},
 		),
 		"routing_rule": schema.ResourceOptionalString("Routing Rule"),
@@ -305,7 +305,18 @@ func commonProxyConnectionAttribute() tfschema.SingleNestedAttribute {
 	return thisAttr
 }
 
-func commonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
+func commonProxyAuthenticationAttribute(supportsPreemptiveAuthentication bool) tfschema.SingleNestedAttribute {
+	preemptiveAttr := schema.ResourceComputedOptionalBoolWithDefault(
+		"Whether to use pre-emptive authentication. Use with caution. Defaults to false.",
+		false,
+	)
+	if !supportsPreemptiveAuthentication {
+		// NXRM's API for this repository format has no `preemptive` field at all - it is
+		// silently ignored server-side no matter what value is sent. Only Maven, PyPI, and
+		// Terraform proxy formats actually support it. See GH-493.
+		preemptiveAttr.DeprecationMessage = "Sonatype Nexus Repository does not support pre-emptive authentication for this repository format. This attribute has no effect and may be removed in a future release."
+	}
+
 	return schema.ResourceOptionalSingleNestedAttribute(
 		"Authentication to upstream Repository",
 		map[string]tfschema.Attribute{
@@ -322,10 +333,7 @@ func commonProxyAuthenticationAttribute() tfschema.SingleNestedAttribute {
 			),
 			"ntlm_host":   schema.ResourceOptionalString("NTLM Host"),
 			"ntlm_domain": schema.ResourceOptionalString("NTLM Domain"),
-			"preemptive": schema.ResourceComputedOptionalBoolWithDefault(
-				"Whether to use pre-emptive authentication. Use with caution. Defaults to false.",
-				false,
-			),
+			"preemptive":  preemptiveAttr,
 			"bearer_token": schema.ResourceSensitiveOptionalStringWithPlanModifier(
 				"Bearer Token used when Authentication Type == bearerToken",
 				stringplanmodifier.UseStateForUnknown(),

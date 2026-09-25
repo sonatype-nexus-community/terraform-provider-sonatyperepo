@@ -242,7 +242,7 @@ func (f *OciRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 }
 
 func (f *OciRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, ociSchemaAttributes())
 	maps.Copy(additionalAttributes, ociProxySchemaAttributes())
 	maps.Copy(additionalAttributes, ociCosignSchemaAttributes())

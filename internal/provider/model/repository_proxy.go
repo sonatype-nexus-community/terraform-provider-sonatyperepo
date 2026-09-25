@@ -92,6 +92,18 @@ func (m *repositoryHttpClientModel) MapFromApiHttpClientAttributes(api *sonatype
 			authentication.Preemptive = m.Authentication.Preemptive
 		}
 		authentication.MapFromApiHttpClientConnectionAuthenticationAttributes(api.Authentication)
+		// Default Preemptive to false when nothing was carried forward above and NXRM
+		// didn't return it either (either because this format's API has no such field at
+		// all - e.g. Helm, npm - or because it was never explicitly set on a format that
+		// does support it). This only matters for terraform import: Create/Update always
+		// have a Plan to carry the value forward from via MapMissingApiFieldsFromPlan
+		// (called after this function returns), but ImportState calls this with a nil
+		// prior model and no Plan at all, so without this default Preemptive would be left
+		// null in freshly-imported state - and the schema's `false` default would then
+		// reappear as a permanent phantom diff on the very next plan (see GH-493).
+		if authentication.Preemptive.IsNull() {
+			authentication.Preemptive = types.BoolValue(false)
+		}
 		m.Authentication = authentication
 	} else {
 		m.Authentication = nil
