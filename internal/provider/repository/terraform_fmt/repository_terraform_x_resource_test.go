@@ -252,3 +252,80 @@ resource "%s" "repo" {
 		},
 	})
 }
+
+// TestAccRepositoryTerraformProxyResource_Issue489 reproduces
+// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/489
+// where creating a Terraform proxy repository with http_client.authentication
+// configured (and connection only partially configured) fails with:
+//   Error: Provider produced inconsistent result after apply
+//   ...produced an unexpected new value: .http_client: inconsistent values for sensitive attribute.
+func TestAccRepositoryTerraformProxyResource_Issue489(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Only works on NXRM 3.90.0 or later
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 89,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name   = "terraform-proxy-repo-489-%s"
+  online = true
+
+  storage = {
+    blob_store_name                = "default"
+    strict_content_type_validation = true
+  }
+
+  terraform = {
+    require_authentication = false
+  }
+
+  proxy = {
+    remote_url        = "https://registry.terraform.io"
+    content_max_age   = 300
+    metadata_max_age  = 300
+  }
+
+  negative_cache = {
+    enabled      = true
+    time_to_live = 300
+  }
+
+  http_client = {
+    blocked    = false
+    auto_block = true
+    connection = {
+      timeout = 300
+    }
+    authentication = {
+      type     = "username"
+      username = "user"
+      password = "pass"
+    }
+  }
+}
+`, resourceTypeTerraformProxy, randomString),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_NAME, fmt.Sprintf("terraform-proxy-repo-489-%s", randomString)),
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "300"),
+					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_TERRAFORM_REQUIRE_AUTH, "false"),
+				),
+			},
+		},
+	})
+}

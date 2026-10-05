@@ -50,6 +50,7 @@ const (
 	REPOSITORY_GENERAL_ERROR_RESPONSE_GENERAL  = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s"
 	REPOSITORY_GENERAL_ERROR_RESPONSE_WITH_ERR = REPOSITORY_ERROR_RESPONSE_PREFIX + " %s - %s"
 	REPOSITORY_ERROR_DID_NOT_EXIST             = "%s %s Repository did not exist to %s"
+	REPOSITORY_ERROR_UPDATE_FAILED             = "Error updating %s %s Repository"
 )
 
 // Generic to all Repository Resources
@@ -456,10 +457,13 @@ func (r *repositoryResource) updateRepository(ctx context.Context, planModel, st
 				httpResponse,
 				respDiags,
 			)
-			return false
 		} else {
+			// Any non-404 failure (e.g. a 400 from NXRM's own request validation) is not a
+			// "repository did not exist" condition - report it as a plain update failure so
+			// the diagnostic title doesn't misdirect from the actual server-reported reason,
+			// which HandleAPIError still appends in full (see GH-491).
 			errors.HandleAPIError(
-				fmt.Sprintf(REPOSITORY_ERROR_DID_NOT_EXIST, r.RepositoryType.String(), r.RepositoryFormat.Key(), "update"),
+				fmt.Sprintf(REPOSITORY_ERROR_UPDATE_FAILED, r.RepositoryFormat.Key(), r.RepositoryType.String()),
 				&err,
 				httpResponse,
 				respDiags,

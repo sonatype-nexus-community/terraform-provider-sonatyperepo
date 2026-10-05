@@ -106,9 +106,15 @@ func (f *TerraformRepositoryFormatProxy) DoImportRequest(repositoryName string, 
 }
 
 func (f *TerraformRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, terraformProxySchemaAttributes())
 	return additionalAttributes
+}
+
+// Terraform proxy is one of only three formats (alongside Maven and PyPI) whose NXRM API
+// supports pre-emptive authentication - see GH-493.
+func (f *TerraformRepositoryFormatProxy) SupportsPreemptiveAuthentication() bool {
+	return true
 }
 
 func (f *TerraformRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

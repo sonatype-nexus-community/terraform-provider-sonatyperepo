@@ -188,9 +188,15 @@ func (f *MavenRepositoryFormatProxy) DoImportRequest(repositoryName string, apiC
 }
 
 func (f *MavenRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, mavenSchemaAttributes())
 	return additionalAttributes
+}
+
+// Maven proxy is one of only three formats (alongside PyPI and Terraform) whose NXRM API
+// supports pre-emptive authentication - see GH-493.
+func (f *MavenRepositoryFormatProxy) SupportsPreemptiveAuthentication() bool {
+	return true
 }
 
 func (f *MavenRepositoryFormatProxy) PlanAsModel(ctx context.Context, plan tfsdk.Plan) (any, diag.Diagnostics) {

@@ -199,7 +199,7 @@ func (f *AlpineRepositoryFormatProxy) DoImportRequest(repositoryName string, api
 }
 
 func (f *AlpineRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, alpineSchemaAttributes())
 	return additionalAttributes
 }

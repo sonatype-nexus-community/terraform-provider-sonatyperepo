@@ -189,7 +189,7 @@ func (f *YumRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 }
 
 func (f *YumRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, yumSchemaAttributes(false))
 	return additionalAttributes
 }

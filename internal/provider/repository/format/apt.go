@@ -205,7 +205,7 @@ func (f *AptRepositoryFormatProxy) DoImportRequest(repositoryName string, apiCli
 }
 
 func (f *AptRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfschema.Attribute {
-	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs())
+	additionalAttributes := commonProxySchemaAttributes(f.SupportsRepositoryFirewall(), f.SupportsRepositoryFirewallPccs(), f.SupportsPreemptiveAuthentication())
 	maps.Copy(additionalAttributes, aptSchemaAttributes(true))
 	return additionalAttributes
 }

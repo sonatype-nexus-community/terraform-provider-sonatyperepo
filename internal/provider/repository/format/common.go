@@ -155,6 +155,15 @@ func (f *BaseRepositoryFormat) SupportsRepositoryFirewallPccs() bool {
 	return false
 }
 
+// SupportsPreemptiveAuthentication reports whether NXRM's API for this proxy format's
+// `httpClient.authentication` accepts a `preemptive` field at all. Only Maven, PyPI, and
+// Terraform proxy formats do - every other format's NXRM API schema has no such field, and
+// silently drops any value sent for it (see GH-493). Formats that don't support it override
+// this to false so their `preemptive` schema attribute can be marked deprecated.
+func (f *BaseRepositoryFormat) SupportsPreemptiveAuthentication() bool {
+	return false
+}
+
 func (f *BaseRepositoryFormat) GetRepositoryId(state any) string {
 	panic("Unimplemented")
 }
@@ -212,6 +221,7 @@ type RepositoryFormat interface {
 	ValidatePlanForNxrmVersion(plan any, version common.SystemVersion) []string
 	SupportsRepositoryFirewall() bool
 	SupportsRepositoryFirewallPccs() bool
+	SupportsPreemptiveAuthentication() bool
 	GetRepositoryId(state any) string
 	HasFirewallConfig(state any) bool
 	GetRepositoryFirewallEnabled(state any) bool

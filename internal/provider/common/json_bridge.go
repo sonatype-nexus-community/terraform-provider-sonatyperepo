@@ -19,8 +19,6 @@ package common
 import (
 	"bytes"
 	"encoding/json"
-	"io"
-	"net/http"
 	"reflect"
 	"strings"
 )
@@ -48,39 +46,6 @@ func jsonBridge(src, dst any) error {
 		return err
 	}
 	return json.Unmarshal(pruned, dst)
-}
-
-// bridgeFromResponse populates dst (a pointer) from apiSrc, the already-decoded response of the
-// source generation's own generated client. If the source generation's client itself failed to
-// decode the HTTP response (err != nil) -- which happens when the live server returns a field
-// newer than the vendored client's generated struct declares, a version-skew gap in the client
-// module rather than a real request failure -- and the HTTP call itself succeeded (a response
-// object exists with a non-error status), this falls back to bridging directly from the raw
-// response body instead of giving up. Any other error (network failure, 4xx/5xx status) is
-// returned unchanged.
-func bridgeFromResponse(apiSrc any, httpResponse *http.Response, err error, dst any) error {
-	if err == nil {
-		return jsonBridge(apiSrc, dst)
-	}
-	if httpResponse == nil || httpResponse.StatusCode >= 300 || httpResponse.Body == nil {
-		return err
-	}
-
-	body, readErr := io.ReadAll(httpResponse.Body)
-	_ = httpResponse.Body.Close()
-	if readErr != nil {
-		return err
-	}
-	httpResponse.Body = io.NopCloser(bytes.NewReader(body))
-
-	pruned, pruneErr := pruneUnknownJSONFields(body, reflect.TypeOf(dst))
-	if pruneErr != nil {
-		return err
-	}
-	if json.Unmarshal(pruned, dst) != nil {
-		return err
-	}
-	return nil
 }
 
 // pruneUnknownJSONFields recursively drops object keys that have no corresponding field
