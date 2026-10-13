@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-*tbc*
+BUG FIXES:
+* Prevent `Provider produced inconsistent result after apply` error (`.cleanup: was cty.ObjectVal(...), but now null`) when `cleanup` is explicitly configured with no cleanup policies, e.g. `cleanup = {}` or `cleanup = { policy_names = [] }` [GH-499] - Sonatype Nexus Repository returns an empty policy list both when `cleanup` is omitted and when it is configured empty, so the provider always mapped it back to `null`, contradicting the planned (non-null) object. The provider now retains an explicitly configured empty `cleanup` in state on create, update and refresh; omitting `cleanup` entirely, and drift where policies are removed outside of Terraform, behave as before. This affected every repository format with a `cleanup` attribute (hosted and proxy), not just `sonatyperepo_repository_oci_hosted` and `sonatyperepo_repository_oci_proxy`
 
 ## 1.19.2 Sep 25, 2026
 
