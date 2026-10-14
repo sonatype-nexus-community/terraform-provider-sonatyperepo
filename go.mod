@@ -1,6 +1,6 @@
 module terraform-provider-sonatyperepo
 
-go 1.25.13
+go 1.26.0
 
 require (
 	github.com/hashicorp/go-version v1.8.0
@@ -14,7 +14,7 @@ require (
 	github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.96.2
 	github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/text v0.41.0
+	golang.org/x/text v0.43.0
 )
 
 require (
@@ -57,12 +57,12 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.18.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/mod v0.38.0 // indirect
-	golang.org/x/net v0.58.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/tools v0.48.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/tools v0.51.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/grpc v1.83.2 // indirect
