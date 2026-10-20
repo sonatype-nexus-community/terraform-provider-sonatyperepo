@@ -2,7 +2,11 @@
 
 ## UNRELEASED
 
-*tbc*
+ENHANCEMENTS:
+* Added support for Sonatype Nexus Repository 3.97.x, alongside continued support for pre-3.97.0 versions [GH-506]
+
+NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.97.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-97-0-release-notes.html) [GH-506] - no regressions found in the acceptance test suite; required upgrading to `nexus-repo-api-client-go` v395.97.0, which only adds API surface (repository evaluation, mandatory telemetry acknowledgement, repository dashboard, service account tokens and OAuth2 users) not yet used by this provider
 
 ## 1.19.3 Oct 14, 2026
 
