@@ -55,6 +55,14 @@ import (
 // Ensure SonatypeRepoProvider satisfies various provider interfaces.
 var _ provider.Provider = &SonatypeRepoProvider{}
 
+const (
+	// userAgentPrefix is prepended to the provider version to form the User-Agent sent by every
+	// API client generation.
+	userAgentPrefix = "sonatyperepo-terraform/"
+	// serverDescription describes the Nexus Repository server in each API client's configuration.
+	serverDescription = "Sonatype Nexus Repository Server"
+)
+
 // SonatypeRepoProvider defines the provider implementation.
 type SonatypeRepoProvider struct {
 	// version is set to the provider version on release, "dev" when the
@@ -237,11 +245,11 @@ func (p *SonatypeRepoProvider) validateConfig(resp *provider.ConfigureResponse, 
 
 func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath string) *sonatyperepo.Configuration {
 	configuration := sonatyperepo.NewConfiguration()
-	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.UserAgent = userAgentPrefix + p.version
 	configuration.Servers = []sonatyperepo.ServerConfiguration{
 		{
 			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
-			Description: "Sonatype Nexus Repository Server",
+			Description: serverDescription,
 		},
 	}
 	return configuration
@@ -249,11 +257,11 @@ func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath strin
 
 func (p *SonatypeRepoProvider) apiClientConfigurationV395(nxrmUrl, apiBasePath string) *sonatyperepoV395.Configuration {
 	configuration := sonatyperepoV395.NewConfiguration()
-	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.UserAgent = userAgentPrefix + p.version
 	configuration.Servers = []sonatyperepoV395.ServerConfiguration{
 		{
 			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
-			Description: "Sonatype Nexus Repository Server",
+			Description: serverDescription,
 		},
 	}
 	return configuration
@@ -261,11 +269,11 @@ func (p *SonatypeRepoProvider) apiClientConfigurationV395(nxrmUrl, apiBasePath s
 
 func (p *SonatypeRepoProvider) apiClientConfigurationV397(nxrmUrl, apiBasePath string) *sonatyperepoV397.Configuration {
 	configuration := sonatyperepoV397.NewConfiguration()
-	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.UserAgent = userAgentPrefix + p.version
 	configuration.Servers = []sonatyperepoV397.ServerConfiguration{
 		{
 			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
-			Description: "Sonatype Nexus Repository Server",
+			Description: serverDescription,
 		},
 	}
 	return configuration
