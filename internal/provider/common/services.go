@@ -19,6 +19,7 @@ package common
 import (
 	sonatyperepoV382 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
+	sonatyperepoV397 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397"
 )
 
 // Services bundles every domain service adapter, resolved once per provider
@@ -48,9 +49,37 @@ type Services struct {
 }
 
 // NewServices resolves every domain service to the client generation appropriate for
-// the connected NXRM server's version. NXRM 3.94.0 and later use V395; anything older
-// uses V382. This is the only place a version is compared or a concrete client type is named.
-func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, clientV395 *sonatyperepoV395.APIClient) Services {
+// the connected NXRM server's version. NXRM 3.97.0 and later use V397; 3.94.0 up to 3.96.x use
+// V395; anything older uses V382. This is the only place a version is compared or a concrete
+// client type is named.
+func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, clientV395 *sonatyperepoV395.APIClient, clientV397 *sonatyperepoV397.APIClient) Services {
+	// Same int8 reasoning as below: 127 keeps any 3.96.x.y patch/build on V395 and only 3.97.0+
+	// selects V397.
+	if version.NewerThan(3, 96, 127, 127) {
+		return Services{
+			Status:          &statusServiceV397{client: clientV397},
+			Task:            &taskServiceV397{client: clientV397},
+			Repository:      &repositoryManagementServiceV397{client: clientV397},
+			BlobStore:       &blobStoreServiceV397{client: clientV397},
+			Capability:      &capabilityServiceV397{client: clientV397},
+			Privilege:       &privilegeServiceV397{client: clientV397},
+			ContentSelector: &contentSelectorServiceV397{client: clientV397},
+			Role:            &roleServiceV397{client: clientV397},
+			User:            &userServiceV397{client: clientV397},
+			Configuration:   &configurationServiceV397{client: clientV397},
+			RoutingRule:     &routingRuleServiceV397{client: clientV397},
+			CleanupPolicy:   NewCleanupPolicyServiceV397(clientV397),
+			Saml:            NewSamlServiceV397(clientV397),
+			Realms:          NewRealmsServiceV397(clientV397),
+			AnonymousAccess: NewAnonymousAccessServiceV397(clientV397),
+			SsrfProtection:  NewSsrfProtectionServiceV397(clientV397),
+			UserTokens:      NewUserTokensServiceV397(clientV397),
+			Certificates:    NewCertificatesServiceV397(clientV397),
+			License:         NewLicenseServiceV397(clientV397),
+			HttpSettings:    NewHttpSettingsServiceV397(clientV397),
+			OAuth2:          NewOAuth2ServiceV397(clientV397),
+		}
+	}
 	// SystemVersion.Patch/Build are int8 (max 127); 127 is used rather than 999 (which
 	// would overflow int8 and wrap negative, defeating the comparison) to ensure any
 	// 3.93.x.y patch/build stays on V382 and only 3.94.0+ selects V395.
