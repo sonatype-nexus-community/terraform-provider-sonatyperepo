@@ -46,7 +46,7 @@ jobs:
             matrix:
                 nxrm:
                     - '3.89.1-02' # First version tested HA against
-                    - '3.96.0-09' # LATEST
+                    - '3.97.0-13' # LATEST
                 terraform:
                     # - '1.14.*'
                     - '1.15.*' # Latest
@@ -64,7 +64,7 @@ jobs:
 
             - name: Setup PostgreSQL
               id: setup-postgresql
-              uses: ikalnytskyi/action-setup-postgres@c4dda34aae1c821e3a771b68b73b13af3198a7ee # v8
+              uses: ikalnytskyi/action-setup-postgres@0f1fdf59c857aabfa61ab1a2619e9af34de678d3 # master (post-v8, includes apt-key fix)
               with:
                 postgres-version: 17
             
