@@ -1324,7 +1324,18 @@ func TestAccRepositoryGenericProxyFirewallPccsOnCreateCapabilityBased(t *testing
 				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 				PreCheck: func() {
 					testutil.SkipIfNoIqServer(t)
-					// Capability-based firewall only: NXRM 3.94+ uses the inline firewall mode
+					// Capability-based firewall only: NXRM 3.84.0 and earlier have no Capabilities
+					// support (SystemVersion.SupportsCapabilities), and 3.94+ uses the inline
+					// firewall mode instead
+					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+						Major: 3,
+						Minor: 0,
+						Patch: 0,
+					}, &common.SystemVersion{
+						Major: 3,
+						Minor: 84,
+						Patch: 0,
+					})
 					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
 						Major: 3,
 						Minor: 94,
