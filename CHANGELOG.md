@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+BUG FIXES:
+* Prevent `Provider produced inconsistent result after apply` error (`.repository_firewall.pccs_enabled: was cty.True, but now cty.False`) when creating a `sonatyperepo_repository_npm_proxy` with `repository_firewall = { pccs_enabled = true }` in a single apply against Sonatype Nexus Repository 3.84.x - 3.93.x [GH-510] - on these versions the firewall is configured through a Capability and PCCS is enabled by a follow-up update of the repository. `repository_firewall` was a pointer shared by aliasing between the Terraform Plan and the state model being built, so reading the freshly created repository back (where Nexus still reports `removeQuarantined = false`) silently overwrote the planned `pccs_enabled = true`, and the provider then skipped that follow-up update. The repository was created but left tainted in state; the previous workaround was to create with `pccs_enabled = false` and then apply again with `true`. `sonatyperepo_repository_pypi_proxy` was not affected, and Nexus Repository 3.94.0+ (which sets the firewall mode inline) is covered separately by [GH-511]
+
 ENHANCEMENTS:
 * Added support for Sonatype Nexus Repository 3.97.x, alongside continued support for pre-3.97.0 versions [GH-506]
 
