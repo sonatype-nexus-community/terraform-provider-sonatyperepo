@@ -1360,3 +1360,68 @@ func TestAccRepositoryGenericProxyFirewallPccsOnCreateCapabilityBased(t *testing
 		})
 	}
 }
+
+// TestAccRepositoryGenericProxyFirewallQuarantineAndPccsOnCreateInline reproduces #511: on
+// NXRM 3.94+ (inline firewall mode) creating a PCCS-capable proxy repository with BOTH
+// quarantine = true and pccs_enabled = true failed with "Provider produced inconsistent result
+// after apply: .repository_firewall.quarantine: was cty.True, but now cty.False".
+//
+// The provider sends a single firewall.mode, and FirewallModeFromFlags collapses
+// quarantine = true + pccs_enabled = true into PCCS. Reading PCCS back via FirewallFlagsFromMode
+// yields quarantine = false, contradicting the planned quarantine = true. NXRM models these as
+// mutually exclusive modes, but the schema accepts both together.
+//
+// The mutually exclusive combination (quarantine = false, pccs_enabled = true) is covered by
+// TestAccRepositoryGenericProxyFirewallToggle. The capability-based equivalent for NXRM <= 3.93
+// is TestAccRepositoryGenericProxyFirewallPccsOnCreateCapabilityBased (#510).
+func TestAccRepositoryGenericProxyFirewallQuarantineAndPccsOnCreateInline(t *testing.T) {
+	for _, td := range firewallProxyTestDataTable {
+		if !td.SupportsPccs {
+			continue
+		}
+		t.Run(td.RepoFormat, func(t *testing.T) {
+			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+			resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
+			resourceName := fmt.Sprintf(repoNameFString, resourceType)
+			repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString))
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+				PreCheck: func() {
+					testutil.SkipIfNoIqServer(t)
+					// Inline firewall mode requires NXRM 3.94+
+					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+						Major: 3,
+						Minor: 0,
+						Patch: 0,
+					}, &common.SystemVersion{
+						Major: 3,
+						Minor: 93,
+						Patch: 99,
+					})
+				},
+				Steps: []resource.TestStep{
+					{
+						// Rejected up front, before anything is created in NXRM
+						Config:      repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						ExpectError: regexp.MustCompile(`cannot\s+both\s+be\s+true`),
+					},
+					{
+						// The mutually exclusive form of the same intent applies cleanly
+						Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, false, true)),
+						Check: resource.ComposeAggregateTestCheckFunc(
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"),
+						),
+					},
+					{
+						// ...and so does changing an existing repository to the rejected combination
+						Config:      repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						ExpectError: regexp.MustCompile(`cannot\s+both\s+be\s+true`),
+					},
+				},
+			})
+		})
+	}
+}

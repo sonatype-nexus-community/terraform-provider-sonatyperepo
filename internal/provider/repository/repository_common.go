@@ -214,6 +214,7 @@ func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resou
 	}
 
 	messages := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
+	messages = append(messages, r.validateFirewallQuarantineAndPccs(plan)...)
 	if len(messages) > 0 {
 		for _, m := range messages {
 			diags.AddError(
@@ -223,6 +224,32 @@ func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resou
 		}
 	}
 	return plan, diags
+}
+
+// validateFirewallQuarantineAndPccs rejects `quarantine = true` together with `pccs_enabled = true`
+// on NXRM 3.94+ (GH-511). Those versions take a single inline `firewall.mode` in which PCCS and
+// Quarantine are mutually exclusive, so the server resolves the pair to PCCS and reports
+// quarantine back as false - contradicting the plan and failing the apply with "Provider produced
+// inconsistent result after apply" after the repository has already been created. Earlier versions
+// configure the two independently (Capability and removeQuarantined), so the pair stays valid there.
+func (r *repositoryResource) validateFirewallQuarantineAndPccs(plan any) []string {
+	if r.RepositoryType != format.REPO_TYPE_PROXY ||
+		!r.NxrmVersion.SupportsInlineFirewall() ||
+		!r.RepositoryFormat.SupportsRepositoryFirewallPccs() ||
+		!r.RepositoryFormat.HasFirewallConfig(plan) {
+		return nil
+	}
+	if r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) &&
+		r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(plan) &&
+		r.RepositoryFormat.GetRepositoryFirewallPccsEnabled(plan) {
+		return []string{
+			"repository_firewall.quarantine and repository_firewall.pccs_enabled cannot both be true: " +
+				"Sonatype Nexus Repository 3.94.0 and later treat Quarantine and PCCS as mutually exclusive " +
+				"Firewall modes (PCCS takes precedence). Set quarantine = false to use PCCS, or " +
+				"pccs_enabled = false to use Quarantine.",
+		}
+	}
+	return nil
 }
 
 // verifyIQConnectionIfNeeded checks IQ connection for proxy repositories with firewall enabled
@@ -440,6 +467,18 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	// Retrieve values from state
 	stateModel, diags := r.RepositoryFormat.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
+
+	if !resp.Diagnostics.HasError() {
+		for _, m := range r.validateFirewallQuarantineAndPccs(planModel) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
+				m,
+			)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Setup context with auth
 	ctx = r.AuthContext(ctx)
