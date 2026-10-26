@@ -1295,3 +1295,68 @@ func TestAccRepositoryGenericProxyFirewallToggle(t *testing.T) {
 		})
 	}
 }
+
+// TestAccRepositoryGenericProxyFirewallPccsOnCreateCapabilityBased reproduces #510: creating a
+// PCCS-capable proxy repository on NXRM <= 3.93 (Capability-based firewall) with
+// pccs_enabled = true in a SINGLE apply failed with "Provider produced inconsistent result
+// after apply: .repository_firewall.pccs_enabled: was cty.True, but now cty.False".
+//
+// Create() read the freshly created repository back into a model that shared its
+// repository_firewall pointer with the plan, so the not-yet-applied removeQuarantined=false
+// returned by NXRM overwrote the planned pccs_enabled = true before configureFirewall decided
+// whether to send the follow-up PCCS update - which was then skipped. Applying with
+// pccs_enabled = false first and flipping it to true afterwards (Update path, where plan and
+// prior state are distinct objects) worked, so this test deliberately uses one create step.
+//
+// NXRM 3.94+ sets the firewall mode inline instead (see TestAccRepositoryGenericProxyFirewallToggle).
+func TestAccRepositoryGenericProxyFirewallPccsOnCreateCapabilityBased(t *testing.T) {
+	for _, td := range firewallProxyTestDataTable {
+		if !td.SupportsPccs {
+			continue
+		}
+		t.Run(td.RepoFormat, func(t *testing.T) {
+			randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+			resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(td.RepoFormat))
+			resourceName := fmt.Sprintf(repoNameFString, resourceType)
+			repoName := strings.ToLower(fmt.Sprintf(proxyNameFString, td.RepoFormat, randomString))
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+				PreCheck: func() {
+					testutil.SkipIfNoIqServer(t)
+					// Capability-based firewall only: NXRM 3.84.0 and earlier have no Capabilities
+					// support (SystemVersion.SupportsCapabilities), and 3.94+ uses the inline
+					// firewall mode instead
+					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+						Major: 3,
+						Minor: 0,
+						Patch: 0,
+					}, &common.SystemVersion{
+						Major: 3,
+						Minor: 84,
+						Patch: 0,
+					})
+					testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+						Major: 3,
+						Minor: 94,
+						Patch: 0,
+					}, &common.SystemVersion{
+						Major: 3,
+						Minor: 99,
+						Patch: 99,
+					})
+				},
+				Steps: []resource.TestStep{
+					{
+						Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						Check: resource.ComposeAggregateTestCheckFunc(
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"),
+						),
+					},
+				},
+			})
+		})
+	}
+}
