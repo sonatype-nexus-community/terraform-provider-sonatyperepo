@@ -1402,12 +1402,23 @@ func TestAccRepositoryGenericProxyFirewallQuarantineAndPccsOnCreateInline(t *tes
 				},
 				Steps: []resource.TestStep{
 					{
-						Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						// Rejected up front, before anything is created in NXRM
+						Config:      repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						ExpectError: regexp.MustCompile(`cannot\s+both\s+be\s+true`),
+					},
+					{
+						// The mutually exclusive form of the same intent applies cleanly
+						Config: repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, false, true)),
 						Check: resource.ComposeAggregateTestCheckFunc(
 							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_ENABLED, "true"),
-							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_QUARANTINE, "false"),
 							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPOSITORY_FIREWALL_PCCS_ENABLED, "true"),
 						),
+					},
+					{
+						// ...and so does changing an existing repository to the rejected combination
+						Config:      repositoryProxyResourceConfigWithFirewall(resourceType, repoName, td.RemoteUrl, td.FormatSpecificConfig, repositoryFirewallBlockHcl(true, true, true)),
+						ExpectError: regexp.MustCompile(`cannot\s+both\s+be\s+true`),
 					},
 				},
 			})
