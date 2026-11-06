@@ -101,7 +101,12 @@ func (m *RepositoryNpmProxyModel) FromApiModel(api sonatyperepo.NpmProxyApiRepos
 
 	// Firewall Audit and Quarantine (with PCCS)
 	if api.Npm != nil && m.FirewallAuditAndQuarantine != nil {
-		m.FirewallAuditAndQuarantine.PccsEnabled = types.BoolValue(api.Npm.RemoveQuarantined)
+		// Copy before writing: the pointer is shared with the plan on Create, and the API
+		// value here predates the follow-up PCCS update - overwriting the plan's pccs_enabled
+		// in place made configureFirewall skip that update (GH-510).
+		firewall := *m.FirewallAuditAndQuarantine
+		firewall.PccsEnabled = types.BoolValue(api.Npm.RemoveQuarantined)
+		m.FirewallAuditAndQuarantine = &firewall
 	}
 }
 

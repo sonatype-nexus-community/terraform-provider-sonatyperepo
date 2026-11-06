@@ -175,6 +175,8 @@ Required:
 Optional:
 
 - `pccs_enabled` (Boolean) Whether Policy-Compliant Component Selection is enabled. See [documentatation](https://help.sonatype.com/en/policy-compliant-component-selection.html) for details.
+
+On Sonatype Nexus Repository 3.94.0 and later, PCCS and `quarantine` are mutually exclusive Firewall modes, so `pccs_enabled` cannot be `true` while `quarantine` is also `true`.
 - `quarantine` (Boolean) Whether Quarantine functionallity is enabled (if false - just run in Audit mode) - see [documentation](https://help.sonatype.com/en/firewall-quarantine.html).
 
 Read-Only:

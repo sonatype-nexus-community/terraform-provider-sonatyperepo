@@ -36,6 +36,7 @@ import (
 
 	"terraform-provider-sonatyperepo/internal/provider/capability"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/model"
 	"terraform-provider-sonatyperepo/internal/provider/repository/format"
 
 	"golang.org/x/text/cases"
@@ -108,6 +109,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	stateModel := r.RepositoryFormat.UpdateStateFromApi(plan, apiResponse)
 	// Copy various fields not returned by a READ from Plan (e.g., sensitive auth fields)
 	stateModel = r.RepositoryFormat.UpdateStateFromPlanForNonApiFields(plan, stateModel)
+	stateModel = preserveEmptyCleanup(plan, stateModel)
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 
 	// Configure firewall if needed
@@ -167,6 +169,42 @@ func suppressUnconfiguredConnectionFromConfig(ctx context.Context, plan any, con
 	return clonePtr.Elem().Interface()
 }
 
+// preserveEmptyCleanup keeps an explicitly configured, empty `cleanup` object in state.
+//
+// NXRM returns no policy names both when `cleanup` was omitted and when it was configured with
+// no policies, so the format models map an empty API cleanup to nil. When the prior value (the
+// plan on create/update, the existing state on read) holds a non-nil `cleanup` with no policies,
+// mapping it back to null would fail with "Provider produced inconsistent result after apply"
+// (or produce a perpetual diff on refresh). In that case the prior empty value is retained.
+// Where the prior value had policies and the API now returns none, that is genuine drift and is
+// left as null. Models without a promoted Cleanup field are returned unchanged.
+func preserveEmptyCleanup(prior, state any) any {
+	priorVal := reflect.ValueOf(prior)
+	stateVal := reflect.ValueOf(state)
+	if priorVal.Kind() != reflect.Struct || stateVal.Kind() != reflect.Struct {
+		return state
+	}
+
+	priorField := priorVal.FieldByName("Cleanup")
+	if !priorField.IsValid() || priorField.Type() != reflect.TypeOf((*model.RepositoryCleanupModel)(nil)) {
+		return state
+	}
+	priorCleanup, _ := priorField.Interface().(*model.RepositoryCleanupModel)
+	if priorCleanup == nil || len(priorCleanup.PolicyNames) > 0 {
+		return state
+	}
+
+	clonePtr := reflect.New(stateVal.Type())
+	clonePtr.Elem().Set(stateVal)
+	stateField := clonePtr.Elem().FieldByName("Cleanup")
+	if !stateField.IsValid() || !stateField.IsNil() {
+		return state
+	}
+	retained := *priorCleanup
+	stateField.Set(reflect.ValueOf(&retained))
+	return clonePtr.Elem().Interface()
+}
+
 // validateAndParsePlan retrieves and validates the plan
 func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resource.CreateRequest) (interface{}, diag.Diagnostics) {
 	plan, diags := r.RepositoryFormat.PlanAsModel(ctx, req.Plan)
@@ -176,6 +214,7 @@ func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resou
 	}
 
 	messages := r.RepositoryFormat.ValidatePlanForNxrmVersion(plan, r.NxrmVersion)
+	messages = append(messages, r.validateFirewallQuarantineAndPccs(plan)...)
 	if len(messages) > 0 {
 		for _, m := range messages {
 			diags.AddError(
@@ -185,6 +224,32 @@ func (r *repositoryResource) validateAndParsePlan(ctx context.Context, req resou
 		}
 	}
 	return plan, diags
+}
+
+// validateFirewallQuarantineAndPccs rejects `quarantine = true` together with `pccs_enabled = true`
+// on NXRM 3.94+ (GH-511). Those versions take a single inline `firewall.mode` in which PCCS and
+// Quarantine are mutually exclusive, so the server resolves the pair to PCCS and reports
+// quarantine back as false - contradicting the plan and failing the apply with "Provider produced
+// inconsistent result after apply" after the repository has already been created. Earlier versions
+// configure the two independently (Capability and removeQuarantined), so the pair stays valid there.
+func (r *repositoryResource) validateFirewallQuarantineAndPccs(plan any) []string {
+	if r.RepositoryType != format.REPO_TYPE_PROXY ||
+		!r.NxrmVersion.SupportsInlineFirewall() ||
+		!r.RepositoryFormat.SupportsRepositoryFirewallPccs() ||
+		!r.RepositoryFormat.HasFirewallConfig(plan) {
+		return nil
+	}
+	if r.RepositoryFormat.GetRepositoryFirewallEnabled(plan) &&
+		r.RepositoryFormat.GetRepositoryFirewallQuarantineEnabled(plan) &&
+		r.RepositoryFormat.GetRepositoryFirewallPccsEnabled(plan) {
+		return []string{
+			"repository_firewall.quarantine and repository_firewall.pccs_enabled cannot both be true: " +
+				"Sonatype Nexus Repository 3.94.0 and later treat Quarantine and PCCS as mutually exclusive " +
+				"Firewall modes (PCCS takes precedence). Set quarantine = false to use PCCS, or " +
+				"pccs_enabled = false to use Quarantine.",
+		}
+	}
+	return nil
 }
 
 // verifyIQConnectionIfNeeded checks IQ connection for proxy repositories with firewall enabled
@@ -385,7 +450,9 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Update State from Response
+	priorStateModel := stateModel
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
+	stateModel = preserveEmptyCleanup(priorStateModel, stateModel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &stateModel)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -400,6 +467,18 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	// Retrieve values from state
 	stateModel, diags := r.RepositoryFormat.StateAsModel(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
+
+	if !resp.Diagnostics.HasError() {
+		for _, m := range r.validateFirewallQuarantineAndPccs(planModel) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Plan is not supported for Sonatype Nexus Repository Manager: %s", r.NxrmVersion.String()),
+				m,
+			)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Setup context with auth
 	ctx = r.AuthContext(ctx)
@@ -429,6 +508,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	stateModel = r.RepositoryFormat.UpdateStateFromApi(stateModel, apiResponse)
 	// Copy various fields not returned by a READ from Plan
 	stateModel = r.RepositoryFormat.UpdateStateFromPlanForNonApiFields(planModel, stateModel)
+	stateModel = preserveEmptyCleanup(planModel, stateModel)
 	// Update State finally for Plan
 	stateModel = r.RepositoryFormat.UpdatePlanForState(stateModel)
 

@@ -49,10 +49,19 @@ import (
 
 	sonatyperepo "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
+	sonatyperepoV397 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397"
 )
 
 // Ensure SonatypeRepoProvider satisfies various provider interfaces.
 var _ provider.Provider = &SonatypeRepoProvider{}
+
+const (
+	// userAgentPrefix is prepended to the provider version to form the User-Agent sent by every
+	// API client generation.
+	userAgentPrefix = "sonatyperepo-terraform/"
+	// serverDescription describes the Nexus Repository server in each API client's configuration.
+	serverDescription = "Sonatype Nexus Repository Server"
+)
 
 // SonatypeRepoProvider defines the provider implementation.
 type SonatypeRepoProvider struct {
@@ -236,11 +245,11 @@ func (p *SonatypeRepoProvider) validateConfig(resp *provider.ConfigureResponse, 
 
 func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath string) *sonatyperepo.Configuration {
 	configuration := sonatyperepo.NewConfiguration()
-	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.UserAgent = userAgentPrefix + p.version
 	configuration.Servers = []sonatyperepo.ServerConfiguration{
 		{
 			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
-			Description: "Sonatype Nexus Repository Server",
+			Description: serverDescription,
 		},
 	}
 	return configuration
@@ -248,11 +257,23 @@ func (p *SonatypeRepoProvider) apiClientConfiguration(nxrmUrl, apiBasePath strin
 
 func (p *SonatypeRepoProvider) apiClientConfigurationV395(nxrmUrl, apiBasePath string) *sonatyperepoV395.Configuration {
 	configuration := sonatyperepoV395.NewConfiguration()
-	configuration.UserAgent = "sonatyperepo-terraform/" + p.version
+	configuration.UserAgent = userAgentPrefix + p.version
 	configuration.Servers = []sonatyperepoV395.ServerConfiguration{
 		{
 			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
-			Description: "Sonatype Nexus Repository Server",
+			Description: serverDescription,
+		},
+	}
+	return configuration
+}
+
+func (p *SonatypeRepoProvider) apiClientConfigurationV397(nxrmUrl, apiBasePath string) *sonatyperepoV397.Configuration {
+	configuration := sonatyperepoV397.NewConfiguration()
+	configuration.UserAgent = userAgentPrefix + p.version
+	configuration.Servers = []sonatyperepoV397.ServerConfiguration{
+		{
+			URL:         fmt.Sprintf("%s%s", strings.TrimRight(nxrmUrl, "/"), strings.TrimRight(apiBasePath, "/")),
+			Description: serverDescription,
 		},
 	}
 	return configuration
@@ -271,7 +292,7 @@ func (p *SonatypeRepoProvider) createBootstrapClient(nxrmUrl, username, password
 }
 
 func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds *common.SonatypeDataSourceData) {
-	// 1. Initialize the custom transport, shared by both client generations
+	// 1. Initialize the custom transport, shared by all client generations
 	customTransport := &MiddlewareTransport{
 		Base:                        http.DefaultTransport,
 		ClusterStabilisationDelayMs: ds.ClusterSynchronisationDelayMs,
@@ -286,13 +307,18 @@ func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds 
 	configuration.HTTPClient = httpClient
 	ds.Client = sonatyperepo.NewAPIClient(configuration)
 
-	// 3. V395 client (used for NXRM 3.94.0+)
+	// 3. V395 client (used for NXRM 3.94.0 - 3.96.x)
 	configurationV395 := p.apiClientConfigurationV395(nxrmUrl, apiBasePath)
 	configurationV395.HTTPClient = httpClient
 	clientV395 := sonatyperepoV395.NewAPIClient(configurationV395)
 
-	// 4. Resolve domain services to the client generation matching the connected server
-	ds.Services = common.NewServices(ds.NxrmVersion, ds.Client, clientV395)
+	// 4. V397 client (used for NXRM 3.97.0+)
+	configurationV397 := p.apiClientConfigurationV397(nxrmUrl, apiBasePath)
+	configurationV397.HTTPClient = httpClient
+	clientV397 := sonatyperepoV397.NewAPIClient(configurationV397)
+
+	// 5. Resolve domain services to the client generation matching the connected server
+	ds.Services = common.NewServices(ds.NxrmVersion, ds.Client, clientV395, clientV397)
 }
 
 // MiddlewareTransport wraps an existing RoundTripper to inject custom logic
