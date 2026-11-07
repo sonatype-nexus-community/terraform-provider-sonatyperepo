@@ -11,6 +11,7 @@ ENHANCEMENTS:
 * Added support for Sonatype Nexus Repository 3.98.x [GH-519]
 
 NOTES:
+* Tested against Terraform 1.16.x [GH-522]
 * CI aligned to the [Sonatype Community Pull Request CI & Secrets standard](https://contribute.sonatype.com/docs/standards/pull-request-ci/) (in progress) - acceptance tests are now split into those that run against Nexus Repository Community Edition on every Pull Request and those requiring a licensed instance, Sonatype IQ Server or cloud credentials [GH-525]
 * Tested against [Sonatype Nexus Repository Manager 3.98.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-98-0-release-notes.html) [GH-519] - no provider code changes were required. NXRM 3.98 uses the existing v397 API client generation, updated to v397.98.0. The `nexus-repo-api-client-go` v397.98.0 removes the `forwardQueryParameters` and `excludedQueryParameters` fields from Raw proxy repositories (introduced in 3.97, not used by this provider) and adds Swift proxy `autoBlockStatusCodes`, Cargo hosted `cargo` attributes, blob store group `globalDistributionEnabled` and a per-format user token reset endpoint, none of which are exposed by the provider yet
 * Tested against [Sonatype Nexus Repository Manager 3.97.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-97-0-release-notes.html) [GH-506] - the full acceptance suite passes against both NXRM 3.96.0 and NXRM 3.97.0

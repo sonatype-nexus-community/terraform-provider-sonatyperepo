@@ -30,7 +30,7 @@ See [Sonatype Nexus Repository 3 Versions Status](https://help.sonatype.com/en/s
 
 ### Terraform Version support
 
-We test on the latest patch release of each the earliest and latest version of Terraform i.e. `1.7.x` and  `1.15.x` - i.e. we aim to support all Terraform versions since `1.7.0` (earlier verions may also work, but are not tested and bugs will not be actioned if they are proven to affect these earlier versions).
+We test on the latest patch release of each the earliest and latest version of Terraform i.e. `1.7.x` and  `1.16.x` - i.e. we aim to support all Terraform versions since `1.7.0` (earlier verions may also work, but are not tested and bugs will not be actioned if they are proven to affect these earlier versions).
 
 ## Usage
 
@@ -61,7 +61,7 @@ Phew, that was easier than I thought. Last but not least of all - have fun!
 [shield_gh-workflow-test]: https://img.shields.io/github/actions/workflow/status/sonatype-nexus-community/terraform-provider-sonatyperepo/test-trusted.yml?branch=main&logo=GitHub&logoColor=white "build"
 [shield_tfr-version]: https://img.shields.io/badge/Terraform%20Registry-v1.19.3-8A2BE2
 [shield_license]: https://img.shields.io/github/license/sonatype-nexus-community/terraform-provider-sonatyperepo?logo=open%20source%20initiative&logoColor=white "license"
-[shield_tf_version]: https://img.shields.io/badge/Terraform-1.7.0&nbsp;&ndash;&nbsp;1.15.x-blue
+[shield_tf_version]: https://img.shields.io/badge/Terraform-1.7.0&nbsp;&ndash;&nbsp;1.16.x-blue
 [shield_nxrm_version]: https://img.shields.io/badge/Sonatype_Nexus_Repository-3.82.0&nbsp;&ndash;&nbsp;3.98.1-blue
 
 [link_tfr]: https://registry.terraform.io/providers/sonatype-nexus-community/sonatyperepo/latest
