@@ -26,6 +26,11 @@ on:
 
 permissions: {}
 
+# A newer commit on the same Pull Request branch supersedes the evaluation of the previous one.
+concurrency:
+    group: lifecycle-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+    cancel-in-progress: true
+
 env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
     CHECK_NAME: Sonatype Lifecycle (Pull Request)

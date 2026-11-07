@@ -35,7 +35,11 @@ env:
     REPO: ${{ github.repository }}
     DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     APPROVAL_CONTEXT: ok-to-test
-    TEST_WORKFLOWS: test-trusted.yml test-trusted-ha-cluster.yml
+    TEST_WORKFLOW: test-trusted.yml
+    HA_WORKFLOW: test-trusted-ha-cluster.yml
+    # Changes only to these files do not need the licensed acceptance tests
+    DOCS_ONLY_REGEX: '^(CHANGELOG|README)\.md$'
+    TESTS_CONTEXT: Acceptance Tests (Licensed NXRM)
 
 jobs:
     comment-approval:
@@ -60,8 +64,9 @@ jobs:
                   esac
 
                   SHORT_SHA=$(printf '%s' "$COMMENT_BODY" | head -n1 | awk '{print $2}')
+                  WITH_HA=$(printf '%s' "$COMMENT_BODY" | head -n1 | awk '{print $3}')
                   if ! [[ "$SHORT_SHA" =~ ^[0-9a-f]{7,40}$ ]]; then
-                    echo "::error::Usage: /ok-to-test <sha> - state the commit you reviewed"; exit 1
+                    echo "::error::Usage: /ok-to-test <sha> [ha] - state the commit you reviewed; add 'ha' to also run the High Availability tests"; exit 1
                   fi
 
                   HEAD_SHA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .head.sha)
@@ -71,9 +76,10 @@ jobs:
 
                   gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
                     -f context="$APPROVAL_CONTEXT" -f description="Approved by ${COMMENTER}"
-                  for WORKFLOW in $TEST_WORKFLOWS; do
-                    gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA"
-                  done
+                  gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  if [ "$WITH_HA" = "ha" ]; then
+                    gh workflow run "$HA_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  fi
 
     auto-approval:
         name: Approve Pull Requests by maintainers
@@ -89,9 +95,11 @@ jobs:
             - name: Approve if authored by a maintainer
               run: |
                   # `workflow_run.pull_requests` is empty for fork Pull Requests, so find it by head SHA
-                  AUTHOR=$(gh api --paginate "repos/${REPO}/pulls?state=open&per_page=100" \
-                    | jq -r --arg sha "$HEAD_SHA" '.[] | select(.head.sha == $sha) | .user.login' | head -n1)
-                  if [ -z "$AUTHOR" ]; then
+                  PR_INFO=$(gh api --paginate "repos/${REPO}/pulls?state=open&per_page=100" \
+                    | jq -r --arg sha "$HEAD_SHA" '.[] | select(.head.sha == $sha) | "\(.number) \(.user.login)"' | head -n1)
+                  PR_NUMBER=${PR_INFO%% *}
+                  AUTHOR=${PR_INFO#* }
+                  if [ -z "$PR_INFO" ]; then
                     echo "No open Pull Request has head ${HEAD_SHA}; nothing to approve"; exit 0
                   fi
 
@@ -106,6 +114,17 @@ jobs:
 
                   gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
                     -f context="$APPROVAL_CONTEXT" -f description="Pull Request by maintainer ${AUTHOR}"
-                  for WORKFLOW in $TEST_WORKFLOWS; do
-                    gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA"
-                  done
+
+                  # Documentation-only changes do not need the licensed tests: report the check as
+                  # skipped (so it can still be a required check) instead of starting a run.
+                  NOT_DOCS=$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files" --jq '.[].filename' \
+                    | grep -Evc "$DOCS_ONLY_REGEX" || true)
+                  if [ "$NOT_DOCS" = "0" ]; then
+                    gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                      -f context="$TESTS_CONTEXT" -f description="Skipped: documentation-only change"
+                    exit 0
+                  fi
+
+                  # High Availability tests are not run for every Pull Request: a maintainer adds
+                  # `ha` to /ok-to-test to request them. They always run on the default branch.
+                  gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"

@@ -24,8 +24,18 @@ on:
           description: 'Full commit SHA to test (must have an approved ok-to-test status)'
           required: true
           type: string
+        pr:
+          description: 'Pull Request number (a newer run for the same Pull Request cancels this one)'
+          required: false
+          type: string
 
 permissions: {}
+
+# One run per Pull Request: a newer commit cancels the run for the older one. Runs on the default
+# branch are never cancelled; at most one queued run waits behind the running one.
+concurrency:
+    group: trusted-ha-${{ inputs.pr && format('pr-{0}', inputs.pr) || inputs.sha && format('sha-{0}', inputs.sha) || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' }}
 
 env:
     # This instance is licensed, so tests for Pro-only features must run (see testutil.SkipIfNotLicensed)
