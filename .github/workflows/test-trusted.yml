@@ -114,7 +114,12 @@ jobs:
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
         name: Acc. Tests (NXRM ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
-        needs: verify-approval
+        needs:
+            - verify-approval
+            - sonatype
+        # Pushes to the default branch: do not run the licensed tests if the Lifecycle scan fails.
+        # Dispatched (approved Pull Request) runs skip the scan, which is not a failure.
+        if: ${{ !cancelled() && needs.verify-approval.result == 'success' && (needs.sonatype.result == 'success' || needs.sonatype.result == 'skipped') }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
         environment: acceptance-tests
