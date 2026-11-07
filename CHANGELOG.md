@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+*tbc*
+
+## 1.21.0 Nov 07, 2026
+
 ENHANCEMENTS:
 * Added support for Sonatype Nexus Repository 3.98.x [GH-519]
 
