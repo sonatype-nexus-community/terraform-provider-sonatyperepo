@@ -8,10 +8,12 @@ BUG FIXES:
 
 ENHANCEMENTS:
 * Added support for Sonatype Nexus Repository 3.97.x, alongside continued support for pre-3.97.0 versions [GH-506]
+* Added support for Sonatype Nexus Repository 3.98.x [GH-519]
 
 NOTES:
+* Tested against [Sonatype Nexus Repository Manager 3.98.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-98-0-release-notes.html) [GH-519] - no provider code changes were required. NXRM 3.98 uses the existing v397 API client generation, updated to v397.98.0. The `nexus-repo-api-client-go` v397.98.0 removes the `forwardQueryParameters` and `excludedQueryParameters` fields from Raw proxy repositories (introduced in 3.97, not used by this provider) and adds Swift proxy `autoBlockStatusCodes`, Cargo hosted `cargo` attributes, blob store group `globalDistributionEnabled` and a per-format user token reset endpoint, none of which are exposed by the provider yet
 * Tested against [Sonatype Nexus Repository Manager 3.97.0](https://help.sonatype.com/en/sonatype-nexus-repository-3-97-0-release-notes.html) [GH-506] - the full acceptance suite passes against both NXRM 3.96.0 and NXRM 3.97.0
-* Introduced a third API client generation, `nexus-repo-api-client-go` v397 (v397.97.1), used for NXRM 3.97.0+; NXRM 3.94.0 - 3.96.x continue to use v395 (pinned to v395.96.3) and earlier versions continue to use v3 (v3.93.2). NXRM 3.97.0 changed the shape of the PyPI proxy `pypi` attribute (`indexPath` was replaced by `suffix`), and the generated clients reject unknown response fields, so no single client generation can read both. The `v395` stream is therefore deliberately not bumped to 3.97 (NEXUS-55971)
+* Introduced a third API client generation, `nexus-repo-api-client-go` v397 (v397.98.0), used for NXRM 3.97.0+; NXRM 3.94.0 - 3.96.x continue to use v395 (pinned to v395.96.3) and earlier versions continue to use v3 (v3.93.2). NXRM 3.97.0 changed the shape of the PyPI proxy `pypi` attribute (`indexPath` was replaced by `suffix`), and the generated clients reject unknown response fields, so no single client generation can read both. The `v395` stream is therefore deliberately not bumped to 3.97 (NEXUS-55971)
 
 ## 1.19.3 Oct 14, 2026
 
