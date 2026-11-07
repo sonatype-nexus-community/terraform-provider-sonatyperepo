@@ -16,6 +16,8 @@
 # stage on `main` (test-trusted.yml) and the `release` stage (release.yml).
 name: Lifecycle Evaluation (Pull Request)
 
+run-name: Lifecycle Evaluation (Pull Request) @ ${{ github.event.workflow_run.head_sha }}
+
 on:
     # zizmor: ignore[dangerous-triggers] -- required by the standard: the evaluation of a fork Pull Request needs secrets and must therefore run from the default branch. Nothing from the Pull Request is checked out or executed; the artifact is validated and treated as data.
     workflow_run:

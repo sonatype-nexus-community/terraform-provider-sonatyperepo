@@ -17,6 +17,8 @@
 # This workflow only ever runs default-branch code and never checks out the Pull Request.
 name: Approve Acceptance Tests
 
+run-name: ${{ github.event_name == 'issue_comment' && format('Approve Acceptance Tests - comment on PR {0}', github.event.issue.number) || format('Approve Acceptance Tests @ {0}', github.event.workflow_run.head_sha) }}
+
 on:
     # zizmor: ignore[dangerous-triggers] -- required by the standard: a maintainer approval comment must be able to start protected tests. Runs default-branch code only, never checks out the Pull Request, and the comment body is only ever passed through an environment variable.
     issue_comment:
