@@ -1,8 +1,11 @@
 # Terraform Provider testing workflow.
 name: Test (Trusted)
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
+# Runs the licensed acceptance tests that need a licensed Sonatype Nexus Repository,
+# Sonatype IQ Server or cloud credentials (Tier 3 of
+# https://contribute.sonatype.com/docs/standards/pull-request-ci/). It holds secrets, so it only
+# runs on pushes to the default branch, or on a commit a maintainer has approved with
+# `/ok-to-test <sha>` (see approve-acceptance-tests.yml).
 on:
     push:
         branches:

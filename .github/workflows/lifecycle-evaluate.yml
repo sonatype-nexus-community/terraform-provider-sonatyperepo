@@ -44,7 +44,6 @@ jobs:
             GH_TOKEN: ${{ github.token }}
             REPO: ${{ github.repository }}
             HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-            RUN_ID: ${{ github.event.workflow_run.id }}
         steps:
             - name: Start check run
               id: check
