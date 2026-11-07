@@ -1,20 +1,21 @@
-# Terraform Provider testing workflow.
+# Terraform Provider testing workflow - Tier 1 (Open Checks).
+#
+# See https://contribute.sonatype.com/docs/standards/pull-request-ci/
+#
+# This workflow runs on every Pull Request, including those from forks. It therefore has NO
+# access to secrets and every job runs with read-only permissions. Anything that needs a
+# secret or a licensed Sonatype product runs in a separate, trusted workflow - see
+# test-trusted.yml and lifecycle-evaluate.yml.
 name: Test (Untrusted)
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
 on:
     pull_request:
-        paths-ignore:
-            - 'CHANGELOG.md'
-            - 'README.md'
-        types: [opened, synchronize]
+        types: [opened, synchronize, reopened]
     push:
         branches:
             - main
-        paths-ignore:
-            - 'CHANGELOG.md'
-            - 'README.md'
+
+permissions: {}
 
 jobs:
     # Ensure project builds before running testing matrix
@@ -26,6 +27,8 @@ jobs:
             contents: read
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
             - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
@@ -37,6 +40,102 @@ jobs:
               with:
                   version: v2.10.1
 
+    # Unit tests - no TF_ACC, so no NXRM is needed and every acceptance test skips.
+    unit-tests:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+            - run: go test -cover ./...
+
+    # Acceptance tests that need nothing beyond Sonatype Nexus Repository Community Edition
+    # (no licence, no credentials). Tests that need a Pro licence, Sonatype IQ Server or cloud
+    # credentials skip themselves here (see testutil.SkipIfNotLicensed) and run in
+    # test-trusted.yml once a maintainer has approved the commit.
+    acceptance-community:
+        name: Acc. Tests (NXRM Community + TF ${{ matrix.terraform }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        permissions:
+            contents: read
+        strategy:
+            fail-fast: false
+            matrix:
+                terraform:
+                    - '1.7.*' # Minimum
+                    - '1.15.*' # Latest
+        env:
+            # Pinned by digest; sonatype/nexus3:3.98.1. Community Edition runs when no licence is supplied.
+            NEXUS_IMAGE: sonatype/nexus3:3.98.1@sha256:f32dc457fa6a842efda50ffb7531f5986627723cc35daab169a99a202cb52a6c
+            NXRM_VERSION: '3.98.1'
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: Start Sonatype Nexus Repository Community Edition
+              run: |
+                  docker run -d --name nexus -p 8081:8081 -e NEXUS_SECURITY_RANDOMPASSWORD=false "$NEXUS_IMAGE"
+
+            - name: Wait for Sonatype Nexus Repository to be ready
+              run: |
+                  for i in {1..60}; do
+                    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/service/rest/v1/status" || true)
+                    if [ "$STATUS" = "200" ]; then
+                      echo "✅ Nexus Repository is ready"
+                      exit 0
+                    fi
+                    echo "⏳ Waiting for 200 OK... Current status: $STATUS (attempt $i/60)"
+                    sleep 5
+                  done
+                  echo "❌ Nexus Repository failed to become ready"
+                  docker logs nexus | tail -n 200
+                  exit 1
+
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+              with:
+                  terraform_version: ${{ matrix.terraform }}
+                  terraform_wrapper: false
+
+            - run: go mod download
+
+            - name: Run acceptance tests
+              env:
+                  NXRM_SERVER_URL: 'http://localhost:8081'
+                  NXRM_SERVER_USERNAME: 'admin'
+                  NXRM_SERVER_PASSWORD: 'admin123'
+                  TF_ACC: '1'
+                  TF_ACC_SINGLE_HIT: '1'
+              run: go test -v -cover ./...
+              timeout-minutes: 20
+
+            - name: Store nexus.log
+              if: success() || failure()
+              run: docker cp nexus:/nexus-data/log/nexus.log "$RUNNER_TEMP/nexus.log" || true
+
+            - name: Upload nexus.log
+              if: success() || failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: nexus.log-community-terraform-${{ strategy.job-index }}
+                  path: ${{ runner.temp }}/nexus.log
+                  if-no-files-found: ignore
+
     docs-check:
         name: Ensure Docs are Generated
         runs-on: ubuntu-latest
@@ -44,19 +143,75 @@ jobs:
             contents: read
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-              
+              with:
+                  persist-credentials: false
+
             - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
                   cache: true
 
             - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
-            
+
             - name: Generate Docs
               run: go generate ./...
               working-directory: tools
 
-            - name: Check fo Documentation Diffs
+            - name: Check for Documentation Diffs
               run: |
                   git diff --compact-summary --exit-code || \
-                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in `tools` directory command and commit."; exit 1)
+                    (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' in the 'tools' directory and commit."; exit 1)
+
+    workflow-lint:
+        name: Lint Workflows
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+              with:
+                  go-version-file: 'go.mod'
+
+            - name: actionlint
+              run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+            - name: zizmor
+              uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+              with:
+                  advanced-security: false
+
+    # Prepare the input Sonatype Lifecycle will evaluate. This job only produces data: the
+    # evaluation itself is done by lifecycle-evaluate.yml, which runs trusted code and treats
+    # this artifact as data.
+    prepare-lifecycle-scan:
+        name: Prepare Lifecycle Scan Input
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+              with:
+                  go-version-file: 'go.mod'
+                  cache: true
+
+            - name: Generate go.list
+              run: |
+                  mkdir lifecycle-scan-input
+                  go list -f '{{define "M"}}{{.Path}} {{.Version}}{{end}}{{with .Module}}{{if not .Main}}{{if .Replace}}{{template "M" .Replace}}{{else}}{{template "M" .}}{{end}}{{end}}{{end}}' -compiled -deps | sort -u > lifecycle-scan-input/go.list
+
+            - name: Upload scan input
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: lifecycle-scan-input
+                  path: lifecycle-scan-input/go.list
+                  if-no-files-found: error
+                  retention-days: 7

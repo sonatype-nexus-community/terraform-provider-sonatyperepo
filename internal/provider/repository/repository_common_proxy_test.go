@@ -491,44 +491,47 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 			})
 
 			// 2. Update to use full config
-			steps = append(steps, resource.TestStep{
-				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					append(
-						// Test Case Specific Checks
-						td.CheckFunc(resourceName),
+			// (cleanup policies are not available on Community Edition)
+			if testutil.IsLicensed() {
+				steps = append(steps, resource.TestStep{
+					Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, true),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						append(
+							// Test Case Specific Checks
+							td.CheckFunc(resourceName),
 
-						// Generic Checks
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "1"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, common.HTTP_AUTH_TYPE_USERNAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
-						resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-						// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
-					)...,
-				),
-			})
+							// Generic Checks
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
+							resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+							// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "1"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, common.HTTP_AUTH_TYPE_USERNAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
+							resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+							// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
+						)...,
+					),
+				})
+			}
 
 			// 3. Revert back to Simple Config
 			steps = append(steps, resource.TestStep{

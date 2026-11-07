@@ -1,0 +1,109 @@
+# Terraform Provider approval gate for licensed acceptance tests - Tier 3.
+#
+# See https://contribute.sonatype.com/docs/standards/pull-request-ci/
+#
+# The acceptance tests that need a licensed Sonatype Nexus Repository, Sonatype IQ Server or
+# cloud credentials (test-trusted.yml, test-trusted-ha-cluster.yml) hold secrets, so they only
+# run on a commit a maintainer has approved:
+#
+#  - A maintainer comments `/ok-to-test <sha>` on the Pull Request, stating the commit they
+#    reviewed. The approval is bound to that exact commit: it is recorded as the `ok-to-test`
+#    commit status on it, and a later push is a different commit that is not approved.
+#  - Pull Requests authored by a maintainer are approved automatically.
+#
+# Maintainer = repository role `maintain` or `admin` (checked by `role_name`, not the legacy
+# `permission` field, which reports `write` for both Maintain and Write).
+#
+# This workflow only ever runs default-branch code and never checks out the Pull Request.
+name: Approve Acceptance Tests
+
+on:
+    # zizmor: ignore[dangerous-triggers] -- required by the standard: a maintainer approval comment must be able to start protected tests. Runs default-branch code only, never checks out the Pull Request, and the comment body is only ever passed through an environment variable.
+    issue_comment:
+        types: [created]
+    # zizmor: ignore[dangerous-triggers] -- required by the standard: automatic approval of maintainer Pull Requests. Runs default-branch code only and never checks out the Pull Request.
+    workflow_run:
+        workflows: ['Test (Untrusted)']
+        types: [completed]
+
+permissions: {}
+
+env:
+    GH_TOKEN: ${{ github.token }}
+    REPO: ${{ github.repository }}
+    DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    APPROVAL_CONTEXT: ok-to-test
+    TEST_WORKFLOWS: test-trusted.yml test-trusted-ha-cluster.yml
+
+jobs:
+    comment-approval:
+        name: Approve via /ok-to-test comment
+        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/ok-to-test') }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write # Dispatch the protected test workflows
+            statuses: write # Record the approval against the commit
+        env:
+            PR_NUMBER: ${{ github.event.issue.number }}
+            COMMENTER: ${{ github.event.comment.user.login }}
+            COMMENT_BODY: ${{ github.event.comment.body }}
+        steps:
+            - name: Approve the reviewed commit
+              run: |
+                  ROLE=$(gh api "repos/${REPO}/collaborators/${COMMENTER}/permission" --jq .role_name)
+                  case "$ROLE" in
+                    maintain|admin) ;;
+                    *) echo "::error::${COMMENTER} has role '${ROLE}'; /ok-to-test requires Maintain or higher"; exit 1 ;;
+                  esac
+
+                  SHORT_SHA=$(printf '%s' "$COMMENT_BODY" | head -n1 | awk '{print $2}')
+                  if ! [[ "$SHORT_SHA" =~ ^[0-9a-f]{7,40}$ ]]; then
+                    echo "::error::Usage: /ok-to-test <sha> - state the commit you reviewed"; exit 1
+                  fi
+
+                  HEAD_SHA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .head.sha)
+                  if [[ "$HEAD_SHA" != "$SHORT_SHA"* ]]; then
+                    echo "::error::Pull Request head is ${HEAD_SHA}, not ${SHORT_SHA}. It changed after review; review it and approve the new commit."; exit 1
+                  fi
+
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                    -f context="$APPROVAL_CONTEXT" -f description="Approved by ${COMMENTER}"
+                  for WORKFLOW in $TEST_WORKFLOWS; do
+                    gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA"
+                  done
+
+    auto-approval:
+        name: Approve Pull Requests by maintainers
+        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write # Dispatch the protected test workflows
+            statuses: write # Record the approval against the commit
+        env:
+            HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        steps:
+            - name: Approve if authored by a maintainer
+              run: |
+                  # `workflow_run.pull_requests` is empty for fork Pull Requests, so find it by head SHA
+                  AUTHOR=$(gh api --paginate "repos/${REPO}/pulls?state=open&per_page=100" \
+                    | jq -r --arg sha "$HEAD_SHA" '.[] | select(.head.sha == $sha) | .user.login' | head -n1)
+                  if [ -z "$AUTHOR" ]; then
+                    echo "No open Pull Request has head ${HEAD_SHA}; nothing to approve"; exit 0
+                  fi
+
+                  ROLE=$(gh api "repos/${REPO}/collaborators/${AUTHOR}/permission" --jq .role_name 2>/dev/null || echo none)
+                  case "$ROLE" in
+                    maintain|admin) ;;
+                    *)
+                      gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                        -f context="$APPROVAL_CONTEXT" -f description="Awaiting maintainer approval: /ok-to-test ${HEAD_SHA:0:7}"
+                      exit 0 ;;
+                  esac
+
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                    -f context="$APPROVAL_CONTEXT" -f description="Pull Request by maintainer ${AUTHOR}"
+                  for WORKFLOW in $TEST_WORKFLOWS; do
+                    gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA"
+                  done

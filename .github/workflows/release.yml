@@ -8,10 +8,8 @@ on:
         tags:
             - 'v*'
 
-# Releases need permissions to read and write the repository contents.
-# GitHub considers creating releases and uploading assets as writing contents.
-permissions:
-    contents: write
+# No permissions by default - each job requests what it needs.
+permissions: {}
 
 env:
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
@@ -20,13 +18,17 @@ jobs:
     sonatype:
         name: Sonatype Scan
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-              
+              with:
+                  persist-credentials: false
+
             - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                 go-version-file: 'go.mod'
-                cache: true
+                cache: false
               
             - name: Generate go.list
               run:
@@ -34,7 +36,7 @@ jobs:
               
             - name: Sonatype Lifecycle Evaluation
               id: evaluate
-              uses: sonatype/actions/evaluate@v1
+              uses: sonatype/actions/evaluate@bb9a9c738185a00853c399df3e54e3c11d4ea3b1 # v1.15.0
               with:
                     iq-server-url: ${{ vars.SONATYPE_PLATFORM_URL }}
                     username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
@@ -47,14 +49,21 @@ jobs:
         name: Run Goreleaser
         needs: sonatype
         runs-on: ubuntu-latest
+        # Holds the signing key (GPG_PRIVATE_KEY, PASSPHRASE); deployment limited to `v*` tags.
+        environment: release
+        # Releases need to create the release and upload assets, which GitHub treats as writing contents.
+        permissions:
+            contents: write
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   # Allow goreleaser to access older tag information.
                   fetch-depth: 0
+                  persist-credentials: false
             - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
               with:
                   go-version-file: 'go.mod'
+                  cache: false
             - name: Import GPG key
               uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
               id: import_gpg

@@ -351,6 +351,7 @@ resource "%s" "cap" {
 }
 
 func TestAccCapabilityFirewallAuditQuarantineResource(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "Automatic Quarantine and Release")
 
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf(resourceNameF, resourceFirewallAuditQuarantine)
@@ -803,6 +804,7 @@ resource "%s" "cap" {
 }
 
 func TestAccCapabilityWebhookGlobalResource(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "Webhooks")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf(resourceNameF, resourceWebhookGlobal)
 
@@ -875,6 +877,7 @@ resource "%s" "cap" {
 }
 
 func TestAccCapabilityWebhookRepositoryResource(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "Webhooks")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf(resourceNameF, resourceWebhookRepository)
 

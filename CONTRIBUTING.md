@@ -2,6 +2,20 @@
 
 Pull requests are welcome - we thank you in advance. All we ask is that your PR has a clear description of its purpose or intent and that the purpose of a PR is a singluar intent - we'd rather accept multiple smaller PRs than fewer big ones.
 
+## Contents
+
+- [Setup](#setup)
+- [Linting](#linting)
+- [Testing](#testing)
+  - [Unit Tests](#unit-tests)
+- [Acceptance/Integration Tests](#acceptanceintegration-tests)
+- [Continuous Integration](#continuous-integration)
+  - [Workflows](#workflows)
+  - [Approving acceptance tests (maintainers)](#approving-acceptance-tests-maintainers)
+  - [Secrets and Environments](#secrets-and-environments)
+- [Standardised Development Patterns](#standardised-development-patterns)
+- [Sign off your commits](#sign-off-your-commits)
+
 ## Setup
 
 This provider uses the Custom Provider Framework from HashiCorp. A great reference is available from HashiCorp [here](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider).
@@ -20,20 +34,35 @@ Run `golangci-lint run`.
 
 ### Unit Tests
 
-These can be run locally by running `go test -v -cover ./internal/provider/`.
+Run `go test -v -cover ./...`. No credentials or running services are needed.
 
 ## Acceptance/Integration Tests
 
-These require an active and licensed Sonatype Nexus Repository Manager. PRs originating from outside this project will fail to pass the automated Integration Tests in CI due to our Repository Secrets not being available for these CI Executions (a GitHub restriction).
+Acceptance tests are split by what they need, so you can run everything that applies to you locally:
 
-To run Integration Tests locally, set the following 3 environment variables and then run `TF_ACC=1 go test -v -cover ./internal/provider/`:
+| Class | Needs | Where it runs in CI |
+|---|---|---|
+| Unprotected | Sonatype Nexus Repository Community Edition (no licence, no credentials) | Every Pull Request, including from forks |
+| Protected | A licensed Nexus Repository, Sonatype IQ Server and/or cloud credentials | After a maintainer approves the exact commit with `/ok-to-test <sha>` |
+
+Which features need a licence is taken from the [Nexus Repository Feature Matrix](https://help.sonatype.com/en/nexus-repository-feature-matrix.html). Protected tests skip with a clear message when what they need is absent.
+
+To run the unprotected tests, start a Community Edition instance and run the tests against it:
+
+```shell
+docker run -d --name nexus -p 8081:8081 -e NEXUS_SECURITY_RANDOMPASSWORD=false sonatype/nexus3
+NXRM_SERVER_URL=http://localhost:8081 NXRM_SERVER_USERNAME=admin NXRM_SERVER_PASSWORD=admin123 \
+  TF_ACC=1 go test -v -cover ./...
+```
+
+Set the following environment variables:
 - `NXRM_SERVER_URL`: Full URL to your Sonatype Nexus Repository Manager
 - `NXRM_SERVER_USERNAME`: Username to authenticate with
-- `NXRM_SERVER_PASSWORD`: Password to authentivate with
+- `NXRM_SERVER_PASSWORD`: Password to authenticate with
 
-It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
+To also run tests for Pro-only features, point at a licensed instance and set `TF_ACC_NXRM_LICENSED=1`. New tests for such features must call `testutil.SkipIfNotLicensed(t, "<feature name from the matrix>")`. Further protected tests are enabled per service, below.
 
-Some Acceptance Tests rely on AWS, GCP or Sonatype IQ Server credentials/infrastructure to be run and be successful. These are disabled by default and can be enabled by setting the following environment variables per provider/service.
+Pull Requests from forks do not receive repository secrets, so protected tests do not run on them until a maintainer approves the commit. It is helpful, but not mandatory, to confirm which tests you have run locally.
 
 ### ACS (Azure Cloud Storage) Tests
 
@@ -73,6 +102,52 @@ required. The following additional environment variables configure that connecti
 - `IQ_SERVER_URL` - defaults to `http://localhost:8070`
 - `IQ_SERVER_USERNAME` - defaults to `admin`
 - `IQ_SERVER_PASSWORD` - defaults to `admin123`
+
+## Continuous Integration
+
+CI follows the Sonatype Community [Pull Request CI & Secrets standard](https://contribute.sonatype.com/docs/standards/pull-request-ci/): code from a Pull Request never runs where secrets exist, and only data crosses that boundary.
+
+### Workflows
+
+| Workflow | Triggers | Secrets | Purpose |
+|---|---|---|---|
+| `test-untrusted.yml` (Test (Untrusted)) | Every Pull Request (including forks), push to `main` | None | **Tier 1.** Build, lint, docs check, workflow lint (`actionlint`, `zizmor`), unit tests, acceptance tests against Nexus Repository Community Edition, and preparation of the Lifecycle scan input |
+| `lifecycle-evaluate.yml` | After Test (Untrusted) completes for a Pull Request | Lifecycle | **Tier 2.** Evaluates the scan input in Sonatype Lifecycle (stage `develop`, advisory) and reports a check run. Never checks out the Pull Request |
+| `approve-acceptance-tests.yml` | `/ok-to-test` comment; Pull Requests by maintainers | None | **Tier 3 gate.** Records commit-bound approval and starts the two workflows below |
+| `test-trusted.yml` (Test (Trusted)) | Push to `main`, or dispatched by the gate | NXRM licence, Lifecycle | **Tier 3.** Acceptance tests on a licensed Nexus Repository and IQ Server, across the supported NXRM and Terraform versions. On `main` it also runs the authoritative Lifecycle evaluation (stage `build`) |
+| `test-trusted-ha-cluster.yml` | Push to `main`, or dispatched by the gate | NXRM licence | **Tier 3.** The same for a Nexus Repository High Availability cluster |
+| `release.yml` | Tag `v*` | Signing key, Lifecycle | Lifecycle evaluation (stage `release`), then GoReleaser |
+
+```text
+Pull Request ──► Test (Untrusted) ─── no secrets, runs fork code
+                      │ completed (data only: lifecycle-scan-input artifact)
+                      ├──► Lifecycle Evaluation ──► check run on the commit
+                      └──► Approve Acceptance Tests ──┬─ PR by a maintainer ─────────┐
+                                                      └─ /ok-to-test <sha> comment ──┤
+                                          `ok-to-test` commit status on that SHA     ▼
+                                                                  Test (Trusted) / Test HA (Trusted)
+                                                                  ──► commit status on the Pull Request
+```
+
+### Approving acceptance tests (maintainers)
+
+Pull Requests from forks cannot use repository secrets, so the licensed acceptance tests wait for a maintainer. After reviewing the code (including any changes to `.github/`, `go.mod`, `tools/` and the test helpers), comment on the Pull Request:
+
+```text
+/ok-to-test <sha>
+```
+
+`<sha>` is the commit you reviewed (at least 7 characters). The approval belongs to that exact commit: it is rejected if the Pull Request head has moved, and a later push needs a new approval. Only people with the Maintain role or higher (the `terraform-provider-sonatyperepo` maintainers team) can approve. Pull Requests opened by maintainers are approved automatically.
+
+The results appear on the Pull Request as the `Acceptance Tests (Licensed NXRM)` and `Acceptance Tests (HA)` commit statuses.
+
+### Secrets and Environments
+
+- `NXRM_LICENSE` is an Environment secret of `acceptance-tests`, which only deploys from `main`.
+- `GPG_PRIVATE_KEY` and `PASSPHRASE` are Environment secrets of `release`, which only deploys from `v*` tags.
+- Sonatype Lifecycle credentials are organisation-level secrets used by `lifecycle-evaluate.yml`, `test-trusted.yml` and `release.yml`.
+
+When changing workflows, run `actionlint` and `zizmor .github/workflows` - both are enforced by Test (Untrusted).
 
 ## Standardised Development Patterns
 

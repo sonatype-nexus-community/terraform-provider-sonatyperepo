@@ -1,0 +1,113 @@
+# Terraform Provider Sonatype Lifecycle evaluation for Pull Requests - Tier 2.
+#
+# See https://contribute.sonatype.com/docs/standards/pull-request-ci/
+#
+# Pull Requests (including from forks) are evaluated here, by TRUSTED code, using the scan input
+# that the untrusted "Test (Untrusted)" workflow prepared. For `workflow_run`, GitHub runs this
+# workflow as it exists on the default branch, with access to secrets, even for fork Pull Requests.
+#
+# Rules this workflow must keep to:
+#  - NEVER check out, build, install, execute or `source` anything from the Pull Request. The
+#    artifact is data only.
+#  - Take the commit SHA from the triggering event, never from the artifact.
+#  - Choose the Lifecycle application ID here, never from the artifact.
+#
+# The PR-time result is advisory (stage `develop`). The authoritative evaluations are the `build`
+# stage on `main` (test-trusted.yml) and the `release` stage (release.yml).
+name: Lifecycle Evaluation (Pull Request)
+
+on:
+    # zizmor: ignore[dangerous-triggers] -- required by the standard: the evaluation of a fork Pull Request needs secrets and must therefore run from the default branch. Nothing from the Pull Request is checked out or executed; the artifact is validated and treated as data.
+    workflow_run:
+        workflows: ['Test (Untrusted)']
+        types: [completed]
+
+permissions: {}
+
+env:
+    LC_APPLICATION_ID: terraform-provider-sonatyperepo
+    CHECK_NAME: Sonatype Lifecycle (Pull Request)
+    # Limits for the scan input artifact
+    MAX_FILES: '5'
+    MAX_BYTES: '52428800'
+
+jobs:
+    evaluate:
+        name: Evaluate
+        if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            actions: read # Download the artifact from the triggering run
+            checks: write # Report the result on the Pull Request commit
+        env:
+            GH_TOKEN: ${{ github.token }}
+            REPO: ${{ github.repository }}
+            HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        steps:
+            - name: Start check run
+              id: check
+              run: |
+                  ID=$(gh api "repos/${REPO}/check-runs" \
+                    -f name="${CHECK_NAME}" -f head_sha="${HEAD_SHA}" -f status=in_progress \
+                    --jq .id)
+                  echo "id=${ID}" >> "$GITHUB_OUTPUT"
+
+            - name: Download scan input
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              with:
+                  name: lifecycle-scan-input
+                  path: ${{ github.workspace }}/scan-input
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ github.token }}
+
+            # The artifact comes from a Pull Request, possibly from a fork. It is data, not code.
+            - name: Validate scan input
+              run: |
+                  cd scan-input
+                  if [ -n "$(find . -type l)" ]; then
+                    echo "::error::Scan input contains symbolic links"; exit 1
+                  fi
+                  if [ -n "$(find . ! -type f ! -type d)" ]; then
+                    echo "::error::Scan input contains non-regular files"; exit 1
+                  fi
+                  COUNT=$(find . -type f | wc -l)
+                  BYTES=$(find . -type f -print0 | du -cb --files0-from=- | tail -n1 | cut -f1)
+                  if [ "$COUNT" -gt "$MAX_FILES" ] || [ "$BYTES" -gt "$MAX_BYTES" ]; then
+                    echo "::error::Scan input too large (${COUNT} files, ${BYTES} bytes)"; exit 1
+                  fi
+                  test -f go.list || { echo "::error::Scan input has no go.list"; exit 1; }
+
+            - name: Sonatype Lifecycle Evaluation
+              id: evaluate
+              continue-on-error: true
+              uses: sonatype/actions/evaluate@bb9a9c738185a00853c399df3e54e3c11d4ea3b1 # v1.15.0
+              with:
+                  iq-server-url: ${{ vars.SONATYPE_PLATFORM_URL }}
+                  username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
+                  password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
+                  application-id: ${{ env.LC_APPLICATION_ID }}
+                  scan-targets: 'scan-input/go.list'
+                  stage: develop
+
+            - name: Complete check run
+              if: ${{ always() }}
+              env:
+                  CHECK_ID: ${{ steps.check.outputs.id }}
+                  OUTCOME: ${{ steps.evaluate.outcome }}
+                  REPORT_URL: ${{ steps.evaluate.outputs.report-url }}
+              run: |
+                  if [ "$OUTCOME" = "success" ]; then
+                    CONCLUSION=success; SUMMARY="No policy violations at stage develop. This result is advisory."
+                  elif [ "$OUTCOME" = "failure" ]; then
+                    CONCLUSION=failure; SUMMARY="Policy violations or an evaluation error at stage develop."
+                  else
+                    CONCLUSION=cancelled; SUMMARY="Evaluation did not complete."
+                  fi
+                  ARGS=(-f status=completed -f conclusion="$CONCLUSION" \
+                        -f "output[title]=${CHECK_NAME}" -f "output[summary]=${SUMMARY}")
+                  if [ -n "$REPORT_URL" ]; then
+                    ARGS+=(-f details_url="$REPORT_URL")
+                  fi
+                  gh api -X PATCH "repos/${REPO}/check-runs/${CHECK_ID}" "${ARGS[@]}"
+                  [ "$CONCLUSION" = "success" ]
