@@ -1,1 +1,9 @@
-* @madpah
+# Maintainers (Maintain role) - see https://contribute.sonatype.com/docs/standards/pull-request-ci/
+*                       @sonatype-nexus-community/terraform-provider-sonatyperepo
+
+# CI, dependency definitions and test helpers: changes here alter what runs with secrets
+/.github/               @sonatype-nexus-community/terraform-provider-sonatyperepo
+/go.mod                 @sonatype-nexus-community/terraform-provider-sonatyperepo
+/go.sum                 @sonatype-nexus-community/terraform-provider-sonatyperepo
+/tools/                 @sonatype-nexus-community/terraform-provider-sonatyperepo
+/internal/provider/testutil/ @sonatype-nexus-community/terraform-provider-sonatyperepo

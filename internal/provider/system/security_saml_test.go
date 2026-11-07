@@ -18,6 +18,7 @@ package system_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -33,6 +34,7 @@ const (
 )
 
 func TestAccSecuritySamlResourceBasic(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "SAML")
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -58,6 +60,7 @@ func TestAccSecuritySamlResourceBasic(t *testing.T) {
 }
 
 func TestAccSecuritySamlResourceUpdate(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "SAML")
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -91,6 +94,7 @@ func TestAccSecuritySamlResourceUpdate(t *testing.T) {
 }
 
 func TestAccSecuritySamlResourceMinimal(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "SAML")
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -108,6 +112,7 @@ func TestAccSecuritySamlResourceMinimal(t *testing.T) {
 }
 
 func TestAccSecuritySamlResourceImport(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "SAML")
 	randomSuffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

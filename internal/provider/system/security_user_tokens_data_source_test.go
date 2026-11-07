@@ -17,6 +17,7 @@ package system_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -29,6 +30,7 @@ const (
 )
 
 func TestAccSecurityUserTokenDataSource(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "User Token Support")
 	// This test reads the current security user token configuration
 	// Note: Resource creation/modification is not tested as it would lock out the test user
 	resource.Test(t, resource.TestCase{

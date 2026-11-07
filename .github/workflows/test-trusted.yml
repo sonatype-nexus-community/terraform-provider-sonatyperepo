@@ -22,6 +22,8 @@ on:
           type: string
 
 env:
+    # This instance is licensed, so tests for Pro-only features must run (see testutil.SkipIfNotLicensed)
+    TF_ACC_NXRM_LICENSED: "1"
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
     INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"

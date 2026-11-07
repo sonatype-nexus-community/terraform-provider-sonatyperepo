@@ -20,20 +20,35 @@ Run `golangci-lint run`.
 
 ### Unit Tests
 
-These can be run locally by running `go test -v -cover ./internal/provider/`.
+Run `go test -v -cover ./...`. No credentials or running services are needed.
 
 ## Acceptance/Integration Tests
 
-These require an active and licensed Sonatype Nexus Repository Manager. PRs originating from outside this project will fail to pass the automated Integration Tests in CI due to our Repository Secrets not being available for these CI Executions (a GitHub restriction).
+Acceptance tests are split by what they need, so you can run everything that applies to you locally:
 
-To run Integration Tests locally, set the following 3 environment variables and then run `TF_ACC=1 go test -v -cover ./internal/provider/`:
+| Class | Needs | Where it runs in CI |
+|---|---|---|
+| Unprotected | Sonatype Nexus Repository Community Edition (no licence, no credentials) | Every Pull Request, including from forks |
+| Protected | A licensed Nexus Repository, Sonatype IQ Server and/or cloud credentials | After a maintainer approves the exact commit with `/ok-to-test <sha>` |
+
+Which features need a licence is taken from the [Nexus Repository Feature Matrix](https://help.sonatype.com/en/nexus-repository-feature-matrix.html). Protected tests skip with a clear message when what they need is absent.
+
+To run the unprotected tests, start a Community Edition instance and run the tests against it:
+
+```shell
+docker run -d --name nexus -p 8081:8081 -e NEXUS_SECURITY_RANDOMPASSWORD=false sonatype/nexus3
+NXRM_SERVER_URL=http://localhost:8081 NXRM_SERVER_USERNAME=admin NXRM_SERVER_PASSWORD=admin123 \
+  TF_ACC=1 go test -v -cover ./...
+```
+
+Set the following environment variables:
 - `NXRM_SERVER_URL`: Full URL to your Sonatype Nexus Repository Manager
 - `NXRM_SERVER_USERNAME`: Username to authenticate with
-- `NXRM_SERVER_PASSWORD`: Password to authentivate with
+- `NXRM_SERVER_PASSWORD`: Password to authenticate with
 
-It is helpful when submitting Pull Requests to confirm whether you have been able to execute the Integraton Tests locally, but not mandatory.
+To also run tests for Pro-only features, point at a licensed instance and set `TF_ACC_NXRM_LICENSED=1`. New tests for such features must call `testutil.SkipIfNotLicensed(t, "<feature name from the matrix>")`. Further protected tests are enabled per service, below.
 
-Some Acceptance Tests rely on AWS, GCP or Sonatype IQ Server credentials/infrastructure to be run and be successful. These are disabled by default and can be enabled by setting the following environment variables per provider/service.
+Pull Requests from forks do not receive repository secrets, so protected tests do not run on them until a maintainer approves the commit. It is helpful, but not mandatory, to confirm which tests you have run locally.
 
 ### ACS (Azure Cloud Storage) Tests
 

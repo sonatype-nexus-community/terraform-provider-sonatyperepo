@@ -17,6 +17,7 @@ package system_test
 
 import (
 	"fmt"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -29,6 +30,7 @@ const (
 )
 
 func TestAccSecurityUserTokenResource(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "User Token Support")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -58,6 +60,7 @@ func TestAccSecurityUserTokenResource(t *testing.T) {
 }
 
 func TestAccSecurityUserTokenResourceUpdate(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "User Token Support")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -113,6 +116,7 @@ func TestAccSecurityUserTokenResourceUpdate(t *testing.T) {
 }
 
 func TestAccSecurityUserTokenResourceImport(t *testing.T) {
+	testutil.SkipIfNotLicensed(t, "User Token Support")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

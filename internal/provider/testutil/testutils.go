@@ -33,6 +33,23 @@ import (
 
 var CurrenTestNxrmVersion = common.ParseServerHeaderToVersion(fmt.Sprintf("Nexus/%s (PRO)", os.Getenv("NXRM_VERSION")))
 
+// EnvLicensedNxrm is set to "1" when the NXRM instance under test is licensed (Pro).
+const EnvLicensedNxrm = "TF_ACC_NXRM_LICENSED"
+
+// SkipIfNotLicensed skips a test unless TF_ACC_NXRM_LICENSED=1 is set. Use it for tests that
+// exercise a feature the Nexus Repository feature matrix lists as Pro-only (or Firewall-licensed),
+// which an unlicensed Community Edition instance does not provide. feature must be the matrix's
+// name for that feature so the skip message points at its source:
+// https://help.sonatype.com/en/nexus-repository-feature-matrix.html
+// Tests that need nothing beyond Community Edition must not call this.
+func SkipIfNotLicensed(t *testing.T, feature string) {
+	t.Helper()
+
+	if os.Getenv(EnvLicensedNxrm) != "1" {
+		t.Skipf("%s is not available in Nexus Repository Community Edition (see feature matrix) - set %s=1 against a licensed instance to enable", feature, EnvLicensedNxrm)
+	}
+}
+
 // SkipIfNoIqServer skips a test unless TF_ACC_IQ_SERVER=1 is set. This mirrors the
 // TF_ACC_S3_BLOB_STORE / TF_ACC_GCS_BLOB_STORE opt-in pattern (see
 // internal/provider/blob_store/blob_store_s3_resource_test.go) for tests that need a real,
