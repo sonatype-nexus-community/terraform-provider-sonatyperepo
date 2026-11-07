@@ -3,8 +3,12 @@
 # See https://contribute.sonatype.com/docs/standards/pull-request-ci/
 #
 # Pull Requests (including from forks) are evaluated here, by TRUSTED code, using the scan input
-# that the untrusted "Test (Untrusted)" workflow prepared. For `workflow_run`, GitHub runs this
-# workflow as it exists on the default branch, with access to secrets, even for fork Pull Requests.
+# that the untrusted "Prepare Lifecycle Scan Input" workflow prepared. For `workflow_run`, GitHub
+# runs this workflow as it exists on the default branch, with access to secrets, even for fork
+# Pull Requests.
+#
+# It is triggered by that small workflow, not by the test suite, so the check appears on the Pull
+# Request within a minute or two of a push and does not wait for the (much slower) tests.
 #
 # Rules this workflow must keep to:
 #  - NEVER check out, build, install, execute or `source` anything from the Pull Request. The
@@ -21,7 +25,7 @@ run-name: Lifecycle Evaluation (Pull Request) @ ${{ github.event.workflow_run.he
 on:
     # zizmor: ignore[dangerous-triggers] -- required by the standard: the evaluation of a fork Pull Request needs secrets and must therefore run from the default branch. Nothing from the Pull Request is checked out or executed; the artifact is validated and treated as data.
     workflow_run:
-        workflows: ['Test (Untrusted)']
+        workflows: ['Prepare Lifecycle Scan Input']
         types: [completed]
 
 permissions: {}
@@ -39,27 +43,56 @@ env:
     MAX_BYTES: '52428800'
 
 jobs:
-    evaluate:
-        name: Evaluate
-        if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+    # Creates the check on the Pull Request first, using no third-party actions, so that it is
+    # visible as pending straight away and a failure in the later jobs can always be reported.
+    start:
+        name: Start check
+        if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion != 'cancelled' }}
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 5
         permissions:
-            actions: read # Download the artifact from the triggering run
             checks: write # Report the result on the Pull Request commit
+        outputs:
+            id: ${{ steps.check.outputs.id }}
+            proceed: ${{ steps.check.outputs.proceed }}
         env:
             GH_TOKEN: ${{ github.token }}
             REPO: ${{ github.repository }}
             HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+            PREPARE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+            PREPARE_URL: ${{ github.event.workflow_run.html_url }}
         steps:
-            - name: Start check run
+            - name: Create the check run
               id: check
               run: |
-                  ID=$(gh api "repos/${REPO}/check-runs" \
-                    -f name="${CHECK_NAME}" -f head_sha="${HEAD_SHA}" -f status=in_progress \
-                    --jq .id)
+                  if [ "$PREPARE_CONCLUSION" = "success" ]; then
+                    ID=$(gh api "repos/${REPO}/check-runs" \
+                      -f name="${CHECK_NAME}" -f head_sha="${HEAD_SHA}" -f status=in_progress \
+                      -f "output[title]=${CHECK_NAME}" -f "output[summary]=Evaluating in Sonatype Lifecycle (stage develop)..." \
+                      --jq .id)
+                    echo "proceed=true" >> "$GITHUB_OUTPUT"
+                  else
+                    ID=$(gh api "repos/${REPO}/check-runs" \
+                      -f name="${CHECK_NAME}" -f head_sha="${HEAD_SHA}" -f status=completed -f conclusion=failure \
+                      -f details_url="${PREPARE_URL}" \
+                      -f "output[title]=${CHECK_NAME}" -f "output[summary]=The scan input could not be prepared, so nothing was evaluated." \
+                      --jq .id)
+                    echo "proceed=false" >> "$GITHUB_OUTPUT"
+                  fi
                   echo "id=${ID}" >> "$GITHUB_OUTPUT"
 
+    evaluate:
+        name: Evaluate
+        needs: start
+        if: ${{ needs.start.outputs.proceed == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            actions: read # Download the artifact from the triggering run
+        outputs:
+            outcome: ${{ steps.evaluate.outcome }}
+            report-url: ${{ steps.evaluate.outputs.report-url }}
+        steps:
             - name: Download scan input
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:
@@ -97,24 +130,42 @@ jobs:
                   scan-targets: 'scan-input/go.list'
                   stage: develop
 
-            - name: Complete check run
-              if: ${{ always() }}
-              env:
-                  CHECK_ID: ${{ steps.check.outputs.id }}
-                  OUTCOME: ${{ steps.evaluate.outcome }}
-                  REPORT_URL: ${{ steps.evaluate.outputs.report-url }}
+    # Always reports the final result, including when `evaluate` failed before running any step.
+    finalize:
+        name: Report result
+        needs:
+            - start
+            - evaluate
+        if: ${{ always() && needs.start.outputs.proceed == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            checks: write # Report the result on the Pull Request commit
+        env:
+            GH_TOKEN: ${{ github.token }}
+            REPO: ${{ github.repository }}
+            CHECK_ID: ${{ needs.start.outputs.id }}
+            JOB_RESULT: ${{ needs.evaluate.result }}
+            OUTCOME: ${{ needs.evaluate.outputs.outcome }}
+            REPORT_URL: ${{ needs.evaluate.outputs.report-url }}
+            RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        steps:
+            - name: Complete the check run
               run: |
-                  if [ "$OUTCOME" = "success" ]; then
+                  DETAILS="$REPORT_URL"
+                  if [ "$JOB_RESULT" = "cancelled" ]; then
+                    CONCLUSION=cancelled; SUMMARY="Evaluation was superseded or cancelled."
+                  elif [ "$JOB_RESULT" != "success" ]; then
+                    CONCLUSION=failure; SUMMARY="Evaluation could not run (scan input rejected or workflow error). See the workflow run."
+                    DETAILS="$RUN_URL"
+                  elif [ "$OUTCOME" = "success" ]; then
                     CONCLUSION=success; SUMMARY="No policy violations at stage develop. This result is advisory."
-                  elif [ "$OUTCOME" = "failure" ]; then
-                    CONCLUSION=failure; SUMMARY="Policy violations or an evaluation error at stage develop."
                   else
-                    CONCLUSION=cancelled; SUMMARY="Evaluation did not complete."
+                    CONCLUSION=failure; SUMMARY="Policy violations or an evaluation error at stage develop."
                   fi
                   ARGS=(-f status=completed -f conclusion="$CONCLUSION" \
                         -f "output[title]=${CHECK_NAME}" -f "output[summary]=${SUMMARY}")
-                  if [ -n "$REPORT_URL" ]; then
-                    ARGS+=(-f details_url="$REPORT_URL")
+                  if [ -n "$DETAILS" ]; then
+                    ARGS+=(-f details_url="$DETAILS")
                   fi
                   gh api -X PATCH "repos/${REPO}/check-runs/${CHECK_ID}" "${ARGS[@]}"
-                  [ "$CONCLUSION" = "success" ]

@@ -111,22 +111,26 @@ CI follows the Sonatype Community [Pull Request CI & Secrets standard](https://c
 
 | Workflow | Triggers | Secrets | Purpose |
 |---|---|---|---|
-| `test-untrusted.yml` (Test (Untrusted)) | Every Pull Request (including forks), push to `main` | None | **Tier 1.** Build, lint, docs check, workflow lint (`actionlint`, `zizmor`), unit tests, acceptance tests against Nexus Repository Community Edition, and preparation of the Lifecycle scan input |
-| `lifecycle-evaluate.yml` | After Test (Untrusted) completes for a Pull Request | Lifecycle | **Tier 2.** Evaluates the scan input in Sonatype Lifecycle (stage `develop`, advisory) and reports a check run. Never checks out the Pull Request |
+| `test-untrusted.yml` (Test (Untrusted)) | Every Pull Request (including forks), push to `main` | None | **Tier 1.** Build, lint, docs check, workflow lint (`actionlint`, `zizmor`), unit tests and acceptance tests against Nexus Repository Community Edition |
+| `prepare-lifecycle-scan.yml` | Every Pull Request (including forks) | None | **Tier 1.** Produces the `lifecycle-scan-input` artifact (a dependency list). Small and quick, and separate from the tests so the Lifecycle check does not wait for them |
+| `lifecycle-evaluate.yml` | After Prepare Lifecycle Scan Input completes for a Pull Request | Lifecycle | **Tier 2.** Evaluates the scan input in Sonatype Lifecycle (stage `develop`, advisory) and reports a check run. Never checks out the Pull Request |
 | `approve-acceptance-tests.yml` | `/ok-to-test` comment; Pull Requests by maintainers | None | **Tier 3 gate.** Records commit-bound approval and starts the licensed tests (and the HA tests, if asked) |
 | `test-trusted.yml` (Test (Trusted)) | Push to `main`, or dispatched by the gate | NXRM licence, Lifecycle | **Tier 3.** Acceptance tests on a licensed Nexus Repository and IQ Server, across the supported NXRM and Terraform versions. On `main` it also runs the authoritative Lifecycle evaluation (stage `build`) |
 | `test-trusted-ha-cluster.yml` | Push to `main`, or dispatched by `/ok-to-test <sha> ha` | NXRM licence | **Tier 3.** The same for a Nexus Repository High Availability cluster. Not run automatically for Pull Requests |
 | `release.yml` | Tag `v*` | Signing key, Lifecycle | Lifecycle evaluation (stage `release`), then GoReleaser |
 
 ```text
-Pull Request ──► Test (Untrusted) ─── no secrets, runs fork code
-                      │ completed (data only: lifecycle-scan-input artifact)
-                      ├──► Lifecycle Evaluation ──► check run on the commit
-                      └──► Approve Acceptance Tests ──┬─ PR by a maintainer ─────────┐
-                                                      └─ /ok-to-test <sha> comment ──┤
-                                          `ok-to-test` commit status on that SHA     ▼
-                                                                  Test (Trusted) / Test HA (Trusted)
-                                                                  ──► commit status on the Pull Request
+Pull Request ──┬─► Prepare Lifecycle Scan Input ─── no secrets, runs fork code
+               │        │ completed (data only: lifecycle-scan-input artifact)
+               │        └──► Lifecycle Evaluation ──► check run on the commit
+               │
+               └─► Test (Untrusted) ─── no secrets, runs fork code
+                        │ completed
+                        └──► Approve Acceptance Tests ──┬─ PR by a maintainer ─────────┐
+                                                        └─ /ok-to-test <sha> comment ──┤
+                                            `ok-to-test` commit status on that SHA     ▼
+                                                                    Test (Trusted) / Test HA (Trusted)
+                                                                    ──► commit status on the Pull Request
 ```
 
 ### Approving acceptance tests (maintainers)
