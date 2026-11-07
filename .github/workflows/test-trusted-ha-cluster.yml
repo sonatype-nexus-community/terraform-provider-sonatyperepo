@@ -1,6 +1,10 @@
 # Terraform Provider testing workflow.
 name: Test HA (Trusted)
 
+# Dispatched runs always show the default branch in the Actions UI (the workflow file comes from there).
+# The run title therefore states the commit that is actually checked out and tested.
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Test HA (Trusted) - approved commit {0}', inputs.sha) || format('Test HA (Trusted) - default branch @ {0}', github.sha) }}
+
 # Runs the licensed HA acceptance tests that need a licensed Sonatype Nexus Repository,
 # Sonatype IQ Server or cloud credentials (Tier 3 of
 # https://contribute.sonatype.com/docs/standards/pull-request-ci/). It holds secrets, so it only
@@ -53,6 +57,7 @@ jobs:
             INPUT_SHA: ${{ inputs.sha }}
             EVENT_NAME: ${{ github.event_name }}
             EVENT_SHA: ${{ github.sha }}
+            SERVER_URL: ${{ github.server_url }}
         steps:
             - name: Verify the commit is approved
               id: verify
@@ -70,6 +75,7 @@ jobs:
                     echo "::error::Commit ${INPUT_SHA} has no approved ok-to-test status (state: ${STATE:-none})"; exit 1
                   fi
                   echo "sha=${INPUT_SHA}" >> "$GITHUB_OUTPUT"
+                  echo "Testing approved commit [\`${INPUT_SHA}\`](${SERVER_URL}/${REPO}/commit/${INPUT_SHA})" >> "$GITHUB_STEP_SUMMARY"
 
     # Run acceptance tests in a matrix with Terraform CLI versions
     test-parallel:
