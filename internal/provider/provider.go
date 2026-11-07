@@ -312,7 +312,7 @@ func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds 
 	configurationV395.HTTPClient = httpClient
 	clientV395 := sonatyperepoV395.NewAPIClient(configurationV395)
 
-	// 4. V397 client (used for NXRM 3.97.0+)
+	// 4. V397 client (used for NXRM 3.97.0+, including 3.98.x)
 	configurationV397 := p.apiClientConfigurationV397(nxrmUrl, apiBasePath)
 	configurationV397.HTTPClient = httpClient
 	clientV397 := sonatyperepoV397.NewAPIClient(configurationV397)
