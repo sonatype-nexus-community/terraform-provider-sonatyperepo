@@ -40,6 +40,7 @@ const (
 // provider can support, not 3.93.0.
 func skipIfOAuth2Unsupported(t *testing.T) {
 	t.Helper()
+	testutil.SkipOnCommunityEdition(t, "the OAuth2/OIDC REST API is not available (returns 404, even with nexus.security.oauth2.enabled=true)")
 	testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
 		Major: 3,
 		Minor: 0,

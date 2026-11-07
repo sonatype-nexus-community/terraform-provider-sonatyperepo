@@ -28,6 +28,7 @@ import (
 )
 
 func TestAccTaskLicenseExpirationNotificationResource(t *testing.T) {
+	testutil.SkipOnCommunityEdition(t, "the license.expiration.notification task type does not exist without a licence")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf(resourceNameF, resourceTypeLicenseExpiryNotification)
 	resource.Test(t, resource.TestCase{

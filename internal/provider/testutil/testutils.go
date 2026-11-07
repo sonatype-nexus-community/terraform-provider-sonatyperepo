@@ -36,6 +36,11 @@ var CurrenTestNxrmVersion = common.ParseServerHeaderToVersion(fmt.Sprintf("Nexus
 // EnvLicensedNxrm is set to "1" when the NXRM instance under test is licensed (Pro).
 const EnvLicensedNxrm = "TF_ACC_NXRM_LICENSED"
 
+// IsLicensed reports whether the NXRM instance under test is licensed (TF_ACC_NXRM_LICENSED=1).
+func IsLicensed() bool {
+	return os.Getenv(EnvLicensedNxrm) == "1"
+}
+
 // SkipIfNotLicensed skips a test unless TF_ACC_NXRM_LICENSED=1 is set. Use it for tests that
 // exercise a feature the Nexus Repository feature matrix lists as Pro-only (or Firewall-licensed),
 // which an unlicensed Community Edition instance does not provide. feature must be the matrix's
@@ -45,8 +50,19 @@ const EnvLicensedNxrm = "TF_ACC_NXRM_LICENSED"
 func SkipIfNotLicensed(t *testing.T, feature string) {
 	t.Helper()
 
-	if os.Getenv(EnvLicensedNxrm) != "1" {
+	if !IsLicensed() {
 		t.Skipf("%s is not available in Nexus Repository Community Edition (see feature matrix) - set %s=1 against a licensed instance to enable", feature, EnvLicensedNxrm)
+	}
+}
+
+// SkipOnCommunityEdition skips a test unless TF_ACC_NXRM_LICENSED=1 is set, for behaviour that
+// differs on an unlicensed Community Edition instance but is NOT documented in the feature matrix.
+// reason must say what Community Edition does differently.
+func SkipOnCommunityEdition(t *testing.T, reason string) {
+	t.Helper()
+
+	if !IsLicensed() {
+		t.Skipf("Skipped on Nexus Repository Community Edition (not documented in the feature matrix): %s - set %s=1 against a licensed instance to enable", reason, EnvLicensedNxrm)
 	}
 }
 

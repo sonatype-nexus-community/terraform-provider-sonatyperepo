@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"terraform-provider-sonatyperepo/internal/provider/common"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	"testing"
 
@@ -28,6 +29,7 @@ import (
 )
 
 func TestAccBlobStoreGroupResource(t *testing.T) {
+	testutil.SkipOnCommunityEdition(t, "blob store groups require Nexus Repository Pro (the API returns 403)")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

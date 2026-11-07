@@ -42,6 +42,7 @@ var (
 )
 
 func TestAccRepositoryYumResource(t *testing.T) {
+	testutil.SkipOnCommunityEdition(t, "a YUM proxy returns an empty yumSigning object that the generated client cannot decode")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	// NXRM >= 3.93.0 returns a `yumSigning` field when reading back a YUM proxy

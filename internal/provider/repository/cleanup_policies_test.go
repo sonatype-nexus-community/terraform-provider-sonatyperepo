@@ -19,6 +19,7 @@ package repository_test
 import (
 	"fmt"
 	"regexp"
+	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -33,6 +34,7 @@ const (
 )
 
 func TestAccCleanupPolicyResource(t *testing.T) {
+	testutil.SkipOnCommunityEdition(t, "the cleanup policy API is not available (returns 404)")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := "sonatyperepo_cleanup_policy.test"
 	cleanupPolicyName := fmt.Sprintf("test-cleanup-policy-%s", randomString)
@@ -76,6 +78,7 @@ func TestAccCleanupPolicyResource(t *testing.T) {
 }
 
 func TestAccCleanupPolicyResourceMinimal(t *testing.T) {
+	testutil.SkipOnCommunityEdition(t, "the cleanup policy API is not available (returns 404)")
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := "sonatyperepo_cleanup_policy.minimal"
 
