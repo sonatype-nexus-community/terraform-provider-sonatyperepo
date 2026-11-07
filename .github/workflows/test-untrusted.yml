@@ -78,7 +78,7 @@ jobs:
             matrix:
                 terraform:
                     - '1.7.*' # Minimum
-                    - '1.16.*' # Latest
+                    - '1.17.*' # Latest
         env:
             # Pinned by digest; sonatype/nexus3:3.98.1. Community Edition runs when no licence is supplied.
             NEXUS_IMAGE: sonatype/nexus3:3.98.1@sha256:f32dc457fa6a842efda50ffb7531f5986627723cc35daab169a99a202cb52a6c
