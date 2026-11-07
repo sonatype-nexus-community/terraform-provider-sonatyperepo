@@ -198,14 +198,16 @@ jobs:
                   wget --max-redirect=0 https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
                   mkdir ${{ github.workspace }}/nxiq
                   tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
-                  echo "licenseFile: ${{ env.NXRM_LICENSE_FILE }}" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "database:" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  type: postgresql" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  hostname: localhost" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  port: 5432" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  name: clm" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  username: iqserver" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  password: somepassword" >> ${{ github.workspace }}/nxiq/config.yml
+                  {
+                    echo "licenseFile: ${{ env.NXRM_LICENSE_FILE }}"
+                    echo "database:"
+                    echo "  type: postgresql"
+                    echo "  hostname: localhost"
+                    echo "  port: 5432"
+                    echo "  name: clm"
+                    echo "  username: iqserver"
+                    echo "  password: somepassword"
+                  } >> ${{ github.workspace }}/nxiq/config.yml
 
             - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
               with:
