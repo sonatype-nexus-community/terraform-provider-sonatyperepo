@@ -113,9 +113,9 @@ CI follows the Sonatype Community [Pull Request CI & Secrets standard](https://c
 |---|---|---|---|
 | `test-untrusted.yml` (Test (Untrusted)) | Every Pull Request (including forks), push to `main` | None | **Tier 1.** Build, lint, docs check, workflow lint (`actionlint`, `zizmor`), unit tests, acceptance tests against Nexus Repository Community Edition, and preparation of the Lifecycle scan input |
 | `lifecycle-evaluate.yml` | After Test (Untrusted) completes for a Pull Request | Lifecycle | **Tier 2.** Evaluates the scan input in Sonatype Lifecycle (stage `develop`, advisory) and reports a check run. Never checks out the Pull Request |
-| `approve-acceptance-tests.yml` | `/ok-to-test` comment; Pull Requests by maintainers | None | **Tier 3 gate.** Records commit-bound approval and starts the two workflows below |
+| `approve-acceptance-tests.yml` | `/ok-to-test` comment; Pull Requests by maintainers | None | **Tier 3 gate.** Records commit-bound approval and starts the licensed tests (and the HA tests, if asked) |
 | `test-trusted.yml` (Test (Trusted)) | Push to `main`, or dispatched by the gate | NXRM licence, Lifecycle | **Tier 3.** Acceptance tests on a licensed Nexus Repository and IQ Server, across the supported NXRM and Terraform versions. On `main` it also runs the authoritative Lifecycle evaluation (stage `build`) |
-| `test-trusted-ha-cluster.yml` | Push to `main`, or dispatched by the gate | NXRM licence | **Tier 3.** The same for a Nexus Repository High Availability cluster |
+| `test-trusted-ha-cluster.yml` | Push to `main`, or dispatched by `/ok-to-test <sha> ha` | NXRM licence | **Tier 3.** The same for a Nexus Repository High Availability cluster. Not run automatically for Pull Requests |
 | `release.yml` | Tag `v*` | Signing key, Lifecycle | Lifecycle evaluation (stage `release`), then GoReleaser |
 
 ```text
@@ -137,9 +137,9 @@ Pull Requests from forks cannot use repository secrets, so the licensed acceptan
 /ok-to-test <sha>
 ```
 
-`<sha>` is the commit you reviewed (at least 7 characters). The approval belongs to that exact commit: it is rejected if the Pull Request head has moved, and a later push needs a new approval. Only people with the Maintain role or higher (the `terraform-provider-sonatyperepo` maintainers team) can approve. Pull Requests opened by maintainers are approved automatically.
+`<sha>` is the commit you reviewed (at least 7 characters). Add `ha` (`/ok-to-test <sha> ha`) to also run the High Availability tests, which are not otherwise run for Pull Requests. The approval belongs to that exact commit: it is rejected if the Pull Request head has moved, and a later push needs a new approval. Only people with the Maintain role or higher (the `terraform-provider-sonatyperepo` maintainers team) can approve. Pull Requests opened by maintainers are approved automatically.
 
-The results appear on the Pull Request as the `Acceptance Tests (Licensed NXRM)` and `Acceptance Tests (HA)` commit statuses.
+The results appear on the Pull Request as the `Acceptance Tests (Licensed NXRM)` commit status (and `Acceptance Tests (HA)` if requested). Pull Requests that only change `CHANGELOG.md` or `README.md` report that status as skipped. A newer commit on a Pull Request cancels the in-progress runs for the older one.
 
 ### Secrets and Environments
 

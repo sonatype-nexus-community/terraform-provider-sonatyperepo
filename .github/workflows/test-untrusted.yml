@@ -17,6 +17,11 @@ on:
 
 permissions: {}
 
+# A new commit on a Pull Request cancels the run for the previous one. Runs on main are not cancelled.
+concurrency:
+    group: test-untrusted-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
     # Ensure project builds before running testing matrix
     build:
