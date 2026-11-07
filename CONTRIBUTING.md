@@ -60,7 +60,7 @@ Set the following environment variables:
 - `NXRM_SERVER_USERNAME`: Username to authenticate with
 - `NXRM_SERVER_PASSWORD`: Password to authenticate with
 
-To also run tests for Pro-only features, point at a licensed instance and set `TF_ACC_NXRM_LICENSED=1`. New tests for such features must call `testutil.SkipIfNotLicensed(t, "<feature name from the matrix>")`. Further protected tests are enabled per service, below.
+To also run tests for Pro-only features, point at a licensed instance and set `TF_ACC_NXRM_LICENSED=1`. New tests for such features must call `testutil.SkipIfNotLicensed(t, "<feature name from the matrix>")`. Where Community Edition behaves differently in a way the matrix does not document, call `testutil.SkipOnCommunityEdition(t, "<what differs>")`. Either way the test then only runs in the trusted workflows. Further protected tests are enabled per service, below.
 
 Pull Requests from forks do not receive repository secrets, so protected tests do not run on them until a maintainer approves the commit. It is helpful, but not mandatory, to confirm which tests you have run locally.
 
