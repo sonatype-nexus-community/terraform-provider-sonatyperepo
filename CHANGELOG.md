@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-*tbc*
+FEATURES:
+* **New Resource:** `sonatyperepo_security_service_account_token` - manage Service Account Tokens (Sonatype Nexus Repository Pro 3.97.0+) [GH-517]. Nexus Repository cannot update a token or return its value after creation, so changing any argument replaces the token, the token value is only available as a sensitive attribute from the apply that created it, and the resource cannot be imported
 
 ## 1.21.0 Nov 07, 2026
 
