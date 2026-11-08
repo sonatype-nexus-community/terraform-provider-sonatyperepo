@@ -40,6 +40,9 @@ env:
     # Changes only to these files do not need the licensed acceptance tests
     DOCS_ONLY_REGEX: '^(CHANGELOG|README)\.md$'
     TESTS_CONTEXT: Acceptance Tests (Licensed NXRM)
+    HA_CONTEXT: Acceptance Tests (HA)
+    # Posted as soon as a run is dispatched; the run's own `report` job replaces it with the result
+    PENDING_DESCRIPTION: Waiting for the licensed acceptance tests to finish
 
 jobs:
     comment-approval:
@@ -76,9 +79,15 @@ jobs:
 
                   gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
                     -f context="$APPROVAL_CONTEXT" -f description="Approved by ${COMMENTER}"
+                  # Each pending status is posted only once its run has been dispatched, so a failed
+                  # dispatch cannot leave a status that nothing will ever replace.
                   gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                    -f context="$TESTS_CONTEXT" -f description="$PENDING_DESCRIPTION"
                   if [ "$WITH_HA" = "ha" ]; then
                     gh workflow run "$HA_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                    gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                      -f context="$HA_CONTEXT" -f description="$PENDING_DESCRIPTION"
                   fi
 
     auto-approval:
@@ -128,3 +137,5 @@ jobs:
                   # High Availability tests are not run for every Pull Request: a maintainer adds
                   # `ha` to /ok-to-test to request them. They always run on the default branch.
                   gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                    -f context="$TESTS_CONTEXT" -f description="$PENDING_DESCRIPTION"

@@ -143,7 +143,7 @@ Pull Requests from forks cannot use repository secrets, so the licensed acceptan
 
 `<sha>` is the commit you reviewed (at least 7 characters). Add `ha` (`/ok-to-test <sha> ha`) to also run the High Availability tests, which are not otherwise run for Pull Requests. The approval belongs to that exact commit: it is rejected if the Pull Request head has moved, and a later push needs a new approval. Only people with the Maintain role or higher (the `terraform-provider-sonatyperepo` maintainers team) can approve. Pull Requests opened by maintainers are approved automatically.
 
-The results appear on the Pull Request as the `Acceptance Tests (Licensed NXRM)` commit status (and `Acceptance Tests (HA)` if requested). Pull Requests that only change `CHANGELOG.md` or `README.md` report that status as skipped. A newer commit on a Pull Request cancels the in-progress runs for the older one.
+The Pull Request shows the `Acceptance Tests (Licensed NXRM)` commit status (and `Acceptance Tests (HA)` if requested) as pending from the moment the run is dispatched, and then as the result. Pull Requests that only change `CHANGELOG.md` or `README.md` report that status as skipped. A newer commit on a Pull Request cancels the in-progress runs for the older one.
 
 ### Secrets and Environments
 
