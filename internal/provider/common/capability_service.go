@@ -19,10 +19,19 @@ package common
 import (
 	"context"
 	"net/http"
+	"time"
 
 	sonatyperepoV382 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3"
 	sonatyperepoV395 "github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395"
 )
+
+// capabilityListRetryDelays are the waits before each retry of the capability list. Nexus
+// intermittently answers that call with a 500 (a NullPointerException) while repositories are
+// being deleted at the same time, and the next attempt succeeds, so the provider - which finds
+// a capability by listing all of them - retries a few times rather than reporting that an
+// existing capability "did not exist" (#537). The list is a read, so repeating it is safe; the
+// other capability calls are writes and are deliberately not retried.
+var capabilityListRetryDelays = []time.Duration{1 * time.Second, 2 * time.Second}
 
 // CapabilityService abstracts the Capabilities API across NXRM API client generations.
 type CapabilityService interface {
@@ -54,7 +63,9 @@ func (s *capabilityServiceV382) Delete(ctx context.Context, capabilityId string)
 }
 
 func (s *capabilityServiceV382) List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
-	return s.client.CapabilitiesAPI.List2(ctx).Execute()
+	return retryOnServerError(ctx, "Listing capabilities", capabilityListRetryDelays, func() ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+		return s.client.CapabilitiesAPI.List2(ctx).Execute()
+	})
 }
 
 // capabilityServiceV395 implements CapabilityService against NXRM API client V395 (targets NXRM 3.94.0+).
@@ -95,13 +106,15 @@ func (s *capabilityServiceV395) Delete(ctx context.Context, capabilityId string)
 }
 
 func (s *capabilityServiceV395) List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
-	apiV395, httpResponse, err := s.client.CapabilitiesAPI.ListCapabilities(ctx).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	var result []sonatyperepoV382.CapabilityDTO
-	if err := jsonBridge(apiV395, &result); err != nil {
-		return nil, httpResponse, err
-	}
-	return result, httpResponse, nil
+	return retryOnServerError(ctx, "Listing capabilities", capabilityListRetryDelays, func() ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+		apiV395, httpResponse, err := s.client.CapabilitiesAPI.ListCapabilities(ctx).Execute()
+		if err != nil {
+			return nil, httpResponse, err
+		}
+		var result []sonatyperepoV382.CapabilityDTO
+		if err := jsonBridge(apiV395, &result); err != nil {
+			return nil, httpResponse, err
+		}
+		return result, httpResponse, nil
+	})
 }
