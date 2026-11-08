@@ -46,6 +46,9 @@ type Services struct {
 	License         LicenseService
 	HttpSettings    HttpSettingsService
 	OAuth2          OAuth2Service
+
+	// ServiceAccountTokens only exists from NXRM 3.97.0; older servers get an adapter that returns an error.
+	ServiceAccountTokens ServiceAccountTokenService
 }
 
 // NewServices resolves every domain service to the client generation appropriate for
@@ -78,6 +81,8 @@ func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, 
 			License:         NewLicenseServiceV397(clientV397),
 			HttpSettings:    NewHttpSettingsServiceV397(clientV397),
 			OAuth2:          NewOAuth2ServiceV397(clientV397),
+
+			ServiceAccountTokens: NewServiceAccountTokenServiceV397(clientV397),
 		}
 	}
 	// SystemVersion.Patch/Build are int8 (max 127); 127 is used rather than 999 (which
@@ -106,6 +111,8 @@ func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, 
 			License:         NewLicenseServiceV395(clientV395),
 			HttpSettings:    NewHttpSettingsServiceV395(clientV395),
 			OAuth2:          NewOAuth2ServiceV395(clientV395),
+
+			ServiceAccountTokens: NewServiceAccountTokenServiceUnsupported(),
 		}
 	}
 	return Services{
@@ -130,5 +137,7 @@ func NewServices(version SystemVersion, clientV382 *sonatyperepoV382.APIClient, 
 		License:         NewLicenseServiceV382(clientV382),
 		HttpSettings:    NewHttpSettingsServiceV382(clientV382),
 		OAuth2:          NewOAuth2ServiceUnsupported(),
+
+		ServiceAccountTokens: NewServiceAccountTokenServiceUnsupported(),
 	}
 }

@@ -473,6 +473,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		system.NewSecuritySamlResource,
 		system.NewSecuritySsrfProtectionResource,
 		system.NewSecurityUserTokenResource,
+		system.NewSecurityServiceAccountTokenResource,
 		system.NewSecuritySslTruststoreResource,
 		task.NewTaskBlobstoreCompactResource,
 		task.NewTaskLicenseExpirationNotificationResource,
