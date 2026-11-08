@@ -30,23 +30,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TestAccRepositoryComposerProxyFirewallAtCreate reproduces
+// TestAccRepositoryComposerProxyFirewallAtCreate is the regression test for
 // https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/471.
 //
 // It enables `repository_firewall` on a Composer proxy when the repository is CREATED - exactly
-// the configuration in the issue - and then changes it in an update. Against NXRM 3.94+ with a
-// connected Sonatype IQ Server it currently FAILS: the provider computes the inline firewall
-// mode on the shared ComposerRepositoryFormat, whose firewall getters all return false (the
-// real ones are on ComposerRepositoryFormatProxy), so it always sends mode DISABLED. NXRM stores
-// DISABLED and reports it back, which fails the apply with "Provider produced inconsistent
-// result after apply" and would otherwise show as drift on the next plan.
+// the configuration in the issue - and then changes it in an update.
 //
-// NXRM itself is not at fault: a Composer proxy created directly through the REST API with
-// firewall.mode = QUARANTINE stores and returns it.
+// It used to fail against NXRM 3.94+ with a connected Sonatype IQ Server: the provider computed
+// the inline firewall mode on the shared ComposerRepositoryFormat, whose firewall getters all
+// return false (the real ones are on ComposerRepositoryFormatProxy), so it always sent mode
+// DISABLED. NXRM stored DISABLED and reported it back, which failed the apply with "Provider
+// produced inconsistent result after apply". NXRM itself was never at fault: a Composer proxy
+// created directly through the REST API with firewall.mode = QUARANTINE stores and returns it.
 //
-// This is deliberately separate from TestAccRepositoryGenericProxyFirewallToggle, which never
-// enables the firewall at create (its first step has no firewall) and excludes Composer. Once
-// Composer is fixed it can be added to that table.
+// This is separate from TestAccRepositoryGenericProxyFirewallToggle (which does cover Composer
+// for updates) because that table never enables the firewall at create - its first step has no
+// firewall - and create is the path in the issue.
 func TestAccRepositoryComposerProxyFirewallAtCreate(t *testing.T) {
 	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceType := fmt.Sprintf(resourceTypeProxyFString, strings.ToLower(common.REPO_FORMAT_COMPOSER))

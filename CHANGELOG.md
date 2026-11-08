@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+BUG FIXES:
+* Fixed `repository_firewall` on `sonatyperepo_repository_composer_proxy` being ignored against Sonatype Nexus Repository 3.94.0+ [GH-471] - the provider always sent firewall mode `DISABLED` for Composer, so enabling it failed with `Provider produced inconsistent result after apply` and Nexus then reported the mode as disabled. This was a provider defect, not a Nexus Repository one, and it replaces the known issue recorded under 1.18.0. Composer is the only format affected
+
 FEATURES:
 * **New Resource:** `sonatyperepo_security_service_account_token` - manage Service Account Tokens (Sonatype Nexus Repository Pro 3.97.0+) [GH-517]. Nexus Repository cannot update a token or return its value after creation, so changing any argument replaces the token, the token value is only available as a sensitive attribute from the apply that created it, and the resource cannot be imported
 
