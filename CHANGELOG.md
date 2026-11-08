@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 BUG FIXES:
+* Listing Capabilities is retried (up to 3 attempts, 1s then 2s apart) when Sonatype Nexus Repository answers with a transient server error (HTTP 5xx) [GH-537] - Nexus intermittently returns a 500 (`NullPointerException`) from the capability list while repositories are being deleted at the same time, which made reading or updating an existing Capability fail with `Capability did not exist`. Only the read-only list is retried; creating, updating and deleting Capabilities are not
 * Fixed `repository_firewall` on `sonatyperepo_repository_composer_proxy` being ignored against Sonatype Nexus Repository 3.94.0+ [GH-471] - the provider always sent firewall mode `DISABLED` for Composer, so enabling it failed with `Provider produced inconsistent result after apply` and Nexus then reported the mode as disabled. This was a provider defect, not a Nexus Repository one, and it replaces the known issue recorded under 1.18.0. Composer is the only format affected
 
 FEATURES:

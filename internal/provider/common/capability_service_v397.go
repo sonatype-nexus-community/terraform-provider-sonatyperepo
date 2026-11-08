@@ -62,13 +62,15 @@ func (s *capabilityServiceV397) Delete(ctx context.Context, capabilityId string)
 }
 
 func (s *capabilityServiceV397) List(ctx context.Context) ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
-	apiV397, httpResponse, err := s.client.CapabilitiesAPI.ListCapabilities(ctx).Execute()
-	if err != nil {
-		return nil, httpResponse, err
-	}
-	var result []sonatyperepoV382.CapabilityDTO
-	if err := jsonBridge(apiV397, &result); err != nil {
-		return nil, httpResponse, err
-	}
-	return result, httpResponse, nil
+	return retryOnServerError(ctx, "Listing capabilities", capabilityListRetryDelays, func() ([]sonatyperepoV382.CapabilityDTO, *http.Response, error) {
+		apiV397, httpResponse, err := s.client.CapabilitiesAPI.ListCapabilities(ctx).Execute()
+		if err != nil {
+			return nil, httpResponse, err
+		}
+		var result []sonatyperepoV382.CapabilityDTO
+		if err := jsonBridge(apiV397, &result); err != nil {
+			return nil, httpResponse, err
+		}
+		return result, httpResponse, nil
+	})
 }
