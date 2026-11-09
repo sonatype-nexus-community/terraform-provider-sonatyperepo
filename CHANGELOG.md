@@ -1,6 +1,6 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## UNRELEASED
+## 1.22.0 Nov 09, 2026
 
 BUG FIXES:
 * Listing Capabilities is retried (up to 3 attempts, 1s then 2s apart) when Sonatype Nexus Repository answers with a transient server error (HTTP 5xx) [GH-537] - Nexus intermittently returns a 500 (`NullPointerException`) from the capability list while repositories are being deleted at the same time, which made reading or updating an existing Capability fail with `Capability did not exist`. Only the read-only list is retried; creating, updating and deleting Capabilities are not
@@ -9,6 +9,9 @@ BUG FIXES:
 
 FEATURES:
 * **New Resource:** `sonatyperepo_security_service_account_token` - manage Service Account Tokens (Sonatype Nexus Repository Pro 3.97.0+) [GH-517]. Nexus Repository cannot update a token or return its value after creation, so changing any argument replaces the token, the token value is only available as a sensitive attribute from the apply that created it, and the resource cannot be imported
+
+NOTES:
+* Reduced intermittent acceptance test failures [GH-369] - no provider behaviour changes beyond the retries listed under BUG FIXES [GH-536] [GH-537]. The Malware Defense task test now takes the IQ connection lock and uses the real IQ settings [GH-538], and the licensed acceptance tests are shown as pending on a Pull Request as soon as they are dispatched
 
 ## 1.21.0 Nov 07, 2026
 
