@@ -330,8 +330,9 @@ type MiddlewareTransport struct {
 
 func (t *MiddlewareTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// 1. Send the request and wait for the result
-	// The Base transport performs the actual network call
-	resp, err := t.Base.RoundTrip(req)
+	// The Base transport performs the actual network call. A repository update or delete that
+	// Nexus rejects with a transient "Invalid state" error is sent again (see retry_transport.go).
+	resp, err := t.roundTripWithRepositoryRetry(req)
 
 	// 2. Implement Cluster Synchronisation Delay if a WRITE call and NODE COUNT > 1 (and API call was not in error)
 	if req.Method == http.MethodPost || req.Method == http.MethodPut || req.Method == http.MethodDelete {
