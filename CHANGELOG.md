@@ -1,6 +1,6 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## 1.22.1 (Unreleased)
+## 1.22.1 Nov 12, 2026
 
 BUG FIXES:
 * Fixed `sonatyperepo_repository_terraform_hosted` failing with `Provider produced inconsistent result after apply` (`.terraform_signing: inconsistent values for sensitive attribute`) when `terraform_signing.passphrase` is set [GH-544] - Sonatype Nexus Repository 3.98 no longer returns the Signing Key passphrase, so the provider read it back as `null`. The passphrase is now kept from your configuration, as for the other formats with signing keys. After `terraform import` the passphrase is not populated (Nexus Repository does not return it), so set it in configuration. No other format was affected
