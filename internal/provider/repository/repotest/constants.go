@@ -77,6 +77,7 @@ const (
 	RES_ATTR_NUGET_PROXY_NUGET_VERSION                        string = "nuget_proxy.nuget_version"
 	RES_ATTR_TERRAFORM_REQUIRE_AUTH                           string = "terraform.require_authentication"
 	RES_ATTR_TERRAFORM_SIGNING_SIGNING_KEY                    string = "terraform_signing.signing_key"
+	RES_ATTR_TERRAFORM_SIGNING_PASSPHRASE                     string = "terraform_signing.passphrase"
 
 	ConfigBlockHostedDefaultTerraform string = `terraform_signing = { signing_key = <<-EOT
 -----BEGIN PGP PRIVATE KEY BLOCK-----
