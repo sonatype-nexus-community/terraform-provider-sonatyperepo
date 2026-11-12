@@ -22,6 +22,7 @@ import (
 	"terraform-provider-sonatyperepo/internal/provider/testutil"
 	utils_test "terraform-provider-sonatyperepo/internal/provider/utils"
 	repotest "terraform-provider-sonatyperepo/internal/provider/repository/repotest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -324,6 +325,63 @@ resource "%s" "repo" {
 					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, "username"),
 					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "300"),
 					resource.TestCheckResourceAttr(resourceTerraformProxyName, repotest.RES_ATTR_TERRAFORM_REQUIRE_AUTH, "false"),
+				),
+			},
+		},
+	})
+}
+
+// Issue 544: NXRM 3.98 never returns the Signing Key passphrase, so it must be preserved from the plan
+func TestAccRepositoryTerraformHostedResource_Issue544(t *testing.T) {
+	randomString := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	passphrase := "issue-544-passphrase"
+	signingBlock := strings.TrimSuffix(repotest.ConfigBlockHostedDefaultTerraform, "}") + fmt.Sprintf("  passphrase = \"%s\"\n}", passphrase)
+
+	hostedConfig := func(online bool) string {
+		return fmt.Sprintf(utils_test.ProviderConfig+`
+resource "%s" "repo" {
+  name   = "terraform-hosted-repo-544-%s"
+  online = %t
+  storage = {
+    blob_store_name                = "default"
+    strict_content_type_validation = true
+    write_policy                   = "ALLOW_ONCE"
+  }
+  %s
+}
+`, resourceTypeTerraformHosted, randomString, online, signingBlock)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: utils_test.TestAccProtoV6ProviderFactories,
+		PreCheck: func() {
+			// Only works on NXRM 3.90.0 or later
+			testutil.SkipIfNxrmVersionInRange(t, &common.SystemVersion{
+				Major: 3,
+				Minor: 0,
+				Patch: 0,
+			}, &common.SystemVersion{
+				Major: 3,
+				Minor: 89,
+				Patch: 99,
+			})
+		},
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: hostedConfig(true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceTerraformHostedName, repotest.RES_ATTR_NAME, fmt.Sprintf("terraform-hosted-repo-544-%s", randomString)),
+					resource.TestCheckResourceAttrSet(resourceTerraformHostedName, repotest.RES_ATTR_TERRAFORM_SIGNING_SIGNING_KEY),
+					resource.TestCheckResourceAttr(resourceTerraformHostedName, repotest.RES_ATTR_TERRAFORM_SIGNING_PASSPHRASE, passphrase),
+				),
+			},
+			// Update (also exercises Read/refresh with the passphrase held only in state)
+			{
+				Config: hostedConfig(false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceTerraformHostedName, repotest.RES_ATTR_ONLINE, "false"),
+					resource.TestCheckResourceAttr(resourceTerraformHostedName, repotest.RES_ATTR_TERRAFORM_SIGNING_PASSPHRASE, passphrase),
 				),
 			},
 		},
