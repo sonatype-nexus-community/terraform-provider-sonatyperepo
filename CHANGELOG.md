@@ -4,6 +4,10 @@
 
 BUG FIXES:
 * Fixed `sonatyperepo_repository_terraform_hosted` failing with `Provider produced inconsistent result after apply` (`.terraform_signing: inconsistent values for sensitive attribute`) when `terraform_signing.passphrase` is set [GH-544] - Sonatype Nexus Repository 3.98 no longer returns the Signing Key passphrase, so the provider read it back as `null`. The passphrase is now kept from your configuration, as for the other formats with signing keys. After `terraform import` the passphrase is not populated (Nexus Repository does not return it), so set it in configuration. No other format was affected
+* Fixed `sonatyperepo_system_config_product_license` failing with `invalid body type application/octet-stream` against Sonatype Nexus Repository 3.94.0+ [GH-545] - the generated API client declared the licence upload body as a JSON object, so the licence file was never sent and the request failed before reaching Nexus Repository. The licence file is now uploaded as binary. Fixed in the API client (`nexus-repo-api-client-go` v395.96.4 and v397.98.1), which the provider now uses. Versions before 3.94.0 were not affected
+
+NOTES:
+* Updated `nexus-repo-api-client-go` to v395.96.4 and v397.98.1 [GH-545]
 
 ## 1.22.0 Nov 09, 2026
 

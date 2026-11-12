@@ -76,20 +76,8 @@ func (s *licenseServiceV395) RemoveLicense(ctx context.Context) (*http.Response,
 	return s.client.ProductLicensingAPI.DeleteSystemLicense(ctx).Execute()
 }
 
-// SetLicense cannot currently transmit the license file's bytes to a V395 server: the
-// upstream OpenAPI spec (nexus-repo-api-client, POST /v1/system/license) declares the
-// application/octet-stream request body as `schema: type: object`, so the Go generator
-// emits CreateSystemLicense's body param as map[string]interface{} rather than a binary
-// payload (*os.File/[]byte). The generated client's setBody() only serializes
-// io.Reader/*os.File/[]byte/string or JSON-content-typed bodies, none of which match here,
-// so any call to CreateSystemLicenseExecute fails with "invalid body type
-// application/octet-stream" regardless of what is passed. Fixing this requires correcting
-// the spec to `type: string, format: binary` and regenerating the V395 client in the
-// sibling nexus-repo-api-client repo; licenseFile is accepted here to satisfy the
-// LicenseService interface and is intentionally unused until that upstream fix lands.
 func (s *licenseServiceV395) SetLicense(ctx context.Context, licenseFile *os.File) (*sonatyperepoV382.ApiLicenseDetailsXO, *http.Response, error) {
-	_ = licenseFile
-	v395Response, httpResponse, err := s.client.ProductLicensingAPI.CreateSystemLicense(ctx).Body(map[string]interface{}{}).Execute()
+	v395Response, httpResponse, err := s.client.ProductLicensingAPI.CreateSystemLicense(ctx).Body(licenseFile).Execute()
 	if err != nil {
 		return nil, httpResponse, err
 	}
