@@ -15,7 +15,7 @@ Activate and order Sontaype Nexus Repository Security realms. This resource mana
 ```terraform
 resource "sonatyperepo_security_realms" "realms" {
   active = [
-    "NexusAuthorizingRealm",
+    "NexusAuthenticatingRealm",
     "DefaultRole"
   ]
 }

@@ -40,7 +40,7 @@ const (
 	DEFAULT_ANONYMOUS_USERNAME                                             string = "anonymous"
 	DEFAULT_BLOB_STORE_NAME                                                string = "default"
 	DEFAULT_CLUSTER_STABILISATION_MS                                       int32  = 10000
-	DEFAULT_REALM_NAME                                                     string = "NexusAuthorizingRealm"
+	DEFAULT_REALM_NAME                                                     string = "NexusAuthenticatingRealm"
 	DEFAULT_USER_SOURCE                                                    string = "default"
 	FREQUENCY_SCHEDULE_MANUAL                                              string = "manual"
 	FREQUENCY_SCHEDULE_ONCE                                                string = "once"
