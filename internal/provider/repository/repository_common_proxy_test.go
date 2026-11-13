@@ -491,44 +491,47 @@ func TestAccRepositoryGenericProxyByFormat(t *testing.T) {
 			})
 
 			// 2. Update to use full config
-			steps = append(steps, resource.TestStep{
-				Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					append(
-						// Test Case Specific Checks
-						td.CheckFunc(resourceName),
+			// (cleanup policies are not available on Community Edition)
+			if testutil.IsLicensed() {
+				steps = append(steps, resource.TestStep{
+					Config: td.SchemaFunc(resourceType, repoName, td.RepoFormat, td.RemoteUrl, randomString, td.FormatSpecificConfig, true),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						append(
+							// Test Case Specific Checks
+							td.CheckFunc(resourceName),
 
-						// Generic Checks
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
-						resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
-						// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "1"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, common.HTTP_AUTH_TYPE_USERNAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "false"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
-						resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
-						resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
-						// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
-					)...,
-				),
-			})
+							// Generic Checks
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NAME, repoName),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_ONLINE, "true"),
+							resource.TestCheckResourceAttrSet(resourceName, repotest.RES_ATTR_URL),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_BLOB_STORE_NAME, common.DEFAULT_BLOB_STORE_NAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_STRICT_CONTENT_TYPE_VALIDATION, "true"),
+							// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_STORAGE_WRITE_POLICY, common.WRITE_POLICY_ALLOW),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_CLEANUP_POLICY_COUNT, "1"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_REMOTE_URL, td.RemoteUrl),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_CONTENT_MAX_AGE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_PROXY_METADATA_MAX_AGE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_ENABLED, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_NEGATIVE_CACHE_TIME_TO_LIVE, TEST_DATA_TIMEOUT),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_BLOCKED, fmt.Sprintf("%t", common.DEFAULT_HTTP_CLIENT_BLOCKED)),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTO_BLOCK, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_TYPE, common.HTTP_AUTH_TYPE_USERNAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PREMPTIVE, "false"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_USERNAME, "user"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_AUTHENTICATION_PASSWORD, "pass"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_CIRCULAR_REDIRECTS, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_ENABLE_COOKIES, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_RETRIES, "2"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_TIMEOUT, "59"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USE_TRUST_STORE, "true"),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_HTTP_CLIENT_CONNECTION_USER_AGENT_SUFFIX, "custom-suffix"),
+							resource.TestCheckNoResourceAttr(resourceName, repotest.RES_ATTR_ROUTING_RULE_NAME),
+							resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_PRE_EMPTIVE_PULL_ENABLED, "false"),
+							// resource.TestCheckResourceAttr(resourceName, repotest.RES_ATTR_REPLICATION_ASSET_PATH_REGEX, ".*"),
+						)...,
+					),
+				})
+			}
 
 			// 3. Revert back to Simple Config
 			steps = append(steps, resource.TestStep{
@@ -1082,17 +1085,16 @@ type firewallProxyTestData struct {
 // firewallProxyTestData enumerates every inline-firewall-capable proxy format (NXRM 3.94+).
 // Alpine and Pub are deliberately excluded: NXRM's own server-side validation rejects them
 // with "Firewall does not support repository format '<x>'." - confirmed against a real,
-// connected IQ Server, not merely a schema-level limitation in this provider. Composer is also
-// excluded: re-confirmed live against NXRM 3.95.0-07 + a real, connected IQ Server on 2026-09-07
-// that repository_firewall still doesn't survive a refresh - the step 2 (enable + quarantine)
-// refresh plan showed `enabled: false -> true`, i.e. NXRM's GET reports the mode as disabled
-// immediately after a request that set it to AUDIT_AND_QUARANTINE. That the field is present but
-// wrong (rather than absent, as with Raw) points at the write not persisting server-side rather
-// than a read/serialization gap. See
-// https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/471.
+// connected IQ Server, not merely a schema-level limitation in this provider.
+//
+// Composer was excluded from this table until #471 was fixed: the provider always sent mode
+// DISABLED for it (not an NXRM problem). It is covered here for the update path, and by
+// TestAccRepositoryComposerProxyFirewallAtCreate for enabling the firewall at create, which this
+// table never does (its first step has no firewall).
 var firewallProxyTestDataTable = []firewallProxyTestData{
 	{RepoFormat: common.REPO_FORMAT_CARGO, RemoteUrl: TEST_DATA_CARGO_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultCargo},
 	{RepoFormat: common.REPO_FORMAT_COCOAPODS, RemoteUrl: TEST_DATA_COCOAPODS_PROXY_REMOTE_URL},
+	{RepoFormat: common.REPO_FORMAT_COMPOSER, RemoteUrl: TEST_DATA_COMPOSER_PROXY_REMOTE_URL},
 	{RepoFormat: common.REPO_FORMAT_CONAN, RemoteUrl: TEST_DATA_CONAN_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultConan},
 	{RepoFormat: common.REPO_FORMAT_CONDA, RemoteUrl: TEST_DATA_CONDA_PROXY_REMOTE_URL},
 	{RepoFormat: common.REPO_FORMAT_DOCKER, RemoteUrl: TEST_DATA_DOCKER_PROXY_REMOTE_URL, FormatSpecificConfig: configBlockProxyDefaultDocker},

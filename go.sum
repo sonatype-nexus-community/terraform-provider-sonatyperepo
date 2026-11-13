@@ -354,8 +354,12 @@ github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2 h1:pkLD4
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v3 v3.93.2/go.mod h1:aflMwOI/XkRO3HuXgCVlh+zPFj9KVkDtE1ZwWqJeCm0=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.96.3 h1:QIk7rD6NOz7zKVZCFrwVi0Op1D9Tenv1jxUBytqonXU=
 github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.96.3/go.mod h1:ex3NbpcR8pxbvcUWfbIIbyTwLmbSg5nqCfQnlcORDDU=
-github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.97.1 h1:5z4mj9k9KqOpEtlvm1krecypD5hNkHKgDWeolQGKXhI=
-github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.97.1/go.mod h1:/BT9yb3LUDPa6EAKcvWIoGd+6cru9vRnRiYjHzytMN8=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.96.4 h1:wC54xQ5EeldxgoXorT+1tOn9bewLTSHhRNHeCvZueTs=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v395 v395.96.4/go.mod h1:ex3NbpcR8pxbvcUWfbIIbyTwLmbSg5nqCfQnlcORDDU=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.98.0 h1:ZVrNedpiViS8uMn/jC1T9x78fCmzHXOFe5KICrc6k5Y=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.98.0/go.mod h1:/BT9yb3LUDPa6EAKcvWIoGd+6cru9vRnRiYjHzytMN8=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.98.1 h1:tNaLvrBrHk6e5gnEsY1GwVn9E1z+C8cS8uUnKIS1gw0=
+github.com/sonatype-nexus-community/nexus-repo-api-client-go/v397 v397.98.1/go.mod h1:/BT9yb3LUDPa6EAKcvWIoGd+6cru9vRnRiYjHzytMN8=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4 h1:U7pdTOdwl/RS+5Zvz7mUE01XrS5ntONzxD9OmN6ymJw=
 github.com/sonatype-nexus-community/terraform-provider-shared v0.9.4/go.mod h1:WMs2zRL3dPwQj1A9As16dLzVs9jRFJKEHOtNfKeZqjM=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
@@ -498,8 +502,8 @@ golang.org/x/net v0.0.0-20201110031124-69a78807bb2b/go.mod h1:sp8m0HH+o8qH0wwXwY
 golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/net v0.0.0-20210326060303-6b1517762897/go.mod h1:uSPa2vr4CLtc/ILN5odXGNXS6mhrKVzTaCXzk9m6W3k=
 golang.org/x/net v0.0.0-20220722155237-a158d28d115b/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
-golang.org/x/net v0.61.0 h1:RR+6j/BTBCrggOLugxa+66R8FvoN6MHlzDlZIbN9YFw=
-golang.org/x/net v0.61.0/go.mod h1:WgDCOTH8iwtB66T4/GfI94AHo/hhdb7Hah9NDseQfiI=
+golang.org/x/net v0.62.0 h1:18ELalfM5+XNRwzM2nYqXsZQ9ByS1uhj2O/U7+5jqRY=
+golang.org/x/net v0.62.0/go.mod h1:WgDCOTH8iwtB66T4/GfI94AHo/hhdb7Hah9NDseQfiI=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=

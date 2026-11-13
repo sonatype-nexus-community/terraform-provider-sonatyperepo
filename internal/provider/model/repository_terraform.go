@@ -140,7 +140,7 @@ type repositoryTerraformHostedSpecificModel struct {
 func (m *repositoryTerraformHostedSpecificModel) FromApiModel(api *sonatyperepo.TerraformSigningAttributes) {
 	if api != nil {
 		m.SigningKey = types.StringValue(api.Keypair)
-		m.Passphrase = types.StringPointerValue(api.Passphrase)
+		// Passphrase is not returned by NXRM 3.98+ (and is write-only); preserved from plan via MapMissingApiFieldsFromPlan
 	}
 }
 
@@ -154,6 +154,11 @@ func (m *repositoryTerraformHostedSpecificModel) MapToApi(api *sonatyperepo.Terr
 type RepositoryTerraformHostedModel struct {
 	RepositoryHostedWithoutComponentModel
 	TerraformSigning repositoryTerraformHostedSpecificModel `tfsdk:"terraform_signing"`
+}
+
+func (m *RepositoryTerraformHostedModel) MapMissingApiFieldsFromPlan(planModel RepositoryTerraformHostedModel) {
+	// Signing Key Passphrase is not returned by the GET API (NXRM 3.98+); preserve from plan
+	m.TerraformSigning.Passphrase = planModel.TerraformSigning.Passphrase
 }
 
 func (m *RepositoryTerraformHostedModel) FromApiModel(api sonatyperepo.TerraformHostedRepositoryApiRequest) {

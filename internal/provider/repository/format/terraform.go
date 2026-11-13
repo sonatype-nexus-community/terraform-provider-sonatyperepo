@@ -113,6 +113,16 @@ func (f *TerraformRepositoryFormatProxy) FormatSchemaAttributes() map[string]tfs
 
 // Terraform proxy is one of only three formats (alongside Maven and PyPI) whose NXRM API
 // supports pre-emptive authentication - see GH-493.
+func (f *TerraformRepositoryFormatProxy) AdditionalSchemaDescription() string {
+	return `
+
+**KNOWN LIMITATION:** Sonatype Nexus Repository does not currently honour ` + "`terraform.require_authentication = true`" + ` for
+Terraform Proxy Repositories. See [Issue #516](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/516).
+
+**WORKAROUND:** The ` + "`terraform`" + ` attribute is required, but ` + "`require_authentication`" + ` within it is optional. Use
+` + "`terraform = {}`" + ` or set ` + "`require_authentication = false`" + `.`
+}
+
 func (f *TerraformRepositoryFormatProxy) SupportsPreemptiveAuthentication() bool {
 	return true
 }
@@ -233,6 +243,18 @@ func (f *TerraformRepositoryFormatHosted) UpdateStateFromApi(state, api any) any
 	return stateModel
 }
 
+func (f *TerraformRepositoryFormatHosted) UpdateStateFromPlanForNonApiFields(plan, state any) any {
+	var planModel = (plan).(model.RepositoryTerraformHostedModel)
+	var stateModel model.RepositoryTerraformHostedModel
+	// During import, state might be nil, so we create a new model
+	if state != nil {
+		stateModel = (state).(model.RepositoryTerraformHostedModel)
+	}
+
+	stateModel.MapMissingApiFieldsFromPlan(planModel)
+	return stateModel
+}
+
 // --------------------------------------------
 // GROUP Terraform Format Functions
 // --------------------------------------------
@@ -279,7 +301,7 @@ func (f *TerraformRepositoryFormatGroup) DoImportRequest(repositoryName string, 
 
 func (f *TerraformRepositoryFormatGroup) FormatSchemaAttributes() map[string]tfschema.Attribute {
 	additionalAttributes := commonGroupSchemaAttributes(false)
-	maps.Copy(additionalAttributes, terraformProxySchemaAttributes())
+	maps.Copy(additionalAttributes, terraformGroupSchemaAttributes())
 	return additionalAttributes
 }
 
@@ -320,20 +342,36 @@ for details.`
 // --------------------------------------------
 // Common Functions
 // --------------------------------------------
+const terraformRequireAuthenticationDescription = "Indicates if this repository requires authentication overriding anonymous access."
+
+// terraformProxySchemaAttributes - Sonatype Nexus Repository does not persist a user-supplied
+// `requireAuthentication` of `true` on Terraform Proxy Repositories (it is not applied by
+// the Proxy request converter, unlike for Group), so the limitation is documented here only.
 func terraformProxySchemaAttributes() map[string]tfschema.Attribute {
-	terraformAttrs := map[string]tfschema.Attribute{
+	return terraformRequireAuthenticationSchemaAttributes(
+		terraformRequireAuthenticationDescription + " " +
+			"**Known limitation:** Sonatype Nexus Repository does not currently persist `true` for " +
+			"Terraform Proxy Repositories - it accepts the value but always reports `false`, which causes " +
+			"`Provider produced inconsistent result after apply`. Leave this unset or set it to `false`.",
+	)
+}
+
+func terraformGroupSchemaAttributes() map[string]tfschema.Attribute {
+	return terraformRequireAuthenticationSchemaAttributes(terraformRequireAuthenticationDescription)
+}
+
+func terraformRequireAuthenticationSchemaAttributes(requireAuthenticationDescription string) map[string]tfschema.Attribute {
+	return map[string]tfschema.Attribute{
 		"terraform": schema.ResourceRequiredSingleNestedAttribute(
 			"Terraform specific configuration for this Repository",
 			map[string]tfschema.Attribute{
 				"require_authentication": schema.ResourceOptionalBoolWithDefault(
-					"Indicates if this repository requires authentication overriding anonymous access.",
+					requireAuthenticationDescription,
 					false,
 				),
 			},
 		),
 	}
-
-	return terraformAttrs
 }
 
 func terraformHostedSchemaAttributes() map[string]tfschema.Attribute {

@@ -53,7 +53,12 @@ func (f *ComposerRepositoryFormat) ResourceName(repoType RepositoryType) string 
 // --------------------------------------------
 // PROXY Composer Format Functions
 // --------------------------------------------
-func (f *ComposerRepositoryFormat) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
+// DoCreateRequest and DoUpdateRequest MUST be defined on ComposerRepositoryFormatProxy, not on the
+// shared ComposerRepositoryFormat: they compute the inline firewall mode through f's firewall
+// getters (HasFirewallConfig etc.), which are defined on the proxy type. A method defined on the
+// embedded base type runs with the base type as its receiver, so those getters would resolve to
+// the base type's defaults (all false) and the mode would always be DISABLED (#471).
+func (f *ComposerRepositoryFormatProxy) DoCreateRequest(plan any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryComposerProxyModel)
 
@@ -76,7 +81,7 @@ func (f *ComposerRepositoryFormat) DoReadRequest(state any, apiClient common.Rep
 	return ProxyApiResponseWithFirewall{Repository: *apiResponse, FirewallMode: firewallMode}, httpResponse, err
 }
 
-func (f *ComposerRepositoryFormat) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
+func (f *ComposerRepositoryFormatProxy) DoUpdateRequest(plan any, state any, apiClient common.RepositoryManagementService, ctx context.Context) (*http.Response, error) {
 	// Cast to correct Plan Model Type
 	planModel := (plan).(model.RepositoryComposerProxyModel)
 

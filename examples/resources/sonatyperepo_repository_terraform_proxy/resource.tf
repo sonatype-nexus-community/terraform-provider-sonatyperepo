@@ -18,6 +18,12 @@ resource "sonatyperepo_repository_terraform_proxy" "terraform_proxy" {
     time_to_live = 1440
   }
 
+  # NOTE: Sonatype Nexus Repository does not currently persist `require_authentication = true`
+  # on Terraform Proxy Repositories - leave unset (`terraform = {}`) or set to `false`.
+  terraform = {
+    require_authentication = false
+  }
+
   http_client = {
     blocked    = false
     auto_block = false

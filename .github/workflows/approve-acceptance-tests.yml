@@ -1,0 +1,141 @@
+# Terraform Provider approval gate for licensed acceptance tests - Tier 3.
+#
+# See https://contribute.sonatype.com/docs/standards/pull-request-ci/
+#
+# The acceptance tests that need a licensed Sonatype Nexus Repository, Sonatype IQ Server or
+# cloud credentials (test-trusted.yml, test-trusted-ha-cluster.yml) hold secrets, so they only
+# run on a commit a maintainer has approved:
+#
+#  - A maintainer comments `/ok-to-test <sha>` on the Pull Request, stating the commit they
+#    reviewed. The approval is bound to that exact commit: it is recorded as the `ok-to-test`
+#    commit status on it, and a later push is a different commit that is not approved.
+#  - Pull Requests authored by a maintainer are approved automatically.
+#
+# Maintainer = repository role `maintain` or `admin` (checked by `role_name`, not the legacy
+# `permission` field, which reports `write` for both Maintain and Write).
+#
+# This workflow only ever runs default-branch code and never checks out the Pull Request.
+name: Approve Acceptance Tests
+
+run-name: ${{ github.event_name == 'issue_comment' && format('Approve Acceptance Tests - comment on PR {0}', github.event.issue.number) || format('Approve Acceptance Tests @ {0}', github.event.workflow_run.head_sha) }}
+
+on:
+    # zizmor: ignore[dangerous-triggers] -- required by the standard: a maintainer approval comment must be able to start protected tests. Runs default-branch code only, never checks out the Pull Request, and the comment body is only ever passed through an environment variable.
+    issue_comment:
+        types: [created]
+    # zizmor: ignore[dangerous-triggers] -- required by the standard: automatic approval of maintainer Pull Requests. Runs default-branch code only and never checks out the Pull Request.
+    workflow_run:
+        workflows: ['Test (Untrusted)']
+        types: [completed]
+
+permissions: {}
+
+env:
+    GH_TOKEN: ${{ github.token }}
+    REPO: ${{ github.repository }}
+    DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    APPROVAL_CONTEXT: ok-to-test
+    TEST_WORKFLOW: test-trusted.yml
+    HA_WORKFLOW: test-trusted-ha-cluster.yml
+    # Changes only to these files do not need the licensed acceptance tests
+    DOCS_ONLY_REGEX: '^(CHANGELOG|README)\.md$'
+    TESTS_CONTEXT: Acceptance Tests (Licensed NXRM)
+    HA_CONTEXT: Acceptance Tests (HA)
+    # Posted as soon as a run is dispatched; the run's own `report` job replaces it with the result
+    PENDING_DESCRIPTION: Waiting for the licensed acceptance tests to finish
+
+jobs:
+    comment-approval:
+        name: Approve via /ok-to-test comment
+        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/ok-to-test') }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write # Dispatch the protected test workflows
+            statuses: write # Record the approval against the commit
+        env:
+            PR_NUMBER: ${{ github.event.issue.number }}
+            COMMENTER: ${{ github.event.comment.user.login }}
+            COMMENT_BODY: ${{ github.event.comment.body }}
+        steps:
+            - name: Approve the reviewed commit
+              run: |
+                  ROLE=$(gh api "repos/${REPO}/collaborators/${COMMENTER}/permission" --jq .role_name)
+                  case "$ROLE" in
+                    maintain|admin) ;;
+                    *) echo "::error::${COMMENTER} has role '${ROLE}'; /ok-to-test requires Maintain or higher"; exit 1 ;;
+                  esac
+
+                  SHORT_SHA=$(printf '%s' "$COMMENT_BODY" | head -n1 | awk '{print $2}')
+                  WITH_HA=$(printf '%s' "$COMMENT_BODY" | head -n1 | awk '{print $3}')
+                  if ! [[ "$SHORT_SHA" =~ ^[0-9a-f]{7,40}$ ]]; then
+                    echo "::error::Usage: /ok-to-test <sha> [ha] - state the commit you reviewed; add 'ha' to also run the High Availability tests"; exit 1
+                  fi
+
+                  HEAD_SHA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .head.sha)
+                  if [[ "$HEAD_SHA" != "$SHORT_SHA"* ]]; then
+                    echo "::error::Pull Request head is ${HEAD_SHA}, not ${SHORT_SHA}. It changed after review; review it and approve the new commit."; exit 1
+                  fi
+
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                    -f context="$APPROVAL_CONTEXT" -f description="Approved by ${COMMENTER}"
+                  # Each pending status is posted only once its run has been dispatched, so a failed
+                  # dispatch cannot leave a status that nothing will ever replace.
+                  gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                    -f context="$TESTS_CONTEXT" -f description="$PENDING_DESCRIPTION"
+                  if [ "$WITH_HA" = "ha" ]; then
+                    gh workflow run "$HA_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                    gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                      -f context="$HA_CONTEXT" -f description="$PENDING_DESCRIPTION"
+                  fi
+
+    auto-approval:
+        name: Approve Pull Requests by maintainers
+        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write # Dispatch the protected test workflows
+            statuses: write # Record the approval against the commit
+        env:
+            HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        steps:
+            - name: Approve if authored by a maintainer
+              run: |
+                  # `workflow_run.pull_requests` is empty for fork Pull Requests, so find it by head SHA
+                  PR_INFO=$(gh api --paginate "repos/${REPO}/pulls?state=open&per_page=100" \
+                    | jq -r --arg sha "$HEAD_SHA" '.[] | select(.head.sha == $sha) | "\(.number) \(.user.login)"' | head -n1)
+                  PR_NUMBER=${PR_INFO%% *}
+                  AUTHOR=${PR_INFO#* }
+                  if [ -z "$PR_INFO" ]; then
+                    echo "No open Pull Request has head ${HEAD_SHA}; nothing to approve"; exit 0
+                  fi
+
+                  ROLE=$(gh api "repos/${REPO}/collaborators/${AUTHOR}/permission" --jq .role_name 2>/dev/null || echo none)
+                  case "$ROLE" in
+                    maintain|admin) ;;
+                    *)
+                      gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                        -f context="$APPROVAL_CONTEXT" -f description="Awaiting maintainer approval: /ok-to-test ${HEAD_SHA:0:7}"
+                      exit 0 ;;
+                  esac
+
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                    -f context="$APPROVAL_CONTEXT" -f description="Pull Request by maintainer ${AUTHOR}"
+
+                  # Documentation-only changes do not need the licensed tests: report the check as
+                  # skipped (so it can still be a required check) instead of starting a run.
+                  NOT_DOCS=$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files" --jq '.[].filename' \
+                    | grep -Evc "$DOCS_ONLY_REGEX" || true)
+                  if [ "$NOT_DOCS" = "0" ]; then
+                    gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=success \
+                      -f context="$TESTS_CONTEXT" -f description="Skipped: documentation-only change"
+                    exit 0
+                  fi
+
+                  # High Availability tests are not run for every Pull Request: a maintainer adds
+                  # `ha` to /ok-to-test to request them. They always run on the default branch.
+                  gh workflow run "$TEST_WORKFLOW" --repo "$REPO" --ref "$DEFAULT_BRANCH" -f sha="$HEAD_SHA" -f pr="$PR_NUMBER"
+                  gh api "repos/${REPO}/statuses/${HEAD_SHA}" -f state=pending \
+                    -f context="$TESTS_CONTEXT" -f description="$PENDING_DESCRIPTION"

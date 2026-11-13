@@ -1,1 +1,4 @@
-* @madpah
+# Maintainers (Maintain role) own everything, including CI, dependency definitions and test
+# helpers, whose changes alter what runs with secrets.
+# See https://contribute.sonatype.com/docs/standards/pull-request-ci/
+*   @sonatype-nexus-community/terraform-provider-sonatyperepo

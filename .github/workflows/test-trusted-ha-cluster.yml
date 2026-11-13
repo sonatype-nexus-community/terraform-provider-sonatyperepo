@@ -1,8 +1,15 @@
 # Terraform Provider testing workflow.
 name: Test HA (Trusted)
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
+# Dispatched runs always show the default branch in the Actions UI (the workflow file comes from there).
+# The run title therefore states the commit that is actually checked out and tested.
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Test HA (Trusted) - approved commit {0}', inputs.sha) || format('Test HA (Trusted) - default branch @ {0}', github.sha) }}
+
+# Runs the licensed HA acceptance tests that need a licensed Sonatype Nexus Repository,
+# Sonatype IQ Server or cloud credentials (Tier 3 of
+# https://contribute.sonatype.com/docs/standards/pull-request-ci/). It holds secrets, so it only
+# runs on pushes to the default branch, or on a commit a maintainer has approved with
+# `/ok-to-test <sha>` (see approve-acceptance-tests.yml).
 on:
     push:
         branches:
@@ -10,21 +17,34 @@ on:
         paths-ignore:
             - 'CHANGELOG.md'
             - 'README.md'
-    workflow_run:
-      workflows: ["Test (Untrusted)"]
-      types: [completed]
+    # Started by approve-acceptance-tests.yml once a maintainer has approved the commit
     workflow_dispatch:
       inputs:
-        branch:
-          description: 'Branch to run tests against'
+        sha:
+          description: 'Full commit SHA to test (must have an approved ok-to-test status)'
           required: true
-          default: 'main'
+          type: string
+        pr:
+          description: 'Pull Request number (a newer run for the same Pull Request cancels this one)'
+          required: false
           type: string
 
+permissions: {}
+
+# One run per Pull Request: a newer commit cancels the run for the older one. Runs on the default
+# branch are never cancelled; at most one queued run waits behind the running one.
+concurrency:
+    group: trusted-ha-${{ inputs.pr && format('pr-{0}', inputs.pr) || inputs.sha && format('sha-{0}', inputs.sha) || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' }}
+
 env:
+    # This instance is licensed, so tests for Pro-only features must run (see testutil.SkipIfNotLicensed)
+    TF_ACC_NXRM_LICENSED: "1"
     LC_APPLICATION_ID: terraform-provider-sonatyperepo
     NEXUS_SECURITY_RANDOMPASSWORD: "false"
-    INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=${{ github.workspace }}/license.lic"
+    # The licence lives outside the workspace (and the checked-out code)
+    NXRM_LICENSE_FILE: /home/runner/.nexus-license/license.lic
+    INSTALL4J_ADD_VM_PARAMS: "-Dnexus.licenseFile=/home/runner/.nexus-license/license.lic"
     # See https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/285.
     # Single pinned Sonatype IQ Server release - one instance is sufficient even here, since IQ
     # Server itself isn't under HA test, only NXRM is. See test-trusted.yml for why this specific
@@ -32,35 +52,107 @@ env:
     NXIQ_VERSION: "1.204.2-01"
 
 jobs:
-    
-    # Run acceptance tests in a matrix with Terraform CLI versions
-    test-parallel:
-        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.ref_name != 'main' && github.event.workflow_run.head_repository.full_name == github.repository) }}
-        name: Acc. Tests (NXRM HA ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
+    # Authoritative Lifecycle evaluation (stage `build`) of the default branch. The same scan runs in
+    # test-trusted.yml; each workflow gates its own tests on it.
+    sonatype:
+        name: Sonatype Scan
+        if: ${{ github.event_name == 'push' }}
         runs-on: ubuntu-latest
-        timeout-minutes: 120
         permissions:
           contents: read
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                persist-credentials: false
+              
+            - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+              with:
+                go-version-file: 'go.mod'
+                cache: true
+              
+            - name: Generate go.list
+              run:
+                    go list -f '{{define "M"}}{{.Path}} {{.Version}}{{end}}{{with .Module}}{{if not .Main}}{{if .Replace}}{{template "M" .Replace}}{{else}}{{template "M" .}}{{end}}{{end}}{{end}}' -compiled -deps| sort -u > go.list
+              
+            - name: Sonatype Lifecycle Evaluation
+              id: evaluate
+              uses: sonatype/actions/evaluate@bb9a9c738185a00853c399df3e54e3c11d4ea3b1 # v1.15.0
+              with:
+                    iq-server-url: ${{ vars.SONATYPE_PLATFORM_URL }}
+                    username: ${{ secrets.SONATYPE_LIFECYCLE_USERNAME }}
+                    password: ${{ secrets.SONATYPE_LIFECYCLE_PASSWORD }}
+                    application-id: ${{ env.LC_APPLICATION_ID }}
+                    scan-targets: 'go.list'
+                    stage: build
+
+    
+    verify-approval:
+        name: Verify Approval
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            statuses: read
+        outputs:
+            sha: ${{ steps.verify.outputs.sha }}
+        env:
+            GH_TOKEN: ${{ github.token }}
+            REPO: ${{ github.repository }}
+            INPUT_SHA: ${{ inputs.sha }}
+            EVENT_NAME: ${{ github.event_name }}
+            EVENT_SHA: ${{ github.sha }}
+            SERVER_URL: ${{ github.server_url }}
+        steps:
+            - name: Verify the commit is approved
+              id: verify
+              run: |
+                  if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
+                    # push to the default branch: a trusted ref
+                    echo "sha=${EVENT_SHA}" >> "$GITHUB_OUTPUT"; exit 0
+                  fi
+                  if ! [[ "$INPUT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+                    echo "::error::sha must be a full 40 character commit SHA"; exit 1
+                  fi
+                  STATE=$(gh api "repos/${REPO}/commits/${INPUT_SHA}/status" \
+                    --jq '[.statuses[] | select(.context == "ok-to-test")][0].state')
+                  if [ "$STATE" != "success" ]; then
+                    echo "::error::Commit ${INPUT_SHA} has no approved ok-to-test status (state: ${STATE:-none})"; exit 1
+                  fi
+                  echo "sha=${INPUT_SHA}" >> "$GITHUB_OUTPUT"
+                  echo "Testing approved commit [\`${INPUT_SHA}\`](${SERVER_URL}/${REPO}/commit/${INPUT_SHA})" >> "$GITHUB_STEP_SUMMARY"
+
+    # Run acceptance tests in a matrix with Terraform CLI versions
+    test-parallel:
+        name: Acc. Tests (NXRM HA ${{ matrix.nxrm }} + TF ${{ matrix.terraform }})
+        needs:
+            - verify-approval
+            - sonatype
+        # Pushes to the default branch: do not run the licensed tests if the Lifecycle scan fails.
+        # Dispatched (approved Pull Request) runs skip the scan, which is not a failure.
+        if: ${{ !cancelled() && needs.verify-approval.result == 'success' && (needs.sonatype.result == 'success' || needs.sonatype.result == 'skipped') }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 120
+        environment: acceptance-tests
+        permissions:
+          contents: read
+        env:
+            TF_SAFE_VERSION: ${{ matrix.terraform }}
         strategy:
             fail-fast: false
             matrix:
                 nxrm:
                     - '3.89.1-02' # First version tested HA against
-                    - '3.97.0-13' # LATEST
+                    - '3.98.1-01' # LATEST
                 terraform:
-                    # - '1.14.*'
-                    - '1.15.*' # Latest
+                    # - '1.14.x'
+                    # - '1.15.x'
+                    # - '1.16.x'
+                    - '1.17.x' # Latest
         steps:
-            - name: Set Clean TF Version
-              run: |
-                ORIG="${{ matrix.terraform }}"
-                TF_SAFE_VERSION="${ORIG//\*/}"
-                echo "TF_SAFE_VERSION=$TF_SAFE_VERSION" >> "$GITHUB_ENV"
-                
             - name: Checkout Source
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
-                ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
+                ref: ${{ needs.verify-approval.outputs.sha }}
+                persist-credentials: false
 
             - name: Setup PostgreSQL
               id: setup-postgresql
@@ -97,12 +189,15 @@ jobs:
                 PGSERVICE: ${{ steps.setup-postgresql.outputs.service-name }}
 
             - name: Download, Unpack & Configure Sonatype Nexus Repository Manager
+              env:
+                NXRM_LICENSE: ${{ secrets.NXRM_LICENSE }}
               run: |
                 wget https://download.sonatype.com/nexus/3/nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz 
                 mkdir -p ${{ github.workspace }}/node-01
                 mkdir -p ${{ github.workspace }}/node-02
                 mkdir -p ${{ github.workspace }}/node-03
-                echo "${{ secrets.NXRM_LICENSE }}" | base64 -d > ${{ github.workspace }}/license.lic
+                mkdir -p "$(dirname "$NXRM_LICENSE_FILE")" && chmod 700 "$(dirname "$NXRM_LICENSE_FILE")"
+                printf '%s' "$NXRM_LICENSE" | base64 -d > "$NXRM_LICENSE_FILE" && chmod 600 "$NXRM_LICENSE_FILE"
                 tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz -C ${{ github.workspace }}/node-01
                 tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz -C ${{ github.workspace }}/node-02
                 tar xvz --keep-directory-symlink -f nexus-${{ matrix.nxrm }}-linux-x86_64.tar.gz -C ${{ github.workspace }}/node-03
@@ -135,14 +230,16 @@ jobs:
                   wget --max-redirect=0 https://download.sonatype.com/clm/server/nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz
                   mkdir ${{ github.workspace }}/nxiq
                   tar xvz -f nexus-iq-server-${{ env.NXIQ_VERSION }}-bundle.tar.gz -C ${{ github.workspace }}/nxiq
-                  echo "licenseFile: ${{ github.workspace }}/license.lic" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "database:" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  type: postgresql" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  hostname: localhost" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  port: 5432" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  name: clm" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  username: iqserver" >> ${{ github.workspace }}/nxiq/config.yml
-                  echo "  password: somepassword" >> ${{ github.workspace }}/nxiq/config.yml
+                  {
+                    echo "licenseFile: ${{ env.NXRM_LICENSE_FILE }}"
+                    echo "database:"
+                    echo "  type: postgresql"
+                    echo "  hostname: localhost"
+                    echo "  port: 5432"
+                    echo "  name: clm"
+                    echo "  username: iqserver"
+                    echo "  password: somepassword"
+                  } >> ${{ github.workspace }}/nxiq/config.yml
 
             - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
               with:
@@ -414,3 +511,31 @@ jobs:
               with:
                 name: "clm-server.log-nxrm-${{ matrix.nxrm }}-terraform-${{ env.TF_SAFE_VERSION }}"
                 path: "${{ github.workspace }}/nxiq/log/clm-server.log"
+
+    # Report the result against the tested commit, so it shows on the Pull Request
+    report:
+        name: Report Status
+        if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+        needs:
+            - verify-approval
+            - test-parallel
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            statuses: write
+        env:
+            GH_TOKEN: ${{ github.token }}
+            REPO: ${{ github.repository }}
+            SHA: ${{ inputs.sha }}
+            RESULT: ${{ needs.test-parallel.result }}
+            RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        steps:
+            - name: Set commit status
+              run: |
+                  case "$RESULT" in
+                    success) STATE=success ;;
+                    cancelled) STATE=error ;;
+                    *) STATE=failure ;;
+                  esac
+                  gh api "repos/${REPO}/statuses/${SHA}" -f state="$STATE" \
+                    -f context="Acceptance Tests (HA)" -f target_url="$RUN_URL" -f description="Result: ${RESULT}"

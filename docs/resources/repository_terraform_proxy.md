@@ -4,11 +4,21 @@ page_title: "sonatyperepo_repository_terraform_proxy Resource - sonatyperepo"
 subcategory: ""
 description: |-
   Manage Proxy TERRAFORM Repositories.
+  KNOWN LIMITATION: Sonatype Nexus Repository does not currently honour terraform.require_authentication = true for
+  Terraform Proxy Repositories. See Issue #516 https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/516.
+  WORKAROUND: The terraform attribute is required, but require_authentication within it is optional. Use
+  terraform = {} or set require_authentication = false.
 ---
 
 # sonatyperepo_repository_terraform_proxy (Resource)
 
 Manage Proxy TERRAFORM Repositories.
+
+**KNOWN LIMITATION:** Sonatype Nexus Repository does not currently honour `terraform.require_authentication = true` for
+Terraform Proxy Repositories. See [Issue #516](https://github.com/sonatype-nexus-community/terraform-provider-sonatyperepo/issues/516).
+
+**WORKAROUND:** The `terraform` attribute is required, but `require_authentication` within it is optional. Use
+`terraform = {}` or set `require_authentication = false`.
 
 ## Example Usage
 
@@ -31,6 +41,12 @@ resource "sonatyperepo_repository_terraform_proxy" "terraform_proxy" {
   negative_cache = {
     enabled      = true
     time_to_live = 1440
+  }
+
+  # NOTE: Sonatype Nexus Repository does not currently persist `require_authentication = true`
+  # on Terraform Proxy Repositories - leave unset (`terraform = {}`) or set to `false`.
+  terraform = {
+    require_authentication = false
   }
 
   http_client = {
@@ -148,7 +164,7 @@ Required:
 
 Optional:
 
-- `require_authentication` (Boolean) Indicates if this repository requires authentication overriding anonymous access.
+- `require_authentication` (Boolean) Indicates if this repository requires authentication overriding anonymous access. **Known limitation:** Sonatype Nexus Repository does not currently persist `true` for Terraform Proxy Repositories - it accepts the value but always reports `false`, which causes `Provider produced inconsistent result after apply`. Leave this unset or set it to `false`.
 
 
 <a id="nestedatt--cleanup"></a>

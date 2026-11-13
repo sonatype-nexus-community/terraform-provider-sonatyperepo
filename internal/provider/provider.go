@@ -312,7 +312,7 @@ func (p *SonatypeRepoProvider) createRealClient(nxrmUrl, apiBasePath string, ds 
 	configurationV395.HTTPClient = httpClient
 	clientV395 := sonatyperepoV395.NewAPIClient(configurationV395)
 
-	// 4. V397 client (used for NXRM 3.97.0+)
+	// 4. V397 client (used for NXRM 3.97.0+, including 3.98.x)
 	configurationV397 := p.apiClientConfigurationV397(nxrmUrl, apiBasePath)
 	configurationV397.HTTPClient = httpClient
 	clientV397 := sonatyperepoV397.NewAPIClient(configurationV397)
@@ -330,8 +330,9 @@ type MiddlewareTransport struct {
 
 func (t *MiddlewareTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// 1. Send the request and wait for the result
-	// The Base transport performs the actual network call
-	resp, err := t.Base.RoundTrip(req)
+	// The Base transport performs the actual network call. A repository update or delete that
+	// Nexus rejects with a transient "Invalid state" error is sent again (see retry_transport.go).
+	resp, err := t.roundTripWithRepositoryRetry(req)
 
 	// 2. Implement Cluster Synchronisation Delay if a WRITE call and NODE COUNT > 1 (and API call was not in error)
 	if req.Method == http.MethodPost || req.Method == http.MethodPut || req.Method == http.MethodDelete {
@@ -473,6 +474,7 @@ func (p *SonatypeRepoProvider) Resources(ctx context.Context) []func() resource.
 		system.NewSecuritySamlResource,
 		system.NewSecuritySsrfProtectionResource,
 		system.NewSecurityUserTokenResource,
+		system.NewSecurityServiceAccountTokenResource,
 		system.NewSecuritySslTruststoreResource,
 		task.NewTaskBlobstoreCompactResource,
 		task.NewTaskLicenseExpirationNotificationResource,

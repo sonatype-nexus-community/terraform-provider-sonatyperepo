@@ -1,6 +1,41 @@
 <!-- See https://developer.hashicorp.com/terraform/plugin/best-practices/versioning#changelog-specification -->
 
-## UNRELEASED
+## 1.22.1 Nov 12, 2026
+
+BUG FIXES:
+* Fixed `sonatyperepo_repository_terraform_hosted` failing with `Provider produced inconsistent result after apply` (`.terraform_signing: inconsistent values for sensitive attribute`) when `terraform_signing.passphrase` is set [GH-544] - Sonatype Nexus Repository 3.98 no longer returns the Signing Key passphrase, so the provider read it back as `null`. The passphrase is now kept from your configuration, as for the other formats with signing keys. After `terraform import` the passphrase is not populated (Nexus Repository does not return it), so set it in configuration. No other format was affected
+* Fixed `sonatyperepo_system_config_product_license` failing with `invalid body type application/octet-stream` against Sonatype Nexus Repository 3.94.0+ [GH-545] - the generated API client declared the licence upload body as a JSON object, so the licence file was never sent and the request failed before reaching Nexus Repository. The licence file is now uploaded as binary. Fixed in the API client (`nexus-repo-api-client-go` v395.96.4 and v397.98.1), which the provider now uses. Versions before 3.94.0 were not affected
+
+NOTES:
+* Updated `nexus-repo-api-client-go` to v395.96.4 and v397.98.1 [GH-545]
+
+## 1.22.0 Nov 09, 2026
+
+BUG FIXES:
+* Listing Capabilities is retried (up to 3 attempts, 1s then 2s apart) when Sonatype Nexus Repository answers with a transient server error (HTTP 5xx) [GH-537] - Nexus intermittently returns a 500 (`NullPointerException`) from the capability list while repositories are being deleted at the same time, which made reading or updating an existing Capability fail with `Capability did not exist`. Only the read-only list is retried; creating, updating and deleting Capabilities are not
+* Fixed `repository_firewall` on `sonatyperepo_repository_composer_proxy` being ignored against Sonatype Nexus Repository 3.94.0+ [GH-471] - the provider always sent firewall mode `DISABLED` for Composer, so enabling it failed with `Provider produced inconsistent result after apply` and Nexus then reported the mode as disabled. This was a provider defect, not a Nexus Repository one, and it replaces the known issue recorded under 1.18.0. Composer is the only format affected
+* Updating or deleting a repository is retried (up to 3 more times, 1s, 2s then 4s apart) when Sonatype Nexus Repository rejects it with a transient `Invalid state: STARTED; allowed: [STOPPED]` (or `STOPPED; allowed: [STARTED]`) error [GH-536] - Nexus restarts a repository's facets when it is updated or removed from a group, and a request that arrives while that is still settling is rejected with a 400 that succeeds if sent again a moment later. The same request is sent again unchanged. Repositories in a `FAILED` state and creates are not retried
+
+FEATURES:
+* **New Resource:** `sonatyperepo_security_service_account_token` - manage Service Account Tokens (Sonatype Nexus Repository Pro 3.97.0+) [GH-517]. Nexus Repository cannot update a token or return its value after creation, so changing any argument replaces the token, the token value is only available as a sensitive attribute from the apply that created it, and the resource cannot be imported
+
+NOTES:
+* Reduced intermittent acceptance test failures [GH-369] - no provider behaviour changes beyond the retries listed under BUG FIXES [GH-536] [GH-537]. The Malware Defense task test now takes the IQ connection lock and uses the real IQ settings [GH-538], and the licensed acceptance tests are shown as pending on a Pull Request as soon as they are dispatched
+
+## 1.21.0 Nov 07, 2026
+
+ENHANCEMENTS:
+* Added support for Sonatype Nexus Repository 3.98.x [GH-519]
+
+NOTES:
+* Tested against Terraform 1.17.x [GH-523]
+* Tested against Terraform 1.16.x [GH-522]
+* CI aligned to the [Sonatype Community Pull Request CI & Secrets standard](https://contribute.sonatype.com/docs/standards/pull-request-ci/) [GH-525] - no provider code changes. Every Pull Request (including from forks) now runs build, lint, unit tests and the acceptance tests that need only Nexus Repository Community Edition, with no secrets. Acceptance tests that need a licensed Nexus Repository, Sonatype IQ Server or cloud credentials (new `testutil.SkipIfNotLicensed` / `testutil.SkipOnCommunityEdition`, enabled with `TF_ACC_NXRM_LICENSED=1`) run only in the trusted workflows, after a maintainer approves the exact commit with `/ok-to-test <sha>` (automatic for maintainers). Pull Requests are evaluated in Sonatype Lifecycle by a trusted workflow that treats the prepared scan input as data. Workflows were hardened (read-only token permissions, `persist-credentials: false`, SHA-pinned actions, `actionlint` and `zizmor`), the release signing key moved to a `release` Environment and the NXRM licence to an `acceptance-tests` Environment. See `CONTRIBUTING.md`. Previously the trusted tests never ran for Pull Requests
+* Tested against [Sonatype Nexus Repository Manager 3.98.1](https://help.sonatype.com/en/sonatype-nexus-repository-3-98-0-release-notes.html) [GH-519] - no provider code changes were required. NXRM 3.98 uses the existing v397 API client generation, updated to v397.98.0. The `nexus-repo-api-client-go` v397.98.0 removes the `forwardQueryParameters` and `excludedQueryParameters` fields from Raw proxy repositories (introduced in 3.97, not used by this provider) and adds Swift proxy `autoBlockStatusCodes`, Cargo hosted `cargo` attributes, blob store group `globalDistributionEnabled` and a per-format user token reset endpoint, none of which are exposed by the provider yet
+* Documented a known limitation of `sonatyperepo_repository_terraform_proxy` - see [GH-516]
+* Dependency updates
+
+## 1.20.0 Oct 27, 2026
 
 BUG FIXES:
 * Prevent `Provider produced inconsistent result after apply` error (`.repository_firewall.pccs_enabled: was cty.True, but now cty.False`) when creating a `sonatyperepo_repository_npm_proxy` with `repository_firewall = { pccs_enabled = true }` in a single apply against Sonatype Nexus Repository 3.84.x - 3.93.x [GH-510] - on these versions the firewall is configured through a Capability and PCCS is enabled by a follow-up update of the repository. `repository_firewall` was a pointer shared by aliasing between the Terraform Plan and the state model being built, so reading the freshly created repository back (where Nexus still reports `removeQuarantined = false`) silently overwrote the planned `pccs_enabled = true`, and the provider then skipped that follow-up update. The repository was created but left tainted in state; the previous workaround was to create with `pccs_enabled = false` and then apply again with `true`. `sonatyperepo_repository_pypi_proxy` was not affected, and Nexus Repository 3.94.0+ (which sets the firewall mode inline) does not use this path (see [GH-511])

@@ -49,11 +49,8 @@ func (s *licenseServiceV397) RemoveLicense(ctx context.Context) (*http.Response,
 	return s.client.ProductLicensingAPI.DeleteSystemLicense(ctx).Execute()
 }
 
-// SetLicense cannot currently transmit the license file's bytes to a V397 server: the
-// the spec to `type: string, format: binary` and regenerating the V397 client in the
 func (s *licenseServiceV397) SetLicense(ctx context.Context, licenseFile *os.File) (*sonatyperepoV382.ApiLicenseDetailsXO, *http.Response, error) {
-	_ = licenseFile
-	v397Response, httpResponse, err := s.client.ProductLicensingAPI.CreateSystemLicense(ctx).Body(map[string]interface{}{}).Execute()
+	v397Response, httpResponse, err := s.client.ProductLicensingAPI.CreateSystemLicense(ctx).Body(licenseFile).Execute()
 	if err != nil {
 		return nil, httpResponse, err
 	}
